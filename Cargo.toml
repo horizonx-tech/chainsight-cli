@@ -6,6 +6,12 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anyhow = "1.0.71"
 clap = { version = "4.3.0", features = ["derive", "env", "unstable-styles", "wrap_help"] }
 lazy_static = "1.4.0"
 semver = "1.0.17"
+serde = { version = "1.0.163", features = ["derive"] }
+serde_yaml = "0.9.21"
+slog = "2.7.0"
+slog-async = "2.7.0"
+slog-term = "2.9.0"

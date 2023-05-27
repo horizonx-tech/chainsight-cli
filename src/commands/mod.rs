@@ -1,5 +1,7 @@
 use clap::{command, Subcommand};
 
+use crate::lib::environment::EnvironmentImpl;
+
 mod config;
 mod auth;
 mod new;
@@ -32,34 +34,40 @@ pub enum Command {
     Upgrade(upgrade::UpgradeOpts)
 }
 
-pub fn exec(cmd: Command) {
+pub fn exec(env: &EnvironmentImpl, cmd: Command) -> Result<(), String> {
     match cmd {
         Command::Config(_) => {
             println!("Config");
+            Ok(())
         },
         Command::Auth(_) => {
             println!("Auth");
+            Ok(())
         },
-        Command::New(_) => {
-            println!("New");
-        },
+        Command::New(opt) => new::exec(env, opt),
         Command::Create(_) => {
             println!("Create");
+            Ok(())
         },
         Command::Build(_) => {
             println!("Build");
+            Ok(())
         },
         Command::Test(_) => {
             println!("Test");
+            Ok(())
         },
         Command::Deploy(_) => {
             println!("Deploy");
+            Ok(())
         },
         Command::Remove(_) => {
             println!("Remove");
+            Ok(())
         },
         Command::Upgrade(_) => {
             println!("Upgrade");
+            Ok(())
         }
     }
 }
