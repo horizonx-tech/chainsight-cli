@@ -61,41 +61,40 @@ fn create_project(project_name: &str) -> io::Result<()> {
 
     // Create files
     fs::write(format!("{}/.chainsight", project_name), "")?;
-    fs::write(format!("{}/project.yaml", project_name), generate_codes_for_project_data().unwrap())?;
+    fs::write(format!("{}/project.yaml", project_name), generate_manifest_for_project(project_name).unwrap())?;
 
-    let component_file_code = generate_codes_for_component_file().unwrap();
     fs::write(
-        format!("{}/components/component_a.yaml", project_name),
-        component_file_code.clone()
+        format!("{}/components/{}-snapshot.yaml", project_name, project_name),
+        generate_manifest_for_snapshot(project_name).unwrap().clone()
     )?;
     fs::write(
-        format!("{}/components/component_b.yaml", project_name),
-        component_file_code
+        format!("{}/components/{}-relayer.yaml", project_name, project_name),
+        generate_manifest_for_relayer(project_name).unwrap().clone()
     )?;
 
     Ok(())
 }
 
 #[derive(Serialize)]
-struct ProjectData {
+struct ProjectManifestData {
     version: String,
     label: String,
-    components: Vec<ProjectComponentField>
+    components: Vec<ProjectManifestComponentField>
 }
 #[derive(Serialize)]
-struct ProjectComponentField {
+struct ProjectManifestComponentField {
     canister_id: String
 }
 // temp
-fn generate_codes_for_project_data() -> Result<std::string::String, serde_yaml::Error> {
-    let data = ProjectData {
+fn generate_manifest_for_project(project_name: &str) -> Result<std::string::String, serde_yaml::Error> {
+    let data = ProjectManifestData {
         version: "v1".to_owned(),
-        label: "rvol-volatility".to_owned(),
+        label: project_name.to_owned(),
         components: vec![
-            ProjectComponentField {
+            ProjectManifestComponentField {
                 canister_id: "xxx-xxx-xxx".to_owned()
             },
-            ProjectComponentField {
+            ProjectManifestComponentField {
                 canister_id: "xxx-xxx-xxx".to_owned()
             },
         ],
@@ -104,17 +103,45 @@ fn generate_codes_for_project_data() -> Result<std::string::String, serde_yaml::
 }
 
 #[derive(Serialize)]
-struct ComponentData {
-    version: String,
-    type_: String,
-    label: String,
-    data_source: DataSourceField,
-    destinations: Vec<DestinationField> // for relayer?
+enum ComponentType {
+    #[serde(rename = "snapshot")]
+    Snapshot,
+    #[serde(rename = "relayer")]
+    Relayer,
 }
 #[derive(Serialize)]
-struct DataSourceField {
-    canister_id: String,
-    method_id: String
+enum DatasourceType {
+    #[serde(rename = "canister")]
+    Canister,
+    #[serde(rename = "contract")]
+    Contract,
+}
+#[derive(Serialize)]
+struct SnapshotComponentManifest {
+    version: String,
+    type_: ComponentType,
+    label: String,
+    datasource: Datasource,
+    interval: u32
+}
+#[derive(Serialize)]
+struct RelayerComponentManifest {
+    version: String,
+    type_: ComponentType,
+    label: String,
+    datasource: Datasource,
+    destinations: Vec<DestinationField>
+}
+#[derive(Serialize)]
+struct Datasource {
+    type_: DatasourceType,
+    id: String,
+    method: DatasourceMethod
+}
+#[derive(Serialize)]
+struct DatasourceMethod {
+    identifier: String,
+    args: Vec<String>
 }
 #[derive(Serialize)]
 struct DestinationField {
@@ -124,14 +151,35 @@ struct DestinationField {
     interval: u32
 }
 // temp
-fn generate_codes_for_component_file() -> Result<std::string::String, serde_yaml::Error> {
-    let data = ComponentData {
+fn generate_manifest_for_snapshot(project_name: &str) -> Result<std::string::String, serde_yaml::Error> {
+    let data = SnapshotComponentManifest {
         version: "v1".to_owned(),
-        type_: "relayer".to_owned(),
-        label: "rvol-volatility-relayer".to_owned(),
-        data_source: DataSourceField {
-            canister_id: "xxx-xxx-xxx".to_owned(),
-            method_id: "xxxx".to_owned()
+        type_: ComponentType::Snapshot,
+        label: format!("{}-snapshot", project_name).to_owned(),
+        datasource: Datasource {
+            type_: DatasourceType::Contract,
+            id: "a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48".to_owned(),
+            method: DatasourceMethod {
+                identifier: "totalSupply()".to_owned(),
+                args: vec![]
+            },
+        },
+        interval: 3600,
+    };
+    serde_yaml::to_string(&data)
+}
+fn generate_manifest_for_relayer(project_name: &str) -> Result<std::string::String, serde_yaml::Error> {
+    let data = RelayerComponentManifest {
+        version: "v1".to_owned(),
+        type_: ComponentType::Relayer,
+        label: format!("{}-relayer", project_name).to_owned(),
+        datasource: Datasource {
+            type_: DatasourceType::Canister,
+            id: "xxx-xxx-xxx".to_owned(),
+            method: DatasourceMethod {
+                identifier: "total_supply()".to_owned(),
+                args: vec![]
+            },
         },
         destinations: vec![
             DestinationField {
