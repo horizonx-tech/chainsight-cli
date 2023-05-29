@@ -1,11 +1,11 @@
-use std::{path::Path, fs, io};
+use std::{path::Path, fs};
 
 use anyhow::bail;
 use clap::Parser;
 use slog::{info, error};
 
 use crate::{
-    lib::{environment::EnvironmentImpl, codegen::{project::generate_manifest_for_project, components::{generate_manifest_for_snapshot, generate_manifest_for_relayer}}, utils::{CHAINSIGHT_FILENAME, PROJECT_MANIFEST_FILENAME, PROJECT_MANIFEST_VERSION}}
+    lib::{environment::EnvironmentImpl, codegen::{project::{ProjectManifestData, ProjectManifestComponentField}, components::{SnapshotComponentManifest, RelayerComponentManifest, Datasource, DestinationField}}, utils::{CHAINSIGHT_FILENAME, PROJECT_MANIFEST_FILENAME, PROJECT_MANIFEST_VERSION}}
 };
 
 #[derive(Debug, Parser)]
@@ -58,7 +58,7 @@ pub fn exec(env: &EnvironmentImpl, opts: NewOpts) -> anyhow::Result<()> {
     }
 }
 
-fn create_project(project_name: &str) -> io::Result<()> {
+fn create_project(project_name: &str) -> anyhow::Result<()> {
     // Create directories
     fs::create_dir_all(format!("{}/components", project_name))?;
 
@@ -66,26 +66,45 @@ fn create_project(project_name: &str) -> io::Result<()> {
     fs::write(format!("{}/{}", project_name, CHAINSIGHT_FILENAME), "")?;
     let relative_snapshot_path = format!("components/{}-snapshot.yaml", project_name);
     let relative_relayer_path = format!("components/{}-relayer.yaml", project_name);
+
     fs::write(
         format!("{}/{}", project_name, PROJECT_MANIFEST_FILENAME),
-        generate_manifest_for_project(
+        ProjectManifestData::new(
             project_name,
             PROJECT_MANIFEST_VERSION,
             &vec![
-                (relative_snapshot_path.clone(), None),
-                (relative_relayer_path.clone(), None),
+                ProjectManifestComponentField::new(&relative_snapshot_path, None),
+                ProjectManifestComponentField::new(&relative_relayer_path, None),
             ]
-        ).unwrap()
+        ).to_str_as_yaml()?,
     )?;
 
     fs::write(
         format!("{}/{}", project_name, relative_snapshot_path),
-        generate_manifest_for_snapshot(project_name).unwrap().clone()
+        template_snapshot_manifest(project_name).to_str_as_yaml()?
     )?;
     fs::write(
         format!("{}/{}", project_name, relative_relayer_path),
-        generate_manifest_for_relayer(project_name).unwrap().clone()
+        template_relayer_manifest(project_name).to_str_as_yaml()?
     )?;
 
     Ok(())
+}
+
+fn template_snapshot_manifest(project_name: &str) -> SnapshotComponentManifest {
+    SnapshotComponentManifest::new(
+        &format!("{}-snapshot", project_name),
+        PROJECT_MANIFEST_VERSION,
+        Datasource::new_contract(),
+        3600
+    )
+}
+
+fn template_relayer_manifest(project_name: &str) -> RelayerComponentManifest {
+    RelayerComponentManifest::new(
+        &format!("{}-relayer", project_name),
+        PROJECT_MANIFEST_VERSION,
+        Datasource::new_canister(),
+        vec![DestinationField::new(1, 3600)],
+    )
 }

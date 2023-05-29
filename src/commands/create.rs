@@ -1,10 +1,10 @@
-use std::fs;
+use std::{fs::{self, OpenOptions}, io::Write};
 
 use anyhow::bail;
 use clap::Parser;
 use slog::{info, error};
 
-use crate::{lib::{environment::EnvironmentImpl, utils::{is_chainsight_project, PROJECT_MANIFEST_FILENAME}, codegen::{components::{generate_manifest_for_relayer, generate_manifest_for_snapshot}, project::add_new_component_to_project_manifest}}, types::ComponentType};
+use crate::{lib::{environment::EnvironmentImpl, utils::{is_chainsight_project, PROJECT_MANIFEST_FILENAME, PROJECT_MANIFEST_VERSION}, codegen::{project::{ProjectManifestData, ProjectManifestComponentField}, components::{SnapshotComponentManifest, RelayerComponentManifest, Datasource, DestinationField}}}, types::ComponentType};
 
 #[derive(Debug, Parser)]
 #[command(name = "create")]
@@ -42,8 +42,8 @@ pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> anyhow::Result<()> {
     );
 
     let codes = match component_type {
-        ComponentType::Snapshot => generate_manifest_for_snapshot(&component_name),
-        ComponentType::Relayer => generate_manifest_for_relayer(&component_name)
+        ComponentType::Snapshot => template_snapshot_manifest(&component_name).to_str_as_yaml(),
+        ComponentType::Relayer => template_relayer_manifest(&component_name).to_str_as_yaml()
     }?;
     let relative_component_path = format!("components/{}.yaml", component_name);
     let (component_file_path, project_file_path) = if let Some(project_name) = project_path.clone() {
@@ -57,19 +57,22 @@ pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> anyhow::Result<()> {
             PROJECT_MANIFEST_FILENAME.to_string(),
         )
     };
+
     // write to .yaml
     fs::write(
         component_file_path,
         codes
     )?;
     // update to project.yaml
-    add_new_component_to_project_manifest(
-        &project_file_path,
-        &vec![(
-            relative_component_path,
+    let mut data = ProjectManifestData::load(&project_file_path)?;
+    data.add_components(&vec![
+        ProjectManifestComponentField::new(
+            &relative_component_path,
             None
-        )]
-    )?;
+        )
+    ])?;
+    let mut file = OpenOptions::new().write(true).truncate(true).open(&project_file_path)?;
+    file.write_all(data.to_str_as_yaml()?.as_bytes())?;
 
     info!(
         log,
@@ -79,4 +82,22 @@ pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> anyhow::Result<()> {
     );
 
     Ok(())
+}
+
+fn template_snapshot_manifest(component_name: &str) -> SnapshotComponentManifest {
+    SnapshotComponentManifest::new(
+        &component_name,
+        PROJECT_MANIFEST_VERSION,
+        Datasource::new_contract(),
+        3600
+    )
+}
+
+fn template_relayer_manifest(component_name: &str) -> RelayerComponentManifest {
+    RelayerComponentManifest::new(
+        &component_name,
+        PROJECT_MANIFEST_VERSION,
+        Datasource::new_canister(),
+        vec![DestinationField::new(1, 3600)],
+    )
 }

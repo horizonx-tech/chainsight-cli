@@ -1,52 +1,55 @@
-use std::{fs::OpenOptions, path::Path, io::{Read, Write}};
+use std::{fs::OpenOptions, path::Path, io::{Read}};
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct ProjectManifestData {
     version: String,
     label: String,
     components: Vec<ProjectManifestComponentField>
 }
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct ProjectManifestComponentField {
     component_path: String,
     canister_id: Option<String>
 }
 
-pub fn generate_manifest_for_project(project_name: &str, version: &str, components_values: &[(String, Option<String>)]) -> Result<std::string::String, serde_yaml::Error> {
-    let components = components_values.iter().map(|(component_path, canister_id)| {
-        ProjectManifestComponentField {
-            component_path: component_path.to_owned(),
-            canister_id: canister_id.clone()
+impl ProjectManifestData {
+    pub fn new(project_name: &str, version: &str, components: &[ProjectManifestComponentField]) -> Self {
+        Self {
+            version: version.to_owned(),
+            label: project_name.to_owned(),
+            components: components.to_vec(),
         }
-    }).collect::<Vec<_>>();
-    let data = ProjectManifestData {
-        version: version.to_owned(),
-        label: project_name.to_owned(),
-        components,
-    };
-    serde_yaml::to_string(&data)
+    }
+    pub fn load(path: &str) -> anyhow::Result<Self> {
+        let mut file = OpenOptions::new()
+            .read(true)
+            .open(&Path::new(path))?;
+        let mut contents = String::new();
+        file.read_to_string(&mut contents)?;
+        let data: Self = serde_yaml::from_str(&contents)?;
+        Ok(data)
+    }
+
+    pub fn to_str_as_yaml(&self) -> anyhow::Result<String> {
+        let yaml = serde_yaml::to_string(&self)?;
+        Ok(yaml)
+    }
+
+    pub fn add_components(&mut self, components: &[ProjectManifestComponentField]) -> anyhow::Result<()> {
+        for component in components {
+            self.components.push(component.clone());
+        }
+        Ok(())
+    }
 }
 
-pub fn add_new_component_to_project_manifest(path: &str, components_values: &[(String, Option<String>)]) -> anyhow::Result<()> {
-    let mut file = OpenOptions::new()
-        .read(true)
-        .open(&Path::new(path))?;
-    let mut contents = String::new();
-    file.read_to_string(&mut contents)?;
-
-    let mut data: ProjectManifestData = serde_yaml::from_str(&contents)?;
-    for value in components_values {
-        data.components.push(ProjectManifestComponentField {
-            component_path: value.0.to_owned(),
-            canister_id: value.1.clone()
-        });
+impl ProjectManifestComponentField {
+    pub fn new(component_path: &str, canister_id: Option<String>) -> Self {
+        Self {
+            component_path: component_path.to_owned(),
+            canister_id
+        }
     }
-    let updated_yaml = serde_yaml::to_string(&data)?;
-
-    let mut file = OpenOptions::new().write(true).truncate(true).open(&path)?;
-    file.write_all(updated_yaml.as_bytes())?;
-    
-    Ok(())
 }
