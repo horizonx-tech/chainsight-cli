@@ -46,10 +46,7 @@ pub fn exec(env: &EnvironmentImpl, cmd: Command) -> anyhow::Result<()> {
         },
         Command::New(opts) => new::exec(env, opts),
         Command::Create(opts) => create::exec(env, opts),
-        Command::Build(_) => {
-            println!("Build");
-            Ok(())
-        },
+        Command::Build(opts) => build::exec(env, opts),
         Command::Test(_) => {
             println!("Test");
             Ok(())

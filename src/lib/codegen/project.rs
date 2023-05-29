@@ -4,14 +4,14 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct ProjectManifestData {
-    version: String,
-    label: String,
-    components: Vec<ProjectManifestComponentField>
+    pub version: String,
+    pub label: String,
+    pub components: Vec<ProjectManifestComponentField>
 }
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct ProjectManifestComponentField {
-    component_path: String,
-    canister_id: Option<String>
+    pub component_path: String,
+    pub canister_id: Option<String>
 }
 
 impl ProjectManifestData {

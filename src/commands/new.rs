@@ -5,7 +5,7 @@ use clap::Parser;
 use slog::{info, error};
 
 use crate::{
-    lib::{environment::EnvironmentImpl, codegen::{project::{ProjectManifestData, ProjectManifestComponentField}, components::{SnapshotComponentManifest, RelayerComponentManifest, Datasource, DestinationField}}, utils::{CHAINSIGHT_FILENAME, PROJECT_MANIFEST_FILENAME, PROJECT_MANIFEST_VERSION}}
+    lib::{environment::EnvironmentImpl, codegen::{project::{ProjectManifestData, ProjectManifestComponentField}, components::{SnapshotComponentManifest, RelayerComponentManifest, Datasource, DestinationField, ComponentManifest}}, utils::{CHAINSIGHT_FILENAME, PROJECT_MANIFEST_FILENAME, PROJECT_MANIFEST_VERSION}}
 };
 
 #[derive(Debug, Parser)]

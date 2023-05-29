@@ -4,7 +4,7 @@ use anyhow::bail;
 use clap::Parser;
 use slog::{info, error};
 
-use crate::{lib::{environment::EnvironmentImpl, utils::{is_chainsight_project, PROJECT_MANIFEST_FILENAME, PROJECT_MANIFEST_VERSION}, codegen::{project::{ProjectManifestData, ProjectManifestComponentField}, components::{SnapshotComponentManifest, RelayerComponentManifest, Datasource, DestinationField}}}, types::ComponentType};
+use crate::{lib::{environment::EnvironmentImpl, utils::{is_chainsight_project, PROJECT_MANIFEST_FILENAME, PROJECT_MANIFEST_VERSION}, codegen::{project::{ProjectManifestData, ProjectManifestComponentField}, components::{SnapshotComponentManifest, RelayerComponentManifest, Datasource, DestinationField, ComponentManifest}}}, types::ComponentType};
 
 #[derive(Debug, Parser)]
 #[command(name = "create")]
