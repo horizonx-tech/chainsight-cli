@@ -34,7 +34,7 @@ pub enum Command {
     Upgrade(upgrade::UpgradeOpts)
 }
 
-pub fn exec(env: &EnvironmentImpl, cmd: Command) -> Result<(), String> {
+pub fn exec(env: &EnvironmentImpl, cmd: Command) -> anyhow::Result<()> {
     match cmd {
         Command::Config(_) => {
             println!("Config");

@@ -1,5 +1,6 @@
 use std::{fs, path::Path};
 
+use anyhow::bail;
 use clap::Parser;
 use slog::{error, info};
 
@@ -15,7 +16,7 @@ pub struct RemoveOpts {
 
 const GLOBAL_ERROR_MSG: &str = "Fail remove command";
 
-pub fn exec(env: &EnvironmentImpl, opts: RemoveOpts) -> Result<(), String> {
+pub fn exec(env: &EnvironmentImpl, opts: RemoveOpts) -> anyhow::Result<()> {
     let log = env.get_logger();
     let project_path = opts.path;
 
@@ -25,7 +26,7 @@ pub fn exec(env: &EnvironmentImpl, opts: RemoveOpts) -> Result<(), String> {
             r#"{}"#,
             msg
         );
-        return Err(GLOBAL_ERROR_MSG.to_string());
+        bail!(GLOBAL_ERROR_MSG.to_string())
     }
 
     info!(
@@ -55,7 +56,7 @@ pub fn exec(env: &EnvironmentImpl, opts: RemoveOpts) -> Result<(), String> {
                 r#"Fail to remove project: {}"#,
                 err
             );
-            Err(GLOBAL_ERROR_MSG.to_string())
+            bail!(GLOBAL_ERROR_MSG.to_string())
         }
     }
 }

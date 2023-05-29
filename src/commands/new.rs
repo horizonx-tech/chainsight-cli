@@ -1,5 +1,6 @@
 use std::{path::Path, fs, io};
 
+use anyhow::bail;
 use clap::Parser;
 use slog::{info, error};
 
@@ -18,7 +19,7 @@ pub struct NewOpts {
 // temp
 const GLOBAL_ERROR_MSG: &str = "Fail new command";
 
-pub fn exec(env: &EnvironmentImpl, opts: NewOpts) -> Result<(), String> {
+pub fn exec(env: &EnvironmentImpl, opts: NewOpts) -> anyhow::Result<()> {
     let log = env.get_logger();
     let project_name = opts.project_name;
     let project_name_path = Path::new(&project_name);
@@ -28,7 +29,7 @@ pub fn exec(env: &EnvironmentImpl, opts: NewOpts) -> Result<(), String> {
             r#"Project "{}" already exists"#,
             project_name
         );
-        return Err(GLOBAL_ERROR_MSG.to_string());
+        bail!(GLOBAL_ERROR_MSG.to_string())
     }
     info!(
         log,
@@ -52,7 +53,7 @@ pub fn exec(env: &EnvironmentImpl, opts: NewOpts) -> Result<(), String> {
                 project_name,
                 err
             );
-            return Err(GLOBAL_ERROR_MSG.to_string());
+            bail!(GLOBAL_ERROR_MSG.to_string())
         }
     }
 }

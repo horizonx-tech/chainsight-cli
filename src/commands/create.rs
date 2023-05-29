@@ -1,5 +1,6 @@
 use std::fs;
 
+use anyhow::bail;
 use clap::Parser;
 use slog::{info, error};
 
@@ -19,7 +20,7 @@ pub struct CreateOpts {
 
 const GLOBAL_ERROR_MSG: &str = "Fail create command";
 
-pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> Result<(), String> {
+pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> anyhow::Result<()> {
     let log = env.get_logger();
     let component_name = opts.component_name;
     let component_type = opts.type_;
@@ -31,7 +32,7 @@ pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> Result<(), String> {
             r#"{}"#,
             msg
         );
-        return Err(GLOBAL_ERROR_MSG.to_string());
+        bail!(GLOBAL_ERROR_MSG.to_string())
     }
 
     info!(
@@ -40,56 +41,42 @@ pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> Result<(), String> {
         component_name
     );
 
-    let res = match component_type {
+    let codes = match component_type {
         ComponentType::Snapshot => generate_manifest_for_snapshot(&component_name),
         ComponentType::Relayer => generate_manifest_for_relayer(&component_name)
+    }?;
+    let relative_component_path = format!("components/{}.yaml", component_name);
+    let (component_file_path, project_file_path) = if let Some(project_name) = project_path.clone() {
+        (
+            format!("{}/{}", project_name, relative_component_path.clone()),
+            format!("{}/{}", project_name, PROJECT_MANIFEST_FILENAME),
+        )
+    } else {
+        (
+            relative_component_path.clone(),
+            PROJECT_MANIFEST_FILENAME.to_string(),
+        )
     };
-    match res {
-        Ok(codes) => {
-            let relative_component_path = format!("components/{}.yaml", component_name);
-            let (component_file_path, project_file_path) = if let Some(project_name) = project_path.clone() {
-                (
-                    format!("{}/{}", project_name, relative_component_path.clone()),
-                    format!("{}/{}", project_name, PROJECT_MANIFEST_FILENAME),
-                )
-            } else {
-                (
-                    relative_component_path.clone(),
-                    PROJECT_MANIFEST_FILENAME.to_string(),
-                )
-            };
-            // write to .yaml
-            fs::write(
-                component_file_path,
-                codes
-            ).unwrap(); // TODO
-            // update to project.yaml
-            add_new_component_to_project_manifest(
-                &project_file_path,
-                &vec![(
-                    relative_component_path,
-                    None
-                )]
-            ).unwrap(); // TODO
+    // write to .yaml
+    fs::write(
+        component_file_path,
+        codes
+    )?;
+    // update to project.yaml
+    add_new_component_to_project_manifest(
+        &project_file_path,
+        &vec![(
+            relative_component_path,
+            None
+        )]
+    )?;
 
-            info!(
-                log,
-                r#"{:?} component "{}" created successfully"#,
-                component_type,
-                component_name
-            );
-        },
-        Err(err) => {
-            error!(
-                log,
-                r#"Fail to create {:?} component "{}": {}"#,
-                component_type,
-                component_name,
-                err
-            );
-            return Err(GLOBAL_ERROR_MSG.to_string());
-        }
-    }
+    info!(
+        log,
+        r#"{:?} component "{}" created successfully"#,
+        component_type,
+        component_name
+    );
 
     Ok(())
 }

@@ -29,25 +29,24 @@ pub fn generate_manifest_for_project(project_name: &str, version: &str, componen
     serde_yaml::to_string(&data)
 }
 
-pub fn add_new_component_to_project_manifest(path: &str, components_values: &[(String, Option<String>)]) -> Result<(), String> {
+pub fn add_new_component_to_project_manifest(path: &str, components_values: &[(String, Option<String>)]) -> anyhow::Result<()> {
     let mut file = OpenOptions::new()
         .read(true)
-        .open(&Path::new(path))
-        .unwrap(); // TODO
+        .open(&Path::new(path))?;
     let mut contents = String::new();
-    file.read_to_string(&mut contents).unwrap(); // TODO
+    file.read_to_string(&mut contents)?;
 
-    let mut data: ProjectManifestData = serde_yaml::from_str(&contents).unwrap(); // TODO
+    let mut data: ProjectManifestData = serde_yaml::from_str(&contents)?;
     for value in components_values {
         data.components.push(ProjectManifestComponentField {
             component_path: value.0.to_owned(),
             canister_id: value.1.clone()
         });
     }
-    let updated_yaml = serde_yaml::to_string(&data).unwrap(); // TODO
+    let updated_yaml = serde_yaml::to_string(&data)?;
 
-    let mut file = OpenOptions::new().write(true).truncate(true).open(&path).unwrap();
-    file.write_all(updated_yaml.as_bytes()).unwrap(); // TODO
+    let mut file = OpenOptions::new().write(true).truncate(true).open(&path)?;
+    file.write_all(updated_yaml.as_bytes())?;
     
     Ok(())
 }
