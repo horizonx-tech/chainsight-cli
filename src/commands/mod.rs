@@ -44,11 +44,8 @@ pub fn exec(env: &EnvironmentImpl, cmd: Command) -> Result<(), String> {
             println!("Auth");
             Ok(())
         },
-        Command::New(opt) => new::exec(env, opt),
-        Command::Create(_) => {
-            println!("Create");
-            Ok(())
-        },
+        Command::New(opts) => new::exec(env, opts),
+        Command::Create(opts) => create::exec(env, opts),
         Command::Build(_) => {
             println!("Build");
             Ok(())

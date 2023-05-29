@@ -3,6 +3,7 @@
 mod config;
 mod commands;
 mod lib;
+mod types;
 
 use clap::{Parser, ArgAction};
 use commands::{Command, exec};
