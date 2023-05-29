@@ -4,7 +4,7 @@ use clap::Parser;
 use slog::{info, error};
 
 use crate::{
-    lib::{environment::EnvironmentImpl, codegen::{project::generate_manifest_for_project, components::{generate_manifest_for_snapshot, generate_manifest_for_relayer}}, utils::{CHAINSIGHT_FILENAME, PROJECT_MANIFEST_FILENAME}}
+    lib::{environment::EnvironmentImpl, codegen::{project::generate_manifest_for_project, components::{generate_manifest_for_snapshot, generate_manifest_for_relayer}}, utils::{CHAINSIGHT_FILENAME, PROJECT_MANIFEST_FILENAME, PROJECT_MANIFEST_VERSION}}
 };
 
 #[derive(Debug, Parser)]
@@ -63,14 +63,26 @@ fn create_project(project_name: &str) -> io::Result<()> {
 
     // Create files
     fs::write(format!("{}/{}", project_name, CHAINSIGHT_FILENAME), "")?;
-    fs::write(format!("{}/{}", project_name, PROJECT_MANIFEST_FILENAME), generate_manifest_for_project(project_name).unwrap())?;
+    let relative_snapshot_path = format!("components/{}-snapshot.yaml", project_name);
+    let relative_relayer_path = format!("components/{}-relayer.yaml", project_name);
+    fs::write(
+        format!("{}/{}", project_name, PROJECT_MANIFEST_FILENAME),
+        generate_manifest_for_project(
+            project_name,
+            PROJECT_MANIFEST_VERSION,
+            &vec![
+                (relative_snapshot_path.clone(), None),
+                (relative_relayer_path.clone(), None),
+            ]
+        ).unwrap()
+    )?;
 
     fs::write(
-        format!("{}/components/{}-snapshot.yaml", project_name, project_name),
+        format!("{}/{}", project_name, relative_snapshot_path),
         generate_manifest_for_snapshot(project_name).unwrap().clone()
     )?;
     fs::write(
-        format!("{}/components/{}-relayer.yaml", project_name, project_name),
+        format!("{}/{}", project_name, relative_relayer_path),
         generate_manifest_for_relayer(project_name).unwrap().clone()
     )?;
 

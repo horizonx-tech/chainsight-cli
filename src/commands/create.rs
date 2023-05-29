@@ -46,14 +46,15 @@ pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> Result<(), String> {
     };
     match res {
         Ok(codes) => {
+            let relative_component_path = format!("components/{}.yaml", component_name);
             let (component_file_path, project_file_path) = if let Some(project_name) = project_path.clone() {
                 (
-                    format!("{}/components/{}.yaml", project_name, component_name),
+                    format!("{}/{}", project_name, relative_component_path.clone()),
                     format!("{}/{}", project_name, PROJECT_MANIFEST_FILENAME),
                 )
             } else {
                 (
-                    format!("components/{}.yaml", component_name),
+                    relative_component_path.clone(),
                     PROJECT_MANIFEST_FILENAME.to_string(),
                 )
             };
@@ -63,7 +64,13 @@ pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> Result<(), String> {
                 codes
             ).unwrap(); // TODO
             // update to project.yaml
-            add_new_component_to_project_manifest(&project_file_path, &vec!["xxx-xxx-xxx"]).unwrap(); // TODO
+            add_new_component_to_project_manifest(
+                &project_file_path,
+                &vec![(
+                    relative_component_path,
+                    None
+                )]
+            ).unwrap(); // TODO
 
             info!(
                 log,

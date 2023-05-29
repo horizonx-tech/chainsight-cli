@@ -2,6 +2,7 @@ use std::path::Path;
 
 pub const CHAINSIGHT_FILENAME: &str = ".chainsight";
 pub const PROJECT_MANIFEST_FILENAME: &str = "project.yaml";
+pub const PROJECT_MANIFEST_VERSION: &str = "v1";
 
 /// Check if .chainsight file exists in project folder
 pub fn is_chainsight_project(path: Option<String>) -> Result<(), String> {
