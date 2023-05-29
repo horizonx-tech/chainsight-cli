@@ -58,10 +58,7 @@ pub fn exec(env: &EnvironmentImpl, cmd: Command) -> Result<(), String> {
             println!("Deploy");
             Ok(())
         },
-        Command::Remove(_) => {
-            println!("Remove");
-            Ok(())
-        },
+        Command::Remove(opts) => remove::exec(env, opts),
         Command::Upgrade(_) => {
             println!("Upgrade");
             Ok(())
