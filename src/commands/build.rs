@@ -1,3 +1,5 @@
+use std::fs::File;
+use std::io::Write;
 use std::{path::Path, fs};
 use std::fmt::Debug;
 
@@ -43,17 +45,39 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
     fs::create_dir(&artifacts_path)?;
 
     let project_manifest = ProjectManifestData::load(&format!("{}/{}", project_path, PROJECT_MANIFEST_FILENAME))?;
+    // TODO: need validations
     for component in project_manifest.components {
         let relative_component_path = component.component_path;
         let component_path = format!("{}/{}", project_path, relative_component_path);
         let component_type = get_type_from_manifest(&component_path)?;
 
-        let data: Box<dyn ComponentManifest> = match component_type {
-            ComponentType::Snapshot => Box::new(SnapshotComponentManifest::load(&component_path).unwrap()),
-            ComponentType::Relayer => Box::new(RelayerComponentManifest::load(&component_path).unwrap()),
+        let (label, data): (String, Box<dyn ComponentManifest>) = match component_type {
+            ComponentType::Snapshot => {
+                let manifest = SnapshotComponentManifest::load(&component_path).unwrap();
+                (
+                    manifest.clone().label,
+                    Box::new(manifest),
+                )
+            },
+            ComponentType::Relayer => {
+                let manifest = RelayerComponentManifest::load(&component_path).unwrap();
+                (
+                    manifest.clone().label,
+                    Box::new(manifest),
+                )
+            },
         };
-        println!("{:?}", data); // TODO: generate codes
+
+        let code_path = format!("{}/artifacts/{}.rs", project_path, label);
+        let mut code_file = File::create(&code_path)?;
+        code_file.write_all(data.generate_codes()?.to_string().as_bytes())?;
     }
+
+    info!(
+        log,
+        r#"Project "{}" builded successfully"#,
+        project_manifest.label
+    );
 
     Ok(())
 }

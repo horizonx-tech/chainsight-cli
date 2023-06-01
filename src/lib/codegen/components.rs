@@ -1,10 +1,13 @@
 use std::{fs::OpenOptions, io::Read, path::Path};
 
+use proc_macro2::TokenStream;
 use serde::{Serialize, Deserialize};
 
 use crate::types::ComponentType;
 
-#[derive(Deserialize, Serialize, Clone, Copy, Debug, clap::ValueEnum)]
+use super::canisters;
+
+#[derive(Deserialize, Serialize, Clone, Copy, Debug, PartialEq, clap::ValueEnum)]
 #[serde(rename_all = "lowercase")]
 pub enum DatasourceType {
     #[serde(rename = "canister")]
@@ -13,7 +16,7 @@ pub enum DatasourceType {
     Contract,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct SnapshotComponentManifest {
     pub version: String,
     pub type_: ComponentType,
@@ -21,7 +24,7 @@ pub struct SnapshotComponentManifest {
     pub datasource: Datasource,
     pub interval: u32
 }
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct RelayerComponentManifest {
     pub version: String,
     pub type_: ComponentType,
@@ -29,18 +32,25 @@ pub struct RelayerComponentManifest {
     pub datasource: Datasource,
     pub destinations: Vec<DestinationField>
 }
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Datasource {
     pub type_: DatasourceType,
     pub id: String,
     pub method: DatasourceMethod
 }
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct DatasourceMethod {
+    pub interface: String,
     pub identifier: String,
-    pub args: Vec<String>
+    pub args: Vec<DatasourceMethodArg>,
+    pub response_types: Vec<String>,
 }
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct DatasourceMethodArg {
+    pub type_: String,
+    pub value: serde_yaml::Value,
+}
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct DestinationField {
     pub network_id: u16,
     pub oracle: String,
@@ -51,6 +61,7 @@ pub struct DestinationField {
 pub trait ComponentManifest: std::fmt::Debug {
     fn load(path: &str) -> anyhow::Result<Self> where Self: Sized;
     fn to_str_as_yaml(&self) -> anyhow::Result<String> where Self: Sized;
+    fn generate_codes(&self) -> anyhow::Result<TokenStream>;
 }
 
 impl SnapshotComponentManifest {
@@ -79,6 +90,10 @@ impl ComponentManifest for SnapshotComponentManifest {
         let yaml = serde_yaml::to_string(&self)?;
         Ok(yaml)
     }
+
+    fn generate_codes(&self) -> anyhow::Result<TokenStream> {
+        canisters::generate_snapshot_codes(self)
+    }
 }
 impl RelayerComponentManifest {
     pub fn new(component_label: &str, version: &str, datasource: Datasource, destinations: Vec<DestinationField>) -> Self {
@@ -106,6 +121,10 @@ impl ComponentManifest for RelayerComponentManifest {
         let yaml = serde_yaml::to_string(&self)?;
         Ok(yaml)
     }
+
+    fn generate_codes(&self) -> anyhow::Result<TokenStream> {
+        canisters::generate_relayer_codes(self)
+    }
 }
 
 impl Datasource {
@@ -115,8 +134,10 @@ impl Datasource {
             type_: DatasourceType::Canister,
             id: "xxx-xxx-xxx".to_owned(),
             method: DatasourceMethod {
+                interface: "ERC20.json".to_string(),
                 identifier: "total_supply()".to_owned(),
-                args: vec![]
+                args: vec![],
+                response_types: vec![],
             },
         }
     }
@@ -127,8 +148,10 @@ impl Datasource {
             type_: DatasourceType::Contract,
             id: "a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48".to_owned(), // temp
             method: DatasourceMethod {
+                interface: "Interface.candid".to_string(),
                 identifier: "totalSupply()".to_owned(), // temp
-                args: vec![]
+                args: vec![],
+                response_types: vec![],
             },
         }
     }
