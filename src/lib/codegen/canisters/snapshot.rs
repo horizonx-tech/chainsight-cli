@@ -1,5 +1,3 @@
-use std::fmt::format;
-
 use anyhow::ensure;
 use quote::{quote, format_ident};
 use proc_macro2::TokenStream;
@@ -119,6 +117,8 @@ fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> TokenStrea
         response_val_idents.push(result.1);
     }
 
+    // TODO: consider method.custom_struct, method.custom_type
+
     quote! {
         ic_solidity_bindgen::contract_abi!(#abi_path);
 
@@ -148,61 +148,149 @@ fn common_codes_for_canister() -> TokenStream {
         use chainsight_cdk_macros::{manage_single_state, setup_func, manage_vec_state, timer_task_func, cross_canister_call_func, monitoring_canister_metrics, did_export};
 
         monitoring_canister_metrics!(60);
-
         manage_single_state!("target_canister", String, false);
         setup_func!({
             target_canister: String
         });
-
         #[derive(Clone, candid::CandidType, candid::Deserialize)]
         pub struct Snapshot {
             pub value: SnapshotValue,
             pub timestamp: u64,
         }
         manage_vec_state!("snapshot", Snapshot, true);
+        timer_task_func!("set_task", "execute_task", true);
     }
 }
 
 fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> TokenStream {
+    let label = &manifest.label;
+    let method = &manifest.datasource.method;
     let mut method_ident = manifest.datasource.method.identifier.clone();
     // method.identifier: remove `()`
     method_ident.pop();
     method_ident.pop();
-    let call_method_ident = format!("call_{}", method_ident);
+    let call_method_ident = format_ident!("call_{}", method_ident);
+
+    // for request values
+    let mut request_val_idents = vec![];
+    for method_args in &method.args {
+        let DatasourceMethodArg { type_, value } = method_args;
+        // temp
+        let result = match type_.as_str() {
+            "ic_web3::types::U256" => {
+                match value {
+                    serde_yaml::Value::String(val) => quote! { ic_web3::types::U256::from_dec_str(#val).unwrap(), },
+                    serde_yaml::Value::Number(val) => {
+                        match val.as_u64() {
+                            Some(val) => quote! { #val.into(), },
+                            None => quote! {}
+                        }
+                    },
+                    _ => quote! {}
+                }
+            }
+            "ic_web3::types::Address" => {
+                match value {
+                    serde_yaml::Value::String(val) => quote! { ic_web3::types::Address::from_str(#val).unwrap(), },
+                    _ => quote! {}
+                }
+            },
+            _ => {
+                match value {
+                    serde_yaml::Value::String(val) => {
+                        quote! { #val, }
+                    },
+                    serde_yaml::Value::Number(val) => {
+                        match val.as_u64() {
+                            Some(val) => {
+                                let type_ident = format_ident!("{}", type_);
+                                quote! { #val as #type_ident, }
+                            },
+                            None => {
+                                quote! {}
+                            }
+                        }
+                    },
+                    _ => {
+                        quote! {}
+                    }
+                }
+            }
+        };
+        request_val_idents.push(result);
+    }
+
+    // for response type
+    let response_type_ident = format_ident!("{}", &method.response_types[0]); // temp
+
+    // define custom_struct
+    dbg!(&method.custom_struct);
+    let mut custom_struct_ident: Vec<proc_macro2::TokenStream> = vec![];
+    if let Some(custom_structs) = &method.custom_struct {
+        for custom_struct_def in custom_structs {
+            let struct_ident = format_ident!("{}", &custom_struct_def.name);
+            let mut custom_struct_fields = vec![];
+            for field in &custom_struct_def.fields {
+                let field_name_ident = format_ident!("{}", &field.name);
+                let field_type_ident = format_ident!("{}", &field.type_);
+                custom_struct_fields.push(quote! {
+                    pub #field_name_ident: #field_type_ident,
+                });
+            }
+            custom_struct_ident.push(quote! {
+                #[derive(Debug, Clone, candid::CandidType, candid::Deserialize)]
+                pub struct #struct_ident {
+                    #(#custom_struct_fields)*
+                }
+            });
+        }
+    }
+
+    // define custom_type
+    dbg!(&method.custom_type);
+    let mut custom_type_ident: Vec<proc_macro2::TokenStream> = vec![];
+    if let Some(custom_types) = &method.custom_type {
+        for custom_type_def in custom_types {
+            let type_ident = format_ident!("{}", &custom_type_def.name);
+            let mut custom_type_scalars = vec![];
+            for type_ in &custom_type_def.types {
+                custom_type_scalars.push(format_ident!("{}", &type_));
+            }
+            custom_type_ident.push(quote! {
+                type #type_ident = (#(#custom_type_scalars),*);
+            });
+        }
+    }
 
     quote! {
-        type SnapshotValue = VirtualPrice;
-        #[derive(Debug, Clone, candid::CandidType, candid::Deserialize)]
-        pub struct VirtualPrice {
-            pub value: String,
-            pub timestamp: u64,
-        }
+        type SnapshotValue = #response_type_ident;
+
+        #(#custom_struct_ident)*
+        #(#custom_type_ident)*
 
         type CallCanisterArgs = ();
-        type CallCanisterResponse = VirtualPrice;
+        type CallCanisterResponse = (#response_type_ident);
         cross_canister_call_func!(#method_ident, CallCanisterArgs, CallCanisterResponse);
-
-        timer_task_func!("set_task", "save_snapshot", true);
-        async fn save_snapshot() {
+        async fn execute_task() {
             let current_ts_sec = ic_cdk::api::time() / 1000000;
             let target_canister = candid::Principal::from_text(get_target_canister()).unwrap();
-            let price = #call_method_ident(
+            let res = #call_method_ident(
                 target_canister,
-                ()
+                (#(#request_val_idents)*)
             ).await;
-            if let Err(err) = price {
+            if let Err(err) = res {
                 ic_cdk::println!("error: {:?}", err);
                 return;
             }
             let datum = Snapshot {
-                value: price.unwrap().clone(),
+                value: res.unwrap().clone(),
                 timestamp: current_ts_sec,
             };
             add_snapshot(datum.clone());
             ic_cdk::println!("ts={}, value={:?}", datum.timestamp, datum.value);
         }
 
-        did_export!("snapshot_icp");
+        did_export!(#label);
     }
 }
 

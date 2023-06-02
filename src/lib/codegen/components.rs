@@ -44,12 +44,31 @@ pub struct DatasourceMethod {
     pub identifier: String,
     pub args: Vec<DatasourceMethodArg>,
     pub response_types: Vec<String>,
+    pub custom_struct: Option<Vec<DatasourceMethodCustomStruct>>,
+    pub custom_type: Option<Vec<DatasourceMethodCustomType>>,
 }
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct DatasourceMethodArg {
     pub type_: String,
     pub value: serde_yaml::Value,
 }
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct DatasourceMethodCustomStruct {
+    pub name: String,
+    pub fields: Vec<DatasourceMethodCustomStructField>
+}
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct DatasourceMethodCustomStructField {
+    pub name: String,
+    pub type_: String
+}
+#[derive(Clone, Debug, Deserialize, Serialize)]
+
+pub struct DatasourceMethodCustomType {
+    pub name: String,
+    pub types: Vec<String>
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct DestinationField {
     pub network_id: u16,
@@ -138,6 +157,8 @@ impl Datasource {
                 identifier: "total_supply()".to_owned(),
                 args: vec![],
                 response_types: vec![],
+                custom_struct: None,
+                custom_type: None,
             },
         }
     }
@@ -152,6 +173,8 @@ impl Datasource {
                 identifier: "totalSupply()".to_owned(), // temp
                 args: vec![],
                 response_types: vec![],
+                custom_struct: None,
+                custom_type: None,
             },
         }
     }
