@@ -64,8 +64,9 @@ fn create_project(project_name: &str) -> anyhow::Result<()> {
 
     // Create files
     fs::write(format!("{}/{}", project_name, CHAINSIGHT_FILENAME), "")?;
-    let relative_snapshot_path = format!("components/{}-snapshot.yaml", project_name);
-    let relative_relayer_path = format!("components/{}-relayer.yaml", project_name);
+    let relative_snapshot_chain_path = format!("components/{}_snapshot_chain.yaml", project_name);
+    let relative_snapshot_icp_path = format!("components/{}_snapshot_icp.yaml", project_name);
+    let relative_relayer_path = format!("components/{}_relayer.yaml", project_name);
 
     fs::write(
         format!("{}/{}", project_name, PROJECT_MANIFEST_FILENAME),
@@ -73,15 +74,20 @@ fn create_project(project_name: &str) -> anyhow::Result<()> {
             project_name,
             PROJECT_MANIFEST_VERSION,
             &vec![
-                ProjectManifestComponentField::new(&relative_snapshot_path, None),
+                ProjectManifestComponentField::new(&relative_snapshot_chain_path, None),
+                ProjectManifestComponentField::new(&relative_snapshot_icp_path, None),
                 ProjectManifestComponentField::new(&relative_relayer_path, None),
             ]
         ).to_str_as_yaml()?,
     )?;
 
     fs::write(
-        format!("{}/{}", project_name, relative_snapshot_path),
-        template_snapshot_manifest(project_name).to_str_as_yaml()?
+        format!("{}/{}", project_name, relative_snapshot_chain_path),
+        template_snapshot_chain_manifest(project_name).to_str_as_yaml()?
+    )?;
+    fs::write(
+        format!("{}/{}", project_name, relative_snapshot_icp_path),
+        template_snapshot_icp_manifest(project_name).to_str_as_yaml()?
     )?;
     fs::write(
         format!("{}/{}", project_name, relative_relayer_path),
@@ -91,20 +97,41 @@ fn create_project(project_name: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn template_snapshot_manifest(project_name: &str) -> SnapshotComponentManifest {
+fn template_snapshot_chain_manifest(project_name: &str) -> SnapshotComponentManifest {
     SnapshotComponentManifest::new(
-        &format!("{}-snapshot", project_name),
+        &format!("{}_snapshot_chain", project_name),
         PROJECT_MANIFEST_VERSION,
-        Datasource::new_contract(),
+        Datasource::new_contract(None,None,None, None, None),
+        3600
+    )
+}
+
+fn template_snapshot_icp_manifest(project_name: &str) -> SnapshotComponentManifest {
+    SnapshotComponentManifest::new(
+        &format!("{}_snapshot_icp", project_name),
+        PROJECT_MANIFEST_VERSION,
+        Datasource::new_canister(
+            Some(format!("{}_snapshot_chain.candid", project_name)),
+            None,
+            None,
+            None,
+            None,
+        ),
         3600
     )
 }
 
 fn template_relayer_manifest(project_name: &str) -> RelayerComponentManifest {
     RelayerComponentManifest::new(
-        &format!("{}-relayer", project_name),
+        &format!("{}_relayer", project_name),
         PROJECT_MANIFEST_VERSION,
-        Datasource::new_canister(),
+        Datasource::new_canister(
+            Some(format!("{}_snapshot_chain.candid", project_name)),
+            None,
+            None,
+            None,
+            None,
+        ),
         vec![DestinationField::new(1, 3600)],
     )
 }

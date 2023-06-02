@@ -88,7 +88,7 @@ fn template_snapshot_manifest(component_name: &str) -> SnapshotComponentManifest
     SnapshotComponentManifest::new(
         &component_name,
         PROJECT_MANIFEST_VERSION,
-        Datasource::new_contract(),
+        Datasource::new_contract(None, None, None, None, None),
         3600
     )
 }
@@ -97,7 +97,7 @@ fn template_relayer_manifest(component_name: &str) -> RelayerComponentManifest {
     RelayerComponentManifest::new(
         &component_name,
         PROJECT_MANIFEST_VERSION,
-        Datasource::new_canister(),
+        Datasource::new_canister(None, None, None, None, None),
         vec![DestinationField::new(1, 3600)],
     )
 }

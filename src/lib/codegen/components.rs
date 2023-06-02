@@ -148,33 +148,71 @@ impl ComponentManifest for RelayerComponentManifest {
 
 impl Datasource {
     // temp
-    pub fn new_canister() -> Self {
+    pub fn new_contract(
+        interface: Option<String>,
+        identifier: Option<String>,
+        response_type: Option<String>,
+        custom_struct: Option<Vec<DatasourceMethodCustomStruct>>,
+        custom_type: Option<Vec<DatasourceMethodCustomType>>,
+    ) -> Self {
+        let interface = interface.unwrap_or("ERC20.json".to_string());
+        let identifier = identifier.unwrap_or("totalSupply()".to_string());
+        let response_type = response_type.unwrap_or("ic_web3::types::U256".to_string());
         Self {
-            type_: DatasourceType::Canister,
-            id: "xxx-xxx-xxx".to_owned(),
+            type_: DatasourceType::Contract,
+            id: "0000000000000000000000000000000000000000".to_string(), // temp
             method: DatasourceMethod {
-                interface: "ERC20.json".to_string(),
-                identifier: "total_supply()".to_owned(),
+                interface,
+                identifier,
                 args: vec![],
-                response_types: vec![],
-                custom_struct: None,
-                custom_type: None,
+                response_types: vec![response_type],
+                custom_struct,
+                custom_type,
             },
         }
     }
-
+    
     // temp
-    pub fn new_contract() -> Self {
+    pub fn new_canister(
+        interface: Option<String>,
+        identifier: Option<String>,
+        response_type: Option<String>,
+        custom_struct: Option<Vec<DatasourceMethodCustomStruct>>,
+        custom_type: Option<Vec<DatasourceMethodCustomType>>,
+    ) -> Self {
+        let interface = interface.unwrap_or("Interface.candid".to_string());
+        let identifier = identifier.unwrap_or("get_last_snapshot()".to_string());
+        let response_type = response_type.unwrap_or("ResponseType".to_string());
+        let custom_struct = custom_struct.unwrap_or(vec![
+            DatasourceMethodCustomStruct {
+                name: "ResponseType".to_string(),
+                fields: vec![
+                    DatasourceMethodCustomStructField {
+                        name: "value".to_string(),
+                        type_: "ResponseValueType".to_string(),
+                    },
+                    DatasourceMethodCustomStructField {
+                        name: "timestamp".to_string(),
+                        type_: "u64".to_string(),
+                    },
+            ],
+        }]);
+        let custom_type = custom_type.unwrap_or(vec![
+            DatasourceMethodCustomType {
+                name: "ResponseValueType".to_string(),
+                types: vec!["String".to_string()],
+            },
+        ]);
         Self {
-            type_: DatasourceType::Contract,
-            id: "a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48".to_owned(), // temp
+            type_: DatasourceType::Canister,
+            id: "xxxxx-xxxxx-xxxxx-xxxxx-xxx".to_string(), // temp
             method: DatasourceMethod {
-                interface: "Interface.candid".to_string(),
-                identifier: "totalSupply()".to_owned(), // temp
+                interface,
+                identifier,
                 args: vec![],
-                response_types: vec![],
-                custom_struct: None,
-                custom_type: None,
+                response_types: vec![response_type],
+                custom_struct: Some(custom_struct),
+                custom_type: Some(custom_type),
             },
         }
     }
@@ -185,7 +223,7 @@ impl DestinationField {
     pub fn new(network_id: u16, interval: u32) -> Self {
         Self {
             network_id,
-            oracle: "0xaaaaaaaaaaaaaaaaaaaaa".to_owned(), // temp
+            oracle: "0000000000000000000000000000000000000000".to_owned(), // temp
             key: "5fd4d8f912a7be9759c2d039168362925359f379c0e92d4bdbc7534806faa5bb".to_owned(), // temp
             interval,
         }

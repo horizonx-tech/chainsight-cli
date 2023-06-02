@@ -2,7 +2,7 @@ use anyhow::ensure;
 use quote::{quote, format_ident};
 use proc_macro2::TokenStream;
 
-use crate::{types::ComponentType, lib::{codegen::components::{SnapshotComponentManifest, DatasourceType, Datasource, DatasourceMethodArg}, utils::convert_camel_to_snake}};
+use crate::{types::ComponentType, lib::{codegen::components::{SnapshotComponentManifest, DatasourceType, DatasourceMethodArg}, utils::convert_camel_to_snake}};
 
 fn common_codes_for_contract() -> TokenStream {
     quote! {
@@ -95,26 +95,49 @@ fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> TokenStrea
     // for response types & response values
     let mut response_type_idents: Vec<syn::Ident> = vec![];
     let mut response_val_idents: Vec<proc_macro2::TokenStream> = vec![];
-    for (idx, response_type) in method.response_types.iter().enumerate() {
-        let idx_lit = proc_macro2::Literal::usize_unsuffixed(idx);
+    if method.response_types.len() == 1 {
+        // for only one response_type: not use idx_lit
+        let response_type = &method.response_types[0];
         let result = match response_type.as_str() {
             "ic_web3::types::U256" => {
                 (
                     format_ident!("String"),
-                    quote! { res.#idx_lit.to_string(), }
+                    quote! { res.to_string(), }
                 )
             },
             "ic_web3::types::Address" => (
                 format_ident!("String"),
-                quote! { hex::encode(res.#idx_lit), }
+                quote! { hex::encode(res), }
             ),
             _ => (
                 format_ident!("{}", response_type),
-                quote! { res.#idx_lit, }
+                quote! { res, }
             )
         };
         response_type_idents.push(result.0);
         response_val_idents.push(result.1);
+    } else {
+        for (idx, response_type) in method.response_types.iter().enumerate() {
+            let idx_lit = proc_macro2::Literal::usize_unsuffixed(idx);
+            let result = match response_type.as_str() {
+                "ic_web3::types::U256" => {
+                    (
+                        format_ident!("String"),
+                        quote! { res.#idx_lit.to_string(), }
+                    )
+                },
+                "ic_web3::types::Address" => (
+                    format_ident!("String"),
+                    quote! { hex::encode(res.#idx_lit), }
+                ),
+                _ => (
+                    format_ident!("{}", response_type),
+                    quote! { res.#idx_lit, }
+                )
+            };
+            response_type_idents.push(result.0);
+            response_val_idents.push(result.1);
+        }
     }
 
     // TODO: consider method.custom_struct, method.custom_type
@@ -224,7 +247,6 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> TokenStrea
     let response_type_ident = format_ident!("{}", &method.response_types[0]); // temp
 
     // define custom_struct
-    dbg!(&method.custom_struct);
     let mut custom_struct_ident: Vec<proc_macro2::TokenStream> = vec![];
     if let Some(custom_structs) = &method.custom_struct {
         for custom_struct_def in custom_structs {
@@ -247,7 +269,6 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> TokenStrea
     }
 
     // define custom_type
-    dbg!(&method.custom_type);
     let mut custom_type_ident: Vec<proc_macro2::TokenStream> = vec![];
     if let Some(custom_types) = &method.custom_type {
         for custom_type_def in custom_types {
