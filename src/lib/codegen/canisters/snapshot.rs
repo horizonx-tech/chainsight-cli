@@ -102,16 +102,16 @@ fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> TokenStrea
             "ic_web3::types::U256" => {
                 (
                     format_ident!("String"),
-                    quote! { res.to_string(), }
+                    quote! { res.to_string() }
                 )
             },
             "ic_web3::types::Address" => (
                 format_ident!("String"),
-                quote! { hex::encode(res), }
+                quote! { hex::encode(res) }
             ),
             _ => (
                 format_ident!("{}", response_type),
-                quote! { res, }
+                quote! { res }
             )
         };
         response_type_idents.push(result.0);
@@ -123,16 +123,16 @@ fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> TokenStrea
                 "ic_web3::types::U256" => {
                     (
                         format_ident!("String"),
-                        quote! { res.#idx_lit.to_string(), }
+                        quote! { res.#idx_lit.to_string() }
                     )
                 },
                 "ic_web3::types::Address" => (
                     format_ident!("String"),
-                    quote! { hex::encode(res.#idx_lit), }
+                    quote! { hex::encode(res.#idx_lit) }
                 ),
                 _ => (
                     format_ident!("{}", response_type),
-                    quote! { res.#idx_lit, }
+                    quote! { res.#idx_lit }
                 )
             };
             response_type_idents.push(result.0);
@@ -145,7 +145,7 @@ fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> TokenStrea
     quote! {
         ic_solidity_bindgen::contract_abi!(#abi_path);
 
-        type SnapshotValue = (#(#response_type_idents,)*);
+        type SnapshotValue = (#(#response_type_idents),*);
         async fn execute_task() {
             let current_ts_sec = ic_cdk::api::time() / 1000000;
             let res = #contract_struct_ident::new(
@@ -154,7 +154,7 @@ fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> TokenStrea
             ).#method_ident(#(#request_val_idents)*).await.unwrap();
             let datum = Snapshot {
                 value: (
-                    #(#response_val_idents)*
+                    #(#response_val_idents),*
                 ),
                 timestamp: current_ts_sec,
             };
