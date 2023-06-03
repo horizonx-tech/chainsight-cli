@@ -88,7 +88,13 @@ fn template_snapshot_manifest(component_name: &str) -> SnapshotComponentManifest
     SnapshotComponentManifest::new(
         &component_name,
         PROJECT_MANIFEST_VERSION,
-        Datasource::new_contract(None, None, None, None, None),
+        Datasource::new_contract(
+            "functionIdentifier()".to_string(),
+            None,
+            "TODO".to_string(),
+            None,
+            None
+        ),
         3600
     )
 }
@@ -97,7 +103,13 @@ fn template_relayer_manifest(component_name: &str) -> RelayerComponentManifest {
     RelayerComponentManifest::new(
         &component_name,
         PROJECT_MANIFEST_VERSION,
-        Datasource::new_canister(None, None, None, None, None),
+        Datasource::new_canister(
+            "function_identifier()".to_string(),
+            None,
+            "TODO".to_string(),
+            None,
+            None
+        ),
         vec![DestinationField::new(1, 3600)],
     )
 }

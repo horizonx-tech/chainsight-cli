@@ -40,8 +40,8 @@ pub struct Datasource {
 }
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct DatasourceMethod {
-    pub interface: String,
     pub identifier: String,
+    pub interface: Option<String>,
     pub args: Vec<DatasourceMethodArg>,
     pub response_types: Vec<String>,
     pub custom_struct: Option<Vec<DatasourceMethodCustomStruct>>,
@@ -148,22 +148,33 @@ impl ComponentManifest for RelayerComponentManifest {
 
 impl Datasource {
     // temp
-    pub fn new_contract(
-        interface: Option<String>,
-        identifier: Option<String>,
-        response_type: Option<String>,
-        custom_struct: Option<Vec<DatasourceMethodCustomStruct>>,
-        custom_type: Option<Vec<DatasourceMethodCustomType>>,
-    ) -> Self {
-        let interface = interface.unwrap_or("ERC20.json".to_string());
-        let identifier = identifier.unwrap_or("totalSupply()".to_string());
-        let response_type = response_type.unwrap_or("ic_web3::types::U256".to_string());
+    pub fn default_contract() -> Self {
         Self {
             type_: DatasourceType::Contract,
             id: "0000000000000000000000000000000000000000".to_string(), // temp
             method: DatasourceMethod {
-                interface,
+                identifier: "totalSupply()".to_string(),
+                interface: Some("ERC20.json".to_string()),
+                args: vec![],
+                response_types: vec!["ic_web3::types::U256".to_string()],
+                custom_struct: None,
+                custom_type: None,
+            },
+        }
+    }
+    pub fn new_contract(
+        identifier: String,
+        interface: Option<String>,
+        response_type: String,
+        custom_struct: Option<Vec<DatasourceMethodCustomStruct>>,
+        custom_type: Option<Vec<DatasourceMethodCustomType>>,
+    ) -> Self {
+        Self {
+            type_: DatasourceType::Contract,
+            id: "0000000000000000000000000000000000000000".to_string(), // temp
+            method: DatasourceMethod {
                 identifier,
+                interface,
                 args: vec![],
                 response_types: vec![response_type],
                 custom_struct,
@@ -173,46 +184,56 @@ impl Datasource {
     }
     
     // temp
-    pub fn new_canister(
-        interface: Option<String>,
-        identifier: Option<String>,
-        response_type: Option<String>,
-        custom_struct: Option<Vec<DatasourceMethodCustomStruct>>,
-        custom_type: Option<Vec<DatasourceMethodCustomType>>,
-    ) -> Self {
-        let interface = interface.unwrap_or("Interface.candid".to_string());
-        let identifier = identifier.unwrap_or("get_last_snapshot()".to_string());
-        let response_type = response_type.unwrap_or("ResponseType".to_string());
-        let custom_struct = custom_struct.unwrap_or(vec![
-            DatasourceMethodCustomStruct {
-                name: "ResponseType".to_string(),
-                fields: vec![
-                    DatasourceMethodCustomStructField {
-                        name: "value".to_string(),
-                        type_: "ResponseValueType".to_string(),
-                    },
-                    DatasourceMethodCustomStructField {
-                        name: "timestamp".to_string(),
-                        type_: "u64".to_string(),
-                    },
-            ],
-        }]);
-        let custom_type = custom_type.unwrap_or(vec![
-            DatasourceMethodCustomType {
-                name: "ResponseValueType".to_string(),
-                types: vec!["String".to_string()],
-            },
-        ]);
+    pub fn default_canister() -> Self {
         Self {
             type_: DatasourceType::Canister,
             id: "xxxxx-xxxxx-xxxxx-xxxxx-xxx".to_string(), // temp
             method: DatasourceMethod {
-                interface,
+                identifier: "get_last_snapshot()".to_string(),
+                interface: None,
+                args: vec![],
+                response_types: vec!["ResponseType".to_string()],
+                custom_struct: Some(vec![
+                    DatasourceMethodCustomStruct {
+                        name: "ResponseType".to_string(),
+                        fields: vec![
+                            DatasourceMethodCustomStructField {
+                                name: "value".to_string(),
+                                type_: "ResponseValueType".to_string(),
+                            },
+                            DatasourceMethodCustomStructField {
+                                name: "timestamp".to_string(),
+                                type_: "u64".to_string(),
+                            },
+                    ],
+                }]),
+                custom_type: Some(vec![
+                    DatasourceMethodCustomType {
+                        name: "ResponseValueType".to_string(),
+                        types: vec!["String".to_string()],
+                    },
+                ]),
+            },
+        }
+    }
+
+    pub fn new_canister(
+        identifier: String,
+        interface: Option<String>,
+        response_type: String,
+        custom_struct: Option<Vec<DatasourceMethodCustomStruct>>,
+        custom_type: Option<Vec<DatasourceMethodCustomType>>,
+    ) -> Self {
+        Self {
+            type_: DatasourceType::Canister,
+            id: "xxxxx-xxxxx-xxxxx-xxxxx-xxx".to_string(), // temp
+            method: DatasourceMethod {
                 identifier,
+                interface,
                 args: vec![],
                 response_types: vec![response_type],
-                custom_struct: Some(custom_struct),
-                custom_type: Some(custom_type),
+                custom_struct,
+                custom_type,
             },
         }
     }

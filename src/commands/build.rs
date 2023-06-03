@@ -37,6 +37,7 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
         r#"Building project..."#
     );
 
+    // generate /artifacts
     let project_path_str = project_path.unwrap_or(".".to_string());
     let artifacts_path_str = format!("{}/artifacts", &project_path_str);
     let artifacts_path = Path::new(&artifacts_path_str);
@@ -45,19 +46,25 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
     }
     fs::create_dir(&artifacts_path)?;
 
+    // generate /artifacts/__interfaces
+    let interfaces_path_str = format!("{}/__interfaces", &artifacts_path_str);
+    fs::create_dir(&interfaces_path_str)?;
+
+    // generate canister codes & project folder (/artifacts/__interfaces/{project})
     let project_manifest = ProjectManifestData::load(&format!("{}/{}", &project_path_str, PROJECT_MANIFEST_FILENAME))?;
     let mut project_labels: Vec<String> = vec![];
-    // TODO: need validations
     for component in project_manifest.components {
+        // TODO: need validations
         let relative_component_path = component.component_path;
         let component_path = format!("{}/{}", &project_path_str, relative_component_path);
         let component_type = get_type_from_manifest(&component_path)?;
 
-        let (label, data): (String, Box<dyn ComponentManifest>) = match component_type {
+        let (label, interface_path, data): (String, Option<String>, Box<dyn ComponentManifest>) = match component_type {
             ComponentType::Snapshot => {
                 let manifest = SnapshotComponentManifest::load(&component_path).unwrap();
                 (
                     manifest.clone().label,
+                    manifest.clone().datasource.method.interface,
                     Box::new(manifest),
                 )
             },
@@ -65,6 +72,7 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
                 let manifest = RelayerComponentManifest::load(&component_path).unwrap();
                 (
                     manifest.clone().label,
+                    manifest.clone().datasource.method.interface,
                     Box::new(manifest),
                 )
             },
@@ -78,10 +86,33 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
         let mut lib_file = File::create(&lib_path_str)?;
         lib_file.write_all(data.generate_codes()?.to_string().as_bytes())?;
 
+        // generate project's Cargo.toml
         fs::write(
             format!("{}/Cargo.toml", &canister_pj_path_str),
             &canister_project_cargo_toml(&label)
         )?;
+
+        // copy and move any necessary interfaces to canister
+        if let Some(interface_file) = interface_path {
+            let src_interface_file_path_str = format!("{}/interfaces/{}", &project_path_str, &interface_file);
+            let src_interface_file_path = Path::new(&src_interface_file_path_str);
+            if src_interface_file_path.exists() {
+                let dst_interface_path_str = format!("{}/{}", &interfaces_path_str, &interface_file);
+                fs::copy(&src_interface_file_path, Path::new(&dst_interface_path_str))?;
+                info!(
+                    log,
+                    r#"Interface file "{}" copied"#,
+                    &interface_file
+                );
+            } else {
+                error!(
+                    log,
+                    r#"Interface file "{}" not found"#,
+                    &interface_file
+                );
+                bail!(GLOBAL_ERROR_MSG.to_string())
+            }
+        }
     }
     fs::write(
         format!("{}/Cargo.toml", &artifacts_path_str),

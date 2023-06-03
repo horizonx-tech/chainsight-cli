@@ -39,9 +39,12 @@ fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> TokenStrea
     let method_ident_str = convert_camel_to_snake(&camel_method_ident);
     let method_ident = format_ident!("{}", method_ident_str);
 
-    let method_interface_name = method.interface.trim_end_matches(".json");
-    let contract_struct_ident = format_ident!("{}", method_interface_name);
-    let abi_path = format!("./src/{}/abi/{}.json", label, method_interface_name);
+    if method.interface.is_none() {
+        panic!("interface is not defined");
+    }
+    let method_interface = method.interface.clone().unwrap();
+    let contract_struct_ident = format_ident!("{}", method_interface.trim_end_matches(".json"));
+    let abi_path = format!("./__interfaces/{}", method_interface);
 
     // for request values
     let mut request_val_idents = vec![];
