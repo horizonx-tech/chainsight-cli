@@ -46,6 +46,7 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
     fs::create_dir(&artifacts_path)?;
 
     let project_manifest = ProjectManifestData::load(&format!("{}/{}", &project_path_str, PROJECT_MANIFEST_FILENAME))?;
+    let mut project_labels: Vec<String> = vec![];
     // TODO: need validations
     for component in project_manifest.components {
         let relative_component_path = component.component_path;
@@ -69,6 +70,7 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
             },
         };
 
+        project_labels.push(label.clone());
         let canister_pj_path_str = format!("{}/artifacts/{}", &project_path_str, &label);
         let canister_code_path_str = format!("{}/src", &canister_pj_path_str);
         fs::create_dir_all(Path::new(&canister_code_path_str))?;
@@ -83,11 +85,11 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
     }
     fs::write(
         format!("{}/Cargo.toml", &artifacts_path_str),
-        &root_cargo_toml()
+        &root_cargo_toml(project_labels.clone())
     )?;
     fs::write(
         format!("{}/dfx.json", &artifacts_path_str),
-        &dfx_json()
+        &dfx_json(project_labels)
     )?;
     fs::write(
         format!("{}/Makefile.toml", &artifacts_path_str),
@@ -103,12 +105,13 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn root_cargo_toml() -> String {
-    let txt = "[workspace]
+fn root_cargo_toml(members: Vec<String>) -> String {
+    let members = members.iter().map(|member| format!("\t\"{}\",", member)).collect::<Vec<String>>().join("\n");
+
+    let txt = format!("[workspace]
 members = [
-    \"sample_pj_snapshot_chain\",
-    \"sample_pj_snapshot_icp\",
-] # TODO: fix
+{}
+]
 
 [workspace.dependencies]
 candid = \"0.8\"
@@ -118,16 +121,16 @@ ic-cdk-timers = \"0.1\"
 serde = \"1.0.163\"
 hex = \"0.4.3\"
 
-ic-web3 = { git = \"ssh://<your host in .ssh/config>/horizonx-tech/ic-web3.git\", rev = \"fa982360c8420c88887606355eff0b7b48208a01\" }
-ic-solidity-bindgen = { git = \"ssh://<your host in .ssh/config>/horizonx-tech/ic-solidity-bindgen.git\", rev = \"36a7e1044c261a91a715fbdc12d95afa69eb0620\" }
-ic-solidity-bindgen-macros = { git = \"ssh://<your host in .ssh/config>/horizonx-tech/ic-solidity-bindgen.git\", rev = \"36a7e1044c261a91a715fbdc12d95afa69eb0620\" }
-chainsight-cdk-macros = { git = \"ssh://<your host in .ssh/config>/horizonx-tech/chainsight-sdk.git\", rev = \"625205043bf9f4be60a016e08274d30c159b177e\" }
-chainsight-cdk = { git = \"ssh://<your host in .ssh/config>/horizonx-tech/chainsight-sdk.git\", rev = \"625205043bf9f4be60a016e08274d30c159b177e\" }
+ic-web3 = {{ git = \"ssh://<your host in .ssh/config>/horizonx-tech/ic-web3.git\", rev = \"fa982360c8420c88887606355eff0b7b48208a01\" }}
+ic-solidity-bindgen = {{ git = \"ssh://<your host in .ssh/config>/horizonx-tech/ic-solidity-bindgen.git\", rev = \"36a7e1044c261a91a715fbdc12d95afa69eb0620\" }}
+ic-solidity-bindgen-macros = {{ git = \"ssh://<your host in .ssh/config>/horizonx-tech/ic-solidity-bindgen.git\", rev = \"36a7e1044c261a91a715fbdc12d95afa69eb0620\" }}
+chainsight-cdk-macros = {{ git = \"ssh://<your host in .ssh/config>/horizonx-tech/chainsight-sdk.git\", rev = \"625205043bf9f4be60a016e08274d30c159b177e\" }}
+chainsight-cdk = {{ git = \"ssh://<your host in .ssh/config>/horizonx-tech/chainsight-sdk.git\", rev = \"625205043bf9f4be60a016e08274d30c159b177e\" }}
 
 [patch.'https://github.com/horizonx-tech/ic-web3']
-ic-web3 = { git = \"ssh://<your host in .ssh/config>/horizonx-tech/ic-web3.git\", rev = \"fa982360c8420c88887606355eff0b7b48208a01\" }";
+ic-web3 = {{ git = \"ssh://<your host in .ssh/config>/horizonx-tech/ic-web3.git\", rev = \"fa982360c8420c88887606355eff0b7b48208a01\" }}", members);
 
-    txt.to_string()
+    txt
 }
 
 fn canister_project_cargo_toml(project_name: &str) -> String {
@@ -156,31 +159,28 @@ chainsight-cdk.workspace = true", project_name);
     txt
 }
 
-fn dfx_json() -> String {
-    let txt = "{
-    \"version\": 1,
-    \"canisters\": {
-        \"sample_pj_snapshot_chain\": {
-        \"type\": \"rust\",
-        \"package\": \"sample_pj_snapshot_chain\",
-        \"candid\": \"sample_pj_snapshot_chain/sample_pj_snapshot_chain.did\"
-        },
-        \"sample_pj_snapshot_icp\": {
-        \"type\": \"rust\",
-        \"package\": \"sample_pj_snapshot_icp\",
-        \"candid\": \"sample_pj_snapshot_icp/sample_pj_snapshot_icp.did\"
-        }
-    },
-    \"defaults\": {
-        \"build\": {
-        \"packtool\": \"\",
-        \"args\": \"\"
-        }
-    },
-    \"output_env_file\": \".env\"
-}";
+fn dfx_json(project_labels: Vec<String>) -> String {
+    let canisters = project_labels.iter().map(|label| format!("\t\t\t\"{}\": {{
+\t\t\t\t\"type\": \"rust\",
+\t\t\t\t\"package\": \"{}\",
+\t\t\t\t\"candid\": \"{}/{}.did\"
+\t\t\t}}", label, label, label, label)).collect::<Vec<String>>().join(",\n");
 
-    txt.to_string()
+    let result = format!(r#"{{
+    "version": 1,
+    "canisters": {{
+{}
+    }},
+    "defaults": {{
+        "build": {{
+            "packtool": "",
+            "args": ""
+        }}
+    }},
+    "output_env_file": ".env"
+}}"#, canisters);
+
+    result
 }
 
 fn makefile_toml() -> String {
