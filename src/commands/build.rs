@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::Write;
+use std::process::Command;
 use std::{path::Path, fs};
 use std::fmt::Debug;
 
@@ -129,10 +130,96 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
 
     info!(
         log,
-        r#"Project "{}" builded successfully"#,
+        r#"Project "{}" codes/resources generated successfully"#,
         project_manifest.label
     );
 
+    // execute command
+    let output = Command::new("cargo")
+        .current_dir(&artifacts_path_str)
+        .arg("make")
+        .arg("did")
+        .output()
+        .expect("failed to execute process: cargo make did");
+    if output.status.success() {
+        info!(log, "Generating interfaces (.did files) successfully");
+        // when low log level
+        // let stdout = String::from_utf8_lossy(&output.stdout);
+        // print!("{}", stdout);
+    } else {
+        error!(log, "Generating interfaces (.did files) failed");
+        bail!(GLOBAL_ERROR_MSG.to_string())
+        // when low log level
+        // let stderr = String::from_utf8_lossy(&output.stderr);
+        // print!("{}", stderr);
+    }
+
+    let output = Command::new("cargo")
+        .current_dir(&artifacts_path_str)
+        .arg("check")
+        .output()
+        .expect("failed to execute process: cargo check");
+    if output.status.success() {
+        info!(log, "Executed 'cargo check'");
+    } else {
+        error!(log, "Failed to execute 'cargo check");
+        bail!(GLOBAL_ERROR_MSG.to_string())
+    }
+
+    // let output = Command::new("dfx")
+    //     .current_dir(&artifacts_path_str)
+    //     .arg("start")
+    //     .output()
+    //     .expect("failed to execute process: dfx start");
+    // if output.status.success() {
+    //     info!(log, "Executed 'dfx start'");
+    // } else {
+    //     error!(log, "Failed to execute 'dfx start");
+    //     bail!(GLOBAL_ERROR_MSG.to_string())
+    // }
+    // let output = Command::new("dfx")
+    //     .current_dir(&artifacts_path_str)
+    //     .arg("canister")
+    //     .arg("create")
+    //     .arg("--all")
+    //     .output()
+    //     .expect("failed to execute process: dfx canister create --all");
+    // if output.status.success() {
+    //     info!(log, "Executed 'dfx canister create --all'");
+    // } else {
+    //     error!(log, "Failed to execute 'dfx canister create --all");
+    //     bail!(GLOBAL_ERROR_MSG.to_string())
+    // }
+    // let output = Command::new("dfx")
+    //     .current_dir(&artifacts_path_str)
+    //     .arg("build")
+    //     .output()
+    //     .expect("failed to execute process: dfx build");
+    // if output.status.success() {
+    //     info!(log, "Executed 'dfx build'");
+    // } else {
+    //     error!(log, "Failed to execute 'dfx build");
+    //     bail!(GLOBAL_ERROR_MSG.to_string())
+    // }
+    // let output = Command::new("dfx")
+    //     .current_dir(&artifacts_path_str)
+    //     .arg("canister")
+    //     .arg("install")
+    //     .arg("--all")
+    //     .output()
+    //     .expect("failed to execute process: dfx canister install --all");
+    // if output.status.success() {
+    //     info!(log, "Executed 'dfx canister install --all'");
+    // } else {
+    //     error!(log, "Failed to execute 'dfx canister install --all");
+    //     bail!(GLOBAL_ERROR_MSG.to_string())
+    // }
+
+    info!(
+        log,
+        r#"Project "{}" builded successfully"#,
+        project_manifest.label
+    );
     Ok(())
 }
 
