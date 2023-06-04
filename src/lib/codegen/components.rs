@@ -15,6 +15,14 @@ pub enum DatasourceType {
     #[serde(rename = "contract")]
     Contract,
 }
+#[derive(Deserialize, Serialize, Clone, Copy, Debug, PartialEq, clap::ValueEnum)]
+#[serde(rename_all = "lowercase")]
+pub enum DestinactionType {
+    #[serde(rename = "uint256")]
+    Uint256Oracle,
+    #[serde(rename = "string")]
+    StringOracle,
+}
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct SnapshotComponentManifest {
@@ -30,7 +38,7 @@ pub struct RelayerComponentManifest {
     pub type_: ComponentType,
     pub label: String,
     pub datasource: Datasource,
-    pub destinations: Vec<DestinationField>
+    pub destination: DestinationField, // TODO: multiple destinations
 }
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Datasource {
@@ -71,9 +79,10 @@ pub struct DatasourceMethodCustomType {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct DestinationField {
-    pub network_id: u16,
-    pub oracle: String,
-    pub key: String,
+    pub network_id: u32,
+    pub type_: DestinactionType,
+    pub oracle_address: String,
+    pub rpc_url: String,
     pub interval: u32
 }
 
@@ -115,13 +124,13 @@ impl ComponentManifest for SnapshotComponentManifest {
     }
 }
 impl RelayerComponentManifest {
-    pub fn new(component_label: &str, version: &str, datasource: Datasource, destinations: Vec<DestinationField>) -> Self {
+    pub fn new(component_label: &str, version: &str, datasource: Datasource, destination: DestinationField) -> Self {
         Self {
             version: version.to_owned(),
             type_: ComponentType::Relayer,
             label: component_label.to_owned(),
             datasource,
-            destinations,
+            destination,
         }
     }
 }
@@ -240,12 +249,23 @@ impl Datasource {
 }
 
 impl DestinationField {
-    // temp
-    pub fn new(network_id: u16, interval: u32) -> Self {
+    pub fn default() -> Self {
+        // temp: polygon mumbai, Uint256Oracle
+        Self::new(
+            80001,
+            DestinactionType::Uint256Oracle,
+            "0539a0EF8e5E60891fFf0958A059E049e43020d9".to_string(),
+            "https://polygon-mumbai.g.alchemy.com/v2/<YOUR_KEY>".to_string(),
+            3600
+        )
+    }
+
+    pub fn new(network_id: u32, destination_type: DestinactionType, oracle_address: String, rpc_url: String, interval: u32) -> Self {
         Self {
             network_id,
-            oracle: "0000000000000000000000000000000000000000".to_owned(), // temp
-            key: "5fd4d8f912a7be9759c2d039168362925359f379c0e92d4bdbc7534806faa5bb".to_owned(), // temp
+            type_: destination_type,
+            oracle_address,
+            rpc_url,
             interval,
         }
     }

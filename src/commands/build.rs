@@ -8,6 +8,7 @@ use anyhow::{Ok, bail};
 use clap::Parser;
 use slog::{info, error};
 
+use crate::lib::codegen::components::DestinactionType;
 use crate::{lib::{environment::EnvironmentImpl, utils::{is_chainsight_project, PROJECT_MANIFEST_FILENAME}, codegen::{project::ProjectManifestData, components::{get_type_from_manifest, SnapshotComponentManifest, RelayerComponentManifest, ComponentManifest}}}, types::ComponentType};
 
 #[derive(Debug, Parser)]
@@ -60,12 +61,13 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
         let component_path = format!("{}/{}", &project_path_str, relative_component_path);
         let component_type = get_type_from_manifest(&component_path)?;
 
-        let (label, interface_path, data): (String, Option<String>, Box<dyn ComponentManifest>) = match component_type {
+        let (label, interface_path, destination_type, data): (String, Option<String>, Option<DestinactionType>, Box<dyn ComponentManifest>) = match component_type {
             ComponentType::Snapshot => {
                 let manifest = SnapshotComponentManifest::load(&component_path).unwrap();
                 (
                     manifest.clone().label,
                     manifest.clone().datasource.method.interface,
+                    None,
                     Box::new(manifest),
                 )
             },
@@ -74,6 +76,7 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
                 (
                     manifest.clone().label,
                     manifest.clone().datasource.method.interface,
+                    Some(manifest.clone().destination.type_),
                     Box::new(manifest),
                 )
             },
@@ -95,14 +98,23 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
 
         // copy and move any necessary interfaces to canister
         if let Some(interface_file) = interface_path {
-            let src_interface_file_path_str = format!("{}/interfaces/{}", &project_path_str, &interface_file);
-            let src_interface_file_path = Path::new(&src_interface_file_path_str);
-            if src_interface_file_path.exists() {
-                let dst_interface_path_str = format!("{}/{}", &interfaces_path_str, &interface_file);
-                fs::copy(&src_interface_file_path, Path::new(&dst_interface_path_str))?;
+            let dst_interface_path_str = format!("{}/{}", &interfaces_path_str, &interface_file);
+            let dst_interface_path = Path::new(&dst_interface_path_str);
+
+            let user_if_file_path_str = format!("{}/interfaces/{}", &project_path_str, &interface_file);
+            let user_if_file_path = Path::new(&user_if_file_path_str);
+            if user_if_file_path.exists() {
+                fs::copy(&user_if_file_path, dst_interface_path)?;
                 info!(
                     log,
-                    r#"Interface file "{}" copied"#,
+                    r#"Interface file "{}" copied by user's interface"#,
+                    &interface_file
+                );
+            } else if let Some(contents) = buildin_interface(&interface_file) {
+                fs::write(&dst_interface_path, contents)?;
+                info!(
+                    log,
+                    r#"Interface file "{}" copied by builtin interface"#,
                     &interface_file
                 );
             } else {
@@ -112,6 +124,32 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
                     &interface_file
                 );
                 bail!(GLOBAL_ERROR_MSG.to_string())
+            }
+        }
+
+        // copy and move oracle interface
+        if let Some(value) = destination_type {
+            match value {
+                DestinactionType::Uint256Oracle => {
+                   fs::write(
+                       format!("{}/Uint256Oracle.json", &interfaces_path_str),
+                   &include_str!("../../resources/Uint256Oracle.json")
+                   )?;
+                   info!(
+                       log,
+                       r#"Interface file "Uint256Oracle.json" copied by builtin interface"#,
+                   );
+                },
+                DestinactionType::StringOracle => {
+                    fs::write(
+                        format!("{}/StringOracle.json", &interfaces_path_str),
+                    &include_str!("../../resources/StringOracle.json")
+                    )?;
+                    info!(
+                        log,
+                        r#"Interface file "StringOracle.json" copied by builtin interface"#
+                    );
+                }
             }
         }
     }
@@ -135,36 +173,36 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
     );
 
     // execute command
-    let output = Command::new("cargo")
-        .current_dir(&artifacts_path_str)
-        .arg("make")
-        .arg("did")
-        .output()
-        .expect("failed to execute process: cargo make did");
-    if output.status.success() {
-        info!(log, "Generating interfaces (.did files) successfully");
-        // when low log level
-        // let stdout = String::from_utf8_lossy(&output.stdout);
-        // print!("{}", stdout);
-    } else {
-        error!(log, "Generating interfaces (.did files) failed");
-        bail!(GLOBAL_ERROR_MSG.to_string())
-        // when low log level
-        // let stderr = String::from_utf8_lossy(&output.stderr);
-        // print!("{}", stderr);
-    }
+    // let output = Command::new("cargo")
+    //     .current_dir(&artifacts_path_str)
+    //     .arg("make")
+    //     .arg("did")
+    //     .output()
+    //     .expect("failed to execute process: cargo make did");
+    // if output.status.success() {
+    //     info!(log, "Generating interfaces (.did files) successfully");
+    //     // when low log level
+    //     // let stdout = String::from_utf8_lossy(&output.stdout);
+    //     // print!("{}", stdout);
+    // } else {
+    //     error!(log, "Generating interfaces (.did files) failed");
+    //     bail!(GLOBAL_ERROR_MSG.to_string())
+    //     // when low log level
+    //     // let stderr = String::from_utf8_lossy(&output.stderr);
+    //     // print!("{}", stderr);
+    // }
 
-    let output = Command::new("cargo")
-        .current_dir(&artifacts_path_str)
-        .arg("check")
-        .output()
-        .expect("failed to execute process: cargo check");
-    if output.status.success() {
-        info!(log, "Executed 'cargo check'");
-    } else {
-        error!(log, "Failed to execute 'cargo check");
-        bail!(GLOBAL_ERROR_MSG.to_string())
-    }
+    // let output = Command::new("cargo")
+    //     .current_dir(&artifacts_path_str)
+    //     .arg("check")
+    //     .output()
+    //     .expect("failed to execute process: cargo check");
+    // if output.status.success() {
+    //     info!(log, "Executed 'cargo check'");
+    // } else {
+    //     error!(log, "Failed to execute 'cargo check");
+    //     bail!(GLOBAL_ERROR_MSG.to_string())
+    // }
 
     // let output = Command::new("dfx")
     //     .current_dir(&artifacts_path_str)
@@ -316,4 +354,13 @@ command = \"cargo\"
 args= [\"test\"]";
 
     txt.to_string()
+}
+
+fn buildin_interface(name: &str) -> Option<&'static str> {
+    let interface = match name {
+        "ERC20.json" => include_str!("../../resources/ERC20.json"),
+        _ => return None,
+    };
+
+    Some(interface)
 }

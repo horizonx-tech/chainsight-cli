@@ -110,6 +110,6 @@ fn template_relayer_manifest(component_name: &str) -> RelayerComponentManifest {
             None,
             None
         ),
-        vec![DestinationField::new(1, 3600)],
+        DestinationField::default(),
     )
 }
