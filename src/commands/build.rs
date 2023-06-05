@@ -10,6 +10,7 @@ use slog::{info, error};
 use crate::lib::codegen::components::common::{get_type_from_manifest, DestinactionType, ComponentManifest};
 use crate::lib::codegen::components::relayer::RelayerComponentManifest;
 use crate::lib::codegen::components::snapshot::SnapshotComponentManifest;
+use crate::lib::codegen::oracle::get_oracle_attributes;
 use crate::{lib::{environment::EnvironmentImpl, utils::{is_chainsight_project, PROJECT_MANIFEST_FILENAME}, codegen::{project::ProjectManifestData}}, types::ComponentType};
 
 #[derive(Debug, Parser)]
@@ -130,28 +131,16 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
 
         // copy and move oracle interface
         if let Some(value) = destination_type {
-            match value {
-                DestinactionType::Uint256Oracle => {
-                   fs::write(
-                       format!("{}/Uint256Oracle.json", &interfaces_path_str),
-                   &include_str!("../../resources/Uint256Oracle.json")
-                   )?;
-                   info!(
-                       log,
-                       r#"Interface file "Uint256Oracle.json" copied by builtin interface"#,
-                   );
-                },
-                DestinactionType::StringOracle => {
-                    fs::write(
-                        format!("{}/StringOracle.json", &interfaces_path_str),
-                    &include_str!("../../resources/StringOracle.json")
-                    )?;
-                    info!(
-                        log,
-                        r#"Interface file "StringOracle.json" copied by builtin interface"#
-                    );
-                }
-            }
+            let (_, json_name, json_contents) = get_oracle_attributes(&value);
+            fs::write(
+                format!("{}/{}", &interfaces_path_str, &json_name),
+                json_contents
+            )?;
+            info!(
+                log,
+                r#"Interface file "{}" copied by builtin interface"#,
+                &json_name
+            );
         }
     }
     fs::write(

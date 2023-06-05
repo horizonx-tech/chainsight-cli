@@ -153,6 +153,7 @@ impl Datasource {
     }
 }
 
+/// Determine indexer type from manifest
 pub trait ComponentManifest: std::fmt::Debug {
     fn load(path: &str) -> anyhow::Result<Self> where Self: Sized;
     fn to_str_as_yaml(&self) -> anyhow::Result<String> where Self: Sized;

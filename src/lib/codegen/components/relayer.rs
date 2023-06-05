@@ -3,7 +3,7 @@ use std::{fs::OpenOptions, path::Path, io::Read};
 use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 
-use crate::{types::ComponentType, lib::codegen::canisters};
+use crate::{types::ComponentType, lib::codegen::{canisters, oracle::get_oracle_address}};
 
 use super::common::{Datasource, ComponentManifest, DestinactionType};
 
@@ -72,11 +72,12 @@ impl DestinationField {
 }
 impl Default for DestinationField {
     fn default() -> Self {
-        // temp: polygon mumbai, Uint256Oracle
+        let network_id = 80001; // temp: polygon mumbai
+        let oracle_type = DestinactionType::Uint256Oracle;
         Self::new(
-            80001,
-            DestinactionType::Uint256Oracle,
-            "0539a0EF8e5E60891fFf0958A059E049e43020d9".to_string(),
+            network_id,
+            oracle_type,
+            get_oracle_address(network_id, oracle_type),
             "https://polygon-mumbai.g.alchemy.com/v2/<YOUR_KEY>".to_string(),
             3600
         )

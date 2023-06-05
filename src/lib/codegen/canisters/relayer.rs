@@ -2,7 +2,7 @@ use anyhow::ensure;
 use quote::{quote, format_ident};
 use proc_macro2::TokenStream;
 
-use crate::{types::ComponentType, lib::codegen::components::{relayer::RelayerComponentManifest, common::{DestinactionType, DatasourceMethodArg}}};
+use crate::{types::ComponentType, lib::codegen::{components::{relayer::RelayerComponentManifest, common::{DestinactionType, DatasourceMethodArg}}, oracle::get_oracle_attributes}};
 
 // temp
 fn common_codes() -> TokenStream {
@@ -41,10 +41,7 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> TokenStream {
 
     // from destination: about oracle
     let destination = &manifest.destination;
-    let oracle_name_str = match &destination.type_ {
-        DestinactionType::Uint256Oracle => "Uint256Oracle",
-        DestinactionType::StringOracle => "StringOracle",
-    };
+    let (oracle_name_str, _, _) = get_oracle_attributes(&destination.type_);
     let oracle_ident = format_ident!("{}", oracle_name_str);
     let abi_path = format!("./__interfaces/{}.json", oracle_name_str);
 
