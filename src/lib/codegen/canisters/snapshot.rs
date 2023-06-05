@@ -2,7 +2,7 @@ use anyhow::ensure;
 use quote::{quote, format_ident};
 use proc_macro2::TokenStream;
 
-use crate::{types::ComponentType, lib::{utils::convert_camel_to_snake, codegen::{components::{snapshot::SnapshotComponentManifest, common::{DatasourceMethodArg, DatasourceType}}, canisters::common::{generate_custom_struct_idents, generate_custom_type_idents, generate_request_arg_data_idents, generate_outside_call_idents, OutsideCallIdentsType}}}};
+use crate::{types::ComponentType, lib::{utils::convert_camel_to_snake, codegen::{components::{snapshot::SnapshotComponentManifest, common::DatasourceType}, canisters::common::{generate_custom_struct_idents, generate_custom_type_idents, generate_request_arg_data_idents, generate_outside_call_idents, OutsideCallIdentsType}}}};
 
 fn common_codes_for_contract() -> TokenStream {
     let outside_call_idents = generate_outside_call_idents(OutsideCallIdentsType::Eth);
