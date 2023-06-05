@@ -2,7 +2,7 @@ use anyhow::ensure;
 use quote::{quote, format_ident};
 use proc_macro2::TokenStream;
 
-use crate::{types::ComponentType, lib::{codegen::components::{SnapshotComponentManifest, DatasourceType, DatasourceMethodArg}, utils::convert_camel_to_snake}};
+use crate::{types::ComponentType, lib::{utils::convert_camel_to_snake, codegen::components::{snapshot::SnapshotComponentManifest, common::{DatasourceMethodArg, DatasourceType}}}};
 
 fn common_codes_for_contract() -> TokenStream {
     quote! {

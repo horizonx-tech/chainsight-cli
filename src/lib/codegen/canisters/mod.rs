@@ -1,6 +1,6 @@
 use proc_macro2::TokenStream;
 
-use super::components::{SnapshotComponentManifest, RelayerComponentManifest};
+use super::components::{snapshot::SnapshotComponentManifest, relayer::RelayerComponentManifest};
 
 mod snapshot;
 mod relayer;

@@ -1,6 +1,5 @@
 use std::fs::File;
 use std::io::Write;
-use std::process::Command;
 use std::{path::Path, fs};
 use std::fmt::Debug;
 
@@ -8,8 +7,10 @@ use anyhow::{Ok, bail};
 use clap::Parser;
 use slog::{info, error};
 
-use crate::lib::codegen::components::DestinactionType;
-use crate::{lib::{environment::EnvironmentImpl, utils::{is_chainsight_project, PROJECT_MANIFEST_FILENAME}, codegen::{project::ProjectManifestData, components::{get_type_from_manifest, SnapshotComponentManifest, RelayerComponentManifest, ComponentManifest}}}, types::ComponentType};
+use crate::lib::codegen::components::common::{get_type_from_manifest, DestinactionType, ComponentManifest};
+use crate::lib::codegen::components::relayer::RelayerComponentManifest;
+use crate::lib::codegen::components::snapshot::SnapshotComponentManifest;
+use crate::{lib::{environment::EnvironmentImpl, utils::{is_chainsight_project, PROJECT_MANIFEST_FILENAME}, codegen::{project::ProjectManifestData}}, types::ComponentType};
 
 #[derive(Debug, Parser)]
 #[command(name = "build")]

@@ -2,7 +2,7 @@ use anyhow::ensure;
 use quote::{quote, format_ident};
 use proc_macro2::TokenStream;
 
-use crate::{types::ComponentType, lib::codegen::components::{RelayerComponentManifest, DestinactionType, DatasourceMethodArg}};
+use crate::{types::ComponentType, lib::codegen::components::{relayer::RelayerComponentManifest, common::{DestinactionType, DatasourceMethodArg}}};
 
 // temp
 fn common_codes() -> TokenStream {
