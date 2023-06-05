@@ -4,6 +4,7 @@ use super::components::{snapshot::SnapshotComponentManifest, relayer::RelayerCom
 
 mod snapshot;
 mod relayer;
+mod common;
 
 pub fn generate_snapshot_codes(manifest: &SnapshotComponentManifest) -> anyhow::Result<TokenStream> {
     snapshot::generate_codes(manifest)

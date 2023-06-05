@@ -2,28 +2,21 @@ use anyhow::ensure;
 use quote::{quote, format_ident};
 use proc_macro2::TokenStream;
 
-use crate::{types::ComponentType, lib::codegen::{components::{relayer::RelayerComponentManifest, common::{DestinactionType, DatasourceMethodArg}}, oracle::get_oracle_attributes}};
+use crate::{types::ComponentType, lib::codegen::{components::{relayer::RelayerComponentManifest, common::{DestinactionType}}, oracle::get_oracle_attributes, canisters::common::{generate_custom_struct_idents, generate_custom_type_idents, generate_request_arg_data_idents, generate_outside_call_idents, OutsideCallIdentsType}}};
 
 // temp
 fn common_codes() -> TokenStream {
+    let outside_call_idents = generate_outside_call_idents(OutsideCallIdentsType::All);
     quote! {
         use std::str::FromStr;
         use chainsight_cdk_macros::{manage_single_state, setup_func, timer_task_func, cross_canister_call_func, define_web3_ctx, define_transform_for_web3, define_get_ethereum_address, monitoring_canister_metrics, did_export};
         use ic_web3::types::{Address, U256};
 
         monitoring_canister_metrics!(60);
-        define_web3_ctx!();
-        define_transform_for_web3!();
+
+        #outside_call_idents
+
         define_get_ethereum_address!();
-
-        manage_single_state!("target_canister", String, false);
-        manage_single_state!("target_addr", String, false);
-
-        setup_func!({
-            target_canister: String,
-            target_addr: String,
-            web3_ctx_param: Web3CtxParam
-        });
 
         timer_task_func!("set_task", "sync", true);
     }
@@ -49,90 +42,19 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> TokenStream {
     let response_type_ident = format_ident!("{}", &method.response_types[0]); // temp
 
     // for request values
-    let mut request_val_idents = vec![];
-    for method_args in &method.args {
-        let DatasourceMethodArg { type_, value } = method_args;
-        // temp
-        let result = match type_.as_str() {
-            "ic_web3::types::U256" => {
-                match value {
-                    serde_yaml::Value::String(val) => quote! { ic_web3::types::U256::from_dec_str(#val).unwrap(), },
-                    serde_yaml::Value::Number(val) => {
-                        match val.as_u64() {
-                            Some(val) => quote! { #val.into(), },
-                            None => quote! {}
-                        }
-                    },
-                    _ => quote! {}
-                }
-            }
-            "ic_web3::types::Address" => {
-                match value {
-                    serde_yaml::Value::String(val) => quote! { ic_web3::types::Address::from_str(#val).unwrap(), },
-                    _ => quote! {}
-                }
-            },
-            _ => {
-                match value {
-                    serde_yaml::Value::String(val) => {
-                        quote! { #val, }
-                    },
-                    serde_yaml::Value::Number(val) => {
-                        match val.as_u64() {
-                            Some(val) => {
-                                let type_ident = format_ident!("{}", type_);
-                                quote! { #val as #type_ident, }
-                            },
-                            None => {
-                                quote! {}
-                            }
-                        }
-                    },
-                    _ => {
-                        quote! {}
-                    }
-                }
-            }
-        };
-        request_val_idents.push(result);
-    }
+    let request_val_idents = generate_request_arg_data_idents(&method.args);
 
     // define custom_struct
-    let mut custom_struct_ident: Vec<proc_macro2::TokenStream> = vec![];
-    if let Some(custom_structs) = &method.custom_struct {
-        for custom_struct_def in custom_structs {
-            let struct_ident = format_ident!("{}", &custom_struct_def.name);
-            let mut custom_struct_fields = vec![];
-            for field in &custom_struct_def.fields {
-                let field_name_ident = format_ident!("{}", &field.name);
-                let field_type_ident = format_ident!("{}", &field.type_);
-                custom_struct_fields.push(quote! {
-                    pub #field_name_ident: #field_type_ident,
-                });
-            }
-            custom_struct_ident.push(quote! {
-                #[derive(Debug, Clone, candid::CandidType, candid::Deserialize)]
-                pub struct #struct_ident {
-                    #(#custom_struct_fields)*
-                }
-            });
-        }
-    }
+    let custom_struct_ident = match &method.custom_struct {
+        Some(custom_structs) => generate_custom_struct_idents(custom_structs),
+        None => vec![]
+    };
 
     // define custom_type
-    let mut custom_type_ident: Vec<proc_macro2::TokenStream> = vec![];
-    if let Some(custom_types) = &method.custom_type {
-        for custom_type_def in custom_types {
-            let type_ident = format_ident!("{}", &custom_type_def.name);
-            let mut custom_type_scalars = vec![];
-            for type_ in &custom_type_def.types {
-                custom_type_scalars.push(format_ident!("{}", &type_));
-            }
-            custom_type_ident.push(quote! {
-                type #type_ident = (#(#custom_type_scalars),*);
-            });
-        }
-    }
+    let custom_type_ident = match &method.custom_type {
+        Some(custom_types) => generate_custom_type_idents(custom_types),
+        None => vec![]
+    };
 
     // define data to call update function of oracle
     // temp: args for update_state (support only default manifest)
