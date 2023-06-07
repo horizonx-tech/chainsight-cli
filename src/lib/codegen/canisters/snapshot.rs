@@ -2,7 +2,7 @@ use anyhow::ensure;
 use quote::{quote, format_ident};
 use proc_macro2::TokenStream;
 
-use crate::{types::ComponentType, lib::{utils::convert_camel_to_snake, codegen::{components::{snapshot::SnapshotComponentManifest, common::DatasourceType}, canisters::common::{generate_custom_struct_idents, generate_custom_type_idents, generate_request_arg_data_idents, generate_outside_call_idents, OutsideCallIdentsType}}}};
+use crate::{types::ComponentType, lib::{utils::convert_camel_to_snake, codegen::{components::{snapshot::SnapshotComponentManifest, common::DatasourceType}, canisters::common::{generate_custom_struct_idents, generate_custom_type_idents, generate_request_arg_idents, generate_outside_call_idents, OutsideCallIdentsType}}}};
 
 fn common_codes_for_contract() -> TokenStream {
     let outside_call_idents = generate_outside_call_idents(OutsideCallIdentsType::Eth);
@@ -44,7 +44,7 @@ fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> TokenStrea
     let abi_path = format!("./__interfaces/{}", method_interface);
 
     // for request values
-    let request_val_idents = generate_request_arg_data_idents(&method.args);
+    let (request_val_idents, _) = generate_request_arg_idents(&method.args);
 
     // for response types & response values
     let mut response_type_idents: Vec<syn::Ident> = vec![];
@@ -105,7 +105,7 @@ fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> TokenStrea
             let res = #contract_struct_ident::new(
                 Address::from_str(&get_target_addr()).unwrap(),
                 &web3_ctx().unwrap()
-            ).#method_ident(#(#request_val_idents)*).await.unwrap();
+            ).#method_ident(#(#request_val_idents),*).await.unwrap();
             let datum = Snapshot {
                 value: (
                     #(#response_val_idents),*
@@ -150,7 +150,7 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> TokenStrea
     let call_method_ident = format_ident!("call_{}", method_ident);
 
     // for request values
-    let request_val_idents = generate_request_arg_data_idents(&method.args);
+    let (request_val_idents, request_ty_idents) = generate_request_arg_idents(&method.args);
 
     // for response type
     let response_type_ident = format_ident!("{}", &method.response_types[0]); // temp
@@ -173,7 +173,7 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> TokenStrea
         #(#custom_struct_ident)*
         #(#custom_type_ident)*
 
-        type CallCanisterArgs = ();
+        type CallCanisterArgs = (#(#request_ty_idents),*);
         type CallCanisterResponse = (#response_type_ident);
         cross_canister_call_func!(#method_ident, CallCanisterArgs, CallCanisterResponse);
         async fn execute_task() {
@@ -181,7 +181,7 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> TokenStrea
             let target_canister = candid::Principal::from_text(get_target_canister()).unwrap();
             let res = #call_method_ident(
                 target_canister,
-                (#(#request_val_idents)*)
+                (#(#request_val_idents),*)
             ).await;
             if let Err(err) = res {
                 ic_cdk::println!("error: {:?}", err);

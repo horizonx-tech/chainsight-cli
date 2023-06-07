@@ -2,7 +2,7 @@ use anyhow::ensure;
 use quote::{quote, format_ident};
 use proc_macro2::TokenStream;
 
-use crate::{types::ComponentType, lib::codegen::{components::{relayer::RelayerComponentManifest, common::{DestinactionType}}, oracle::get_oracle_attributes, canisters::common::{generate_custom_struct_idents, generate_custom_type_idents, generate_request_arg_data_idents, generate_outside_call_idents, OutsideCallIdentsType}}};
+use crate::{types::ComponentType, lib::codegen::{components::{relayer::RelayerComponentManifest, common::{DestinactionType}}, oracle::get_oracle_attributes, canisters::common::{generate_custom_struct_idents, generate_custom_type_idents, generate_request_arg_idents, generate_outside_call_idents, OutsideCallIdentsType}}};
 
 // temp
 fn common_codes() -> TokenStream {
@@ -42,7 +42,7 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> TokenStream {
     let response_type_ident = format_ident!("{}", &method.response_types[0]); // temp
 
     // for request values
-    let request_val_idents = generate_request_arg_data_idents(&method.args);
+    let (request_val_idents, request_ty_idents) = generate_request_arg_idents(&method.args);
 
     // define custom_struct
     let custom_struct_ident = match &method.custom_struct {
@@ -69,7 +69,7 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> TokenStream {
         #(#custom_struct_ident)*
         #(#custom_type_ident)*
 
-        type CallCanisterArgs = ();
+        type CallCanisterArgs = (#(#request_ty_idents),*);
         type CallCanisterResponse = (#response_type_ident);
         cross_canister_call_func!(#method_ident, CallCanisterArgs, CallCanisterResponse);
 
@@ -77,7 +77,7 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> TokenStream {
             let target_canister = candid::Principal::from_text(get_target_canister()).unwrap();
             let res = #call_method_ident(
                 target_canister,
-                (#(#request_val_idents)*)
+                (#(#request_val_idents),*)
             ).await;
             if let Err(err) = res {
                 ic_cdk::println!("error: {:?}", err);

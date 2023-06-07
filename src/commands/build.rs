@@ -189,8 +189,8 @@ hex = \"0.4.3\"
 ic-web3 = {{ git = \"ssh://<your host in .ssh/config>/horizonx-tech/ic-web3.git\", rev = \"fa982360c8420c88887606355eff0b7b48208a01\" }}
 ic-solidity-bindgen = {{ git = \"ssh://<your host in .ssh/config>/horizonx-tech/ic-solidity-bindgen.git\", rev = \"36a7e1044c261a91a715fbdc12d95afa69eb0620\" }}
 ic-solidity-bindgen-macros = {{ git = \"ssh://<your host in .ssh/config>/horizonx-tech/ic-solidity-bindgen.git\", rev = \"36a7e1044c261a91a715fbdc12d95afa69eb0620\" }}
-chainsight-cdk-macros = {{ git = \"ssh://<your host in .ssh/config>/horizonx-tech/chainsight-sdk.git\", rev = \"625205043bf9f4be60a016e08274d30c159b177e\" }}
-chainsight-cdk = {{ git = \"ssh://<your host in .ssh/config>/horizonx-tech/chainsight-sdk.git\", rev = \"625205043bf9f4be60a016e08274d30c159b177e\" }}
+chainsight-cdk-macros = {{ git = \"ssh://<your host in .ssh/config>/horizonx-tech/chainsight-sdk.git\", rev = \"843683fa588da751e2ac613a4dbb16cb250f0d05\" }}
+chainsight-cdk = {{ git = \"ssh://<your host in .ssh/config>/horizonx-tech/chainsight-sdk.git\", rev = \"843683fa588da751e2ac613a4dbb16cb250f0d05\" }}
 
 [patch.'https://github.com/horizonx-tech/ic-web3']
 ic-web3 = {{ git = \"ssh://<your host in .ssh/config>/horizonx-tech/ic-web3.git\", rev = \"fa982360c8420c88887606355eff0b7b48208a01\" }}", members);

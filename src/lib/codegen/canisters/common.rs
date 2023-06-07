@@ -54,18 +54,19 @@ pub fn generate_outside_call_idents(type_: OutsideCallIdentsType) -> proc_macro2
 }
 
 // Generate the part of data of the argument that calls the function of datasource contract/canister
-pub fn generate_request_arg_data_idents(method_args: &Vec<DatasourceMethodArg>) -> Vec<proc_macro2::TokenStream> {
-    let mut request_val_idents = vec![];
+pub fn generate_request_arg_idents(method_args: &Vec<DatasourceMethodArg>) -> (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::Ident>) {
+    let mut value_idents = vec![];
+    let mut type_idents = vec![];
     for method_arg in method_args {
         let DatasourceMethodArg { type_, value } = method_arg;
         // temp
-        let result = match type_.as_str() {
+        let request_arg_value = match type_.clone().as_str() {
             "ic_web3::types::U256" => {
                 match value {
-                    serde_yaml::Value::String(val) => quote! { ic_web3::types::U256::from_dec_str(#val).unwrap(), },
+                    serde_yaml::Value::String(val) => quote! { ic_web3::types::U256::from_dec_str(#val).unwrap() },
                     serde_yaml::Value::Number(val) => {
                         match val.as_u64() {
-                            Some(val) => quote! { #val.into(), },
+                            Some(val) => quote! { #val.into() },
                             None => quote! {}
                         }
                     },
@@ -74,7 +75,7 @@ pub fn generate_request_arg_data_idents(method_args: &Vec<DatasourceMethodArg>) 
             }
             "ic_web3::types::Address" => {
                 match value {
-                    serde_yaml::Value::String(val) => quote! { ic_web3::types::Address::from_str(#val).unwrap(), },
+                    serde_yaml::Value::String(val) => quote! { ic_web3::types::Address::from_str(#val).unwrap() },
                     _ => quote! {}
                 }
             },
@@ -87,7 +88,7 @@ pub fn generate_request_arg_data_idents(method_args: &Vec<DatasourceMethodArg>) 
                         match val.as_u64() {
                             Some(val) => {
                                 let type_ident = format_ident!("{}", type_);
-                                quote! { #val as #type_ident, }
+                                quote! { #val as #type_ident }
                             },
                             None => {
                                 quote! {}
@@ -100,9 +101,10 @@ pub fn generate_request_arg_data_idents(method_args: &Vec<DatasourceMethodArg>) 
                 }
             }
         };
-        request_val_idents.push(result);
+        value_idents.push(request_arg_value);
+        type_idents.push(format_ident!("{}", type_));
     };
-    request_val_idents
+    (value_idents, type_idents)
 }
 
 // Generate CustomStruct Identifiers from manifest's struct data
