@@ -5,7 +5,7 @@ use clap::Parser;
 use slog::{info, error};
 
 use crate::{
-    lib::{environment::EnvironmentImpl, codegen::{project::{ProjectManifestData, ProjectManifestComponentField}, components::{snapshot::SnapshotComponentManifest, common::{Datasource, ComponentManifest}, relayer::{RelayerComponentManifest, DestinationField}}}, utils::{CHAINSIGHT_FILENAME, PROJECT_MANIFEST_FILENAME, PROJECT_MANIFEST_VERSION}}
+    lib::{environment::EnvironmentImpl, codegen::{project::{ProjectManifestData, ProjectManifestComponentField}, components::{snapshot::{SnapshotComponentManifest, SnapshotStorage}, common::{Datasource, ComponentManifest}, relayer::{RelayerComponentManifest, DestinationField}}}, utils::{CHAINSIGHT_FILENAME, PROJECT_MANIFEST_FILENAME, PROJECT_MANIFEST_VERSION}}
 };
 
 #[derive(Debug, Parser)]
@@ -103,6 +103,7 @@ fn template_snapshot_chain_manifest(project_name: &str) -> SnapshotComponentMani
         &format!("{}_snapshot_chain", project_name),
         PROJECT_MANIFEST_VERSION,
         Datasource::default_contract(),
+        SnapshotStorage::default(),
         3600
     )
 }
@@ -112,6 +113,7 @@ fn template_snapshot_icp_manifest(project_name: &str) -> SnapshotComponentManife
         &format!("{}_snapshot_icp", project_name),
         PROJECT_MANIFEST_VERSION,
         Datasource::default_canister(),
+        SnapshotStorage::default(),
         3600
     )
 }

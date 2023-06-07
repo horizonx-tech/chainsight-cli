@@ -46,7 +46,7 @@ pub struct DatasourceMethodArg {
 pub struct DatasourceResponse {
     #[serde(rename = "type")]
     pub type_: String,
-    // pub with_timestamp: Option<bool>
+    pub with_timestamp: Option<bool>
 }
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct DatasourceMethodCustomStruct {
@@ -78,6 +78,7 @@ impl Datasource {
                 args: vec![],
                 response: DatasourceResponse {
                     type_: "ic_web3::types::U256".to_string(),
+                    with_timestamp: None,
                 },
                 custom_struct: None,
                 custom_type: None,
@@ -87,7 +88,7 @@ impl Datasource {
     pub fn new_contract(
         identifier: String,
         interface: Option<String>,
-        response_type: String,
+        response: DatasourceResponse,
         custom_struct: Option<Vec<DatasourceMethodCustomStruct>>,
         custom_type: Option<Vec<DatasourceMethodCustomType>>,
     ) -> Self {
@@ -98,9 +99,7 @@ impl Datasource {
                 identifier,
                 interface,
                 args: vec![],
-                response: DatasourceResponse {
-                    type_: response_type,
-                },
+                response,
                 custom_struct,
                 custom_type,
             },
@@ -118,6 +117,7 @@ impl Datasource {
                 args: vec![],
                 response: DatasourceResponse {
                     type_: "ResponseType".to_string(),
+                    with_timestamp: Some(true),
                 },
                 custom_struct: Some(vec![
                     DatasourceMethodCustomStruct {
@@ -146,7 +146,7 @@ impl Datasource {
     pub fn new_canister(
         identifier: String,
         interface: Option<String>,
-        response_type: String,
+        response: DatasourceResponse,
         custom_struct: Option<Vec<DatasourceMethodCustomStruct>>,
         custom_type: Option<Vec<DatasourceMethodCustomType>>,
     ) -> Self {
@@ -157,9 +157,7 @@ impl Datasource {
                 identifier,
                 interface,
                 args: vec![],
-                response: DatasourceResponse {
-                    type_: response_type,
-                },
+                response,
                 custom_struct,
                 custom_type,
             },

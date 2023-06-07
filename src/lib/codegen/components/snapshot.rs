@@ -14,16 +14,18 @@ pub struct SnapshotComponentManifest {
     pub type_: ComponentType,
     pub label: String,
     pub datasource: Datasource,
+    pub storage: SnapshotStorage,
     pub interval: u32
 }
 
 impl SnapshotComponentManifest {
-    pub fn new(component_label: &str, version: &str, datasource: Datasource, interval: u32) -> Self {
+    pub fn new(component_label: &str, version: &str, datasource: Datasource, storage: SnapshotStorage, interval: u32) -> Self {
         Self {
             version: version.to_owned(),
             type_: ComponentType::Snapshot,
             label: component_label.to_owned(),
             datasource,
+            storage,
             interval,
         }
     }
@@ -46,5 +48,22 @@ impl ComponentManifest for SnapshotComponentManifest {
 
     fn generate_codes(&self) -> anyhow::Result<TokenStream> {
         canisters::generate_snapshot_codes(self)
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct SnapshotStorage {
+    pub with_timestamp: bool,
+}
+impl SnapshotStorage {
+    pub fn new(with_timestamp: bool) -> Self {
+        Self {
+            with_timestamp,
+        }
+    }
+}
+impl Default for SnapshotStorage {
+    fn default() -> Self {
+        Self::new(true)
     }
 }

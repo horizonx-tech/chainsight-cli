@@ -4,7 +4,7 @@ use anyhow::bail;
 use clap::Parser;
 use slog::{info, error};
 
-use crate::{lib::{environment::EnvironmentImpl, utils::{is_chainsight_project, PROJECT_MANIFEST_FILENAME, PROJECT_MANIFEST_VERSION}, codegen::{project::{ProjectManifestData, ProjectManifestComponentField}, components::{snapshot::SnapshotComponentManifest, common::{Datasource, ComponentManifest}, relayer::{DestinationField, RelayerComponentManifest}}}}, types::ComponentType};
+use crate::{lib::{environment::EnvironmentImpl, utils::{is_chainsight_project, PROJECT_MANIFEST_FILENAME, PROJECT_MANIFEST_VERSION}, codegen::{project::{ProjectManifestData, ProjectManifestComponentField}, components::{snapshot::{SnapshotComponentManifest, SnapshotStorage}, common::{Datasource, ComponentManifest, DatasourceResponse}, relayer::{DestinationField, RelayerComponentManifest}}}}, types::ComponentType};
 
 #[derive(Debug, Parser)]
 #[command(name = "create")]
@@ -91,10 +91,14 @@ fn template_snapshot_manifest(component_name: &str) -> SnapshotComponentManifest
         Datasource::new_contract(
             "functionIdentifier()".to_string(),
             None,
-            "TODO".to_string(),
+            DatasourceResponse {
+                type_: "TODO".to_string(),
+                with_timestamp: Some(true),
+            },
             None,
             None
         ),
+        SnapshotStorage::default(),
         3600
     )
 }
@@ -106,7 +110,10 @@ fn template_relayer_manifest(component_name: &str) -> RelayerComponentManifest {
         Datasource::new_canister(
             "function_identifier()".to_string(),
             None,
-            "TODO".to_string(),
+            DatasourceResponse {
+                type_: "TODO".to_string(),
+                with_timestamp: Some(true),
+            },
             None,
             None
         ),

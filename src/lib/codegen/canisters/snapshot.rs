@@ -16,17 +16,15 @@ fn common_codes_for_contract() -> TokenStream {
 
         #outside_call_idents
 
-        #[derive(Debug, Clone, candid::CandidType, candid::Deserialize)]
-        pub struct Snapshot {
-            pub value: SnapshotValue,
-            pub timestamp: u64,
-        }
         manage_vec_state!("snapshot", Snapshot, true);
         timer_task_func!("set_task", "execute_task", true);
     }
 }
 
 fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> TokenStream {
+    // TODO: validations
+    // - datasource.method.response.with_timestamp is null
+
     let label = &manifest.label;
     let method = &manifest.datasource.method;
     let mut camel_method_ident = method.identifier.clone();
@@ -70,24 +68,56 @@ fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> TokenStrea
 
     // TODO: consider method.custom_struct, method.custom_type
 
+    // consider whether to add timestamp information to the snapshot
+    let (
+        snapshot_idents,
+        expr_to_current_ts_sec,
+        expr_to_gen_snapshot,
+        expr_to_log_datum
+    ) = if manifest.storage.with_timestamp {
+        (
+            quote! {
+                #[derive(Debug, Clone, candid::CandidType, candid::Deserialize)]
+                pub struct Snapshot {
+                    pub value: SnapshotValue,
+                    pub timestamp: u64,
+                }
+                type SnapshotValue = (#(#response_type_idents),*);
+            },
+            quote! { let current_ts_sec = ic_cdk::api::time() / 1000000; },
+            quote! {
+                let datum = Snapshot {
+                    value: (
+                        #(#response_val_idents),*
+                    ),
+                    timestamp: current_ts_sec,
+                };
+            },
+            quote! { ic_cdk::println!("ts={}, snapshot={:?}", datum.timestamp, datum.value); }
+        )
+    } else {
+        (
+            quote! { type Snapshot = (#(#response_type_idents),*); },
+            quote! {},
+            quote! { let datum: Snapshot = (#(#response_val_idents),*); },
+            quote! { ic_cdk::println!("snapshot={:?}", datum); }
+        )
+    };
+
     quote! {
+        #snapshot_idents
+
         ic_solidity_bindgen::contract_abi!(#abi_path);
 
-        type SnapshotValue = (#(#response_type_idents),*);
         async fn execute_task() {
-            let current_ts_sec = ic_cdk::api::time() / 1000000;
+            #expr_to_current_ts_sec
             let res = #contract_struct_ident::new(
                 Address::from_str(&get_target_addr()).unwrap(),
                 &web3_ctx().unwrap()
             ).#method_ident(#(#request_val_idents),*).await.unwrap();
-            let datum = Snapshot {
-                value: (
-                    #(#response_val_idents),*
-                ),
-                timestamp: current_ts_sec,
-            };
+            #expr_to_gen_snapshot
             add_snapshot(datum.clone());
-            ic_cdk::println!("ts={}, snapshot={:?}", datum.timestamp, datum.value);
+            #expr_to_log_datum
         }
 
         did_export!(#label);
@@ -140,11 +170,6 @@ fn common_codes_for_canister() -> TokenStream {
 
         #outside_call_idents
 
-        #[derive(Clone, candid::CandidType, candid::Deserialize)]
-        pub struct Snapshot {
-            pub value: SnapshotValue,
-            pub timestamp: u64,
-        }
         manage_vec_state!("snapshot", Snapshot, true);
         timer_task_func!("set_task", "execute_task", true);
     }
@@ -163,7 +188,26 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> TokenStrea
     let (request_val_idents, request_ty_idents) = generate_request_arg_idents(&method.args);
 
     // for response type
-    let response_type_ident = format_ident!("{}", &method.response.type_);
+    let response_with_timestamp = manifest.datasource.method.response.with_timestamp;
+    let (response_type_ident, response_type_def_ident) = if response_with_timestamp.is_some() && response_with_timestamp.unwrap() {
+        let ty_ident = format_ident!("{}", &method.response.type_);
+        let ty_with_ts_ident = format_ident!("{}ValueWithTimestamp", &method.response.type_);
+        (
+            ty_with_ts_ident.clone(),
+            quote! {
+                #[derive(Clone, Debug, candid::CandidType, candid::Deserialize)]
+                pub struct #ty_with_ts_ident {
+                    pub value: #ty_ident,
+                    pub timestamp: u64,
+                }
+            }
+        )
+    } else {
+        (
+            format_ident!("{}", &method.response.type_),
+            quote! {}
+        )
+    };
 
     // define custom_struct
     let custom_struct_ident = match &method.custom_struct {
@@ -177,17 +221,52 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> TokenStrea
         None => vec![]
     };
 
+    // consider whether to add timestamp information to the snapshot
+    let (
+        snapshot_idents,
+        expr_to_current_ts_sec,
+        expr_to_gen_snapshot,
+        expr_to_log_datum
+    ) = if manifest.storage.with_timestamp {
+        (
+            quote! {
+                #[derive(Clone, Debug, candid::CandidType, candid::Deserialize)]
+                pub struct Snapshot {
+                    pub value: SnapshotValue,
+                    pub timestamp: u64,
+                }
+                type SnapshotValue = #response_type_ident;
+            },
+            quote! { let current_ts_sec = ic_cdk::api::time() / 1000000; },
+            quote! {
+                let datum = Snapshot {
+                    value: res.unwrap().clone(),
+                    timestamp: current_ts_sec,
+                };
+            },
+            quote! { ic_cdk::println!("ts={}, value={:?}", datum.timestamp, datum.value); },
+        )
+    } else {
+        (
+            quote! { type Snapshot = #response_type_ident; },
+            quote! {},
+            quote! { let datum = res.unwrap().clone(); },
+            quote! { ic_cdk::println!("snapshot={:?}", datum); },
+        )
+    };
+
     quote! {
-        type SnapshotValue = #response_type_ident;
+        #snapshot_idents
 
         #(#custom_struct_ident)*
         #(#custom_type_ident)*
+        #response_type_def_ident
 
         type CallCanisterArgs = (#(#request_ty_idents),*);
         type CallCanisterResponse = (#response_type_ident);
         cross_canister_call_func!(#method_ident, CallCanisterArgs, CallCanisterResponse);
         async fn execute_task() {
-            let current_ts_sec = ic_cdk::api::time() / 1000000;
+            #expr_to_current_ts_sec
             let target_canister = candid::Principal::from_text(get_target_canister()).unwrap();
             let res = #call_method_ident(
                 target_canister,
@@ -197,12 +276,9 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> TokenStrea
                 ic_cdk::println!("error: {:?}", err);
                 return;
             }
-            let datum = Snapshot {
-                value: res.unwrap().clone(),
-                timestamp: current_ts_sec,
-            };
+            #expr_to_gen_snapshot
             add_snapshot(datum.clone());
-            ic_cdk::println!("ts={}, value={:?}", datum.timestamp, datum.value);
+            #expr_to_log_datum
         }
 
         did_export!(#label);
