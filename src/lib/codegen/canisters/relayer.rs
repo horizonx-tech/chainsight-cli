@@ -39,7 +39,7 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> TokenStream {
     let abi_path = format!("./__interfaces/{}.json", oracle_name_str);
 
     // for response type
-    let response_type_ident = format_ident!("{}", &method.response_types[0]); // temp
+    let response_type_ident = format_ident!("{}", &method.response.type_);
 
     // for request values
     let (request_val_idents, request_ty_idents) = generate_request_arg_idents(&method.args);

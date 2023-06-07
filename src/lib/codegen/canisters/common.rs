@@ -102,7 +102,12 @@ pub fn generate_request_arg_idents(method_args: &Vec<DatasourceMethodArg>) -> (V
             }
         };
         value_idents.push(request_arg_value);
-        type_idents.push(format_ident!("{}", type_));
+        if type_ == "ic_web3::types::U256" || type_ == "ic_web3::types::Address" {
+            // In the case of contract, other than the primitive type (ic_web3::types::U256 etc.) may be set, in which case type_idents is not used.
+            type_idents.push(format_ident!("String")); // temp: thread 'main' panicked at '"ic_web3::types::U256" is not a valid Ident'
+        } else {
+            type_idents.push(format_ident!("{}", type_));
+        }
     };
     (value_idents, type_idents)
 }

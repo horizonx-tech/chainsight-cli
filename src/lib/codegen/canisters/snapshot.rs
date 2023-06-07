@@ -49,46 +49,20 @@ fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> TokenStrea
     // for response types & response values
     let mut response_type_idents: Vec<syn::Ident> = vec![];
     let mut response_val_idents: Vec<proc_macro2::TokenStream> = vec![];
-    if method.response_types.len() == 1 {
-        // for only one response_type: not use idx_lit
-        let response_type = &method.response_types[0];
-        let result = match response_type.as_str() {
-            "ic_web3::types::U256" => {
-                (
-                    format_ident!("String"),
-                    quote! { res.to_string() }
-                )
-            },
-            "ic_web3::types::Address" => (
-                format_ident!("String"),
-                quote! { hex::encode(res) }
-            ),
-            _ => (
-                format_ident!("{}", response_type),
-                quote! { res }
-            )
-        };
-        response_type_idents.push(result.0);
-        response_val_idents.push(result.1);
-    } else {
-        for (idx, response_type) in method.response_types.iter().enumerate() {
-            let idx_lit = proc_macro2::Literal::usize_unsuffixed(idx);
-            let result = match response_type.as_str() {
-                "ic_web3::types::U256" => {
-                    (
-                        format_ident!("String"),
-                        quote! { res.#idx_lit.to_string() }
-                    )
-                },
-                "ic_web3::types::Address" => (
-                    format_ident!("String"),
-                    quote! { hex::encode(res.#idx_lit) }
-                ),
-                _ => (
-                    format_ident!("{}", response_type),
-                    quote! { res.#idx_lit }
-                )
-            };
+    let response_type = syn::parse_str::<syn::Type>(&method.response.type_).unwrap();
+    match &response_type {
+        syn::Type::Tuple(type_tuple) => {
+            // If it's a tuple, we process it like we did before
+            for (idx, elem) in type_tuple.elems.iter().enumerate() {
+                let idx_lit = proc_macro2::Literal::usize_unsuffixed(idx);
+                let result = match_primitive_type(elem, Some(idx_lit));
+                response_type_idents.push(result.0);
+                response_val_idents.push(result.1);
+            }
+        }
+        _ => {
+            // If it's not a tuple, it must be a primitive type
+            let result = match_primitive_type(&response_type, None);
             response_type_idents.push(result.0);
             response_val_idents.push(result.1);
         }
@@ -117,6 +91,42 @@ fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> TokenStrea
         }
 
         did_export!(#label);
+    }
+}
+
+fn match_primitive_type(ty: &syn::Type, idx: Option<proc_macro2::Literal>) -> (proc_macro2::Ident, proc_macro2::TokenStream) {
+    match ty {
+        syn::Type::Path(type_path) => {
+            let mut type_string = quote! { #type_path }.to_string();
+            type_string.retain(|c| !c.is_whitespace());
+
+            match type_string.as_str() {
+                "ic_web3::types::U256" => {
+                    (
+                        format_ident!("String"),
+                        match idx {
+                            Some(idx_lit) => quote! { res.#idx_lit.to_string() },
+                            None => quote! { res.to_string() }
+                        }
+                    )
+                },
+                "ic_web3::types::Address" => (
+                    format_ident!("String"),
+                    match idx {
+                        Some(idx_lit) => quote! { hex::encode(res.#idx_lit) },
+                        None => quote! { hex::encode(res) }
+                    }
+                ),
+                _ => (
+                    format_ident!("{}", type_string),
+                    match idx {
+                        Some(idx_lit) => quote! { res.#idx_lit },
+                        None => quote! { res }
+                    }
+                )
+            }
+        },
+        _ => panic!("Unsupported type"),
     }
 }
 
@@ -153,7 +163,7 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> TokenStrea
     let (request_val_idents, request_ty_idents) = generate_request_arg_idents(&method.args);
 
     // for response type
-    let response_type_ident = format_ident!("{}", &method.response_types[0]); // temp
+    let response_type_ident = format_ident!("{}", &method.response.type_);
 
     // define custom_struct
     let custom_struct_ident = match &method.custom_struct {

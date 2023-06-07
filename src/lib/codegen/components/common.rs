@@ -32,7 +32,7 @@ pub struct DatasourceMethod {
     pub identifier: String,
     pub interface: Option<String>,
     pub args: Vec<DatasourceMethodArg>,
-    pub response_types: Vec<String>,
+    pub response: DatasourceResponse,
     pub custom_struct: Option<Vec<DatasourceMethodCustomStruct>>,
     pub custom_type: Option<Vec<DatasourceMethodCustomType>>,
 }
@@ -41,6 +41,12 @@ pub struct DatasourceMethodArg {
     #[serde(rename = "type")]
     pub type_: String,
     pub value: serde_yaml::Value,
+}
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct DatasourceResponse {
+    #[serde(rename = "type")]
+    pub type_: String,
+    // pub with_timestamp: Option<bool>
 }
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct DatasourceMethodCustomStruct {
@@ -70,7 +76,9 @@ impl Datasource {
                 identifier: "totalSupply()".to_string(),
                 interface: Some("ERC20.json".to_string()),
                 args: vec![],
-                response_types: vec!["ic_web3::types::U256".to_string()],
+                response: DatasourceResponse {
+                    type_: "ic_web3::types::U256".to_string(),
+                },
                 custom_struct: None,
                 custom_type: None,
             },
@@ -90,7 +98,9 @@ impl Datasource {
                 identifier,
                 interface,
                 args: vec![],
-                response_types: vec![response_type],
+                response: DatasourceResponse {
+                    type_: response_type,
+                },
                 custom_struct,
                 custom_type,
             },
@@ -106,7 +116,9 @@ impl Datasource {
                 identifier: "get_last_snapshot()".to_string(),
                 interface: None,
                 args: vec![],
-                response_types: vec!["ResponseType".to_string()],
+                response: DatasourceResponse {
+                    type_: "ResponseType".to_string(),
+                },
                 custom_struct: Some(vec![
                     DatasourceMethodCustomStruct {
                         name: "ResponseType".to_string(),
@@ -145,7 +157,9 @@ impl Datasource {
                 identifier,
                 interface,
                 args: vec![],
-                response_types: vec![response_type],
+                response: DatasourceResponse {
+                    type_: response_type,
+                },
                 custom_struct,
                 custom_type,
             },
