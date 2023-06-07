@@ -33,8 +33,6 @@ pub struct DatasourceMethod {
     pub interface: Option<String>,
     pub args: Vec<DatasourceMethodArg>,
     pub response: DatasourceResponse,
-    pub custom_struct: Option<Vec<DatasourceMethodCustomStruct>>,
-    pub custom_type: Option<Vec<DatasourceMethodCustomType>>,
 }
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct DatasourceMethodArg {
@@ -80,8 +78,6 @@ impl Datasource {
                     type_: "ic_web3::types::U256".to_string(),
                     with_timestamp: None,
                 },
-                custom_struct: None,
-                custom_type: None,
             },
         }
     }
@@ -89,8 +85,6 @@ impl Datasource {
         identifier: String,
         interface: Option<String>,
         response: DatasourceResponse,
-        custom_struct: Option<Vec<DatasourceMethodCustomStruct>>,
-        custom_type: Option<Vec<DatasourceMethodCustomType>>,
     ) -> Self {
         Self {
             type_: DatasourceType::Contract,
@@ -100,8 +94,6 @@ impl Datasource {
                 interface,
                 args: vec![],
                 response,
-                custom_struct,
-                custom_type,
             },
         }
     }
@@ -116,29 +108,9 @@ impl Datasource {
                 interface: None,
                 args: vec![],
                 response: DatasourceResponse {
-                    type_: "ResponseType".to_string(),
+                    type_: "String".to_string(),
                     with_timestamp: Some(true),
                 },
-                custom_struct: Some(vec![
-                    DatasourceMethodCustomStruct {
-                        name: "ResponseType".to_string(),
-                        fields: vec![
-                            DatasourceMethodCustomStructField {
-                                name: "value".to_string(),
-                                type_: "ResponseValueType".to_string(),
-                            },
-                            DatasourceMethodCustomStructField {
-                                name: "timestamp".to_string(),
-                                type_: "u64".to_string(),
-                            },
-                    ],
-                }]),
-                custom_type: Some(vec![
-                    DatasourceMethodCustomType {
-                        name: "ResponseValueType".to_string(),
-                        types: vec!["String".to_string()],
-                    },
-                ]),
             },
         }
     }
@@ -147,8 +119,6 @@ impl Datasource {
         identifier: String,
         interface: Option<String>,
         response: DatasourceResponse,
-        custom_struct: Option<Vec<DatasourceMethodCustomStruct>>,
-        custom_type: Option<Vec<DatasourceMethodCustomType>>,
     ) -> Self {
         Self {
             type_: DatasourceType::Canister,
@@ -158,8 +128,6 @@ impl Datasource {
                 interface,
                 args: vec![],
                 response,
-                custom_struct,
-                custom_type,
             },
         }
     }

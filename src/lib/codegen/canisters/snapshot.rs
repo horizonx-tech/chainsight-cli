@@ -2,7 +2,7 @@ use anyhow::ensure;
 use quote::{quote, format_ident};
 use proc_macro2::TokenStream;
 
-use crate::{types::ComponentType, lib::{utils::convert_camel_to_snake, codegen::{components::{snapshot::SnapshotComponentManifest, common::DatasourceType}, canisters::common::{generate_custom_struct_idents, generate_custom_type_idents, generate_request_arg_idents, generate_outside_call_idents, OutsideCallIdentsType}}}};
+use crate::{types::ComponentType, lib::{utils::convert_camel_to_snake, codegen::{components::{snapshot::SnapshotComponentManifest, common::DatasourceType}, canisters::common::{generate_request_arg_idents, generate_outside_call_idents, OutsideCallIdentsType}}}};
 
 fn common_codes_for_contract() -> TokenStream {
     let outside_call_idents = generate_outside_call_idents(OutsideCallIdentsType::Eth);
@@ -65,8 +65,6 @@ fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> TokenStrea
             response_val_idents.push(result.1);
         }
     }
-
-    // TODO: consider method.custom_struct, method.custom_type
 
     // consider whether to add timestamp information to the snapshot
     let (
@@ -209,18 +207,6 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> TokenStrea
         )
     };
 
-    // define custom_struct
-    let custom_struct_ident = match &method.custom_struct {
-        Some(custom_structs) => generate_custom_struct_idents(custom_structs),
-        None => vec![]
-    };
-
-    // define custom_type
-    let custom_type_ident = match &method.custom_type {
-        Some(custom_types) => generate_custom_type_idents(custom_types),
-        None => vec![]
-    };
-
     // consider whether to add timestamp information to the snapshot
     let (
         snapshot_idents,
@@ -258,8 +244,6 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> TokenStrea
     quote! {
         #snapshot_idents
 
-        #(#custom_struct_ident)*
-        #(#custom_type_ident)*
         #response_type_def_ident
 
         type CallCanisterArgs = (#(#request_ty_idents),*);

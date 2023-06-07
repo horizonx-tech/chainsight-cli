@@ -2,7 +2,7 @@ use anyhow::ensure;
 use quote::{quote, format_ident};
 use proc_macro2::TokenStream;
 
-use crate::{types::ComponentType, lib::codegen::{components::{relayer::RelayerComponentManifest, common::{DestinactionType}}, oracle::get_oracle_attributes, canisters::common::{generate_custom_struct_idents, generate_custom_type_idents, generate_request_arg_idents, generate_outside_call_idents, OutsideCallIdentsType}}};
+use crate::{types::ComponentType, lib::codegen::{components::{relayer::RelayerComponentManifest, common::{DestinactionType}}, oracle::get_oracle_attributes, canisters::common::{generate_request_arg_idents, generate_outside_call_idents, OutsideCallIdentsType}}};
 
 // temp
 fn common_codes() -> TokenStream {
@@ -39,22 +39,29 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> TokenStream {
     let abi_path = format!("./__interfaces/{}.json", oracle_name_str);
 
     // for response type
-    let response_type_ident = format_ident!("{}", &method.response.type_);
+    let response_with_timestamp = manifest.datasource.method.response.with_timestamp;
+    let (response_type_ident, response_type_def_ident) = if response_with_timestamp.is_some() && response_with_timestamp.unwrap() {
+        let ty_ident = format_ident!("{}", &method.response.type_);
+        let ty_with_ts_ident = format_ident!("{}ValueWithTimestamp", &method.response.type_);
+        (
+            ty_with_ts_ident.clone(),
+            quote! {
+                #[derive(Clone, Debug, candid::CandidType, candid::Deserialize)]
+                pub struct #ty_with_ts_ident {
+                    pub value: #ty_ident,
+                    pub timestamp: u64,
+                }
+            }
+        )
+    } else {
+        (
+            format_ident!("{}", &method.response.type_),
+            quote! {}
+        )
+    };
 
     // for request values
     let (request_val_idents, request_ty_idents) = generate_request_arg_idents(&method.args);
-
-    // define custom_struct
-    let custom_struct_ident = match &method.custom_struct {
-        Some(custom_structs) => generate_custom_struct_idents(custom_structs),
-        None => vec![]
-    };
-
-    // define custom_type
-    let custom_type_ident = match &method.custom_type {
-        Some(custom_types) => generate_custom_type_idents(custom_types),
-        None => vec![]
-    };
 
     // define data to call update function of oracle
     // temp: args for update_state (support only default manifest)
@@ -66,8 +73,7 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> TokenStream {
     quote! {
         ic_solidity_bindgen::contract_abi!(#abi_path);
 
-        #(#custom_struct_ident)*
-        #(#custom_type_ident)*
+        #response_type_def_ident
 
         type CallCanisterArgs = (#(#request_ty_idents),*);
         type CallCanisterResponse = (#response_type_ident);

@@ -95,8 +95,6 @@ fn template_snapshot_manifest(component_name: &str) -> SnapshotComponentManifest
                 type_: "TODO".to_string(),
                 with_timestamp: Some(true),
             },
-            None,
-            None
         ),
         SnapshotStorage::default(),
         3600
@@ -114,8 +112,6 @@ fn template_relayer_manifest(component_name: &str) -> RelayerComponentManifest {
                 type_: "TODO".to_string(),
                 with_timestamp: Some(true),
             },
-            None,
-            None
         ),
         DestinationField::default(),
     )
