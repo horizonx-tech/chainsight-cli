@@ -8,9 +8,11 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.71"
 clap = { version = "4.3.0", features = ["derive", "env", "unstable-styles", "wrap_help"] }
+ethabi = "18.0.0"
 lazy_static = "1.4.0"
 proc-macro2 = "1.0.59"
 quote = "1.0.28"
+regex = "1.8.4"
 semver = "1.0.17"
 serde = { version = "1.0.163", features = ["derive"] }
 serde_yaml = "0.9.21"

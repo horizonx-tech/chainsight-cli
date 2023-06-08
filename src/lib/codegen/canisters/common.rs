@@ -1,13 +1,138 @@
+use anyhow::bail;
+use ethabi::{param_type::Reader, ParamType};
 use quote::{format_ident, quote};
 
-use crate::lib::codegen::components::common::DatasourceMethodArg;
+/// Generate method identifiers from function expressions in abi, candid format
+#[derive(Debug)]
+pub struct MethodIdentifier {
+    pub identifier: String,
+    pub params: Vec<String>,
+    pub return_value: Option<Vec<String>>,
+}
+impl MethodIdentifier {
+    pub fn parse_from_abi_str(s: &str) -> Option<Self> {
+        let re = regex::Regex::new(r"(?P<identifier>\w+)\((?P<params>[^)]*)\)(?::\((?P<return>[^)]*)\))?").unwrap();
+        let captures = re.captures(s).unwrap();
+
+        let identifier = captures.name("identifier").unwrap().as_str().to_string();
+
+        let params: Vec<String> = captures
+            .name("params")
+            .unwrap()
+            .as_str()
+            .split(',')
+            .map(|s| convert_type_from_abi_type(s.trim()).unwrap()) // temp
+            .collect();
+
+        let return_value = captures.name("return").map(|m| {
+            m.as_str()
+                .split(',')
+                .map(|s| s.trim().to_string())
+                .collect()
+        });
+
+        Some(MethodIdentifier {
+            identifier,
+            params,
+            return_value,
+        })
+    }
+
+    pub fn parse_from_candid_str(s: &str) -> Option<Self> {
+        let re = regex::Regex::new(r"(?P<identifier>\w+)\s*:\s*\((?P<params>[^)]*)\)\s*(->\s*\((?P<return>[^)]*)\))?").unwrap();
+
+        let captures = re.captures(s).unwrap();
+
+        let identifier = captures.name("identifier").unwrap().as_str().to_string();
+
+        let params = captures
+            .name("params")
+            .unwrap()
+            .as_str()
+            .split(',')
+            .map(|s| convert_type_from_candid_type(s.trim()).unwrap())
+            .collect();
+
+        let return_value = captures.name("return").map(|m| {
+            m.as_str()
+                .split(',')
+                .map(|s| s.trim().to_string())
+                .collect()
+        });
+
+        Some(MethodIdentifier {
+            identifier,
+            params,
+            return_value,
+        })
+    }
+}
+
+fn convert_type_from_abi_type(s: &str) -> anyhow::Result<String> {
+    let param = Reader::read(s).map_err(|e| anyhow::anyhow!(e))?;
+
+    let err_msg = "ic_solidity_bindgen::internal::Unimplemented".to_string(); // temp
+    // ref: https://github.com/horizonx-tech/ic-solidity-bindgen/blob/6c9ffb4354cee4c32b1df17a2210c90f16972c21/ic-solidity-bindgen-macros/src/abi_gen.rs#L124
+    let ty_str = match param {
+        ParamType::Address => "ic_web3::types::Address",
+        ParamType::Bytes => "Vec<u8>",
+        ParamType::Int(size) => match size {
+            129..=256 => bail!(err_msg),
+            65..=128 => "i128",
+            33..=64 => "i64",
+            17..=32 => "i32",
+            9..=16 => "i16",
+            1..=8 => "i8",
+            _ => bail!(err_msg),
+        },
+        ParamType::Uint(size) => match size {
+            129..=256 => "ic_web3::types::U256",
+            65..=128 => "u128",
+            33..=64 => "u64",
+            17..=32 => "u32",
+            1..=16 => "u16",
+            _ => bail!(err_msg),
+        },
+        ParamType::Bool => "bool",
+        ParamType::String => "String",
+        ParamType::Array(_) => bail!(err_msg), // temp
+        ParamType::FixedBytes(_) => bail!(err_msg), // temp
+        ParamType::FixedArray(_, _) => bail!(err_msg), // temp
+        ParamType::Tuple(_) => bail!(err_msg), // temp
+    };
+    Ok(ty_str.to_string())
+}
+
+fn convert_type_from_candid_type(s: &str) -> anyhow::Result<String> {
+    let err_msg = "not supported candid type".to_string(); // temp
+    // ref: https://internetcomputer.org/docs/current/references/candid-ref
+    let ty_str = match s {
+        "text" => "String",
+        "nat" => "u128",
+        "int" => "i128",
+        "nat8" => "u8",
+        "nat16" => "u16",
+        "nat32" => "u32",
+        "nat64" => "u64",
+        "int8" => "i8",
+        "int16" => "i16",
+        "int32" => "i32",
+        "int64" => "i64",
+        "float32" => "f32",
+        "float64" => "f64",
+        "bool" => "bool",
+        // todo: null,vec,opt
+        _ => bail!(err_msg)
+    };
+    Ok(ty_str.to_string())
+}
 
 pub enum OutsideCallIdentsType {
     Eth,
     CrossCanisterCall,
     All
 }
-/// Generate common identifies such as storage, setter, etc. for outside calls
+/// Generate common identifiers such as storage, setter, etc. for outside calls
 pub fn generate_outside_call_idents(type_: OutsideCallIdentsType) -> proc_macro2::TokenStream {
     let eth_idents = quote! {
         define_web3_ctx!();
@@ -54,11 +179,11 @@ pub fn generate_outside_call_idents(type_: OutsideCallIdentsType) -> proc_macro2
 }
 
 // Generate the part of data of the argument that calls the function of datasource contract/canister
-pub fn generate_request_arg_idents(method_args: &Vec<DatasourceMethodArg>) -> (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::Ident>) {
+pub fn generate_request_arg_idents(method_args: &Vec<(String, serde_yaml::Value)>) -> (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::Ident>) {
     let mut value_idents = vec![];
     let mut type_idents = vec![];
     for method_arg in method_args {
-        let DatasourceMethodArg { type_, value } = method_arg;
+        let (type_, value) = method_arg;
         // temp
         let request_arg_value = match type_.clone().as_str() {
             "ic_web3::types::U256" => {

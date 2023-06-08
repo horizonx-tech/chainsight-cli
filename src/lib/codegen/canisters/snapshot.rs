@@ -2,7 +2,7 @@ use anyhow::ensure;
 use quote::{quote, format_ident};
 use proc_macro2::TokenStream;
 
-use crate::{types::ComponentType, lib::{utils::convert_camel_to_snake, codegen::{components::{snapshot::SnapshotComponentManifest, common::DatasourceType}, canisters::common::{generate_request_arg_idents, generate_outside_call_idents, OutsideCallIdentsType}}}};
+use crate::{types::ComponentType, lib::{utils::convert_camel_to_snake, codegen::{components::{snapshot::SnapshotComponentManifest, common::DatasourceType}, canisters::common::{generate_request_arg_idents, generate_outside_call_idents, OutsideCallIdentsType, MethodIdentifier}}}};
 
 fn common_codes_for_contract() -> TokenStream {
     let outside_call_idents = generate_outside_call_idents(OutsideCallIdentsType::Eth);
@@ -27,22 +27,18 @@ fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> TokenStrea
 
     let label = &manifest.label;
     let method = &manifest.datasource.method;
-    let mut camel_method_ident = method.identifier.clone();
-    // method.identifier: remove `()`
-    camel_method_ident.pop();
-    camel_method_ident.pop();
-    let method_ident_str = convert_camel_to_snake(&camel_method_ident);
+    let method_identifier = MethodIdentifier::parse_from_abi_str(&method.identifier).expect("Failed to parse method.identifier");
+    let method_ident_str = convert_camel_to_snake(&method_identifier.identifier);
     let method_ident = format_ident!("{}", method_ident_str);
 
-    if method.interface.is_none() {
-        panic!("interface is not defined");
-    }
-    let method_interface = method.interface.clone().unwrap();
+    let method_interface = method.interface.clone().expect("method.interface is not defined");
     let contract_struct_ident = format_ident!("{}", method_interface.trim_end_matches(".json"));
     let abi_path = format!("./__interfaces/{}", method_interface);
 
     // for request values
-    let (request_val_idents, _) = generate_request_arg_idents(&method.args);
+    let method_args = method.args.iter().enumerate()
+        .map(|(idx, arg)| (method_identifier.params[idx].clone(), arg.value.clone())).collect();
+    let (request_val_idents, _) = generate_request_arg_idents(&method_args);
 
     // for response types & response values
     let mut response_type_idents: Vec<syn::Ident> = vec![];
@@ -176,14 +172,15 @@ fn common_codes_for_canister() -> TokenStream {
 fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> TokenStream {
     let label = &manifest.label;
     let method = &manifest.datasource.method;
-    let mut method_ident = manifest.datasource.method.identifier.clone();
-    // method.identifier: remove `()`
-    method_ident.pop();
-    method_ident.pop();
+    let method_identifier = MethodIdentifier::parse_from_candid_str(&method.identifier).expect("Failed to parse method.identifier");
+
+    let method_ident = &method_identifier.identifier;
     let call_method_ident = format_ident!("call_{}", method_ident);
 
     // for request values
-    let (request_val_idents, request_ty_idents) = generate_request_arg_idents(&method.args);
+    let method_args = method.args.iter().enumerate()
+        .map(|(idx, arg)| (method_identifier.params[idx].clone(), arg.value.clone())).collect();
+    let (request_val_idents, request_ty_idents) = generate_request_arg_idents(&method_args);
 
     // for response type
     let response_with_timestamp = manifest.datasource.method.response.with_timestamp;
