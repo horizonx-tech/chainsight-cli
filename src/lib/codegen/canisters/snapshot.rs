@@ -36,8 +36,9 @@ fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> TokenStrea
     let abi_path = format!("./__interfaces/{}", method_interface);
 
     // for request values
+    // todo: validate length of method.args and method_identifier.params
     let method_args = method.args.iter().enumerate()
-        .map(|(idx, arg)| (method_identifier.params[idx].clone(), arg.value.clone())).collect();
+        .map(|(idx, arg)| (method_identifier.params[idx].clone(), arg.clone())).collect();
     let (request_val_idents, _) = generate_request_arg_idents(&method_args);
 
     // for response types & response values
@@ -178,8 +179,9 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> TokenStrea
     let call_method_ident = format_ident!("call_{}", method_ident);
 
     // for request values
+    // todo: validate length of method.args and method_identifier.params
     let method_args = method.args.iter().enumerate()
-        .map(|(idx, arg)| (method_identifier.params[idx].clone(), arg.value.clone())).collect();
+        .map(|(idx, arg)| (method_identifier.params[idx].clone(), arg.clone())).collect();
     let (request_val_idents, request_ty_idents) = generate_request_arg_idents(&method_args);
 
     // for response type

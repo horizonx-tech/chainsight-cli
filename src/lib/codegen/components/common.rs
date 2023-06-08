@@ -31,14 +31,8 @@ pub struct Datasource {
 pub struct DatasourceMethod {
     pub identifier: String,
     pub interface: Option<String>,
-    pub args: Vec<DatasourceMethodArg>,
+    pub args: Vec<serde_yaml::Value>,
     pub response: DatasourceResponse,
-}
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct DatasourceMethodArg {
-    #[serde(rename = "type")]
-    pub type_: String,
-    pub value: serde_yaml::Value,
 }
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct DatasourceResponse {

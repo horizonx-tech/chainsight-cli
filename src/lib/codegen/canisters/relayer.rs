@@ -60,8 +60,9 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> TokenStream {
     };
 
     // for request values
+    // todo: validate length of method.args and method_identifier.params
     let method_args = method.args.iter().enumerate()
-        .map(|(idx, arg)| (method_identifier.params[idx].clone(), arg.value.clone())).collect();
+        .map(|(idx, arg)| (method_identifier.params[idx].clone(), arg.clone())).collect();
     let (request_val_idents, request_ty_idents) = generate_request_arg_idents(&method_args);
 
     // define data to call update function of oracle
