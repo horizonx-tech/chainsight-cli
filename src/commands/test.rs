@@ -39,7 +39,7 @@ pub fn exec(env: &EnvironmentImpl, opts: TestOpts) -> anyhow::Result<()> {
         .output()
         .expect("failed to execute process: dfx ping");
     if output.status.success() {
-        debug!(log, "{}", std::str::from_utf8(&output.stdout).unwrap());
+        debug!(log, "{}", std::str::from_utf8(&output.stdout).unwrap_or(&"fail to parse stdout"));
         info!(log, "Ping dfx local subnet successfully");
     } else {
         error!(log, "Ping dfx local subnet failed");
@@ -53,7 +53,7 @@ pub fn exec(env: &EnvironmentImpl, opts: TestOpts) -> anyhow::Result<()> {
         .output()
         .expect("failed to execute process: cargo make did");
     if output.status.success() {
-        debug!(log, "{}", std::str::from_utf8(&output.stdout).unwrap());
+        debug!(log, "{}", std::str::from_utf8(&output.stdout).unwrap_or(&"fail to parse stdout"));
         info!(log, "Generating interfaces (.did files) successfully");
     } else {
         error!(log, "Generating interfaces (.did files) failed");
@@ -67,7 +67,7 @@ pub fn exec(env: &EnvironmentImpl, opts: TestOpts) -> anyhow::Result<()> {
         .output()
         .expect("failed to execute process: dfx canister create --all");
     if output.status.success() {
-        debug!(log, "{}", std::str::from_utf8(&output.stdout).unwrap());
+        debug!(log, "{}", std::str::from_utf8(&output.stdout).unwrap_or(&"fail to parse stdout"));
         info!(log, "Executed 'dfx canister create --all'");
     } else {
         error!(log, "Failed to execute 'dfx canister create --all");
@@ -81,7 +81,7 @@ pub fn exec(env: &EnvironmentImpl, opts: TestOpts) -> anyhow::Result<()> {
         .output()
         .expect("failed to execute process: dfx build");
     if output.status.success() {
-        debug!(log, "{}", std::str::from_utf8(&output.stdout).unwrap());
+        debug!(log, "{}", std::str::from_utf8(&output.stdout).unwrap_or(&"fail to parse stdout"));
         info!(log, "Executed 'dfx build'");
     } else {
         error!(log, "Failed to execute 'dfx build");
@@ -95,7 +95,7 @@ pub fn exec(env: &EnvironmentImpl, opts: TestOpts) -> anyhow::Result<()> {
         .output()
         .expect("failed to execute process: dfx canister install --all");
     if output.status.success() {
-        debug!(log, "{}", std::str::from_utf8(&output.stdout).unwrap());
+        debug!(log, "{}", std::str::from_utf8(&output.stdout).unwrap_or(&"fail to parse stdout"));
         info!(log, "Executed 'dfx canister install --all'");
     } else {
         error!(log, "Failed to execute 'dfx canister install --all");

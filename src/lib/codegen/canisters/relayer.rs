@@ -21,10 +21,10 @@ fn common_codes() -> TokenStream {
     }
 }
 
-fn custom_codes(manifest: &RelayerComponentManifest) -> TokenStream {
+fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macro2::TokenStream> {
     let label = &manifest.label;
     let method = &manifest.datasource.method;
-    let method_identifier = MethodIdentifier::parse_from_candid_str(&method.identifier).expect("Failed to parse method.identifier");
+    let method_identifier = MethodIdentifier::parse_from_candid_str(&method.identifier)?;
 
     let method_ident = &method_identifier.identifier;
     let call_method_ident = format_ident!("call_{}", method_ident);
@@ -37,7 +37,7 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> TokenStream {
 
     // for response type
     let response_with_timestamp = manifest.datasource.method.response.with_timestamp;
-    let (response_type_ident, response_type_def_ident) = if response_with_timestamp.is_some() && response_with_timestamp.unwrap() {
+    let (response_type_ident, response_type_def_ident) = if response_with_timestamp.filter(|&b| b).is_some() {
         let ty_ident = format_ident!("{}", &method.response.type_);
         let ty_with_ts_ident = format_ident!("{}ValueWithTimestamp", &method.response.type_);
         (
@@ -70,7 +70,7 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> TokenStream {
         DestinactionType::StringOracle => quote! { &datum.value.to_string()},
     };
 
-    quote! {
+    Ok(quote! {
         ic_solidity_bindgen::contract_abi!(#abi_path);
 
         #response_type_def_ident
@@ -99,14 +99,14 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> TokenStream {
         }
 
         did_export!(#label);
-    }
+    })
 }
 
 pub fn generate_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<TokenStream> {
     ensure!(manifest.type_ == ComponentType::Relayer, "type is not Relayer");
 
     let common_code_token = common_codes();
-    let custom_code_token = custom_codes(manifest);
+    let custom_code_token = custom_codes(manifest)?;
 
     let code = quote! {
         #common_code_token

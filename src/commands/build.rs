@@ -63,23 +63,23 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
         let component_path = format!("{}/{}", &project_path_str, relative_component_path);
         let component_type = get_type_from_manifest(&component_path)?;
 
-        let (label, interface_path, destination_type, data): (String, Option<String>, Option<DestinactionType>, Box<dyn ComponentManifest>) = match component_type {
+        let (data, label, interface_path, destination_type): (Box<dyn ComponentManifest>, String, Option<String>, Option<DestinactionType>) = match component_type {
             ComponentType::Snapshot => {
-                let manifest = SnapshotComponentManifest::load(&component_path).unwrap();
+                let manifest = SnapshotComponentManifest::load(&component_path)?;
                 (
-                    manifest.clone().label,
-                    manifest.clone().datasource.method.interface,
+                    Box::new(manifest.clone()),
+                    manifest.label.clone(),
+                    manifest.datasource.method.interface.clone(),
                     None,
-                    Box::new(manifest),
                 )
             },
             ComponentType::Relayer => {
-                let manifest = RelayerComponentManifest::load(&component_path).unwrap();
+                let manifest = RelayerComponentManifest::load(&component_path)?;
                 (
-                    manifest.clone().label,
-                    manifest.clone().datasource.method.interface,
+                    Box::new(manifest.clone()),
+                    manifest.label.clone(),
+                    manifest.datasource.method.interface.clone(),
                     Some(manifest.clone().destination.type_),
-                    Box::new(manifest),
                 )
             },
         };
@@ -89,7 +89,7 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
             bail!(GLOBAL_ERROR_MSG.to_string())
         }
 
-        project_labels.push(label.clone());
+        project_labels.push(label.to_string());
         let canister_pj_path_str = format!("{}/artifacts/{}", &project_path_str, &label);
         let canister_code_path_str = format!("{}/src", &canister_pj_path_str);
         fs::create_dir_all(Path::new(&canister_code_path_str))?;

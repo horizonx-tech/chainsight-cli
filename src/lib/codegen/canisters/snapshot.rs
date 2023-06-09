@@ -1,4 +1,4 @@
-use anyhow::ensure;
+use anyhow::{ensure, bail};
 use quote::{quote, format_ident};
 use proc_macro2::TokenStream;
 
@@ -21,19 +21,20 @@ fn common_codes_for_contract() -> TokenStream {
     }
 }
 
-fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> TokenStream {
+fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> anyhow::Result<proc_macro2::TokenStream> {
     let label = &manifest.label;
     let method = &manifest.datasource.method;
-    let method_identifier = MethodIdentifier::parse_from_abi_str(&method.identifier).expect("Failed to parse method.identifier");
+    let method_identifier = MethodIdentifier::parse_from_abi_str(&method.identifier)?;
     let method_ident_str = convert_camel_to_snake(&method_identifier.identifier);
     let method_ident = format_ident!("{}", method_ident_str);
 
-    let method_interface = method.interface.clone().expect("method.interface is not defined");
-    let contract_struct_ident = format_ident!("{}", method_interface.trim_end_matches(".json"));
+    let method_interface = method.interface.clone()
+        .ok_or(anyhow::anyhow!("datasource.method.interface is required for contract"))?;
+    let contract_struct_ident = format_ident!("{}", method_interface.trim_end_matches(".json")); // temp: specify the extension (only .json?)
     let abi_path = format!("./__interfaces/{}", method_interface);
 
     // for request values
-    // todo: validate length of method.args and method_identifier.params
+    ensure!(method_identifier.params.len() == method.args.len(), "The number of params and args must be the same");
     let method_args = method.args.iter().enumerate()
         .map(|(idx, arg)| (method_identifier.params[idx].clone(), arg.clone())).collect();
     let (request_val_idents, _) = generate_request_arg_idents(&method_args);
@@ -41,22 +42,22 @@ fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> TokenStrea
     // for response types & response values
     let mut response_type_idents: Vec<syn::Ident> = vec![];
     let mut response_val_idents: Vec<proc_macro2::TokenStream> = vec![];
-    let response_type = syn::parse_str::<syn::Type>(&method.response.type_).unwrap();
+    let response_type = syn::parse_str::<syn::Type>(&method.response.type_)?;
     match &response_type {
         syn::Type::Tuple(type_tuple) => {
             // If it's a tuple, we process it like we did before
             for (idx, elem) in type_tuple.elems.iter().enumerate() {
                 let idx_lit = proc_macro2::Literal::usize_unsuffixed(idx);
-                let result = match_primitive_type(elem, Some(idx_lit));
-                response_type_idents.push(result.0);
-                response_val_idents.push(result.1);
+                let (response_type_ident, response_val_ident) = match_primitive_type(elem, Some(idx_lit))?;
+                response_type_idents.push(response_type_ident);
+                response_val_idents.push(response_val_ident);
             }
         }
         _ => {
             // If it's not a tuple, it must be a primitive type
-            let result = match_primitive_type(&response_type, None);
-            response_type_idents.push(result.0);
-            response_val_idents.push(result.1);
+            let (response_type_ident, response_val_ident) = match_primitive_type(&response_type, None)?;
+            response_type_idents.push(response_type_ident);
+            response_val_idents.push(response_val_ident);
         }
     }
 
@@ -96,7 +97,7 @@ fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> TokenStrea
         )
     };
 
-    quote! {
+    Ok(quote! {
         #snapshot_idents
 
         ic_solidity_bindgen::contract_abi!(#abi_path);
@@ -113,11 +114,11 @@ fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> TokenStrea
         }
 
         did_export!(#label);
-    }
+    })
 }
 
-fn match_primitive_type(ty: &syn::Type, idx: Option<proc_macro2::Literal>) -> (proc_macro2::Ident, proc_macro2::TokenStream) {
-    match ty {
+fn match_primitive_type(ty: &syn::Type, idx: Option<proc_macro2::Literal>) -> anyhow::Result<(proc_macro2::Ident, proc_macro2::TokenStream)> {
+    let res = match ty {
         syn::Type::Path(type_path) => {
             let mut type_string = quote! { #type_path }.to_string();
             type_string.retain(|c| !c.is_whitespace());
@@ -148,8 +149,9 @@ fn match_primitive_type(ty: &syn::Type, idx: Option<proc_macro2::Literal>) -> (p
                 )
             }
         },
-        _ => panic!("Unsupported type"),
-    }
+        _ => bail!("Unsupported type"),
+    };
+    Ok(res)
 }
 
 fn common_codes_for_canister() -> TokenStream {
@@ -167,10 +169,10 @@ fn common_codes_for_canister() -> TokenStream {
     }
 }
 
-fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> TokenStream {
+fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> anyhow::Result<proc_macro2::TokenStream> {
     let label = &manifest.label;
     let method = &manifest.datasource.method;
-    let method_identifier = MethodIdentifier::parse_from_candid_str(&method.identifier).expect("Failed to parse method.identifier");
+    let method_identifier = MethodIdentifier::parse_from_candid_str(&method.identifier)?;
 
     let method_ident = &method_identifier.identifier;
     let call_method_ident = format_ident!("call_{}", method_ident);
@@ -183,7 +185,7 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> TokenStrea
 
     // for response type
     let response_with_timestamp = manifest.datasource.method.response.with_timestamp;
-    let (response_type_ident, response_type_def_ident) = if response_with_timestamp.is_some() && response_with_timestamp.unwrap() {
+    let (response_type_ident, response_type_def_ident) = if response_with_timestamp.filter(|&b| b).is_some() {
         let ty_ident = format_ident!("{}", &method.response.type_);
         let ty_with_ts_ident = format_ident!("{}ValueWithTimestamp", &method.response.type_);
         (
@@ -237,7 +239,7 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> TokenStrea
         )
     };
 
-    quote! {
+    Ok(quote! {
         #snapshot_idents
 
         #response_type_def_ident
@@ -262,7 +264,7 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> TokenStrea
         }
 
         did_export!(#label);
-    }
+    })
 }
 
 pub fn generate_codes(manifest: &SnapshotComponentManifest) -> anyhow::Result<TokenStream> {
@@ -271,11 +273,11 @@ pub fn generate_codes(manifest: &SnapshotComponentManifest) -> anyhow::Result<To
     let (common_code_token, custom_code_token) = match manifest.datasource.type_ {
         DatasourceType::Canister => (
             common_codes_for_canister(),
-            custom_codes_for_canister(manifest),
+            custom_codes_for_canister(manifest)?,
         ),
         DatasourceType::Contract => (
             common_codes_for_contract(),
-            custom_codes_for_contract(manifest),
+            custom_codes_for_contract(manifest)?,
         )
     };
 

@@ -10,8 +10,8 @@ pub struct MethodIdentifier {
     pub return_value: Option<Vec<String>>,
 }
 impl MethodIdentifier {
-    pub fn parse_from_abi_str(s: &str) -> Option<Self> {
-        let re = regex::Regex::new(r"(?P<identifier>\w+)\((?P<params>[^)]*)\)(?::\((?P<return>[^)]*)\))?").unwrap();
+    pub fn parse_from_abi_str(s: &str) -> anyhow::Result<Self> {
+        let re = regex::Regex::new(r"(?P<identifier>\w+)\((?P<params>[^)]*)\)(?::\((?P<return>[^)]*)\))?")?;
         let captures = re.captures(s).unwrap();
 
         let identifier = captures.name("identifier").unwrap().as_str().to_string();
@@ -20,14 +20,15 @@ impl MethodIdentifier {
             .name("params")
             .unwrap()
             .as_str();
-        let params = if params_str.is_empty() {
-            vec![]
+        let params_result: anyhow::Result<Vec<String>> = if params_str.is_empty() {
+            Ok(vec![])
         } else {
             params_str
                 .split(',')
-                .map(|s| convert_type_from_abi_type(s.trim()).unwrap()) // temp
+                .map(|s| convert_type_from_abi_type(s.trim())) // temp
                 .collect()
         };
+        let params = params_result?;
 
         let return_value = captures.name("return").map(|m| {
             m.as_str()
@@ -36,15 +37,15 @@ impl MethodIdentifier {
                 .collect()
         });
 
-        Some(MethodIdentifier {
+        Ok(MethodIdentifier {
             identifier,
             params,
             return_value,
         })
     }
 
-    pub fn parse_from_candid_str(s: &str) -> Option<Self> {
-        let re = regex::Regex::new(r"(?P<identifier>\w+)\s*:\s*\((?P<params>.*?)\)\s*(->\s*\((?P<return>.*?)\))?").unwrap();
+    pub fn parse_from_candid_str(s: &str) -> anyhow::Result<Self> {
+        let re = regex::Regex::new(r"(?P<identifier>\w+)\s*:\s*\((?P<params>.*?)\)\s*(->\s*\((?P<return>.*?)\))?")?;
 
         let captures = re.captures(s).unwrap();
 
@@ -54,14 +55,15 @@ impl MethodIdentifier {
             .name("params")
             .unwrap()
             .as_str();
-        let params = if params_str.is_empty() {
-            vec![]
+        let params_result: anyhow::Result<Vec<String>> = if params_str.is_empty() {
+            Ok(vec![])
         } else {
             params_str
                 .split(',')
-                .map(|s| convert_type_from_candid_type(s.trim()).unwrap()) // temp
+                .map(|s| convert_type_from_candid_type(s.trim())) // temp
                 .collect()
         };
+        let params = params_result?;
 
         let return_value = captures.name("return").map(|m| {
             m.as_str()
@@ -70,7 +72,7 @@ impl MethodIdentifier {
                 .collect()
         });
 
-        Some(MethodIdentifier {
+        Ok(MethodIdentifier {
             identifier,
             params,
             return_value,
