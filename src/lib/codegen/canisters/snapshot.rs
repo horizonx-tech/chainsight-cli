@@ -2,7 +2,7 @@ use anyhow::{ensure, bail};
 use quote::{quote, format_ident};
 use proc_macro2::TokenStream;
 
-use crate::{types::ComponentType, lib::{utils::convert_camel_to_snake, codegen::{components::{snapshot::SnapshotComponentManifest, common::DatasourceType}, canisters::common::{generate_request_arg_idents, generate_outside_call_idents, OutsideCallIdentsType, MethodIdentifier}}}};
+use crate::{types::ComponentType, lib::{utils::{convert_camel_to_snake, U256_TYPE, ADDRESS_TYPE}, codegen::{components::{snapshot::SnapshotComponentManifest, common::DatasourceType}, canisters::common::{generate_request_arg_idents, generate_outside_call_idents, OutsideCallIdentsType, MethodIdentifier}}}};
 
 fn common_codes_for_contract() -> TokenStream {
     let outside_call_idents = generate_outside_call_idents(OutsideCallIdentsType::Eth);
@@ -124,7 +124,7 @@ fn match_primitive_type(ty: &syn::Type, idx: Option<proc_macro2::Literal>) -> an
             type_string.retain(|c| !c.is_whitespace());
 
             match type_string.as_str() {
-                "ic_web3::types::U256" => {
+                U256_TYPE => {
                     (
                         format_ident!("String"),
                         match idx {
@@ -133,7 +133,7 @@ fn match_primitive_type(ty: &syn::Type, idx: Option<proc_macro2::Literal>) -> an
                         }
                     )
                 },
-                "ic_web3::types::Address" => (
+                ADDRESS_TYPE => (
                     format_ident!("String"),
                     match idx {
                         Some(idx_lit) => quote! { hex::encode(res.#idx_lit) },

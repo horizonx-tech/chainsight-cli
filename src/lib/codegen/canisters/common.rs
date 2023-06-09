@@ -1,6 +1,27 @@
+use std::collections::HashMap;
+use lazy_static::lazy_static;
+
 use anyhow::bail;
 use ethabi::{param_type::Reader, ParamType};
 use quote::{format_ident, quote};
+
+use crate::lib::utils::{ADDRESS_TYPE, U256_TYPE};
+
+lazy_static! {
+    static ref MAPPING_CANDID_TY: HashMap<&'static str, &'static str> = [
+        ("text", "String"),
+        ("nat", "u128"),
+        ("int", "i128"),
+        ("nat8", "u8"),
+        ("nat16", "u16"),
+        ("nat32", "u32"),
+        ("nat64", "u64"),
+        ("int8", "i8"),
+        ("int16", "i16"),
+        ("int32", "i32"),
+        ("int64", "i64"),
+    ].iter().cloned().collect();
+}
 
 /// Generate method identifiers from function expressions in abi, candid format
 #[derive(Debug)]
@@ -86,7 +107,7 @@ fn convert_type_from_abi_type(s: &str) -> anyhow::Result<String> {
     let err_msg = "ic_solidity_bindgen::internal::Unimplemented".to_string(); // temp
     // ref: https://github.com/horizonx-tech/ic-solidity-bindgen/blob/6c9ffb4354cee4c32b1df17a2210c90f16972c21/ic-solidity-bindgen-macros/src/abi_gen.rs#L124
     let ty_str = match param {
-        ParamType::Address => "ic_web3::types::Address",
+        ParamType::Address => ADDRESS_TYPE,
         ParamType::Bytes => "Vec<u8>",
         ParamType::Int(size) => match size {
             129..=256 => bail!(err_msg),
@@ -98,7 +119,7 @@ fn convert_type_from_abi_type(s: &str) -> anyhow::Result<String> {
             _ => bail!(err_msg),
         },
         ParamType::Uint(size) => match size {
-            129..=256 => "ic_web3::types::U256",
+            129..=256 => U256_TYPE,
             65..=128 => "u128",
             33..=64 => "u64",
             17..=32 => "u32",
@@ -118,25 +139,11 @@ fn convert_type_from_abi_type(s: &str) -> anyhow::Result<String> {
 fn convert_type_from_candid_type(s: &str) -> anyhow::Result<String> {
     let err_msg = "not supported candid type".to_string(); // temp
     // ref: https://internetcomputer.org/docs/current/references/candid-ref
-    let ty_str = match s {
-        "text" => "String",
-        "nat" => "u128",
-        "int" => "i128",
-        "nat8" => "u8",
-        "nat16" => "u16",
-        "nat32" => "u32",
-        "nat64" => "u64",
-        "int8" => "i8",
-        "int16" => "i16",
-        "int32" => "i32",
-        "int64" => "i64",
-        "float32" => "f32",
-        "float64" => "f64",
-        "bool" => "bool",
-        // todo: null,vec,opt
-        _ => bail!(err_msg)
-    };
-    Ok(ty_str.to_string())
+    let ty_str = MAPPING_CANDID_TY.get(s);
+    if ty_str.is_none() {
+        bail!(err_msg);
+    }
+    Ok(ty_str.unwrap().to_string())
 }
 
 pub enum OutsideCallIdentsType {
@@ -198,7 +205,7 @@ pub fn generate_request_arg_idents(method_args: &Vec<(String, serde_yaml::Value)
         let (type_, value) = method_arg;
         // temp
         let request_arg_value = match type_.clone().as_str() {
-            "ic_web3::types::U256" => {
+            U256_TYPE => {
                 match value {
                     serde_yaml::Value::String(val) => quote! { ic_web3::types::U256::from_dec_str(#val).unwrap() },
                     serde_yaml::Value::Number(val) => {
@@ -210,7 +217,7 @@ pub fn generate_request_arg_idents(method_args: &Vec<(String, serde_yaml::Value)
                     _ => quote! {}
                 }
             }
-            "ic_web3::types::Address" => {
+            ADDRESS_TYPE => {
                 match value {
                     serde_yaml::Value::String(val) => quote! { ic_web3::types::Address::from_str(#val).unwrap() },
                     _ => quote! {}
@@ -239,7 +246,7 @@ pub fn generate_request_arg_idents(method_args: &Vec<(String, serde_yaml::Value)
             }
         };
         value_idents.push(request_arg_value);
-        if type_ == "ic_web3::types::U256" || type_ == "ic_web3::types::Address" {
+        if type_ == U256_TYPE || type_ == ADDRESS_TYPE {
             // In the case of contract, other than the primitive type (ic_web3::types::U256 etc.) may be set, in which case type_idents is not used.
             type_idents.push(format_ident!("String")); // temp: thread 'main' panicked at '"ic_web3::types::U256" is not a valid Ident'
         } else {

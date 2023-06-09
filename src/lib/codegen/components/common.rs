@@ -3,7 +3,7 @@ use std::{fs::OpenOptions, path::Path, io::Read};
 use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 
-use crate::types::ComponentType;
+use crate::{types::ComponentType, lib::utils::U256_TYPE};
 
 #[derive(Deserialize, Serialize, Clone, Copy, Debug, PartialEq, clap::ValueEnum)]
 pub enum DatasourceType {
@@ -70,7 +70,7 @@ impl Datasource {
                 interface: Some("ERC20.json".to_string()),
                 args: vec![],
                 response: DatasourceResponse {
-                    type_: "ic_web3::types::U256".to_string(),
+                    type_: U256_TYPE.to_string(),
                     with_timestamp: None,
                 },
             },
