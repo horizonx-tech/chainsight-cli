@@ -47,11 +47,11 @@ impl ComponentManifest for SnapshotComponentManifest {
     }
 
     fn validate_manifest(&self) -> anyhow::Result<()> {
-        canisters::validate_snapshot_manifest(self)
+        canisters::snapshot::validate_manifest(self)
     }
 
     fn generate_codes(&self) -> anyhow::Result<TokenStream> {
-        canisters::generate_snapshot_codes(self)
+        canisters::snapshot::generate_codes(self)
     }
 }
 

@@ -46,11 +46,11 @@ impl ComponentManifest for RelayerComponentManifest {
     }
 
     fn validate_manifest(&self) -> anyhow::Result<()> {
-        canisters::validate_relayer_manifest(self)
+        canisters::relayer::validate_manifest(self)
     }
 
     fn generate_codes(&self) -> anyhow::Result<TokenStream> {
-        canisters::generate_relayer_codes(self)
+        canisters::relayer::generate_codes(self)
     }
 }
 
