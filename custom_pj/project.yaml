@@ -1,0 +1,7 @@
+version: v1
+label: custom_pj
+components:
+- component_path: components/uniswapv3factory_chain.yaml
+  canister_id: null
+- component_path: components/uniswapv3factory_icp.yaml
+  canister_id: null

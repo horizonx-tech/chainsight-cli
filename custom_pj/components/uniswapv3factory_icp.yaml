@@ -1,0 +1,17 @@
+version: v1
+type: snapshot
+label: uniswapv3factory_icp
+datasource:
+  type: canister
+  id: xxxxx-xxxxx-xxxxx-xxxxx-xxx
+  method:
+    identifier: "get_snapshot : (nat64)"
+    interface: null
+    args:
+    - 0
+    response:
+      type: String
+      with_timestamp: true
+storage:
+  with_timestamp: true
+interval: 3600
