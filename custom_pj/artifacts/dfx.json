@@ -1,0 +1,22 @@
+{
+    "version": 1,
+    "canisters": {
+			"uniswapv3factory_chain": {
+				"type": "rust",
+				"package": "uniswapv3factory_chain",
+				"candid": "uniswapv3factory_chain/uniswapv3factory_chain.did"
+			},
+			"uniswapv3factory_icp": {
+				"type": "rust",
+				"package": "uniswapv3factory_icp",
+				"candid": "uniswapv3factory_icp/uniswapv3factory_icp.did"
+			}
+    },
+    "defaults": {
+        "build": {
+            "packtool": "",
+            "args": ""
+        }
+    },
+    "output_env_file": ".env"
+}
