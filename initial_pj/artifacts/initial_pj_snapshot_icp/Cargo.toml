@@ -1,0 +1,21 @@
+[package]
+name = "initial_pj_snapshot_icp"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+candid.workspace = true
+ic-cdk.workspace = true
+ic-cdk-macros.workspace = true
+ic-cdk-timers.workspace = true
+serde.workspace = true
+hex.workspace = true
+
+ic-web3.workspace = true
+ic-solidity-bindgen.workspace = true
+ic-solidity-bindgen-macros.workspace = true
+chainsight-cdk-macros.workspace = true
+chainsight-cdk.workspace = true

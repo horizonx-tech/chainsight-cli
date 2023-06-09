@@ -1,0 +1,23 @@
+[workspace]
+members = [
+	"initial_pj_snapshot_chain",
+	"initial_pj_snapshot_icp",
+	"initial_pj_relayer",
+]
+
+[workspace.dependencies]
+candid = "0.8"
+ic-cdk = "0.7"
+ic-cdk-macros = "0.6.10"
+ic-cdk-timers = "0.1"
+serde = "1.0.163"
+hex = "0.4.3"
+
+ic-web3 = { git = "ssh://github-megared/horizonx-tech/ic-web3.git", rev = "fa982360c8420c88887606355eff0b7b48208a01" }
+ic-solidity-bindgen = { git = "ssh://github-megared/horizonx-tech/ic-solidity-bindgen.git", rev = "36a7e1044c261a91a715fbdc12d95afa69eb0620" }
+ic-solidity-bindgen-macros = { git = "ssh://github-megared/horizonx-tech/ic-solidity-bindgen.git", rev = "36a7e1044c261a91a715fbdc12d95afa69eb0620" }
+chainsight-cdk-macros = { git = "ssh://github-megared/horizonx-tech/chainsight-sdk.git", rev = "843683fa588da751e2ac613a4dbb16cb250f0d05" }
+chainsight-cdk = { git = "ssh://github-megared/horizonx-tech/chainsight-sdk.git", rev = "843683fa588da751e2ac613a4dbb16cb250f0d05" }
+
+[patch.'https://github.com/horizonx-tech/ic-web3']
+ic-web3 = { git = "ssh://github-megared/horizonx-tech/ic-web3.git", rev = "fa982360c8420c88887606355eff0b7b48208a01" }

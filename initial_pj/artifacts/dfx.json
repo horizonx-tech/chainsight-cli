@@ -1,0 +1,27 @@
+{
+    "version": 1,
+    "canisters": {
+			"initial_pj_snapshot_chain": {
+				"type": "rust",
+				"package": "initial_pj_snapshot_chain",
+				"candid": "initial_pj_snapshot_chain/initial_pj_snapshot_chain.did"
+			},
+			"initial_pj_snapshot_icp": {
+				"type": "rust",
+				"package": "initial_pj_snapshot_icp",
+				"candid": "initial_pj_snapshot_icp/initial_pj_snapshot_icp.did"
+			},
+			"initial_pj_relayer": {
+				"type": "rust",
+				"package": "initial_pj_relayer",
+				"candid": "initial_pj_relayer/initial_pj_relayer.did"
+			}
+    },
+    "defaults": {
+        "build": {
+            "packtool": "",
+            "args": ""
+        }
+    },
+    "output_env_file": ".env"
+}
