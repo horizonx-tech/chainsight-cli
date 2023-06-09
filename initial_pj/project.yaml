@@ -1,0 +1,9 @@
+version: v1
+label: initial_pj
+components:
+- component_path: components/initial_pj_snapshot_chain.yaml
+  canister_id: null
+- component_path: components/initial_pj_snapshot_icp.yaml
+  canister_id: null
+- component_path: components/initial_pj_relayer.yaml
+  canister_id: null

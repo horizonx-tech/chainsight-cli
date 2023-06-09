@@ -1,0 +1,16 @@
+version: v1
+type: snapshot
+label: initial_pj_snapshot_icp
+datasource:
+  type: canister
+  id: xxxxx-xxxxx-xxxxx-xxxxx-xxx
+  method:
+    identifier: 'get_last_snapshot : ()'
+    interface: null
+    args: []
+    response:
+      type: String
+      with_timestamp: true
+storage:
+  with_timestamp: true
+interval: 3600

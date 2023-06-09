@@ -1,0 +1,15 @@
+version: v1
+type: snapshot
+label: initial_pj_snapshot_chain
+datasource:
+  type: contract
+  id: 0000000000000000000000000000000000000000
+  method:
+    identifier: totalSupply()
+    interface: ERC20.json
+    args: []
+    response:
+      type: ic_web3::types::U256
+storage:
+  with_timestamp: true
+interval: 3600

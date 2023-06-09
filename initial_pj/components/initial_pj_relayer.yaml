@@ -1,0 +1,19 @@
+version: v1
+type: canister
+label: initial_pj_relayer
+datasource:
+  type: canister
+  id: xxxxx-xxxxx-xxxxx-xxxxx-xxx
+  method:
+    identifier: 'get_last_snapshot : ()'
+    interface: null
+    args: []
+    response:
+      type: String
+      with_timestamp: true
+destination:
+  network_id: 80001
+  type: uint256
+  oracle_address: 0539a0EF8e5E60891fFf0958A059E049e43020d9
+  rpc_url: https://polygon-mumbai.g.alchemy.com/v2/<YOUR_KEY>
+  interval: 3600
