@@ -1,0 +1,15 @@
+type CanisterMetricsSnapshot = record { cycles : nat; timestamp : nat64 };
+type Result = variant { Ok; Err : text };
+type Snapshot = record { value : StringValueWithTimestamp; timestamp : nat64 };
+type StringValueWithTimestamp = record { value : text; timestamp : nat64 };
+service : {
+  get_last_snapshot : () -> (Snapshot) query;
+  get_snapshot : (nat64) -> (Snapshot) query;
+  get_snapshots : () -> (vec Snapshot) query;
+  get_top_snapshots : (nat64) -> (vec Snapshot) query;
+  metric : () -> (CanisterMetricsSnapshot) query;
+  metrics : (nat64) -> (vec CanisterMetricsSnapshot) query;
+  set_task : (nat32, nat32) -> ();
+  setup : (text) -> (Result);
+  snapshots_len : () -> (nat64) query;
+}

@@ -1,0 +1,24 @@
+type CanisterMetricsSnapshot = record { cycles : nat; timestamp : nat64 };
+type EcdsaKeyEnvs = variant { Production; Test; LocalDevelopment };
+type HttpHeader = record { value : text; name : text };
+type HttpResponse = record {
+  status : nat;
+  body : vec nat8;
+  headers : vec HttpHeader;
+};
+type Result = variant { Ok; Err : text };
+type TransformArgs = record { context : vec nat8; response : HttpResponse };
+type Web3CtxParam = record {
+  key : EcdsaKeyEnvs;
+  url : text;
+  from : opt text;
+  chain_id : nat64;
+};
+service : {
+  get_ethereum_address : (EcdsaKeyEnvs) -> (text);
+  metric : () -> (CanisterMetricsSnapshot) query;
+  metrics : (nat64) -> (vec CanisterMetricsSnapshot) query;
+  set_task : (nat32, nat32) -> ();
+  setup : (text, text, Web3CtxParam) -> (Result);
+  transform : (TransformArgs) -> (HttpResponse) query;
+}
