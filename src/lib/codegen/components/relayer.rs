@@ -1,5 +1,6 @@
 use std::{fs::OpenOptions, path::Path, io::Read};
 
+use anyhow::Ok;
 use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 
@@ -42,6 +43,10 @@ impl ComponentManifest for RelayerComponentManifest {
     fn to_str_as_yaml(&self) -> anyhow::Result<String> {
         let yaml = serde_yaml::to_string(&self)?;
         Ok(yaml)
+    }
+
+    fn validate_manifest(&self) -> anyhow::Result<()> {
+        canisters::validate_relayer_manifest(self)
     }
 
     fn generate_codes(&self) -> anyhow::Result<TokenStream> {

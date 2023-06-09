@@ -16,13 +16,18 @@ impl MethodIdentifier {
 
         let identifier = captures.name("identifier").unwrap().as_str().to_string();
 
-        let params: Vec<String> = captures
+        let params_str = captures
             .name("params")
             .unwrap()
-            .as_str()
-            .split(',')
-            .map(|s| convert_type_from_abi_type(s.trim()).unwrap()) // temp
-            .collect();
+            .as_str();
+        let params = if params_str.is_empty() {
+            vec![]
+        } else {
+            params_str
+                .split(',')
+                .map(|s| convert_type_from_abi_type(s.trim()).unwrap()) // temp
+                .collect()
+        };
 
         let return_value = captures.name("return").map(|m| {
             m.as_str()
@@ -39,19 +44,24 @@ impl MethodIdentifier {
     }
 
     pub fn parse_from_candid_str(s: &str) -> Option<Self> {
-        let re = regex::Regex::new(r"(?P<identifier>\w+)\s*:\s*\((?P<params>[^)]*)\)\s*(->\s*\((?P<return>[^)]*)\))?").unwrap();
+        let re = regex::Regex::new(r"(?P<identifier>\w+)\s*:\s*\((?P<params>.*?)\)\s*(->\s*\((?P<return>.*?)\))?").unwrap();
 
         let captures = re.captures(s).unwrap();
 
         let identifier = captures.name("identifier").unwrap().as_str().to_string();
 
-        let params = captures
+        let params_str = captures
             .name("params")
             .unwrap()
-            .as_str()
-            .split(',')
-            .map(|s| convert_type_from_candid_type(s.trim()).unwrap())
-            .collect();
+            .as_str();
+        let params = if params_str.is_empty() {
+            vec![]
+        } else {
+            params_str
+                .split(',')
+                .map(|s| convert_type_from_candid_type(s.trim()).unwrap()) // temp
+                .collect()
+        };
 
         let return_value = captures.name("return").map(|m| {
             m.as_str()

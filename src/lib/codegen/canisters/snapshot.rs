@@ -22,9 +22,6 @@ fn common_codes_for_contract() -> TokenStream {
 }
 
 fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> TokenStream {
-    // TODO: validations
-    // - datasource.method.response.with_timestamp is null
-
     let label = &manifest.label;
     let method = &manifest.datasource.method;
     let method_identifier = MethodIdentifier::parse_from_abi_str(&method.identifier).expect("Failed to parse method.identifier");
@@ -288,4 +285,22 @@ pub fn generate_codes(manifest: &SnapshotComponentManifest) -> anyhow::Result<To
     };
 
     Ok(code)
+}
+
+pub fn validate_manifest(manifest: &SnapshotComponentManifest) -> anyhow::Result<()> {
+    ensure!(manifest.type_ == ComponentType::Snapshot, "type is not Snapshot");
+
+    let datasource = &manifest.datasource;
+    if datasource.type_ == DatasourceType::Contract {
+        ensure!(datasource.method.interface.is_some(), "datasource.method.interface is required for contract");
+        ensure!(datasource.method.response.with_timestamp.is_none(), "datasource.method.response.with_timestamp is not supported for contract");
+    } else {
+        ensure!(datasource.method.response.with_timestamp.is_some(), "datasource.method.response.with_timestamp is required for canister");
+    }
+
+    // TODO
+    // - check datasource.method.identifier format
+    // - check datasource.method.args length
+
+    Ok(())
 }

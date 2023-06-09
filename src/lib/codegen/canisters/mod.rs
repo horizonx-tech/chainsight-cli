@@ -13,3 +13,11 @@ pub fn generate_snapshot_codes(manifest: &SnapshotComponentManifest) -> anyhow::
 pub fn generate_relayer_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<TokenStream> {
     relayer::generate_codes(manifest)
 }
+
+pub fn validate_snapshot_manifest(manifest: &SnapshotComponentManifest) -> anyhow::Result<()> {
+    snapshot::validate_manifest(manifest)
+}
+
+pub fn validate_relayer_manifest(manifest: &RelayerComponentManifest) -> anyhow::Result<()> {
+    relayer::validate_manifest(manifest)
+}

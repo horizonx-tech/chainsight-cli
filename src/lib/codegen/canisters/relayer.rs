@@ -4,7 +4,6 @@ use proc_macro2::TokenStream;
 
 use crate::{types::ComponentType, lib::codegen::{components::{relayer::RelayerComponentManifest, common::{DestinactionType}}, oracle::get_oracle_attributes, canisters::common::{generate_request_arg_idents, generate_outside_call_idents, OutsideCallIdentsType, MethodIdentifier}}};
 
-// temp
 fn common_codes() -> TokenStream {
     let outside_call_idents = generate_outside_call_idents(OutsideCallIdentsType::All);
     quote! {
@@ -22,7 +21,6 @@ fn common_codes() -> TokenStream {
     }
 }
 
-// temp
 fn custom_codes(manifest: &RelayerComponentManifest) -> TokenStream {
     let label = &manifest.label;
     let method = &manifest.datasource.method;
@@ -116,4 +114,18 @@ pub fn generate_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<Tok
     };
 
     Ok(code)
+}
+
+pub fn validate_manifest(manifest: &RelayerComponentManifest) -> anyhow::Result<()> {
+    ensure!(manifest.type_ == ComponentType::Relayer, "type is not Relayer");
+
+    let datasource = &manifest.datasource;
+    ensure!(datasource.method.response.with_timestamp.is_some(), "response.with_timestamp is not set");
+
+    // TODO
+    // - check datasource.method.identifier format
+    // - check datasource.method.args length
+    // - check destination.type
+
+    Ok(())
 }

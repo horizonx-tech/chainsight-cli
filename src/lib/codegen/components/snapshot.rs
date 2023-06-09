@@ -46,6 +46,10 @@ impl ComponentManifest for SnapshotComponentManifest {
         Ok(yaml)
     }
 
+    fn validate_manifest(&self) -> anyhow::Result<()> {
+        canisters::validate_snapshot_manifest(self)
+    }
+
     fn generate_codes(&self) -> anyhow::Result<TokenStream> {
         canisters::generate_snapshot_codes(self)
     }

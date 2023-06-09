@@ -38,6 +38,7 @@ pub struct DatasourceMethod {
 pub struct DatasourceResponse {
     #[serde(rename = "type")]
     pub type_: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub with_timestamp: Option<bool>
 }
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -98,7 +99,7 @@ impl Datasource {
             type_: DatasourceType::Canister,
             id: "xxxxx-xxxxx-xxxxx-xxxxx-xxx".to_string(), // temp
             method: DatasourceMethod {
-                identifier: "get_last_snapshot()".to_string(),
+                identifier: "get_last_snapshot : ()".to_string(),
                 interface: None,
                 args: vec![],
                 response: DatasourceResponse {
@@ -131,6 +132,7 @@ impl Datasource {
 pub trait ComponentManifest: std::fmt::Debug {
     fn load(path: &str) -> anyhow::Result<Self> where Self: Sized;
     fn to_str_as_yaml(&self) -> anyhow::Result<String> where Self: Sized;
+    fn validate_manifest(&self) -> anyhow::Result<()>;
     fn generate_codes(&self) -> anyhow::Result<TokenStream>;
 }
 

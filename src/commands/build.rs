@@ -84,6 +84,11 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
             },
         };
 
+        if let Err(msg) = data.validate_manifest() {
+            error!(log, r#"{}"#, msg);
+            bail!(GLOBAL_ERROR_MSG.to_string())
+        }
+
         project_labels.push(label.clone());
         let canister_pj_path_str = format!("{}/artifacts/{}", &project_path_str, &label);
         let canister_code_path_str = format!("{}/src", &canister_pj_path_str);
