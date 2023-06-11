@@ -3,7 +3,7 @@ use std::{fs::OpenOptions, path::Path, io::Read};
 use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 
-use crate::{types::ComponentType, lib::utils::U256_TYPE};
+use crate::types::ComponentType;
 
 #[derive(Deserialize, Serialize, Clone, Copy, Debug, PartialEq, clap::ValueEnum)]
 pub enum DatasourceType {
@@ -32,14 +32,6 @@ pub struct DatasourceMethod {
     pub identifier: String,
     pub interface: Option<String>,
     pub args: Vec<serde_yaml::Value>,
-    pub response: DatasourceResponse,
-}
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct DatasourceResponse {
-    #[serde(rename = "type")]
-    pub type_: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub with_timestamp: Option<bool>
 }
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct DatasourceMethodCustomStruct {
@@ -69,17 +61,12 @@ impl Datasource {
                 identifier: "totalSupply():(uint256)".to_string(),
                 interface: Some("ERC20.json".to_string()),
                 args: vec![],
-                response: DatasourceResponse {
-                    type_: U256_TYPE.to_string(),
-                    with_timestamp: None,
-                },
             },
         }
     }
     pub fn new_contract(
         identifier: String,
         interface: Option<String>,
-        response: DatasourceResponse,
     ) -> Self {
         Self {
             type_: DatasourceType::Contract,
@@ -88,7 +75,6 @@ impl Datasource {
                 identifier,
                 interface,
                 args: vec![],
-                response,
             },
         }
     }
@@ -102,10 +88,6 @@ impl Datasource {
                 identifier: "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })".to_string(),
                 interface: None,
                 args: vec![],
-                response: DatasourceResponse {
-                    type_: "String".to_string(),
-                    with_timestamp: Some(true),
-                },
             },
         }
     }
@@ -113,7 +95,6 @@ impl Datasource {
     pub fn new_canister(
         identifier: String,
         interface: Option<String>,
-        response: DatasourceResponse,
     ) -> Self {
         Self {
             type_: DatasourceType::Canister,
@@ -122,7 +103,6 @@ impl Datasource {
                 identifier,
                 interface,
                 args: vec![],
-                response,
             },
         }
     }

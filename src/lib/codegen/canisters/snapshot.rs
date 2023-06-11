@@ -313,9 +313,6 @@ pub fn validate_manifest(manifest: &SnapshotComponentManifest) -> anyhow::Result
     let datasource = &manifest.datasource;
     if datasource.type_ == DatasourceType::Contract {
         ensure!(datasource.method.interface.is_some(), "datasource.method.interface is required for contract");
-        ensure!(datasource.method.response.with_timestamp.is_none(), "datasource.method.response.with_timestamp is not supported for contract");
-    } else {
-        ensure!(datasource.method.response.with_timestamp.is_some(), "datasource.method.response.with_timestamp is required for canister");
     }
 
     // TODO

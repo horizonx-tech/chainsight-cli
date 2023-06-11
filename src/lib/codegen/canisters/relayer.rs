@@ -135,9 +135,6 @@ pub fn generate_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<Tok
 pub fn validate_manifest(manifest: &RelayerComponentManifest) -> anyhow::Result<()> {
     ensure!(manifest.type_ == ComponentType::Relayer, "type is not Relayer");
 
-    let datasource = &manifest.datasource;
-    ensure!(datasource.method.response.with_timestamp.is_some(), "response.with_timestamp is not set");
-
     // TODO
     // - check datasource.method.identifier format
     // - check datasource.method.args length
