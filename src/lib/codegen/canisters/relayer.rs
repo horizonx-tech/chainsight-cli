@@ -2,7 +2,9 @@ use anyhow::ensure;
 use quote::{quote, format_ident};
 use proc_macro2::TokenStream;
 
-use crate::{types::ComponentType, lib::codegen::{components::{relayer::RelayerComponentManifest, common::{DestinactionType}}, oracle::get_oracle_attributes, canisters::common::{generate_request_arg_idents, generate_outside_call_idents, OutsideCallIdentsType, MethodIdentifier}}};
+use crate::{types::ComponentType, lib::codegen::{components::{relayer::RelayerComponentManifest, common::{DestinactionType}}, oracle::get_oracle_attributes, canisters::common::{generate_request_arg_idents, generate_outside_call_idents, OutsideCallIdentsType}}};
+
+use super::common::{CanisterMethodIdentifier, CanisterMethodValueType};
 
 fn common_codes() -> TokenStream {
     let outside_call_idents = generate_outside_call_idents(OutsideCallIdentsType::All);
@@ -24,7 +26,7 @@ fn common_codes() -> TokenStream {
 fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macro2::TokenStream> {
     let label = &manifest.label;
     let method = &manifest.datasource.method;
-    let method_identifier = MethodIdentifier::parse_from_candid_str(&method.identifier)?;
+    let method_identifier = CanisterMethodIdentifier::parse_from_str(&method.identifier)?;
 
     let method_ident = &method_identifier.identifier;
     let call_method_ident = format_ident!("call_{}", method_ident);
@@ -35,33 +37,47 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
     let oracle_ident = format_ident!("{}", oracle_name_str);
     let abi_path = format!("./__interfaces/{}.json", oracle_name_str);
 
-    // for response type
-    let response_with_timestamp = manifest.datasource.method.response.with_timestamp;
-    let (response_type_ident, response_type_def_ident) = if response_with_timestamp.filter(|&b| b).is_some() {
-        let ty_ident = format_ident!("{}", &method.response.type_);
-        let ty_with_ts_ident = format_ident!("{}ValueWithTimestamp", &method.response.type_);
-        (
-            ty_with_ts_ident.clone(),
-            quote! {
-                #[derive(Clone, Debug, candid::CandidType, candid::Deserialize)]
-                pub struct #ty_with_ts_ident {
-                    pub value: #ty_ident,
-                    pub timestamp: u64,
-                }
-            }
-        )
-    } else {
-        (
-            format_ident!("{}", &method.response.type_),
-            quote! {}
-        )
-    };
-
     // for request values
     // todo: validate length of method.args and method_identifier.params
     let method_args = method.args.iter().enumerate()
         .map(|(idx, arg)| (method_identifier.params[idx].clone(), arg.clone())).collect();
     let (request_val_idents, request_ty_idents) = generate_request_arg_idents(&method_args);
+
+   // for response type
+   let response_type = method_identifier.return_value;
+   let (response_type_ident, response_type_def_ident) = match response_type {
+       CanisterMethodValueType::Scalar(ty) => {
+           (
+               format_ident!("{}", &ty),
+               quote! {}
+           )
+       },
+       CanisterMethodValueType::Tuple(tys) => {
+           (
+               format_ident!("({})", tys.iter().map(|ty| format!("{}", ty)).collect::<Vec<String>>().join(", ")),
+               quote! {}
+           )
+       },
+       CanisterMethodValueType::Struct(values) => {
+           let response_type_def_ident = format_ident!("{}", "CustomResponseStruct");
+           let struct_tokens = values.into_iter().map(|(key, ty)| {
+               let key_ident = format_ident!("{}", key);
+               let ty_ident = format_ident!("{}", ty);
+               quote! {
+                   pub #key_ident: #ty_ident
+               }
+           }).collect::<Vec<_>>();
+           (
+               response_type_def_ident.clone(),
+               quote! {
+                   #[derive(Clone, Debug, candid::CandidType, candid::Deserialize)]
+                   pub struct #response_type_def_ident {
+                       #(#struct_tokens),*
+                   }
+               }
+           )
+       },
+    };
 
     // define data to call update function of oracle
     // temp: args for update_state (support only default manifest)

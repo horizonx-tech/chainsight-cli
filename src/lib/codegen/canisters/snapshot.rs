@@ -2,7 +2,7 @@ use anyhow::{ensure, bail};
 use quote::{quote, format_ident};
 use proc_macro2::TokenStream;
 
-use crate::{types::ComponentType, lib::{utils::{convert_camel_to_snake, U256_TYPE, ADDRESS_TYPE}, codegen::{components::{snapshot::SnapshotComponentManifest, common::DatasourceType}, canisters::common::{generate_request_arg_idents, generate_outside_call_idents, OutsideCallIdentsType, MethodIdentifier}}}};
+use crate::{types::ComponentType, lib::{utils::{convert_camel_to_snake, U256_TYPE, ADDRESS_TYPE}, codegen::{components::{snapshot::SnapshotComponentManifest, common::DatasourceType}, canisters::common::{generate_request_arg_idents, generate_outside_call_idents, OutsideCallIdentsType, CanisterMethodIdentifier, ContractMethodIdentifier, CanisterMethodValueType}}}};
 
 fn common_codes_for_contract() -> TokenStream {
     let outside_call_idents = generate_outside_call_idents(OutsideCallIdentsType::Eth);
@@ -24,7 +24,7 @@ fn common_codes_for_contract() -> TokenStream {
 fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> anyhow::Result<proc_macro2::TokenStream> {
     let label = &manifest.label;
     let method = &manifest.datasource.method;
-    let method_identifier = MethodIdentifier::parse_from_abi_str(&method.identifier)?;
+    let method_identifier = ContractMethodIdentifier::parse_from_str(&method.identifier)?;
     let method_ident_str = convert_camel_to_snake(&method_identifier.identifier);
     let method_ident = format_ident!("{}", method_ident_str);
 
@@ -42,24 +42,28 @@ fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> anyhow::Re
     // for response types & response values
     let mut response_type_idents: Vec<syn::Ident> = vec![];
     let mut response_val_idents: Vec<proc_macro2::TokenStream> = vec![];
-    let response_type = syn::parse_str::<syn::Type>(&method.response.type_)?;
-    match &response_type {
-        syn::Type::Tuple(type_tuple) => {
-            // If it's a tuple, we process it like we did before
-            for (idx, elem) in type_tuple.elems.iter().enumerate() {
+    let response_types = method_identifier.return_value;
+    match response_types.len() {
+        0 => bail!("The number of response types must be greater than 0"),
+        1 => {
+            // If it's a single type, we process it like we did before
+            let ty = syn::parse_str::<syn::Type>(&response_types[0])?;
+            let (response_type_ident, response_val_ident) = match_primitive_type(&ty, None)?;
+            response_type_idents.push(response_type_ident);
+            response_val_idents.push(response_val_ident);
+        }
+        _ => {
+            // If it's not a single type, it must be a tuple
+            // In this case, we process it like we did before
+            for (idx, elem) in response_types.iter().enumerate() {
+                let ty = syn::parse_str::<syn::Type>(&elem)?;
                 let idx_lit = proc_macro2::Literal::usize_unsuffixed(idx);
-                let (response_type_ident, response_val_ident) = match_primitive_type(elem, Some(idx_lit))?;
+                let (response_type_ident, response_val_ident) = match_primitive_type(&ty, Some(idx_lit))?;
                 response_type_idents.push(response_type_ident);
                 response_val_idents.push(response_val_ident);
             }
         }
-        _ => {
-            // If it's not a tuple, it must be a primitive type
-            let (response_type_ident, response_val_ident) = match_primitive_type(&response_type, None)?;
-            response_type_idents.push(response_type_ident);
-            response_val_idents.push(response_val_ident);
-        }
-    }
+    };
 
     // consider whether to add timestamp information to the snapshot
     let (
@@ -172,7 +176,7 @@ fn common_codes_for_canister() -> TokenStream {
 fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> anyhow::Result<proc_macro2::TokenStream> {
     let label = &manifest.label;
     let method = &manifest.datasource.method;
-    let method_identifier = MethodIdentifier::parse_from_candid_str(&method.identifier)?;
+    let method_identifier = CanisterMethodIdentifier::parse_from_str(&method.identifier)?;
 
     let method_ident = &method_identifier.identifier;
     let call_method_ident = format_ident!("call_{}", method_ident);
@@ -184,25 +188,39 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> anyhow::Re
     let (request_val_idents, request_ty_idents) = generate_request_arg_idents(&method_args);
 
     // for response type
-    let response_with_timestamp = manifest.datasource.method.response.with_timestamp;
-    let (response_type_ident, response_type_def_ident) = if response_with_timestamp.filter(|&b| b).is_some() {
-        let ty_ident = format_ident!("{}", &method.response.type_);
-        let ty_with_ts_ident = format_ident!("{}ValueWithTimestamp", &method.response.type_);
-        (
-            ty_with_ts_ident.clone(),
-            quote! {
-                #[derive(Clone, Debug, candid::CandidType, candid::Deserialize)]
-                pub struct #ty_with_ts_ident {
-                    pub value: #ty_ident,
-                    pub timestamp: u64,
+    let response_type = method_identifier.return_value;
+    let (response_type_ident, response_type_def_ident) = match response_type {
+        CanisterMethodValueType::Scalar(ty) => {
+            (
+                format_ident!("{}", &ty),
+                quote! {}
+            )
+        },
+        CanisterMethodValueType::Tuple(tys) => {
+            (
+                format_ident!("({})", tys.iter().map(|ty| format!("{}", ty)).collect::<Vec<String>>().join(", ")),
+                quote! {}
+            )
+        },
+        CanisterMethodValueType::Struct(values) => {
+            let response_type_def_ident = format_ident!("{}", "CustomResponseStruct");
+            let struct_tokens = values.into_iter().map(|(key, ty)| {
+                let key_ident = format_ident!("{}", key);
+                let ty_ident = format_ident!("{}", ty);
+                quote! {
+                    pub #key_ident: #ty_ident
                 }
-            }
-        )
-    } else {
-        (
-            format_ident!("{}", &method.response.type_),
-            quote! {}
-        )
+            }).collect::<Vec<_>>();
+            (
+                response_type_def_ident.clone(),
+                quote! {
+                    #[derive(Clone, Debug, candid::CandidType, candid::Deserialize)]
+                    pub struct #response_type_def_ident {
+                        #(#struct_tokens),*
+                    }
+                }
+            )
+        },
     };
 
     // consider whether to add timestamp information to the snapshot

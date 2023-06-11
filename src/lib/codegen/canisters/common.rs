@@ -1,15 +1,17 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, vec};
 use lazy_static::lazy_static;
 
 use anyhow::bail;
 use ethabi::{param_type::Reader, ParamType};
 use quote::{format_ident, quote};
+use regex::Regex;
 
 use crate::lib::utils::{ADDRESS_TYPE, U256_TYPE};
 
 lazy_static! {
     static ref MAPPING_CANDID_TY: HashMap<&'static str, &'static str> = [
         ("text", "String"),
+        // ("blob", "&[u8]"),
         ("nat", "u128"),
         ("int", "i128"),
         ("nat8", "u8"),
@@ -20,19 +22,28 @@ lazy_static! {
         ("int16", "i16"),
         ("int32", "i32"),
         ("int64", "i64"),
+        ("float32", "f32"),
+        ("float64", "f64"),
+        ("bool", "bool"),
+        // ("null", "()"),
     ].iter().cloned().collect();
+
+    static ref REGEX_CANDID_FUNC: Regex = Regex::new(r"(?P<identifier>\w+)\s*:\s*\((?P<params>.*?)\)\s*(->\s*\((?P<return>.*?)\))?").unwrap();
+
+    static ref REGEX_TUPLE: Regex = Regex::new(r"record\s\{\s(?P<items>(\w+(;\s|))+)\s\}").unwrap();
+    static ref REGEX_STRUCT: Regex = Regex::new(r"(?P<field>\w+)\s*:\s*(?P<type>\w+)").unwrap();
 }
 
-/// Generate method identifiers from function expressions in abi, candid format
-#[derive(Debug)]
-pub struct MethodIdentifier {
+/// Generate method identifiers from function expressions in abi format
+#[derive(Debug, Clone, PartialEq)]
+pub struct ContractMethodIdentifier {
     pub identifier: String,
     pub params: Vec<String>,
-    pub return_value: Option<Vec<String>>,
+    pub return_value: Vec<String>,
 }
-impl MethodIdentifier {
-    pub fn parse_from_abi_str(s: &str) -> anyhow::Result<Self> {
-        let re = regex::Regex::new(r"(?P<identifier>\w+)\((?P<params>[^)]*)\)(?::\((?P<return>[^)]*)\))?")?;
+impl ContractMethodIdentifier {
+    pub fn parse_from_str(s: &str) -> anyhow::Result<Self> {
+        let re = Regex::new(r"(?P<identifier>\w+)\((?P<params>[^)]*)\)(?::\((?P<return>[^)]*)\))?")?;
         let captures = re.captures(s).unwrap();
 
         let identifier = captures.name("identifier").unwrap().as_str().to_string();
@@ -46,29 +57,44 @@ impl MethodIdentifier {
         } else {
             params_str
                 .split(',')
-                .map(|s| convert_type_from_abi_type(s.trim())) // temp
+                .map(|s| convert_type_from_abi_type(s.trim()))
                 .collect()
         };
         let params = params_result?;
 
-        let return_value = captures.name("return").map(|m| {
-            m.as_str()
-                .split(',')
-                .map(|s| s.trim().to_string())
-                .collect()
-        });
+        let return_value_capture = captures.name("return");
+        let return_value_result = if return_value_capture.is_none() {
+            Ok(vec![])
+        } else {
+            let return_value_str = return_value_capture.unwrap().as_str();
+            return_value_str.split(',').map(|s| convert_type_from_abi_type(s.trim())).collect::<anyhow::Result<Vec<String>>>()
+        };
+        let return_value = return_value_result?;
 
-        Ok(MethodIdentifier {
+        Ok(ContractMethodIdentifier {
             identifier,
             params,
             return_value,
         })
     }
+}
 
-    pub fn parse_from_candid_str(s: &str) -> anyhow::Result<Self> {
-        let re = regex::Regex::new(r"(?P<identifier>\w+)\s*:\s*\((?P<params>.*?)\)\s*(->\s*\((?P<return>.*?)\))?")?;
-
-        let captures = re.captures(s).unwrap();
+/// Generate method identifiers from function expressions in candid format
+#[derive(Debug, Clone, PartialEq)]
+pub struct CanisterMethodIdentifier {
+    pub identifier: String,
+    pub params: Vec<String>,
+    pub return_value: CanisterMethodValueType,
+}
+#[derive(Debug, Clone, PartialEq)]
+pub enum CanisterMethodValueType {
+    Scalar(String),
+    Tuple(Vec<String>),
+    Struct(Vec<(String, String)>) // temp: Only non-nested `record` are supported.
+}
+impl CanisterMethodIdentifier {
+    pub fn parse_from_str(s: &str) -> anyhow::Result<Self> {
+        let captures = REGEX_CANDID_FUNC.captures(s).unwrap();
 
         let identifier = captures.name("identifier").unwrap().as_str().to_string();
 
@@ -81,27 +107,55 @@ impl MethodIdentifier {
         } else {
             params_str
                 .split(',')
-                .map(|s| convert_type_from_candid_type(s.trim())) // temp
+                .map(|s| convert_type_from_candid_type(s.trim()))
                 .collect()
         };
         let params = params_result?;
 
-        let return_value = captures.name("return").map(|m| {
-            m.as_str()
-                .split(',')
-                .map(|s| s.trim().to_string())
-                .collect()
-        });
+        let return_value_str = captures.name("return").unwrap().as_str();
+        let return_value = Self::parse_return_value(return_value_str)?;
 
-        Ok(MethodIdentifier {
+        Ok(CanisterMethodIdentifier {
             identifier,
             params,
             return_value,
         })
     }
+
+    fn parse_return_value(s: &str) -> anyhow::Result<CanisterMethodValueType> {
+        // Scalar
+
+        if !s.starts_with("record") {
+            let val = convert_type_from_candid_type(s)?;
+            return Ok(CanisterMethodValueType::Scalar(val));
+        }
+
+        // Tuple
+        let captures = REGEX_TUPLE.captures(s);
+        if captures.is_some() {
+            let captures = captures.unwrap();
+            let items = captures.name("items").unwrap().as_str();
+            let tuple_result: anyhow::Result<Vec<String>> = items.split(';').map(|s| convert_type_from_candid_type(s.trim())).collect();
+            let tuple = tuple_result?;
+            return Ok(CanisterMethodValueType::Tuple(tuple));
+        }
+
+        // Struct
+        let items = REGEX_STRUCT.captures_iter(s);
+        let mut struct_items = vec![];
+        for cap in items {
+            let field = cap.name("field").unwrap().as_str().to_string();
+            let ty = convert_type_from_candid_type(cap.name("type").unwrap().as_str())?;
+            struct_items.push((field, ty));
+        }
+        if struct_items.is_empty() {
+            bail!("Invalid candid's result types: {}", s);
+        }
+        return Ok(CanisterMethodValueType::Struct(struct_items));
+    }
 }
 
-fn convert_type_from_abi_type(s: &str) -> anyhow::Result<String> {
+pub fn convert_type_from_abi_type(s: &str) -> anyhow::Result<String> {
     let param = Reader::read(s).map_err(|e| anyhow::anyhow!(e))?;
 
     let err_msg = "ic_solidity_bindgen::internal::Unimplemented".to_string(); // temp
@@ -136,10 +190,10 @@ fn convert_type_from_abi_type(s: &str) -> anyhow::Result<String> {
     Ok(ty_str.to_string())
 }
 
-fn convert_type_from_candid_type(s: &str) -> anyhow::Result<String> {
+pub fn convert_type_from_candid_type(s: &str) -> anyhow::Result<String> {
     let err_msg = "not supported candid type".to_string(); // temp
     // ref: https://internetcomputer.org/docs/current/references/candid-ref
-    let ty_str = MAPPING_CANDID_TY.get(s);
+    let ty_str = MAPPING_CANDID_TY.get(s.clone());
     if ty_str.is_none() {
         bail!(err_msg);
     }
@@ -294,3 +348,120 @@ pub fn generate_request_arg_idents(method_args: &Vec<(String, serde_yaml::Value)
 //     }
 //     custom_type_ident
 // }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_from_abi_str() {
+        assert_eq!(
+            ContractMethodIdentifier::parse_from_str("totalSupply()").unwrap(),
+            ContractMethodIdentifier {
+                identifier: "totalSupply".to_string(),
+                params: vec![],
+                return_value: vec![]
+            }
+        );
+        assert_eq!(
+            ContractMethodIdentifier::parse_from_str("totalSupply():(uint256)").unwrap(),
+            ContractMethodIdentifier {
+                identifier: "totalSupply".to_string(),
+                params: vec![],
+                return_value: vec!["ic_web3::types::U256".to_string()]
+            }
+        );
+        assert_eq!(
+            ContractMethodIdentifier::parse_from_str("balanceOf(address):(uint256)").unwrap(),
+            ContractMethodIdentifier {
+                identifier: "balanceOf".to_string(),
+                params: vec!["ic_web3::types::Address".to_string()],
+                return_value: vec!["ic_web3::types::U256".to_string()]
+            }
+        );
+        assert_eq!(
+            ContractMethodIdentifier::parse_from_str("getPool(address,address,uint24):(address)").unwrap(),
+            ContractMethodIdentifier {
+                identifier: "getPool".to_string(),
+                params: vec![
+                    "ic_web3::types::Address".to_string(),
+                    "ic_web3::types::Address".to_string(),
+                    "u32".to_string()
+                ],
+                return_value: vec!["ic_web3::types::Address".to_string()]
+            }
+        );
+    }
+
+    #[test]
+    fn test_parse_from_candid_str() {
+        assert_eq!(
+            CanisterMethodIdentifier::parse_from_str("get_chain_id : () -> (nat64)").unwrap(),
+            CanisterMethodIdentifier {
+                identifier: "get_chain_id".to_string(),
+                params: vec![],
+                return_value: CanisterMethodValueType::Scalar("u64".to_string())
+            }
+        );
+        assert_eq!(
+            CanisterMethodIdentifier::parse_from_str("get_oracle_address : () -> (text)").unwrap(),
+            CanisterMethodIdentifier {
+                identifier: "get_oracle_address".to_string(),
+                params: vec![],
+                return_value: CanisterMethodValueType::Scalar("String".to_string())
+            }
+        );
+        assert_eq!(
+            CanisterMethodIdentifier::parse_from_str("get_snapshot : (nat64) -> (text)").unwrap(),
+            CanisterMethodIdentifier {
+                identifier: "get_snapshot".to_string(),
+                params: vec!["u64".to_string()],
+                return_value: CanisterMethodValueType::Scalar("String".to_string())
+            }
+        );
+        assert_eq!(
+            CanisterMethodIdentifier::parse_from_str("get_price : (bool) -> (record { nat32; nat64 })").unwrap(),
+            CanisterMethodIdentifier {
+                identifier: "get_price".to_string(),
+                params: vec!["bool".to_string()],
+                return_value: CanisterMethodValueType::Tuple(vec![
+                    "nat32".to_string(),
+                    "nat64".to_string()
+                ])
+            }
+        );
+        assert_eq!(
+            CanisterMethodIdentifier::parse_from_str("get_snapshot_with_ts : (nat64) -> (record { value : text; timestamp : nat64 })").unwrap(),
+            CanisterMethodIdentifier {
+                identifier: "get_snapshot_with_ts".to_string(),
+                params: vec!["u64".to_string()],
+                return_value: CanisterMethodValueType::Struct(vec![
+                    ("value".to_string(), "text".to_string()),
+                    ("timestamp".to_string(), "nat64".to_string())
+                ])
+            }
+        );
+    }
+
+    #[test]
+    fn test_regax_tuple() {
+        let re = REGEX_TUPLE.clone();
+
+        assert!(!re.is_match("text"));
+        assert!(!re.is_match("record { value : text; timestamp : nat64 }"));
+        assert!(!re.is_match("record { nat32; nat64; }"));
+        assert!(re.is_match("record { nat32; nat64 }"));
+        assert!(re.is_match("record { nat32; nat64; text }"));
+    }
+
+    #[test]
+    fn test_regax_struct() {
+        let re = REGEX_STRUCT.clone();
+
+        assert!(!re.is_match("text"));
+        assert!(!re.is_match("record { nat32; nat64 }"));
+        assert!(!re.is_match("record { nat32; nat64; text }"));
+        assert!(re.is_match("record { value : text; timestamp : nat64 }"));
+        assert!(re.is_match("record { first_name : text; last_name : text; age : nat8  }"));
+    }
+}
