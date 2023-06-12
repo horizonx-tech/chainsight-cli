@@ -261,7 +261,7 @@ pub fn generate_request_arg_idents(method_args: &Vec<(String, serde_yaml::Value)
         let request_arg_value = match type_.clone().as_str() {
             U256_TYPE => {
                 match value {
-                    serde_yaml::Value::String(val) => quote! { ic_web3::types::U256::from_dec_str(#val).unwrap() },
+                    serde_yaml::Value::String(val) => quote! { ic_web3_rs::types::U256::from_dec_str(#val).unwrap() },
                     serde_yaml::Value::Number(val) => {
                         match val.as_u64() {
                             Some(val) => quote! { #val.into() },
@@ -273,7 +273,7 @@ pub fn generate_request_arg_idents(method_args: &Vec<(String, serde_yaml::Value)
             }
             ADDRESS_TYPE => {
                 match value {
-                    serde_yaml::Value::String(val) => quote! { ic_web3::types::Address::from_str(#val).unwrap() },
+                    serde_yaml::Value::String(val) => quote! { ic_web3_rs::types::Address::from_str(#val).unwrap() },
                     _ => quote! {}
                 }
             },
@@ -301,8 +301,8 @@ pub fn generate_request_arg_idents(method_args: &Vec<(String, serde_yaml::Value)
         };
         value_idents.push(request_arg_value);
         if type_ == U256_TYPE || type_ == ADDRESS_TYPE {
-            // In the case of contract, other than the primitive type (ic_web3::types::U256 etc.) may be set, in which case type_idents is not used.
-            type_idents.push(format_ident!("String")); // temp: thread 'main' panicked at '"ic_web3::types::U256" is not a valid Ident'
+            // In the case of contract, other than the primitive type (ic_web3_rs::types::U256 etc.) may be set, in which case type_idents is not used.
+            type_idents.push(format_ident!("String")); // temp: thread 'main' panicked at '"ic_web3_rs::types::U256" is not a valid Ident'
         } else {
             type_idents.push(format_ident!("{}", type_));
         }
@@ -368,15 +368,15 @@ mod tests {
             ContractMethodIdentifier {
                 identifier: "totalSupply".to_string(),
                 params: vec![],
-                return_value: vec!["ic_web3::types::U256".to_string()]
+                return_value: vec!["ic_web3_rs::types::U256".to_string()]
             }
         );
         assert_eq!(
             ContractMethodIdentifier::parse_from_str("balanceOf(address):(uint256)").unwrap(),
             ContractMethodIdentifier {
                 identifier: "balanceOf".to_string(),
-                params: vec!["ic_web3::types::Address".to_string()],
-                return_value: vec!["ic_web3::types::U256".to_string()]
+                params: vec!["ic_web3_rs::types::Address".to_string()],
+                return_value: vec!["ic_web3_rs::types::U256".to_string()]
             }
         );
         assert_eq!(
@@ -384,11 +384,11 @@ mod tests {
             ContractMethodIdentifier {
                 identifier: "getPool".to_string(),
                 params: vec![
-                    "ic_web3::types::Address".to_string(),
-                    "ic_web3::types::Address".to_string(),
+                    "ic_web3_rs::types::Address".to_string(),
+                    "ic_web3_rs::types::Address".to_string(),
                     "u32".to_string()
                 ],
-                return_value: vec!["ic_web3::types::Address".to_string()]
+                return_value: vec!["ic_web3_rs::types::Address".to_string()]
             }
         );
     }
@@ -425,8 +425,8 @@ mod tests {
                 identifier: "get_price".to_string(),
                 params: vec!["bool".to_string()],
                 return_value: CanisterMethodValueType::Tuple(vec![
-                    "nat32".to_string(),
-                    "nat64".to_string()
+                    "u32".to_string(),
+                    "u64".to_string()
                 ])
             }
         );
@@ -436,8 +436,8 @@ mod tests {
                 identifier: "get_snapshot_with_ts".to_string(),
                 params: vec!["u64".to_string()],
                 return_value: CanisterMethodValueType::Struct(vec![
-                    ("value".to_string(), "text".to_string()),
-                    ("timestamp".to_string(), "nat64".to_string())
+                    ("value".to_string(), "String".to_string()),
+                    ("timestamp".to_string(), "u64".to_string())
                 ])
             }
         );

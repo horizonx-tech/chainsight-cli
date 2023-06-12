@@ -4,8 +4,8 @@ pub const CHAINSIGHT_FILENAME: &str = ".chainsight";
 pub const PROJECT_MANIFEST_FILENAME: &str = "project.yaml";
 pub const PROJECT_MANIFEST_VERSION: &str = "v1";
 
-pub const U256_TYPE: &str = "ic_web3::types::U256";
-pub const ADDRESS_TYPE: &str = "ic_web3::types::Address";
+pub const U256_TYPE: &str = "ic_web3_rs::types::U256";
+pub const ADDRESS_TYPE: &str = "ic_web3_rs::types::Address";
 
 /// Check if .chainsight file exists in project folder
 pub fn is_chainsight_project(path: Option<String>) -> Result<(), String> {

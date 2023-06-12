@@ -10,7 +10,7 @@ fn common_codes_for_contract() -> TokenStream {
     quote! {
         use std::str::FromStr;
         use chainsight_cdk_macros::{manage_single_state, setup_func, manage_vec_state, timer_task_func, define_transform_for_web3, define_web3_ctx, monitoring_canister_metrics, did_export};
-        use ic_web3::types::Address;
+        use ic_web3_rs::types::Address;
 
         monitoring_canister_metrics!(60);
 
@@ -111,7 +111,7 @@ fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> anyhow::Re
             let res = #contract_struct_ident::new(
                 Address::from_str(&get_target_addr()).unwrap(),
                 &web3_ctx().unwrap()
-            ).#method_ident(#(#request_val_idents),*).await.unwrap();
+            ).#method_ident(#(#request_val_idents,)*None).await.unwrap();
             #expr_to_gen_snapshot
             add_snapshot(datum.clone());
             #expr_to_log_datum

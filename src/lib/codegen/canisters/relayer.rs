@@ -11,7 +11,7 @@ fn common_codes() -> TokenStream {
     quote! {
         use std::str::FromStr;
         use chainsight_cdk_macros::{manage_single_state, setup_func, timer_task_func, cross_canister_call_func, define_web3_ctx, define_transform_for_web3, define_get_ethereum_address, monitoring_canister_metrics, did_export};
-        use ic_web3::types::{Address, U256};
+        use ic_web3_rs::types::{Address, U256};
 
         monitoring_canister_metrics!(60);
 
@@ -110,7 +110,7 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
             #oracle_ident::new(
                 Address::from_str(&get_target_addr()).unwrap(),
                 &web3_ctx().unwrap()
-            ).update_state(#sync_data_ident).await.unwrap();
+            ).update_state(#sync_data_ident, None).await.unwrap();
             ic_cdk::println!("ts={}, value={:?}", datum.timestamp, datum.value);
         }
 

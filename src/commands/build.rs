@@ -185,20 +185,16 @@ members = [
 
 [workspace.dependencies]
 candid = \"0.8\"
-ic-cdk = \"0.7\"
+ic-cdk = \"0.8\"
 ic-cdk-macros = \"0.6.10\"
 ic-cdk-timers = \"0.1\"
 serde = \"1.0.163\"
 hex = \"0.4.3\"
 
-ic-web3 = {{ git = \"ssh://<your host in .ssh/config>/horizonx-tech/ic-web3.git\", rev = \"fa982360c8420c88887606355eff0b7b48208a01\" }}
-ic-solidity-bindgen = {{ git = \"ssh://<your host in .ssh/config>/horizonx-tech/ic-solidity-bindgen.git\", rev = \"36a7e1044c261a91a715fbdc12d95afa69eb0620\" }}
-ic-solidity-bindgen-macros = {{ git = \"ssh://<your host in .ssh/config>/horizonx-tech/ic-solidity-bindgen.git\", rev = \"36a7e1044c261a91a715fbdc12d95afa69eb0620\" }}
-chainsight-cdk-macros = {{ git = \"ssh://<your host in .ssh/config>/horizonx-tech/chainsight-sdk.git\", rev = \"843683fa588da751e2ac613a4dbb16cb250f0d05\" }}
-chainsight-cdk = {{ git = \"ssh://<your host in .ssh/config>/horizonx-tech/chainsight-sdk.git\", rev = \"843683fa588da751e2ac613a4dbb16cb250f0d05\" }}
-
-[patch.'https://github.com/horizonx-tech/ic-web3']
-ic-web3 = {{ git = \"ssh://<your host in .ssh/config>/horizonx-tech/ic-web3.git\", rev = \"fa982360c8420c88887606355eff0b7b48208a01\" }}", members);
+ic-web3-rs = {{ version = \"0.1.1\" }}
+ic-solidity-bindgen = {{ version = \"0.1.5\" }}
+chainsight-cdk-macros = {{ git = \"ssh://<your host in .ssh/config>/horizonx-tech/chainsight-sdk.git\", rev = \"17e65f7759c4fa8a6c3f397ef5ef7a454d276cea\" }}
+chainsight-cdk = {{ git = \"ssh://<your host in .ssh/config>/horizonx-tech/chainsight-sdk.git\", rev = \"17e65f7759c4fa8a6c3f397ef5ef7a454d276cea\" }}", members);
 
     txt
 }
@@ -220,9 +216,8 @@ ic-cdk-timers.workspace = true
 serde.workspace = true
 hex.workspace = true
 
-ic-web3.workspace = true
+ic-web3-rs.workspace = true
 ic-solidity-bindgen.workspace = true
-ic-solidity-bindgen-macros.workspace = true
 chainsight-cdk-macros.workspace = true
 chainsight-cdk.workspace = true", project_name);
 
