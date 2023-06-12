@@ -157,7 +157,10 @@ impl CanisterMethodIdentifier {
 
 pub fn convert_type_from_abi_type(s: &str) -> anyhow::Result<String> {
     let param = Reader::read(s).map_err(|e| anyhow::anyhow!(e))?;
+    convert_type_from_ethabi_param_type(param)
+}
 
+pub fn convert_type_from_ethabi_param_type(param: ethabi::ParamType) -> anyhow::Result<String> {
     let err_msg = "ic_solidity_bindgen::internal::Unimplemented".to_string(); // temp
     // ref: https://github.com/horizonx-tech/ic-solidity-bindgen/blob/6c9ffb4354cee4c32b1df17a2210c90f16972c21/ic-solidity-bindgen-macros/src/abi_gen.rs#L124
     let ty_str = match param {

@@ -5,7 +5,7 @@ use clap::Parser;
 use slog::{info, error};
 
 use crate::{
-    lib::{environment::EnvironmentImpl, codegen::{project::{ProjectManifestData, ProjectManifestComponentField}, components::{snapshot::{SnapshotComponentManifest, SnapshotStorage}, common::{Datasource, ComponentManifest}, relayer::{RelayerComponentManifest, DestinationField}}}, utils::{CHAINSIGHT_FILENAME, PROJECT_MANIFEST_FILENAME, PROJECT_MANIFEST_VERSION}}
+    lib::{environment::EnvironmentImpl, codegen::{project::{ProjectManifestData, ProjectManifestComponentField}, components::{snapshot::{SnapshotComponentManifest, SnapshotStorage}, common::{Datasource, ComponentManifest}, relayer::{RelayerComponentManifest, DestinationField}, event_indexer::{EventIndexerComponentManifest, EventIndexerDatasource}}}, utils::{CHAINSIGHT_FILENAME, PROJECT_MANIFEST_FILENAME, PROJECT_MANIFEST_VERSION}}
 };
 
 #[derive(Debug, Parser)]
@@ -65,6 +65,7 @@ fn create_project(project_name: &str) -> anyhow::Result<()> {
 
     // Create files
     fs::write(format!("{}/{}", project_name, CHAINSIGHT_FILENAME), "")?;
+    let relative_event_indexer_path = format!("components/{}_event_indexer.yaml", project_name);
     let relative_snapshot_chain_path = format!("components/{}_snapshot_chain.yaml", project_name);
     let relative_snapshot_icp_path = format!("components/{}_snapshot_icp.yaml", project_name);
     let relative_relayer_path = format!("components/{}_relayer.yaml", project_name);
@@ -75,6 +76,7 @@ fn create_project(project_name: &str) -> anyhow::Result<()> {
             project_name,
             PROJECT_MANIFEST_VERSION,
             &vec![
+                ProjectManifestComponentField::new(&relative_event_indexer_path, None),
                 ProjectManifestComponentField::new(&relative_snapshot_chain_path, None),
                 ProjectManifestComponentField::new(&relative_snapshot_icp_path, None),
                 ProjectManifestComponentField::new(&relative_relayer_path, None),
@@ -82,6 +84,10 @@ fn create_project(project_name: &str) -> anyhow::Result<()> {
         ).to_str_as_yaml()?,
     )?;
 
+    fs::write(
+        format!("{}/{}", project_name, relative_event_indexer_path),
+        template_event_indexer_manifest(project_name).to_str_as_yaml()?
+    )?;
     fs::write(
         format!("{}/{}", project_name, relative_snapshot_chain_path),
         template_snapshot_chain_manifest(project_name).to_str_as_yaml()?
@@ -96,6 +102,15 @@ fn create_project(project_name: &str) -> anyhow::Result<()> {
     )?;
 
     Ok(())
+}
+
+fn template_event_indexer_manifest(project_name: &str) -> EventIndexerComponentManifest {
+    EventIndexerComponentManifest::new(
+        &format!("{}_event_indexer", project_name),
+        PROJECT_MANIFEST_VERSION,
+        EventIndexerDatasource::default(),
+        3600,
+    )
 }
 
 fn template_snapshot_chain_manifest(project_name: &str) -> SnapshotComponentManifest {

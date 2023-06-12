@@ -4,7 +4,7 @@ use anyhow::bail;
 use clap::Parser;
 use slog::{info, error};
 
-use crate::{lib::{environment::EnvironmentImpl, utils::{is_chainsight_project, PROJECT_MANIFEST_FILENAME, PROJECT_MANIFEST_VERSION}, codegen::{project::{ProjectManifestData, ProjectManifestComponentField}, components::{snapshot::{SnapshotComponentManifest, SnapshotStorage}, common::{Datasource, ComponentManifest}, relayer::{DestinationField, RelayerComponentManifest}}}}, types::ComponentType};
+use crate::{lib::{environment::EnvironmentImpl, utils::{is_chainsight_project, PROJECT_MANIFEST_FILENAME, PROJECT_MANIFEST_VERSION}, codegen::{project::{ProjectManifestData, ProjectManifestComponentField}, components::{snapshot::{SnapshotComponentManifest, SnapshotStorage}, common::{Datasource, ComponentManifest}, relayer::{DestinationField, RelayerComponentManifest}, event_indexer::{EventIndexerComponentManifest, EventIndexerDatasource, EventIndexerEventDefinition}}}}, types::ComponentType};
 
 #[derive(Debug, Parser)]
 #[command(name = "create")]
@@ -42,8 +42,9 @@ pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> anyhow::Result<()> {
     );
 
     let codes = match component_type {
+        ComponentType::EventIndexer => template_event_indexer_manifest(&component_name).to_str_as_yaml(),
         ComponentType::Snapshot => template_snapshot_manifest(&component_name).to_str_as_yaml(),
-        ComponentType::Relayer => template_relayer_manifest(&component_name).to_str_as_yaml()
+        ComponentType::Relayer => template_relayer_manifest(&component_name).to_str_as_yaml(),
     }?;
     let relative_component_path = format!("components/{}.yaml", component_name);
     let (component_file_path, project_file_path) = if let Some(project_name) = project_path.clone() {
@@ -82,6 +83,21 @@ pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> anyhow::Result<()> {
     );
 
     Ok(())
+}
+
+fn template_event_indexer_manifest(component_name: &str) -> EventIndexerComponentManifest {
+    EventIndexerComponentManifest::new(
+        &component_name,
+        PROJECT_MANIFEST_VERSION,
+        EventIndexerDatasource::new(
+            "0000000000000000000000000000000000000000".to_string(),
+            EventIndexerEventDefinition::new(
+                "EventIdentifier".to_string(),
+                None,
+            )
+        ),
+        3600
+    )
 }
 
 fn template_snapshot_manifest(component_name: &str) -> SnapshotComponentManifest {

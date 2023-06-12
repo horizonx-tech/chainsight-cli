@@ -8,6 +8,7 @@ use clap::Parser;
 use slog::{info, error};
 
 use crate::lib::codegen::components::common::{get_type_from_manifest, DestinactionType, ComponentManifest};
+use crate::lib::codegen::components::event_indexer::EventIndexerComponentManifest;
 use crate::lib::codegen::components::relayer::RelayerComponentManifest;
 use crate::lib::codegen::components::snapshot::SnapshotComponentManifest;
 use crate::lib::codegen::oracle::get_oracle_attributes;
@@ -64,6 +65,15 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
         let component_type = get_type_from_manifest(&component_path)?;
 
         let (data, label, interface_path, destination_type): (Box<dyn ComponentManifest>, String, Option<String>, Option<DestinactionType>) = match component_type {
+            ComponentType::EventIndexer => {
+                let manifest = EventIndexerComponentManifest::load(&component_path)?;
+                (
+                    Box::new(manifest.clone()),
+                    manifest.label.clone(),
+                    manifest.datasource.event.interface.clone(),
+                    None,
+                )
+            },
             ComponentType::Snapshot => {
                 let manifest = SnapshotComponentManifest::load(&component_path)?;
                 (
