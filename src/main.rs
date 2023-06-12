@@ -11,8 +11,7 @@ use config::cli_version_str;
 use lib::{logger::create_root_logger, environment::EnvironmentImpl};
 
 #[derive(Debug, Parser)]
-#[command(name = "chainsight", version = cli_version_str())]
-#[command(about = "ChainSight Command Line Interface")]
+#[command(name = "csx", version = cli_version_str(), about = "Chainsight command-line execution envirionment")]
 struct Cli {
     /// Displays detailed information about operations. -vv will generate a very large number of messages and can affect performance.
     #[arg(long, short, action = ArgAction::Count, global = true)]
