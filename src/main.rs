@@ -9,6 +9,7 @@ use clap::{Parser, ArgAction};
 use commands::{Command, exec};
 use config::cli_version_str;
 use lib::{logger::create_root_logger, environment::EnvironmentImpl};
+use slog::error;
 
 #[derive(Debug, Parser)]
 #[command(name = "csx", version = cli_version_str(), about = "Chainsight command-line execution envirionment")]
@@ -28,10 +29,11 @@ struct Cli {
 fn main() {
     let args = Cli::parse();
     let verbose_level = args.verbose as i64 - args.quiet as i64;
+    let logger = create_root_logger(verbose_level);
     let env = EnvironmentImpl::new()
-        .with_logger(create_root_logger(verbose_level));
+        .with_logger(logger.clone());
     let res = exec(&env, args.command);
     if let Err(msg) = res {
-        eprintln!("{}", msg);
+        error!(&logger, r#"{}"#, msg);
     }
 }
