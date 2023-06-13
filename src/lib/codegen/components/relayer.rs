@@ -52,6 +52,18 @@ impl ComponentManifest for RelayerComponentManifest {
     fn generate_codes(&self) -> anyhow::Result<TokenStream> {
         canisters::relayer::generate_codes(self)
     }
+
+    fn label(&self) -> &str {
+        self.label.as_str()
+    }
+
+    fn destination_type(&self) -> Option<DestinactionType> {
+        Some(self.destination.type_)
+    }
+
+    fn required_interface(&self) -> Option<String> {
+        self.datasource.method.interface.clone()
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

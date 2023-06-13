@@ -51,6 +51,18 @@ impl ComponentManifest for EventIndexerComponentManifest {
     fn generate_codes(&self) -> anyhow::Result<TokenStream> {
         canisters::event_indexer::generate_codes(self)
     }
+
+    fn label(&self) -> &str {
+        self.label.as_str()
+    }
+
+    fn destination_type(&self) -> Option<super::common::DestinactionType> {
+        None
+    }
+
+    fn required_interface(&self) -> Option<String> {
+        self.datasource.event.interface.clone()
+    }
 }
 
 

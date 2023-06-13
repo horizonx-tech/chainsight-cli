@@ -114,6 +114,10 @@ pub trait ComponentManifest: std::fmt::Debug {
     fn to_str_as_yaml(&self) -> anyhow::Result<String> where Self: Sized;
     fn validate_manifest(&self) -> anyhow::Result<()>;
     fn generate_codes(&self) -> anyhow::Result<TokenStream>;
+
+    fn label(&self) -> &str;
+    fn destination_type(&self) -> Option<DestinactionType>;
+    fn required_interface(&self) -> Option<String>;
 }
 
 #[derive(Deserialize)]

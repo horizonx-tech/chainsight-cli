@@ -7,7 +7,7 @@ use anyhow::{Ok, bail};
 use clap::Parser;
 use slog::{info, error};
 
-use crate::lib::codegen::components::common::{get_type_from_manifest, DestinactionType, ComponentManifest};
+use crate::lib::codegen::components::common::{get_type_from_manifest, ComponentManifest};
 use crate::lib::codegen::components::event_indexer::EventIndexerComponentManifest;
 use crate::lib::codegen::components::relayer::RelayerComponentManifest;
 use crate::lib::codegen::components::snapshot::SnapshotComponentManifest;
@@ -64,34 +64,10 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
         let component_path = format!("{}/{}", &project_path_str, relative_component_path);
         let component_type = get_type_from_manifest(&component_path)?;
 
-        let (data, label, interface_path, destination_type): (Box<dyn ComponentManifest>, String, Option<String>, Option<DestinactionType>) = match component_type {
-            ComponentType::EventIndexer => {
-                let manifest = EventIndexerComponentManifest::load(&component_path)?;
-                (
-                    Box::new(manifest.clone()),
-                    manifest.label.clone(),
-                    manifest.datasource.event.interface.clone(),
-                    None,
-                )
-            },
-            ComponentType::Snapshot => {
-                let manifest = SnapshotComponentManifest::load(&component_path)?;
-                (
-                    Box::new(manifest.clone()),
-                    manifest.label.clone(),
-                    manifest.datasource.method.interface.clone(),
-                    None,
-                )
-            },
-            ComponentType::Relayer => {
-                let manifest = RelayerComponentManifest::load(&component_path)?;
-                (
-                    Box::new(manifest.clone()),
-                    manifest.label.clone(),
-                    manifest.datasource.method.interface.clone(),
-                    Some(manifest.clone().destination.type_),
-                )
-            },
+        let data: Box<dyn ComponentManifest> = match component_type {
+            ComponentType::EventIndexer => Box::new(EventIndexerComponentManifest::load(&component_path)?),
+            ComponentType::Snapshot => Box::new(SnapshotComponentManifest::load(&component_path)?),
+            ComponentType::Relayer => Box::new(RelayerComponentManifest::load(&component_path)?),
         };
 
         if let Err(msg) = data.validate_manifest() {
@@ -99,8 +75,9 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
             bail!(GLOBAL_ERROR_MSG.to_string())
         }
 
+        let label = data.label();
         project_labels.push(label.to_string());
-        let canister_pj_path_str = format!("{}/artifacts/{}", &project_path_str, &label);
+        let canister_pj_path_str = format!("{}/artifacts/{}", &project_path_str, label);
         let canister_code_path_str = format!("{}/src", &canister_pj_path_str);
         fs::create_dir_all(Path::new(&canister_code_path_str))?;
         let lib_path_str = format!("{}/lib.rs", &canister_code_path_str);
@@ -110,11 +87,11 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
         // generate project's Cargo.toml
         fs::write(
             format!("{}/Cargo.toml", &canister_pj_path_str),
-            &canister_project_cargo_toml(&label)
+            &canister_project_cargo_toml(label)
         )?;
 
         // copy and move any necessary interfaces to canister
-        if let Some(interface_file) = interface_path {
+        if let Some(interface_file) = data.required_interface() {
             let dst_interface_path_str = format!("{}/{}", &interfaces_path_str, &interface_file);
             let dst_interface_path = Path::new(&dst_interface_path_str);
 
@@ -145,7 +122,7 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
         }
 
         // copy and move oracle interface
-        if let Some(value) = destination_type {
+        if let Some(value) = data.destination_type() {
             let (_, json_name, json_contents) = get_oracle_attributes(&value);
             fs::write(
                 format!("{}/{}", &interfaces_path_str, &json_name),

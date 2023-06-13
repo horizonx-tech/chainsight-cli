@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{types::ComponentType, lib::codegen::canisters};
 
-use super::common::{Datasource, ComponentManifest};
+use super::common::{Datasource, ComponentManifest, DestinactionType};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct SnapshotComponentManifest {
@@ -52,6 +52,18 @@ impl ComponentManifest for SnapshotComponentManifest {
 
     fn generate_codes(&self) -> anyhow::Result<TokenStream> {
         canisters::snapshot::generate_codes(self)
+    }
+
+    fn label(&self) -> &str {
+        self.label.as_str()
+    }
+
+    fn destination_type(&self) -> Option<DestinactionType> {
+        None
+    }
+
+    fn required_interface(&self) -> Option<String> {
+        self.datasource.method.interface.clone()
     }
 }
 
