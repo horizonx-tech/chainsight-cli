@@ -75,22 +75,10 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
             bail!(GLOBAL_ERROR_MSG.to_string())
         }
 
-        let label = data.label();
-        project_labels.push(label.to_string());
-        let canister_pj_path_str = format!("{}/artifacts/{}", &project_path_str, label);
-        let canister_code_path_str = format!("{}/src", &canister_pj_path_str);
-        fs::create_dir_all(Path::new(&canister_code_path_str))?;
-        let lib_path_str = format!("{}/lib.rs", &canister_code_path_str);
-        let mut lib_file = File::create(&lib_path_str)?;
-        lib_file.write_all(data.generate_codes()?.to_string().as_bytes())?;
-
-        // generate project's Cargo.toml
-        fs::write(
-            format!("{}/Cargo.toml", &canister_pj_path_str),
-            &canister_project_cargo_toml(label)
-        )?;
-
-        // copy and move any necessary interfaces to canister
+        // Processes about interface
+        // - copy and move any necessary interfaces to canister
+        // - get ethabi::Contract for codegen
+        let mut interface_contract: Option<ethabi::Contract> = None;
         if let Some(interface_file) = data.required_interface() {
             let dst_interface_path_str = format!("{}/{}", &interfaces_path_str, &interface_file);
             let dst_interface_path = Path::new(&dst_interface_path_str);
@@ -104,6 +92,8 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
                     r#"Interface file "{}" copied by user's interface"#,
                     &interface_file
                 );
+                let abi_file = File::open(&user_if_file_path)?;
+                interface_contract = Some(ethabi::Contract::load(abi_file)?);
             } else if let Some(contents) = buildin_interface(&interface_file) {
                 fs::write(&dst_interface_path, contents)?;
                 info!(
@@ -111,6 +101,8 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
                     r#"Interface file "{}" copied by builtin interface"#,
                     &interface_file
                 );
+                let contract: ethabi::Contract = serde_json::from_str(contents)?;
+                interface_contract = Some(contract);
             } else {
                 error!(
                     log,
@@ -120,6 +112,21 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
                 bail!(GLOBAL_ERROR_MSG.to_string())
             }
         }
+
+        let label = data.label();
+        project_labels.push(label.to_string());
+        let canister_pj_path_str = format!("{}/artifacts/{}", &project_path_str, label);
+        let canister_code_path_str = format!("{}/src", &canister_pj_path_str);
+        fs::create_dir_all(Path::new(&canister_code_path_str))?;
+        let lib_path_str = format!("{}/lib.rs", &canister_code_path_str);
+        let mut lib_file = File::create(&lib_path_str)?;
+        lib_file.write_all(data.generate_codes(interface_contract)?.to_string().as_bytes())?;
+
+        // generate project's Cargo.toml
+        fs::write(
+            format!("{}/Cargo.toml", &canister_pj_path_str),
+            &canister_project_cargo_toml(label)
+        )?;
 
         // copy and move oracle interface
         if let Some(value) = data.destination_type() {

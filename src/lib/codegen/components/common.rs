@@ -113,7 +113,7 @@ pub trait ComponentManifest: std::fmt::Debug {
     fn load(path: &str) -> anyhow::Result<Self> where Self: Sized;
     fn to_str_as_yaml(&self) -> anyhow::Result<String> where Self: Sized;
     fn validate_manifest(&self) -> anyhow::Result<()>;
-    fn generate_codes(&self) -> anyhow::Result<TokenStream>;
+    fn generate_codes(&self, interface_contract: Option<ethabi::Contract>) -> anyhow::Result<TokenStream>;
 
     fn label(&self) -> &str;
     fn destination_type(&self) -> Option<DestinactionType>;

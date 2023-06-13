@@ -50,7 +50,7 @@ impl ComponentManifest for SnapshotComponentManifest {
         canisters::snapshot::validate_manifest(self)
     }
 
-    fn generate_codes(&self) -> anyhow::Result<TokenStream> {
+    fn generate_codes(&self, _interface_contract: Option<ethabi::Contract>) -> anyhow::Result<TokenStream> {
         canisters::snapshot::generate_codes(self)
     }
 

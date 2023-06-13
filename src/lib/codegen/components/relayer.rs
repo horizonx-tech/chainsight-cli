@@ -49,7 +49,7 @@ impl ComponentManifest for RelayerComponentManifest {
         canisters::relayer::validate_manifest(self)
     }
 
-    fn generate_codes(&self) -> anyhow::Result<TokenStream> {
+    fn generate_codes(&self, _interface_contract: Option<ethabi::Contract>) -> anyhow::Result<TokenStream> {
         canisters::relayer::generate_codes(self)
     }
 

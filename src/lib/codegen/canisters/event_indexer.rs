@@ -1,5 +1,3 @@
-use std::fs::File;
-
 use anyhow::ensure;
 use proc_macro2::TokenStream;
 use quote::{quote, format_ident};
@@ -13,13 +11,10 @@ fn common_codes() -> TokenStream {
     }
 }
 
-fn custom_codes(manifest: &EventIndexerComponentManifest) -> anyhow::Result<proc_macro2::TokenStream> {
+fn custom_codes(manifest: &EventIndexerComponentManifest, interface_contract: ethabi::Contract) -> anyhow::Result<proc_macro2::TokenStream> {
     let datasource_event_def = &manifest.datasource.event;
 
-    let abi_file = File::open(format!("./sample_pj/interfaces/{}", &datasource_event_def.interface.as_ref().unwrap()))?; // todo: pass path as args? field?
-    // let abi_file = File::open(format!("./sample_pj/artifacts/__interfaces/{}", &datasource_event_def.interface.as_ref().unwrap()))?;
-    let contract = ethabi::Contract::load(abi_file)?;
-    let events = contract.events_by_name(&datasource_event_def.identifier)?;
+    let events = interface_contract.events_by_name(&datasource_event_def.identifier)?;
     ensure!(events.len() == 1, "event is not found or there are multiple events");
     let event = events.first().unwrap();
 
@@ -47,11 +42,11 @@ fn custom_codes(manifest: &EventIndexerComponentManifest) -> anyhow::Result<proc
     })
 }
 
-pub fn generate_codes(manifest: &EventIndexerComponentManifest) -> anyhow::Result<TokenStream> {
+pub fn generate_codes(manifest: &EventIndexerComponentManifest, interface_contract: ethabi::Contract) -> anyhow::Result<TokenStream> {
     ensure!(manifest.type_ == ComponentType::EventIndexer, "type is not EventIndexer");
 
     let common_code_token = common_codes();
-    let custom_code_token = custom_codes(manifest)?;
+    let custom_code_token = custom_codes(manifest, interface_contract)?;
 
     let code = quote! {
         #common_code_token

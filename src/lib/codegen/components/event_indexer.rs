@@ -48,8 +48,9 @@ impl ComponentManifest for EventIndexerComponentManifest {
         canisters::event_indexer::validate_manifest(self)
     }
 
-    fn generate_codes(&self) -> anyhow::Result<TokenStream> {
-        canisters::event_indexer::generate_codes(self)
+    fn generate_codes(&self, interface_contract: Option<ethabi::Contract>) -> anyhow::Result<TokenStream> {
+        let interface_contract = interface_contract.ok_or_else(|| anyhow::anyhow!("interface contract is not found"))?;
+        canisters::event_indexer::generate_codes(self, interface_contract)
     }
 
     fn label(&self) -> &str {
