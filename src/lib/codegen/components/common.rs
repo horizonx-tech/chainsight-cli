@@ -121,18 +121,18 @@ pub trait ComponentManifest: std::fmt::Debug {
 }
 
 #[derive(Deserialize)]
-pub struct CommonComponentManifest {
-    pub version: String,
+pub struct ComponentTypeInManifest {
     #[serde(rename = "type")]
     pub type_: ComponentType,
-    pub label: String,
 }
-pub fn get_type_from_manifest(component_manifest_path: &str) -> anyhow::Result<ComponentType> {
-    let mut file = OpenOptions::new()
-        .read(true)
-        .open(&Path::new(component_manifest_path))?;
-    let mut contents = String::new();
-    file.read_to_string(&mut contents)?;
-    let data: CommonComponentManifest = serde_yaml::from_str(&contents)?;
-    Ok(data.type_)
+impl ComponentTypeInManifest {
+    pub fn determine_type(component_manifest_path: &str) -> anyhow::Result<ComponentType> {
+        let mut file = OpenOptions::new()
+            .read(true)
+            .open(&Path::new(component_manifest_path))?;
+        let mut contents = String::new();
+        file.read_to_string(&mut contents)?;
+        let data: Self = serde_yaml::from_str(&contents)?;
+        Ok(data.type_)
+    }
 }

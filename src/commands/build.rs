@@ -7,7 +7,7 @@ use anyhow::{Ok, bail};
 use clap::Parser;
 use slog::{info, error};
 
-use crate::lib::codegen::components::common::{get_type_from_manifest, ComponentManifest};
+use crate::lib::codegen::components::common::{ComponentManifest, ComponentTypeInManifest};
 use crate::lib::codegen::components::event_indexer::EventIndexerComponentManifest;
 use crate::lib::codegen::components::relayer::RelayerComponentManifest;
 use crate::lib::codegen::components::snapshot::SnapshotComponentManifest;
@@ -62,7 +62,7 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
         // TODO: need validations
         let relative_component_path = component.component_path;
         let component_path = format!("{}/{}", &project_path_str, relative_component_path);
-        let component_type = get_type_from_manifest(&component_path)?;
+        let component_type = ComponentTypeInManifest::determine_type(&component_path)?;
 
         let data: Box<dyn ComponentManifest> = match component_type {
             ComponentType::EventIndexer => Box::new(EventIndexerComponentManifest::load(&component_path)?),
