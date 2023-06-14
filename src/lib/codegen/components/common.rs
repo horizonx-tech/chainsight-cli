@@ -20,14 +20,14 @@ pub enum DestinactionType {
     StringOracle,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct Datasource {
     #[serde(rename = "type")]
     pub type_: DatasourceType,
     pub id: String,
     pub method: DatasourceMethod
 }
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct DatasourceMethod {
     pub identifier: String,
     pub interface: Option<String>,

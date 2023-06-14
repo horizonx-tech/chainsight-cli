@@ -7,7 +7,7 @@ use crate::{types::ComponentType, lib::codegen::canisters};
 
 use super::common::{Datasource, ComponentManifest, DestinactionType};
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct SnapshotComponentManifest {
     pub version: String,
     #[serde(rename = "type")]
@@ -67,7 +67,7 @@ impl ComponentManifest for SnapshotComponentManifest {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct SnapshotStorage {
     pub with_timestamp: bool,
 }
@@ -81,5 +81,100 @@ impl SnapshotStorage {
 impl Default for SnapshotStorage {
     fn default() -> Self {
         Self::new(true)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::lib::codegen::components::common::{DatasourceMethod, DatasourceType};
+
+    use super::*;
+
+    #[test]
+    fn test_to_manifest_struct_for_chain() {
+        let yaml = r#"
+version: v1
+type: snapshot
+label: sample_pj_snapshot_chain
+datasource:
+    type: contract
+    id: 0000000000000000000000000000000000000000
+    method:
+        identifier: totalSupply():(uint256)
+        interface: ERC20.json
+        args: []
+storage:
+    with_timestamp: true
+interval: 3600
+        "#;
+
+        let result = serde_yaml::from_str::<SnapshotComponentManifest>(yaml);
+        assert!(result.is_ok());
+        let component = result.unwrap();
+        assert_eq!(
+            component,
+            SnapshotComponentManifest {
+                version: "v1".to_owned(),
+                type_: ComponentType::Snapshot,
+                label: "sample_pj_snapshot_chain".to_owned(),
+                datasource: Datasource {
+                    type_: DatasourceType::Contract,
+                    id: "0000000000000000000000000000000000000000".to_owned(),
+                    method: DatasourceMethod {
+                        identifier: "totalSupply():(uint256)".to_owned(),
+                        interface: Some("ERC20.json".to_string()),
+                        args: vec![]
+                    }
+                },
+                storage: SnapshotStorage {
+                    with_timestamp: true,
+                },
+                interval: 3600
+            }
+        );
+    }
+
+    #[test]
+    fn test_to_manifest_struct_for_icp() {
+        let yaml = r#"
+version: v1
+type: snapshot
+label: sample_pj_snapshot_icp
+datasource:
+    type: canister
+    id: xxxxx-xxxxx-xxxxx-xxxxx-xxx
+    method:
+        identifier: 'get_last_snapshot : () -> (record { value : text; timestamp : nat64 })'
+        interface: null
+        args: []
+storage:
+    with_timestamp: true
+interval: 3600
+        "#;
+
+        let result = serde_yaml::from_str::<SnapshotComponentManifest>(yaml);
+        assert!(result.is_ok());
+        let component = result.unwrap();
+        assert_eq!(
+            component,
+            SnapshotComponentManifest {
+                version: "v1".to_owned(),
+                type_: ComponentType::Snapshot,
+                label: "sample_pj_snapshot_icp".to_owned(),
+                datasource: Datasource {
+                    type_: DatasourceType::Canister,
+                    id: "xxxxx-xxxxx-xxxxx-xxxxx-xxx".to_owned(),
+                    method: DatasourceMethod {
+                        identifier: "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })".to_owned(),
+                        interface: None,
+                        args: vec![]
+                    }
+                },
+                storage: SnapshotStorage {
+                    with_timestamp: true,
+                },
+                interval: 3600
+            }
+        );
     }
 }

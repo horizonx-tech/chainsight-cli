@@ -8,7 +8,7 @@ use crate::{types::ComponentType, lib::codegen::{canisters, oracle::get_oracle_a
 
 use super::common::{Datasource, ComponentManifest, DestinactionType};
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct RelayerComponentManifest {
     pub version: String,
     #[serde(rename = "type")]
@@ -66,7 +66,7 @@ impl ComponentManifest for RelayerComponentManifest {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct DestinationField {
     pub network_id: u32,
     #[serde(rename = "type")]
@@ -98,5 +98,62 @@ impl Default for DestinationField {
             "https://polygon-mumbai.g.alchemy.com/v2/<YOUR_KEY>".to_string(),
             3600
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::lib::codegen::components::common::{DatasourceType, DatasourceMethod};
+
+    use super::*;
+
+    #[test]
+    fn test_to_manifest_struct() {
+        let yaml = r#"
+version: v1
+type: canister
+label: sample_pj_relayer
+datasource:
+    type: canister
+    id: xxxxx-xxxxx-xxxxx-xxxxx-xxx
+    method:
+        identifier: 'get_last_snapshot : () -> (record { value : text; timestamp : nat64 })'
+        interface: null
+        args: []
+destination:
+    network_id: 80001
+    type: uint256
+    oracle_address: 0539a0EF8e5E60891fFf0958A059E049e43020d9
+    rpc_url: https://polygon-mumbai.g.alchemy.com/v2/<YOUR_KEY>
+    interval: 3600
+        "#;
+
+        let result = serde_yaml::from_str::<RelayerComponentManifest>(yaml);
+        assert!(result.is_ok());
+        let component = result.unwrap();
+        assert_eq!(
+            component,
+            RelayerComponentManifest {
+                version: "v1".to_string(),
+                type_: ComponentType::Relayer,
+                label: "sample_pj_relayer".to_string(),
+                datasource: Datasource {
+                    type_: DatasourceType::Canister,
+                    id: "xxxxx-xxxxx-xxxxx-xxxxx-xxx".to_string(),
+                    method: DatasourceMethod {
+                        identifier: "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })".to_string(),
+                        interface: None,
+                        args: vec![]
+                    }
+                },
+                destination: DestinationField {
+                    network_id: 80001,
+                    type_: DestinactionType::Uint256Oracle,
+                    oracle_address: "0539a0EF8e5E60891fFf0958A059E049e43020d9".to_string(),
+                    rpc_url: "https://polygon-mumbai.g.alchemy.com/v2/<YOUR_KEY>".to_string(),
+                    interval: 3600
+                }
+            }
+        );
     }
 }

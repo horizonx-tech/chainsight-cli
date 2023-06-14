@@ -7,7 +7,7 @@ use crate::{types::ComponentType, lib::codegen::canisters};
 
 use super::common::ComponentManifest;
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct EventIndexerComponentManifest {
     pub version: String,
     #[serde(rename = "type")]
@@ -67,7 +67,7 @@ impl ComponentManifest for EventIndexerComponentManifest {
 }
 
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct EventIndexerDatasource {
     pub id: String,
     pub event: EventIndexerEventDefinition
@@ -90,7 +90,7 @@ impl EventIndexerDatasource {
         }
     }
 }
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct EventIndexerEventDefinition {
     pub identifier: String,
     pub interface: Option<String>,
@@ -104,3 +104,42 @@ impl EventIndexerEventDefinition {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_to_manifest_struct() {
+        let yaml = r#"
+version: v1
+type: event_indexer
+label: sample_pj_event_indexer
+datasource:
+    id: 0000000000000000000000000000000000000000
+    event:
+        identifier: Transfer
+        interface: ERC20.json
+interval: 3600
+        "#;
+
+        let result = serde_yaml::from_str::<EventIndexerComponentManifest>(yaml);
+        assert!(result.is_ok());
+        let component = result.unwrap();
+        assert_eq!(
+            component,
+            EventIndexerComponentManifest {
+                version: "v1".to_string(),
+                type_: ComponentType::EventIndexer,
+                label: "sample_pj_event_indexer".to_string(),
+                datasource: EventIndexerDatasource {
+                    id: "0000000000000000000000000000000000000000".to_string(),
+                    event: EventIndexerEventDefinition {
+                        identifier: "Transfer".to_string(),
+                        interface: Some("ERC20.json".to_string())
+                    }
+                },
+                interval: 3600
+            }
+        );
+    }
+}
