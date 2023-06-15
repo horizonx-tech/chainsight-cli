@@ -7,11 +7,12 @@ use crate::{lib::{codegen::{components::event_indexer::EventIndexerComponentMani
 fn common_codes() -> TokenStream {
     // todo
     quote! {
-        monitoring_canister_metrics!(60);
+        chainsight_cdk_macros::monitoring_canister_metrics!(60);
     }
 }
 
 fn custom_codes(manifest: &EventIndexerComponentManifest, interface_contract: ethabi::Contract) -> anyhow::Result<proc_macro2::TokenStream> {
+    let label = &manifest.label;
     let datasource_event_def = &manifest.datasource.event;
 
     let events = interface_contract.events_by_name(&datasource_event_def.identifier)?;
@@ -34,6 +35,8 @@ fn custom_codes(manifest: &EventIndexerComponentManifest, interface_contract: et
         pub struct #event_struct_name {
             #(#event_struct_field_tokens),*
         }
+
+        chainsight_cdk_macros::did_export!(#label);
     };
 
     // temp: only Event struct
