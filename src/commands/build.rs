@@ -1,11 +1,12 @@
 use std::fs::File;
 use std::io::Write;
+use std::process::Command;
 use std::{path::Path, fs};
 use std::fmt::Debug;
 
 use anyhow::{Ok, bail};
 use clap::Parser;
-use slog::{info, error};
+use slog::{info, error, debug, Logger};
 
 use crate::lib::codegen::components::common::{ComponentManifest, ComponentTypeInManifest};
 use crate::lib::codegen::components::event_indexer::EventIndexerComponentManifest;
@@ -58,7 +59,9 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
     // generate canister codes & project folder (/artifacts/__interfaces/{project})
     let project_manifest = ProjectManifestData::load(&format!("{}/{}", &project_path_str, PROJECT_MANIFEST_FILENAME))?;
     let mut project_labels: Vec<String> = vec![];
-    for component in project_manifest.components {
+
+    let mut component_data = vec![];
+    for component in project_manifest.components.clone() {
         // TODO: need validations
         let relative_component_path = component.component_path;
         let component_path = format!("{}/{}", &project_path_str, relative_component_path);
@@ -69,7 +72,10 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
             ComponentType::Snapshot => Box::new(SnapshotComponentManifest::load(&component_path)?),
             ComponentType::Relayer => Box::new(RelayerComponentManifest::load(&component_path)?),
         };
+        component_data.push(data);
+    };
 
+    for data in &component_data {
         if let Err(msg) = data.validate_manifest() {
             error!(log, r#"{}"#, msg);
             bail!(GLOBAL_ERROR_MSG.to_string())
@@ -154,6 +160,10 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
         format!("{}/Makefile.toml", &artifacts_path_str),
         &makefile_toml()
     )?;
+
+    // build codes generated
+    let component_names = &component_data.iter().map(|data| data.label().to_string()).collect::<Vec<String>>();
+    execute_codebuild(&artifacts_path_str, component_names.clone(), log)?;
 
     info!(
         log,
@@ -266,4 +276,68 @@ fn buildin_interface(name: &str) -> Option<&'static str> {
     };
 
     Some(interface)
+}
+
+fn execute_codebuild(builded_project_path_str: &str, component_names: Vec<String>, log: &Logger) -> anyhow::Result<()> {
+    let builded_project_path = Path::new(&builded_project_path_str);
+
+    let description = "Generate interfaces (.did files)";
+    info!(log, "{}", description);
+    let output = Command::new("cargo")
+        .current_dir(&builded_project_path)
+        .args(["make", "did"])
+        .output()
+        .expect("failed to execute process: cargo make did");
+    if output.status.success() {
+        debug!(log, "{}", std::str::from_utf8(&output.stdout).unwrap_or(&"fail to parse stdout"));
+        info!(log, "{} successfully", description);
+    } else {
+        error!(log, "{} failed", description);
+        bail!(GLOBAL_ERROR_MSG.to_string())
+    }
+    // Copy .did to artifacts folder
+    let build_artifact_path_str = format!("{}/artifacts", builded_project_path_str);
+    fs::create_dir(&build_artifact_path_str)?;
+    for component_name in &component_names {
+        let src_path = format!("{}/{}/{}.did", builded_project_path_str, component_name, component_name);
+        let dst_path = format!("{}/{}.did", build_artifact_path_str, component_name);
+        fs::copy(src_path, dst_path)?;
+    }
+
+    let description = "Compile canisters' codes";
+    info!(log, "{}", description);
+    let output = Command::new("cargo")
+        .current_dir(&builded_project_path)
+        .args(["build", "--target", "wasm32-unknown-unknown", "--release", "--workspace"])
+        .output()
+        .expect("failed to execute process: cargo build --target wasm32-unknown-unknown --workspace");
+    if output.status.success() {
+        debug!(log, "{}", std::str::from_utf8(&output.stdout).unwrap_or(&"fail to parse stdout"));
+        info!(log, "{} successfully", description);
+    } else {
+        error!(log, "{} failed", description);
+        bail!(GLOBAL_ERROR_MSG.to_string())
+    }
+
+    let description = "Shrink/Optimize canisters' modules";
+    info!(log, "{}", description);
+    for component_name in &component_names {
+        let wasm_path = format!("target/wasm32-unknown-unknown/release/{}.wasm", component_name);
+        let output_path = format!("artifacts/{}.wasm", component_name);
+        let output = Command::new("ic-wasm")
+            .current_dir(&builded_project_path)
+            .args([&wasm_path, "-o", &output_path, "shrink"])
+            .output()
+            .expect("failed to execute process: ic_wasm shrink");
+        if output.status.success() {
+            debug!(log, "{}", std::str::from_utf8(&output.stdout).unwrap_or(&"fail to parse stdout"));
+            info!(log, "{} `{}` successfully", component_name, description);
+        } else {
+            debug!(log, "{}", std::str::from_utf8(&output.stderr).unwrap_or(&"fail to parse stdout"));
+            error!(log, "{} `{}` failed", component_name, description);
+            bail!(GLOBAL_ERROR_MSG.to_string())
+        }
+    }
+
+    anyhow::Ok(())
 }
