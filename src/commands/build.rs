@@ -27,7 +27,7 @@ pub struct BuildOpts {
     only_build: bool,
 }
 
-const GLOBAL_ERROR_MSG: &str = "Fail build command";
+const GLOBAL_ERROR_MSG: &str = "Fail 'Build' command";
 
 pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
     let log = env.get_logger();

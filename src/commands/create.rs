@@ -18,7 +18,7 @@ pub struct CreateOpts {
     path: Option<String>,
 }
 
-const GLOBAL_ERROR_MSG: &str = "Fail create command";
+const GLOBAL_ERROR_MSG: &str = "Fail 'Create' command";
 
 pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> anyhow::Result<()> {
     let log = env.get_logger();

@@ -14,7 +14,7 @@ pub struct RemoveOpts {
     path: Option<String>,
 }
 
-const GLOBAL_ERROR_MSG: &str = "Fail remove command";
+const GLOBAL_ERROR_MSG: &str = "Fail 'Remove' command";
 
 pub fn exec(env: &EnvironmentImpl, opts: RemoveOpts) -> anyhow::Result<()> {
     let log = env.get_logger();

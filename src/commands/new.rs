@@ -17,7 +17,7 @@ pub struct NewOpts {
 }
 
 // temp
-const GLOBAL_ERROR_MSG: &str = "Fail new command";
+const GLOBAL_ERROR_MSG: &str = "Fail 'New' command";
 
 pub fn exec(env: &EnvironmentImpl, opts: NewOpts) -> anyhow::Result<()> {
     let log = env.get_logger();

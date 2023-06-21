@@ -39,10 +39,7 @@ pub fn exec(env: &EnvironmentImpl, cmd: Command) -> anyhow::Result<()> {
         Command::Create(opts) => create::exec(env, opts),
         Command::Build(opts) => build::exec(env, opts),
         Command::Test(opts) => test::exec(env, opts),
-        Command::Deploy(_) => {
-            println!("Deploy");
-            Ok(())
-        },
+        Command::Deploy(opts) => deploy::exec(env, opts),
         Command::Remove(opts) => remove::exec(env, opts),
         Command::Upgrade(_) => {
             println!("Upgrade");
