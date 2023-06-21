@@ -21,6 +21,10 @@ use crate::{lib::{environment::EnvironmentImpl, utils::{is_chainsight_project, P
 pub struct BuildOpts {
     #[arg(long)]
     path: Option<String>,
+    #[arg(long, conflicts_with = "only_build")]
+    only_codegen: bool,
+    #[arg(long, conflicts_with = "only_codegen")]
+    only_build: bool,
 }
 
 const GLOBAL_ERROR_MSG: &str = "Fail build command";
@@ -43,23 +47,11 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
         r#"Building project..."#
     );
 
-    // generate /artifacts
     let project_path_str = project_path.unwrap_or(".".to_string());
     let artifacts_path_str = format!("{}/artifacts", &project_path_str);
-    let artifacts_path = Path::new(&artifacts_path_str);
-    if artifacts_path.exists() {
-        fs::remove_dir_all(&artifacts_path)?;
-    }
-    fs::create_dir(&artifacts_path)?;
 
-    // generate /artifacts/__interfaces
-    let interfaces_path_str = format!("{}/__interfaces", &artifacts_path_str);
-    fs::create_dir(&interfaces_path_str)?;
-
-    // generate canister codes & project folder (/artifacts/__interfaces/{project})
+    // load component definitions from manifests
     let project_manifest = ProjectManifestData::load(&format!("{}/{}", &project_path_str, PROJECT_MANIFEST_FILENAME))?;
-    let mut project_labels: Vec<String> = vec![];
-
     let mut component_data = vec![];
     for component in project_manifest.components.clone() {
         // TODO: need validations
@@ -75,7 +67,50 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
         component_data.push(data);
     };
 
-    for data in &component_data {
+    if opts.only_build {
+        info!(log, r#"Skip codegen"#);
+    } else {
+        // generate codes
+        exec_codegen(log, &project_path_str, &artifacts_path_str, &component_data)?;
+    }
+
+    if opts.only_codegen {
+        info!(log, r#"Skip build"#);
+    } else {
+        // build codes generated
+        let component_names = &component_data.iter().map(|data| data.label().to_string()).collect::<Vec<String>>();
+        execute_codebuild(log, &artifacts_path_str, component_names.clone())?;
+    }
+
+    info!(
+        log,
+        r#"Project "{}" codes/resources generated successfully"#,
+        project_manifest.label
+    );
+
+    info!(
+        log,
+        r#"Project "{}" builded successfully"#,
+        project_manifest.label
+    );
+    Ok(())
+}
+
+fn exec_codegen(log: &Logger, project_path_str: &str, artifacts_path_str: &str, component_data: &Vec<Box<dyn ComponentManifest>>) -> anyhow::Result<()> {
+    // generate /artifacts
+    let artifacts_path = Path::new(&artifacts_path_str);
+    if artifacts_path.exists() {
+        fs::remove_dir_all(&artifacts_path)?;
+    }
+    fs::create_dir(&artifacts_path)?;
+
+    // generate /artifacts/__interfaces
+    let interfaces_path_str = format!("{}/__interfaces", &artifacts_path_str);
+    fs::create_dir(&interfaces_path_str)?;
+
+    // generate canister codes
+    let mut project_labels: Vec<String> = vec![];
+    for data in component_data {
         if let Err(msg) = data.validate_manifest() {
             error!(log, r#"{}"#, msg);
             bail!(GLOBAL_ERROR_MSG.to_string())
@@ -161,22 +196,7 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
         &makefile_toml()
     )?;
 
-    // build codes generated
-    let component_names = &component_data.iter().map(|data| data.label().to_string()).collect::<Vec<String>>();
-    execute_codebuild(&artifacts_path_str, component_names.clone(), log)?;
-
-    info!(
-        log,
-        r#"Project "{}" codes/resources generated successfully"#,
-        project_manifest.label
-    );
-
-    info!(
-        log,
-        r#"Project "{}" builded successfully"#,
-        project_manifest.label
-    );
-    Ok(())
+    anyhow::Ok(())
 }
 
 fn root_cargo_toml(members: Vec<String>) -> String {
@@ -278,7 +298,7 @@ fn buildin_interface(name: &str) -> Option<&'static str> {
     Some(interface)
 }
 
-fn execute_codebuild(builded_project_path_str: &str, component_names: Vec<String>, log: &Logger) -> anyhow::Result<()> {
+fn execute_codebuild(log: &Logger, builded_project_path_str: &str, component_names: Vec<String>) -> anyhow::Result<()> {
     let builded_project_path = Path::new(&builded_project_path_str);
 
     let description = "Generate interfaces (.did files)";
@@ -295,9 +315,15 @@ fn execute_codebuild(builded_project_path_str: &str, component_names: Vec<String
         error!(log, "{} failed", description);
         bail!(GLOBAL_ERROR_MSG.to_string())
     }
-    // Copy .did to artifacts folder
+
+    // Regenerate artifacts folder
     let build_artifact_path_str = format!("{}/artifacts", builded_project_path_str);
-    fs::create_dir(&build_artifact_path_str)?;
+    let build_artifact_path = Path::new(&build_artifact_path_str);
+    if build_artifact_path.exists() {
+        fs::remove_dir_all(&build_artifact_path)?;
+    }
+    fs::create_dir(&build_artifact_path)?;
+    // Copy .did to artifacts folder
     for component_name in &component_names {
         let src_path = format!("{}/{}/{}.did", builded_project_path_str, component_name, component_name);
         let dst_path = format!("{}/{}.did", build_artifact_path_str, component_name);
