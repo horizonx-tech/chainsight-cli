@@ -2,18 +2,33 @@ use anyhow::ensure;
 use proc_macro2::TokenStream;
 use quote::{quote, format_ident};
 
-use crate::{lib::{codegen::{components::event_indexer::EventIndexerComponentManifest, canisters::common::convert_type_from_ethabi_param_type}, utils::{ADDRESS_TYPE, U256_TYPE}}, types::ComponentType};
+use crate::{lib::{codegen::{components::event_indexer::EventIndexerComponentManifest, canisters::common::{convert_type_from_ethabi_param_type, generate_outside_call_idents, OutsideCallIdentsType}}, utils::{ADDRESS_TYPE, U256_TYPE}}, types::ComponentType};
 
 fn common_codes() -> TokenStream {
+    let outside_call_idents = generate_outside_call_idents(OutsideCallIdentsType::Eth);
+
     // todo
     quote! {
-        chainsight_cdk_macros::monitoring_canister_metrics!(60);
+        use std::str::FromStr;
+        use ic_web3_rs::types::Address;
+        use chainsight_cdk_macros::{
+            define_transform_for_web3, define_web3_ctx, did_export,
+            manage_single_state, monitoring_canister_metrics, setup_func, ContractEvent
+        };
+
+        monitoring_canister_metrics!(60);
+
+        #outside_call_idents
     }
 }
 
 fn custom_codes(manifest: &EventIndexerComponentManifest, interface_contract: ethabi::Contract) -> anyhow::Result<proc_macro2::TokenStream> {
     let label = &manifest.label;
     let datasource_event_def = &manifest.datasource.event;
+
+    let event_interface = &manifest.datasource.event.interface.clone()
+        .ok_or(anyhow::anyhow!("datasource.method.interface is required for contract"))?;
+    let abi_path = format!("./__interfaces/{}", event_interface);
 
     let events = interface_contract.events_by_name(&datasource_event_def.identifier)?;
     ensure!(events.len() == 1, "event is not found or there are multiple events");
@@ -31,17 +46,19 @@ fn custom_codes(manifest: &EventIndexerComponentManifest, interface_contract: et
         quote! { pub #field_name_ident: #field_ty_ident }
     }).collect::<Vec<_>>();
     let event_struct = quote! {
-        #[derive(Clone, Debug, candid::CandidType, candid::Deserialize)]
+        #[derive(Clone, Debug,  Default, candid::CandidType, candid::Deserialize, ContractEvent)]
         pub struct #event_struct_name {
             #(#event_struct_field_tokens),*
         }
-
-        chainsight_cdk_macros::did_export!(#label);
     };
 
-    // temp: only Event struct
+    // temp
     Ok(quote! {
+        ic_solidity_bindgen::contract_abi!(#abi_path);
+
         #event_struct
+
+        did_export!(#label);
     })
 }
 
