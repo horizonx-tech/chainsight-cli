@@ -1,7 +1,5 @@
 use slog::{Logger, Level, Drain};
 
-use crate::config::cli_version_str;
-
 pub fn create_root_logger(verbose_level: i64) -> Logger {
     let log_level = match verbose_level {
         -3 => Level::Critical,
@@ -23,5 +21,6 @@ pub fn create_root_logger(verbose_level: i64) -> Logger {
     let drain = slog::LevelFilter::new(drain, log_level).fuse();
     let drain = slog_async::Async::new(drain).build().fuse();
 
-    Logger::root(drain, slog::o!("version" => cli_version_str()))
+    // Logger::root(drain, slog::o!("version" => cli_version_str())) // if you want to display the cli version
+    Logger::root(drain, slog::o!())
 }

@@ -38,7 +38,7 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
         r#"Deploy project..."#
     );
 
-    // execute command
+    // exec command - check
     info!(log, "Ping dfx subnet");
     let local_subnet = format!("http://127.0.0.1:{}", opts.port.unwrap_or(4943));
     let args = match network {
@@ -53,6 +53,44 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
         "Ping dfx subnet"
     )?;
 
+    info!(log, "Check identity: Developer Id");
+    let args = match network {
+        Network::Local => vec!["identity", "whoami"],
+        Network::IC => vec!["identity", "whoami", "--network", "ic"]
+    };
+    exec_command(
+        log,
+        "dfx",
+        &builded_project_path,
+        args,
+        "dfx identity whoami"
+    )?;
+    info!(log, "Check identity: Principal");
+    let args = match network {
+        Network::Local => vec!["identity", "get-principal"],
+        Network::IC => vec!["identity", "get-principal", "--network", "ic"]
+    };
+    exec_command(
+        log,
+        "dfx",
+        &builded_project_path,
+        args,
+        "dfx identity get-principal"
+    )?;
+    let args = match network {
+        Network::Local => vec!["identity", "get-wallet"],
+        Network::IC => vec!["identity", "get-wallet", "--network", "ic"]
+    };
+    info!(log, "Check identity: Wallet");
+    exec_command(
+        log,
+        "dfx",
+        &builded_project_path,
+        args,
+        "dfx identity get-wallet"
+    )?;
+
+    // exec command - execution
     info!(log, "Execute 'dfx canister create --all'");
     let args = match network {
         Network::Local => vec!["canister", "create", "--all"],
