@@ -1,4 +1,4 @@
-use std::{path::Path, process::Command};
+use std::{path::Path, process::Command, fs};
 
 use anyhow::bail;
 use clap::Parser;
@@ -129,6 +129,17 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
         args,
         "Executed 'dfx canister install --all'"
     )?;
+
+    info!(log, "Check deployed canisters' ids");
+    let canister_ids_json_filename = "canister_ids.json";
+    let canister_ids_json_path = match network {
+        Network::Local => format!("{}/.dfx/local/{}", builded_project_path_str, canister_ids_json_filename),
+        Network::IC => format!("{}/{}", builded_project_path_str, canister_ids_json_filename),
+    };
+    match fs::read_to_string(canister_ids_json_path) {
+        Ok(contents) => info!(log, "{}", contents),
+        Err(err) => error!(log, "Error reading canister_ids.json: {}", err),
+    }
 
     info!(
         log,
