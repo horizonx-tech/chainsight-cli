@@ -2,19 +2,25 @@ use anyhow::ensure;
 use proc_macro2::TokenStream;
 use quote::{quote, format_ident};
 
-use crate::{lib::{codegen::{components::event_indexer::EventIndexerComponentManifest, canisters::common::{convert_type_from_ethabi_param_type, generate_outside_call_idents, OutsideCallIdentsType}}, utils::{ADDRESS_TYPE, U256_TYPE}}, types::ComponentType};
+use crate::{lib::{codegen::{components::event_indexer::EventIndexerComponentManifest, canisters::common::{convert_type_from_ethabi_param_type, generate_outside_call_idents, OutsideCallIdentsType}}, utils::{ADDRESS_TYPE, U256_TYPE, convert_camel_to_snake}}, types::ComponentType};
 
 fn common_codes() -> TokenStream {
     let outside_call_idents = generate_outside_call_idents(OutsideCallIdentsType::Eth);
 
     // todo
     quote! {
-        use std::str::FromStr;
-        use ic_web3_rs::types::Address;
         use chainsight_cdk_macros::{
             define_transform_for_web3, define_web3_ctx, did_export,
             manage_single_state, monitoring_canister_metrics, setup_func, ContractEvent
         };
+        use ic_solidity_bindgen::types::EventLog;
+        use ic_web3_rs::{
+            futures::{future::BoxFuture, FutureExt},
+            transports::ic_http_client::CallOptions,
+            types::Address
+        };
+        use std::collections::HashMap;
+        use std::str::FromStr;
 
         monitoring_canister_metrics!(60);
 
@@ -28,6 +34,7 @@ fn custom_codes(manifest: &EventIndexerComponentManifest, interface_contract: et
 
     let event_interface = &manifest.datasource.event.interface.clone()
         .ok_or(anyhow::anyhow!("datasource.method.interface is required for contract"))?;
+    let contract_struct_ident = format_ident!("{}", event_interface.trim_end_matches(".json")); // temp: specify the extension (only .json?)
     let abi_path = format!("./__interfaces/{}", event_interface);
 
     let events = interface_contract.events_by_name(&datasource_event_def.identifier)?;
@@ -50,13 +57,51 @@ fn custom_codes(manifest: &EventIndexerComponentManifest, interface_contract: et
         pub struct #event_struct_name {
             #(#event_struct_field_tokens),*
         }
+
+        impl chainsight_cdk::indexer::Event<EventLog> for #event_struct_name {
+            fn from(event: EventLog) -> Self
+            where
+                EventLog: Into<Self>,
+            {
+                event.into()
+            }
+
+            // temp
+            fn tokenize(&self) -> chainsight_cdk::storage::Data {
+                chainsight_cdk::storage::Data::new(HashMap::new()) // self._tokenize()
+            }
+
+            // temp
+            fn untokenize(data: chainsight_cdk::storage::Data) -> Self {
+                #event_struct_name::default() // #event_struct_name::_untokenize(data)
+            }
+        }
     };
+
+    let call_func_ident = format_ident!("event_{}", convert_camel_to_snake(&event.name));
 
     // temp
     Ok(quote! {
         ic_solidity_bindgen::contract_abi!(#abi_path);
 
         #event_struct
+
+        fn get_logs(
+            from: u64,
+            to: u64,
+            call_options: CallOptions,
+        ) -> BoxFuture<'static, Result<HashMap<u64, Vec<EventLog>>, chainsight_cdk::indexer::Error>> {
+            async move {
+                let res = #contract_struct_ident::new(
+                    Address::from_str(get_target_addr().as_str()).unwrap(),
+                    &web3_ctx().unwrap()
+                ).#call_func_ident(from, to, call_options).await;
+                match res {
+                    Ok(logs) => Ok(logs),
+                    Err(e) => Err(chainsight_cdk::indexer::Error::OtherError(e.to_string())),
+                }
+            }.boxed()
+        }
 
         did_export!(#label);
     })
