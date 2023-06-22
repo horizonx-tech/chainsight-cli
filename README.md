@@ -5,7 +5,7 @@
 Build CLI
 
 ```bash
-cargo build
+cargo build --release
 target/release/csx
 ```
 
@@ -23,7 +23,10 @@ Temp: Build & Deploy to local
 ```bash
 # prerequisite
 # cd sample_pj/artifacts && dfx start --host 127.0.0.1:49430 --clean
-target/release/csx test --path sample/artifacts --port 49430
+target/release/csx deploy --path sample_pj/artifacts --network local --port 49430 -vvv # local
+
+target/release/csx deploy --path sample_pj/artifacts --network ic -vvv # ic
+
 # If you want to check candid ui url
 # cd sample_pj/artifacts && dfx deploy
 ```
