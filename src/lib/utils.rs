@@ -1,5 +1,7 @@
 use std::path::Path;
 
+use inflector::cases::snakecase::to_snake_case;
+
 pub const CHAINSIGHT_FILENAME: &str = ".chainsight";
 pub const PROJECT_MANIFEST_FILENAME: &str = "project.yaml";
 pub const PROJECT_MANIFEST_VERSION: &str = "v1";
@@ -28,21 +30,25 @@ pub fn is_chainsight_project(path: Option<String>) -> Result<(), String> {
 
 /// Convert camelCase String to snake_case
 pub fn convert_camel_to_snake(val: &str) -> String {
-    let mut result = String::with_capacity(val.len());
-    let mut chars = val.chars().peekable();
+    // use Inflector instead of this
+    // let mut result = String::with_capacity(val.len());
+    // let mut chars = val.chars().peekable();
+    // while let Some(ch) = chars.next() {
+    //     if ch.is_uppercase() {
+    //         if !result.is_empty() {
+    //             // If not the first character, prepend underscore
+    //             result.push('_');
+    //         }
+    //         for lowercase in ch.to_lowercase() {
+    //             result.push(lowercase);
+    //         }
+    //     } else {
+    //         result.push(ch);
+    //     }
+    // }
+    // result
 
-    while let Some(ch) = chars.next() {
-        if ch.is_uppercase() {
-            if !result.is_empty() {
-                // If not the first character, prepend underscore
-                result.push('_');
-            }
-            for lowercase in ch.to_lowercase() {
-                result.push(lowercase);
-            }
-        } else {
-            result.push(ch);
-        }
-    }
-    result
+    // NOTE: use Inflator in ic-solidity-bindgen
+    // https://github.com/horizonx-tech/ic-solidity-bindgen/blob/0972bede5957927bcb8f675decd93878b849dc76/ic-solidity-bindgen-macros/src/abi_gen.rs#L192
+    to_snake_case(val)
 }

@@ -124,7 +124,6 @@ impl CanisterMethodIdentifier {
 
     fn parse_return_value(s: &str) -> anyhow::Result<CanisterMethodValueType> {
         // Scalar
-
         if !s.starts_with("record") {
             let val = convert_type_from_candid_type(s)?;
             return Ok(CanisterMethodValueType::Scalar(val));
