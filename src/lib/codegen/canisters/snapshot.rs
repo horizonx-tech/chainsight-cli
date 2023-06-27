@@ -1,10 +1,9 @@
 use anyhow::{ensure, bail};
 use quote::{quote, format_ident};
-use proc_macro2::TokenStream;
 
 use crate::{types::ComponentType, lib::{utils::{convert_camel_to_snake, U256_TYPE, ADDRESS_TYPE}, codegen::{components::{snapshot::SnapshotComponentManifest, common::DatasourceType}, canisters::common::{generate_request_arg_idents, generate_outside_call_idents, OutsideCallIdentsType, CanisterMethodIdentifier, ContractMethodIdentifier, CanisterMethodValueType}}}};
 
-fn common_codes_for_contract() -> TokenStream {
+fn common_codes_for_contract() -> proc_macro2::TokenStream {
     let outside_call_idents = generate_outside_call_idents(OutsideCallIdentsType::Eth);
 
     quote! {
@@ -158,7 +157,7 @@ fn match_primitive_type(ty: &syn::Type, idx: Option<proc_macro2::Literal>) -> an
     Ok(res)
 }
 
-fn common_codes_for_canister() -> TokenStream {
+fn common_codes_for_canister() -> proc_macro2::TokenStream {
     let outside_call_idents = generate_outside_call_idents(OutsideCallIdentsType::CrossCanisterCall);
 
     quote! {
@@ -191,14 +190,16 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> anyhow::Re
     let response_type = method_identifier.return_value;
     let (response_type_ident, response_type_def_ident) = match response_type {
         CanisterMethodValueType::Scalar(ty) => {
+            let type_ident = format_ident!("{}", &ty);
             (
-                format_ident!("{}", &ty),
+                quote! { type SnapshotValue = #type_ident; },
                 quote! {}
             )
         },
         CanisterMethodValueType::Tuple(tys) => {
+            let type_idents = tys.iter().map(|ty| format_ident!("{}", ty)).collect::<Vec<proc_macro2::Ident>>();
             (
-                format_ident!("({})", tys.iter().map(|ty| format!("{}", ty)).collect::<Vec<String>>().join(", ")),
+                quote! { type SnapshotValue = (#(#type_idents),*); },
                 quote! {}
             )
         },
@@ -212,7 +213,7 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> anyhow::Re
                 }
             }).collect::<Vec<_>>();
             (
-                response_type_def_ident.clone(),
+                quote! { type SnapshotValue = #response_type_def_ident; },
                 quote! {
                     #[derive(Clone, Debug, candid::CandidType, candid::Deserialize)]
                     pub struct #response_type_def_ident {
@@ -237,7 +238,7 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> anyhow::Re
                     pub value: SnapshotValue,
                     pub timestamp: u64,
                 }
-                type SnapshotValue = #response_type_ident;
+                #response_type_ident
             },
             quote! { let current_ts_sec = ic_cdk::api::time() / 1000000; },
             quote! {
@@ -250,7 +251,7 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> anyhow::Re
         )
     } else {
         (
-            quote! { type Snapshot = #response_type_ident; },
+            response_type_ident,
             quote! {},
             quote! { let datum = res.unwrap().clone(); },
             quote! { ic_cdk::println!("snapshot={:?}", datum); },
@@ -263,7 +264,7 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> anyhow::Re
         #response_type_def_ident
 
         type CallCanisterArgs = (#(#request_ty_idents),*);
-        type CallCanisterResponse = (#response_type_ident);
+        type CallCanisterResponse = SnapshotValue;
         cross_canister_call_func!(#method_ident, CallCanisterArgs, CallCanisterResponse);
         async fn execute_task() {
             #expr_to_current_ts_sec
@@ -285,7 +286,7 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> anyhow::Re
     })
 }
 
-pub fn generate_codes(manifest: &SnapshotComponentManifest) -> anyhow::Result<TokenStream> {
+pub fn generate_codes(manifest: &SnapshotComponentManifest) -> anyhow::Result<proc_macro2::TokenStream> {
     ensure!(manifest.type_ == ComponentType::Snapshot, "type is not Snapshot");
 
     let (common_code_token, custom_code_token) = match manifest.datasource.type_ {
