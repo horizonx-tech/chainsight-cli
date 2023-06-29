@@ -54,6 +54,10 @@ impl ComponentManifest for SnapshotComponentManifest {
         canisters::snapshot::generate_codes(self)
     }
 
+    fn component_type(&self) -> ComponentType {
+        ComponentType::Snapshot
+    }
+
     fn label(&self) -> &str {
         self.label.as_str()
     }

@@ -53,6 +53,10 @@ impl ComponentManifest for EventIndexerComponentManifest {
         canisters::event_indexer::generate_codes(self, interface_contract)
     }
 
+    fn component_type(&self) -> ComponentType {
+        ComponentType::EventIndexer
+    }
+
     fn label(&self) -> &str {
         self.label.as_str()
     }

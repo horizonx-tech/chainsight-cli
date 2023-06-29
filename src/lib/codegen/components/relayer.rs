@@ -53,6 +53,10 @@ impl ComponentManifest for RelayerComponentManifest {
         canisters::relayer::generate_codes(self)
     }
 
+    fn component_type(&self) -> ComponentType {
+        ComponentType::Relayer
+    }
+
     fn label(&self) -> &str {
         self.label.as_str()
     }

@@ -121,6 +121,7 @@ pub trait ComponentManifest: std::fmt::Debug {
     fn validate_manifest(&self) -> anyhow::Result<()>;
     fn generate_codes(&self, interface_contract: Option<ethabi::Contract>) -> anyhow::Result<TokenStream>;
 
+    fn component_type(&self) -> ComponentType;
     fn label(&self) -> &str;
     fn destination_type(&self) -> Option<DestinactionType>;
     fn required_interface(&self) -> Option<String>;

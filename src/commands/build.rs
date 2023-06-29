@@ -78,8 +78,7 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
         info!(log, r#"Skip build"#);
     } else {
         // build codes generated
-        let component_names = &component_data.iter().map(|data| data.label().to_string()).collect::<Vec<String>>();
-        execute_codebuild(log, &artifacts_path_str, component_names.clone())?;
+        execute_codebuild(log, &artifacts_path_str, &component_data)?;
     }
 
     info!(
@@ -298,7 +297,7 @@ fn buildin_interface(name: &str) -> Option<&'static str> {
     Some(interface)
 }
 
-fn execute_codebuild(log: &Logger, builded_project_path_str: &str, component_names: Vec<String>) -> anyhow::Result<()> {
+fn execute_codebuild(log: &Logger, builded_project_path_str: &str, component_data: &Vec<Box<dyn ComponentManifest>>) -> anyhow::Result<()> {
     let builded_project_path = Path::new(&builded_project_path_str);
 
     let description = "Generate interfaces (.did files)";
@@ -324,9 +323,10 @@ fn execute_codebuild(log: &Logger, builded_project_path_str: &str, component_nam
     }
     fs::create_dir(&build_artifact_path)?;
     // Copy .did to artifacts folder
-    for component_name in &component_names {
-        let src_path = format!("{}/{}/{}.did", builded_project_path_str, component_name, component_name);
-        let dst_path = format!("{}/{}.did", build_artifact_path_str, component_name);
+    for component_datum in component_data {
+        let label = component_datum.label();
+        let src_path = format!("{}/{}/{}.did", builded_project_path_str, label, label);
+        let dst_path = format!("{}/{}.did", build_artifact_path_str, label);
         fs::copy(src_path, dst_path)?;
     }
 
@@ -347,9 +347,10 @@ fn execute_codebuild(log: &Logger, builded_project_path_str: &str, component_nam
 
     let description = "Shrink/Optimize canisters' modules";
     info!(log, "{}", description);
-    for component_name in &component_names {
-        let wasm_path = format!("target/wasm32-unknown-unknown/release/{}.wasm", component_name);
-        let output_path = format!("artifacts/{}.wasm", component_name);
+    for component_datum in component_data {
+        let label = component_datum.label();
+        let wasm_path = format!("target/wasm32-unknown-unknown/release/{}.wasm", label);
+        let output_path = format!("artifacts/{}.wasm", label);
         let output = Command::new("ic-wasm")
             .current_dir(&builded_project_path)
             .args([&wasm_path, "-o", &output_path, "shrink"])
@@ -357,13 +358,60 @@ fn execute_codebuild(log: &Logger, builded_project_path_str: &str, component_nam
             .expect("failed to execute process: ic_wasm shrink");
         if output.status.success() {
             debug!(log, "{}", std::str::from_utf8(&output.stdout).unwrap_or(&"fail to parse stdout"));
-            info!(log, "{} `{}` successfully", component_name, description);
+            info!(log, "{} `{}` successfully", label, description);
         } else {
             debug!(log, "{}", std::str::from_utf8(&output.stderr).unwrap_or(&"fail to parse stdout"));
-            error!(log, "{} `{}` failed", component_name, description);
+            error!(log, "{} `{}` failed", label, description);
             bail!(GLOBAL_ERROR_MSG.to_string())
         }
     }
+
+    let description = "Add metadatas to canisters' modules";
+    info!(log, "{}", description);
+    for component_datum in component_data {
+        add_metadatas_to_wasm(log, builded_project_path_str, component_datum)?;
+    }
+
+    anyhow::Ok(())
+}
+
+fn add_metadatas_to_wasm(log: &Logger, builded_project_path_str: &str, component_datum: &Box<dyn ComponentManifest>) -> anyhow::Result<()> {
+    let builded_project_path = Path::new(&builded_project_path_str);
+
+    let label = component_datum.label();
+    let wasm_path = format!("artifacts/{}.wasm", label);
+
+    // chainsight:label
+    let description = "Add 'chainsight:label' metadata";
+    let output = Command::new("ic-wasm")
+        .current_dir(&builded_project_path)
+        .args([&wasm_path, "-o", &wasm_path, "metadata", "chainsight:label", "-d", &label, "-v", "public"])
+        .output()
+        .expect("failed to execute process: ic-wasm metadata chainsight:label");
+    if output.status.success() {
+        debug!(log, "{}", std::str::from_utf8(&output.stdout).unwrap_or(&"fail to parse stdout"));
+        info!(log, "{} `{}` successfully", label, description);
+    } else {
+        debug!(log, "{}", std::str::from_utf8(&output.stderr).unwrap_or(&"fail to parse stdout"));
+        error!(log, "{} `{}` failed", label, description);
+        bail!(GLOBAL_ERROR_MSG.to_string())
+    }
+    // chainsight:component_type
+    let description = "Add 'chainsight:component_type' metadata";
+    let output = Command::new("ic-wasm")
+        .current_dir(&builded_project_path)
+        .args([&wasm_path, "-o", &wasm_path, "metadata", "chainsight:component_type", "-d", &component_datum.component_type().to_string(), "-v", "public"])
+        .output()
+        .expect("failed to execute process: ic-wasm metadata chainsight:component_type");
+    if output.status.success() {
+        debug!(log, "{}", std::str::from_utf8(&output.stdout).unwrap_or(&"fail to parse stdout"));
+        info!(log, "{} `{}` successfully", label, description);
+    } else {
+        debug!(log, "{}", std::str::from_utf8(&output.stderr).unwrap_or(&"fail to parse stdout"));
+        error!(log, "{} `{}` failed", label, description);
+        bail!(GLOBAL_ERROR_MSG.to_string())
+    }
+    // TODO: chainsight:description
 
     anyhow::Ok(())
 }
