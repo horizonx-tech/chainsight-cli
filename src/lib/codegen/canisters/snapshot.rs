@@ -91,25 +91,7 @@ fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> anyhow::Re
                 };
             },
             quote! { ic_cdk::println!("ts={}, snapshot={:?}", datum.timestamp, datum.value); },
-            quote! {
-                #[ic_cdk::query]
-                #[candid::candid_method(query)]
-                pub fn get_last_snapshot_value() -> SnapshotValue {
-                    get_last_snapshot().value
-                }
-
-                #[ic_cdk::query]
-                #[candid::candid_method(query)]
-                pub fn get_top_snapshot_values(n: usize) -> Vec<SnapshotValue> {
-                    get_top_snapshots(n).iter().map(|s| s.value.clone()).collect()
-                }
-
-                #[ic_cdk::query]
-                #[candid::candid_method(query)]
-                pub fn get_snapshot_value(idx: usize) -> SnapshotValue {
-                    get_snapshot(idx).value
-                }
-            }
+            generate_queries_without_timestamp(format_ident!("SnapshotValue"))
         )
     } else {
         (
@@ -272,25 +254,7 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> anyhow::Re
                 };
             },
             quote! { ic_cdk::println!("ts={}, value={:?}", datum.timestamp, datum.value); },
-            quote! {
-                #[ic_cdk::query]
-                #[candid::candid_method(query)]
-                pub fn get_last_snapshot_value() -> SnapshotValue {
-                    get_last_snapshot().value
-                }
-
-                #[ic_cdk::query]
-                #[candid::candid_method(query)]
-                pub fn get_top_snapshot_values(n: usize) -> Vec<SnapshotValue> {
-                    get_top_snapshots(n).iter().map(|s| s.value.clone()).collect()
-                }
-
-                #[ic_cdk::query]
-                #[candid::candid_method(query)]
-                pub fn get_snapshot_value(idx: usize) -> SnapshotValue {
-                    get_snapshot(idx).value
-                }
-            }
+            generate_queries_without_timestamp(format_ident!("SnapshotValue"))
         )
     } else {
         (
@@ -367,4 +331,28 @@ pub fn validate_manifest(manifest: &SnapshotComponentManifest) -> anyhow::Result
     // - check datasource.method.args length
 
     Ok(())
+}
+
+fn generate_queries_without_timestamp(return_type: proc_macro2::Ident) -> proc_macro2::TokenStream {
+    let query_derives = quote! {
+        #[ic_cdk::query]
+        #[candid::candid_method(query)]
+    };
+
+    quote! {
+        #query_derives
+        pub fn get_last_snapshot_value() -> #return_type {
+            get_last_snapshot().value
+        }
+
+        #query_derives
+        pub fn get_top_snapshot_values(n: usize) -> Vec<#return_type> {
+            get_top_snapshots(n).iter().map(|s| s.value.clone()).collect()
+        }
+
+        #query_derives
+        pub fn get_snapshot_value(idx: usize) -> #return_type {
+            get_snapshot(idx).value
+        }
+    }
 }
