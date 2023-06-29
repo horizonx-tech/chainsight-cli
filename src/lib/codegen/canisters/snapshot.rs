@@ -69,7 +69,8 @@ fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> anyhow::Re
         snapshot_idents,
         expr_to_current_ts_sec,
         expr_to_gen_snapshot,
-        expr_to_log_datum
+        expr_to_log_datum,
+        queries_expect_timestamp,
     ) = if manifest.storage.with_timestamp {
         (
             quote! {
@@ -89,19 +90,41 @@ fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> anyhow::Re
                     timestamp: current_ts_sec,
                 };
             },
-            quote! { ic_cdk::println!("ts={}, snapshot={:?}", datum.timestamp, datum.value); }
+            quote! { ic_cdk::println!("ts={}, snapshot={:?}", datum.timestamp, datum.value); },
+            quote! {
+                #[ic_cdk::query]
+                #[candid::candid_method(query)]
+                pub fn get_last_snapshot_value() -> SnapshotValue {
+                    get_last_snapshot().value
+                }
+
+                #[ic_cdk::query]
+                #[candid::candid_method(query)]
+                pub fn get_top_snapshot_values(n: usize) -> Vec<SnapshotValue> {
+                    get_top_snapshots(n).iter().map(|s| s.value.clone()).collect()
+                }
+
+                #[ic_cdk::query]
+                #[candid::candid_method(query)]
+                pub fn get_snapshot_value(idx: usize) -> SnapshotValue {
+                    get_snapshot(idx).value
+                }
+            }
         )
     } else {
         (
             quote! { type Snapshot = (#(#response_type_idents),*); },
             quote! {},
             quote! { let datum: Snapshot = (#(#response_val_idents),*); },
-            quote! { ic_cdk::println!("snapshot={:?}", datum); }
+            quote! { ic_cdk::println!("snapshot={:?}", datum); },
+            quote! { }
         )
     };
 
     Ok(quote! {
         #snapshot_idents
+
+        #queries_expect_timestamp
 
         ic_solidity_bindgen::contract_abi!(#abi_path);
 
@@ -229,7 +252,8 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> anyhow::Re
         snapshot_idents,
         expr_to_current_ts_sec,
         expr_to_gen_snapshot,
-        expr_to_log_datum
+        expr_to_log_datum,
+        queries_expect_timestamp
     ) = if manifest.storage.with_timestamp {
         (
             quote! {
@@ -248,6 +272,25 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> anyhow::Re
                 };
             },
             quote! { ic_cdk::println!("ts={}, value={:?}", datum.timestamp, datum.value); },
+            quote! {
+                #[ic_cdk::query]
+                #[candid::candid_method(query)]
+                pub fn get_last_snapshot_value() -> SnapshotValue {
+                    get_last_snapshot().value
+                }
+
+                #[ic_cdk::query]
+                #[candid::candid_method(query)]
+                pub fn get_top_snapshot_values(n: usize) -> Vec<SnapshotValue> {
+                    get_top_snapshots(n).iter().map(|s| s.value.clone()).collect()
+                }
+
+                #[ic_cdk::query]
+                #[candid::candid_method(query)]
+                pub fn get_snapshot_value(idx: usize) -> SnapshotValue {
+                    get_snapshot(idx).value
+                }
+            }
         )
     } else {
         (
@@ -255,11 +298,14 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> anyhow::Re
             quote! {},
             quote! { let datum = res.unwrap().clone(); },
             quote! { ic_cdk::println!("snapshot={:?}", datum); },
+            quote! {}
         )
     };
 
     Ok(quote! {
         #snapshot_idents
+
+        #queries_expect_timestamp
 
         #response_type_def_ident
 

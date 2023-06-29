@@ -42,9 +42,9 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
         .map(|(idx, arg)| (method_identifier.params[idx].clone(), arg.clone())).collect();
     let (request_val_idents, request_ty_idents) = generate_request_arg_idents(&method_args);
 
-   // for response type
-   let response_type: CanisterMethodValueType = method_identifier.return_value;
-   let (call_canister_response_type_ident, response_type_def_ident) = match response_type {
+    // for response type
+    let response_type: CanisterMethodValueType = method_identifier.return_value;
+    let (call_canister_response_type_ident, response_type_def_ident) = match response_type {
         CanisterMethodValueType::Scalar(ty) => {
             let type_ident = format_ident!("{}", &ty);
             (
