@@ -127,7 +127,7 @@ fn template_snapshot_icp_manifest(project_name: &str) -> SnapshotComponentManife
     SnapshotComponentManifest::new(
         &format!("{}_snapshot_icp", project_name),
         PROJECT_MANIFEST_VERSION,
-        Datasource::default_canister(),
+        Datasource::default_canister(true),
         SnapshotStorage::default(),
         3600
     )
@@ -137,7 +137,7 @@ fn template_relayer_manifest(project_name: &str) -> RelayerComponentManifest {
     RelayerComponentManifest::new(
         &format!("{}_relayer", project_name),
         PROJECT_MANIFEST_VERSION,
-        Datasource::default_canister(),
+        Datasource::default_canister(false),
         DestinationField::default(),
     )
 }

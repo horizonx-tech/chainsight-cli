@@ -1,4 +1,4 @@
-use anyhow::ensure;
+use anyhow::{ensure, bail};
 use quote::{quote, format_ident};
 
 use crate::{types::ComponentType, lib::codegen::{components::{relayer::RelayerComponentManifest, common::{DestinactionType}}, oracle::get_oracle_attributes, canisters::common::{generate_request_arg_idents, generate_outside_call_idents, OutsideCallIdentsType}}};
@@ -44,48 +44,7 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
 
     // for response type
     let response_type: CanisterMethodValueType = method_identifier.return_value;
-    let (call_canister_response_type_ident, response_type_def_ident) = match response_type {
-        CanisterMethodValueType::Scalar(ty) => {
-            let type_ident = format_ident!("{}", &ty);
-            (
-                quote! { type CallCanisterResponse = #type_ident; },
-                quote! {}
-            )
-        },
-        CanisterMethodValueType::Tuple(tys) => {
-            let type_idents = tys.iter().map(|ty| format_ident!("{}", ty)).collect::<Vec<proc_macro2::Ident>>();
-            (
-                quote! { type CallCanisterResponse = (#(#type_idents),*); },
-                quote! {}
-            )
-        },
-        CanisterMethodValueType::Struct(values) => {
-            let response_type_def_ident = format_ident!("{}", "CustomResponseStruct");
-            let struct_tokens = values.into_iter().map(|(key, ty)| {
-                let key_ident = format_ident!("{}", key);
-                let ty_ident = format_ident!("{}", ty);
-                quote! {
-                    pub #key_ident: #ty_ident
-                }
-            }).collect::<Vec<_>>();
-            (
-                quote! { type CallCanisterResponse = #response_type_def_ident; },
-                quote! {
-                    #[derive(Clone, Debug, candid::CandidType, candid::Deserialize)]
-                    pub struct #response_type_def_ident {
-                        #(#struct_tokens),*
-                    }
-                }
-            )
-        },
-    };
-
-    // define data to call update function of oracle
-    // temp: args for update_state (support only default manifest)
-    let sync_data_ident: proc_macro2::TokenStream = match &destination.type_ {
-        DestinactionType::Uint256Oracle => quote! { U256::from_dec_str(&datum.value).unwrap() },
-        DestinactionType::StringOracle => quote! { &datum.value.to_string()},
-    };
+    let (call_canister_response_type_ident, response_type_def_ident, sync_data_ident) = generate_idents_to_call_datasource_and_sync_to_oracle(response_type, destination.type_)?;
 
     Ok(quote! {
         ic_solidity_bindgen::contract_abi!(#abi_path);
@@ -112,11 +71,79 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
                 Address::from_str(&get_target_addr()).unwrap(),
                 &web3_ctx().unwrap()
             ).update_state(#sync_data_ident, None).await.unwrap();
-            ic_cdk::println!("ts={}, value={:?}", datum.timestamp, datum.value);
+            ic_cdk::println!("value to sync ={:?}", datum);
         }
 
         did_export!(#label);
     })
+}
+
+fn generate_idents_to_call_datasource_and_sync_to_oracle(canister_response_type: CanisterMethodValueType, oracle_type: DestinactionType) -> anyhow::Result<(
+    proc_macro2::TokenStream, // call_canister_response_type_ident
+    proc_macro2::TokenStream, // response_type_def_ident
+    proc_macro2::TokenStream, // sync_data_ident
+)> {
+    let res = match canister_response_type {
+        CanisterMethodValueType::Scalar(ty) => {
+            let ty_ident = format_ident!("{}", ty);
+            let call_canister_response_type_ident = quote! { type CallCanisterResponse = #ty_ident; };
+            match oracle_type {
+                DestinactionType::Uint256Oracle => {
+                    (
+                        call_canister_response_type_ident,
+                        quote! {},
+                        quote! { U256::from_dec_str(&datum).unwrap() } // TODO: Switching functions by type
+                    )
+                },
+                DestinactionType::StringOracle => {
+                    (
+                        call_canister_response_type_ident,
+                        quote! {},
+                        quote! { datum.clone().to_string() }
+                    )
+                }
+            }
+        },
+        CanisterMethodValueType::Tuple(tys) => {
+            match oracle_type {
+                DestinactionType::Uint256Oracle => bail!("not support tuple type for oracle"),
+                DestinactionType::StringOracle => {
+                    let type_idents = tys.iter().map(|ty| format_ident!("{}", ty)).collect::<Vec<proc_macro2::Ident>>();
+                    (
+                        quote! { type CallCanisterResponse = (#(#type_idents),*); },
+                        quote! {},
+                        quote! { format!("{:?}", &datum) } // temp
+                    )
+                }
+            }
+        },
+        CanisterMethodValueType::Struct(values) => {
+            match oracle_type {
+                DestinactionType::Uint256Oracle => bail!("not support struct type for oracle"),
+                DestinactionType::StringOracle => {
+                    let response_type_def_ident = format_ident!("{}", "CustomResponseStruct");
+                    let struct_tokens = values.into_iter().map(|(key, ty)| {
+                        let key_ident = format_ident!("{}", key);
+                        let ty_ident = format_ident!("{}", ty);
+                        quote! {
+                            pub #key_ident: #ty_ident
+                        }
+                    }).collect::<Vec<_>>();
+                    (
+                        quote! { type CallCanisterResponse = #response_type_def_ident; },
+                        quote! {
+                            #[derive(Clone, Debug, candid::CandidType, candid::Deserialize)]
+                            pub struct #response_type_def_ident {
+                                #(#struct_tokens),*
+                            }
+                        },
+                        quote! { format!("{:?}", &datum) } // temp
+                    )
+                }
+            }
+        },
+    };
+    anyhow::Ok(res)
 }
 
 pub fn generate_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macro2::TokenStream> {

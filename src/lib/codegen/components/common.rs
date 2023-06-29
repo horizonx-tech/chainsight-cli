@@ -80,12 +80,18 @@ impl Datasource {
     }
     
     // temp: use Default trait
-    pub fn default_canister() -> Self {
+    pub fn default_canister(ident_with_ts: bool) -> Self {
+        let identifier = if ident_with_ts {
+            "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"
+        } else {
+            "get_last_snapshot_value : () -> (text)"
+        }.to_string();
+
         Self {
             type_: DatasourceType::Canister,
             id: "xxxxx-xxxxx-xxxxx-xxxxx-xxx".to_string(), // temp
             method: DatasourceMethod {
-                identifier: "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })".to_string(),
+                identifier,
                 interface: None,
                 args: vec![],
             },
