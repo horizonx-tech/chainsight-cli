@@ -16,6 +16,10 @@ pub enum DatasourceType {
 pub enum DestinactionType {
     #[serde(rename = "uint256")]
     Uint256Oracle,
+    #[serde(rename = "uint128")]
+    Uint128Oracle,
+    #[serde(rename = "uint64")]
+    Uint64Oracle,
     #[serde(rename = "string")]
     StringOracle,
 }

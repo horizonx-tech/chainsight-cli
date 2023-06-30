@@ -87,14 +87,30 @@ fn generate_idents_to_call_datasource_and_sync_to_oracle(canister_response_type:
         CanisterMethodValueType::Scalar(ty) => {
             let ty_ident = format_ident!("{}", ty);
             let call_canister_response_type_ident = quote! { type CallCanisterResponse = #ty_ident; };
+            let arg_ident = format_ident!("datum");
             match oracle_type {
                 DestinactionType::Uint256Oracle => {
-                    let arg_ident = format_ident!("datum");
                     let quote_to_convert_datum_to_u256 = generate_quote_to_convert_datum_to_u256(arg_ident, &ty)?;
                     (
                         call_canister_response_type_ident,
                         quote! {},
                         quote_to_convert_datum_to_u256
+                    )
+                },
+                DestinactionType::Uint128Oracle => {
+                    let quote_to_convert_datum = generate_quote_to_convert_datum_to_integer(arg_ident, &ty, "u128")?;
+                    (
+                        call_canister_response_type_ident,
+                        quote! {},
+                        quote_to_convert_datum
+                    )
+                },
+                DestinactionType::Uint64Oracle => {
+                    let quote_to_convert_datum = generate_quote_to_convert_datum_to_integer(arg_ident, &ty, "u64")?;
+                    (
+                        call_canister_response_type_ident,
+                        quote! {},
+                        quote_to_convert_datum
                     )
                 },
                 DestinactionType::StringOracle => {
@@ -108,7 +124,6 @@ fn generate_idents_to_call_datasource_and_sync_to_oracle(canister_response_type:
         },
         CanisterMethodValueType::Tuple(tys) => {
             match oracle_type {
-                DestinactionType::Uint256Oracle => bail!("not support tuple type for oracle"),
                 DestinactionType::StringOracle => {
                     let type_idents = tys.iter().map(|ty| format_ident!("{}", ty)).collect::<Vec<proc_macro2::Ident>>();
                     (
@@ -116,12 +131,12 @@ fn generate_idents_to_call_datasource_and_sync_to_oracle(canister_response_type:
                         quote! {},
                         quote! { format!("{:?}", &datum) } // temp
                     )
-                }
+                },
+                _ => bail!("not support tuple type for oracle"),
             }
         },
         CanisterMethodValueType::Struct(values) => {
             match oracle_type {
-                DestinactionType::Uint256Oracle => bail!("not support struct type for oracle"),
                 DestinactionType::StringOracle => {
                     let response_type_def_ident = format_ident!("{}", "CustomResponseStruct");
                     let struct_tokens = values.into_iter().map(|(key, ty)| {
@@ -141,7 +156,8 @@ fn generate_idents_to_call_datasource_and_sync_to_oracle(canister_response_type:
                         },
                         quote! { format!("{:?}", &datum) } // temp
                     )
-                }
+                },
+                _ => bail!("not support struct type for oracle"),
             }
         },
     };
@@ -154,6 +170,17 @@ fn generate_quote_to_convert_datum_to_u256(arg_ident: proc_macro2::Ident, datum_
         "i8" | "i16" | "i32" | "i64" | "i128" => quote! { U256::from(#arg_ident) }, // NOTE: a positive value check needs to be performed on the generated code
         "String" => quote! { U256::from_dec_str(&#arg_ident).unwrap() },
         _ => bail!("This type cannot be converted to U256")
+    };
+    Ok(res)
+}
+
+fn generate_quote_to_convert_datum_to_integer(arg_ident: proc_macro2::Ident, datum_scalar_type: &str, converted_datum_type: &str) -> anyhow::Result<proc_macro2::TokenStream> {
+    let converted_datum_type_ident = format_ident!("{}", converted_datum_type);
+    let res = match datum_scalar_type {
+        "u8" | "u16" | "u32" | "u64" | "u128" => quote! { #arg_ident as #converted_datum_type_ident },
+        "i8" | "i16" | "i32" | "i64" | "i128" => quote! { #arg_ident as #converted_datum_type_ident }, // NOTE: a positive value check needs to be performed on the generated code
+        "String" => quote! { #converted_datum_type_ident::from_str(&#arg_ident).unwrap() },
+        _ => bail!(format!("This type cannot be converted to {}", converted_datum_type))
     };
     Ok(res)
 }
