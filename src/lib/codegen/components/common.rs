@@ -56,11 +56,10 @@ pub struct DatasourceMethodCustomType {
 }
 
 impl Datasource {
-    // temp: use Default trait
     pub fn default_contract() -> Self {
         Self {
             type_: DatasourceType::Contract,
-            // id: "0000000000000000000000000000000000000000".to_string(), // temp
+            // id: "0000000000000000000000000000000000000000".to_string(),
             method: DatasourceMethod {
                 identifier: "totalSupply():(uint256)".to_string(),
                 interface: Some("ERC20.json".to_string()),
@@ -74,7 +73,7 @@ impl Datasource {
     ) -> Self {
         Self {
             type_: DatasourceType::Contract,
-            // id: "0000000000000000000000000000000000000000".to_string(), // temp
+            // id: "0000000000000000000000000000000000000000".to_string(),
             method: DatasourceMethod {
                 identifier,
                 interface,
@@ -82,8 +81,7 @@ impl Datasource {
             },
         }
     }
-    
-    // temp: use Default trait
+
     pub fn default_canister(ident_with_ts: bool) -> Self {
         let identifier = if ident_with_ts {
             "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"
@@ -93,7 +91,7 @@ impl Datasource {
 
         Self {
             type_: DatasourceType::Canister,
-            // id: "xxxxx-xxxxx-xxxxx-xxxxx-xxx".to_string(), // temp
+            // id: "xxxxx-xxxxx-xxxxx-xxxxx-xxx".to_string(),
             method: DatasourceMethod {
                 identifier,
                 interface: None,
@@ -108,7 +106,7 @@ impl Datasource {
     ) -> Self {
         Self {
             type_: DatasourceType::Canister,
-            // id: "xxxxx-xxxxx-xxxxx-xxxxx-xxx".to_string(), // temp
+            // id: "xxxxx-xxxxx-xxxxx-xxxxx-xxx".to_string(),
             method: DatasourceMethod {
                 identifier,
                 interface,

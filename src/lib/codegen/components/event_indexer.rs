@@ -86,7 +86,7 @@ impl EventIndexerDatasource {
 
     pub fn default() -> Self {
         Self {
-            // id: "0000000000000000000000000000000000000000".to_string(), // temp
+            // id: "0000000000000000000000000000000000000000".to_string(),
             event: EventIndexerEventDefinition::new(
                 "Transfer".to_string(),
                 Some("ERC20.json".to_string()),

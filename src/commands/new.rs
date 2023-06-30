@@ -16,7 +16,6 @@ pub struct NewOpts {
     project_name: String,
 }
 
-// temp
 const GLOBAL_ERROR_MSG: &str = "Fail 'New' command";
 
 pub fn exec(env: &EnvironmentImpl, opts: NewOpts) -> anyhow::Result<()> {

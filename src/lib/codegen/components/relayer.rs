@@ -93,7 +93,7 @@ impl DestinationField {
 }
 impl Default for DestinationField {
     fn default() -> Self {
-        let network_id = 80001; // temp: polygon mumbai
+        let network_id = 80001; // NOTE: (temp) polygon mumbai
         let oracle_type = DestinactionType::Uint256Oracle;
         Self::new(
             network_id,

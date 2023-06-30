@@ -29,7 +29,7 @@ fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> anyhow::Re
 
     let method_interface = method.interface.clone()
         .ok_or(anyhow::anyhow!("datasource.method.interface is required for contract"))?;
-    let contract_struct_ident = format_ident!("{}", method_interface.trim_end_matches(".json")); // temp: specify the extension (only .json?)
+    let contract_struct_ident = format_ident!("{}", method_interface.trim_end_matches(".json"));
     let abi_path = format!("./__interfaces/{}", method_interface);
 
     // for request values
