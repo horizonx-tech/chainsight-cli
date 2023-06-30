@@ -115,7 +115,7 @@ mod tests {
     fn test_to_manifest_struct() {
         let yaml = r#"
 version: v1
-type: canister
+type: relayer
 label: sample_pj_relayer
 datasource:
     type: canister
@@ -143,7 +143,7 @@ destination:
                 label: "sample_pj_relayer".to_string(),
                 datasource: Datasource {
                     type_: DatasourceType::Canister,
-                    id: "xxxxx-xxxxx-xxxxx-xxxxx-xxx".to_string(),
+                    // id: "xxxxx-xxxxx-xxxxx-xxxxx-xxx".to_string(),
                     method: DatasourceMethod {
                         identifier: "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })".to_string(),
                         interface: None,

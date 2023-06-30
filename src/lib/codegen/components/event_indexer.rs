@@ -73,20 +73,20 @@ impl ComponentManifest for EventIndexerComponentManifest {
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct EventIndexerDatasource {
-    pub id: String,
+    // pub id: String, // NOTE: Currently not in use
     pub event: EventIndexerEventDefinition
 }
 impl EventIndexerDatasource {
-    pub fn new(id: String, event: EventIndexerEventDefinition) -> Self {
+    pub fn new(_id: String, event: EventIndexerEventDefinition) -> Self {
         Self {
-            id,
+            // id,
             event
         }
     }
 
     pub fn default() -> Self {
         Self {
-            id: "0000000000000000000000000000000000000000".to_string(), // temp
+            // id: "0000000000000000000000000000000000000000".to_string(), // temp
             event: EventIndexerEventDefinition::new(
                 "Transfer".to_string(),
                 Some("ERC20.json".to_string()),
@@ -136,7 +136,7 @@ interval: 3600
                 type_: ComponentType::EventIndexer,
                 label: "sample_pj_event_indexer".to_string(),
                 datasource: EventIndexerDatasource {
-                    id: "0000000000000000000000000000000000000000".to_string(),
+                    // id: "0000000000000000000000000000000000000000".to_string(),
                     event: EventIndexerEventDefinition {
                         identifier: "Transfer".to_string(),
                         interface: Some("ERC20.json".to_string())

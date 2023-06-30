@@ -11,7 +11,7 @@ pub struct ProjectManifestData {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct ProjectManifestComponentField {
     pub component_path: String,
-    pub canister_id: Option<String>
+    // pub canister_id: Option<String> // NOTE: Currently not in use
 }
 
 impl ProjectManifestData {
@@ -46,10 +46,10 @@ impl ProjectManifestData {
 }
 
 impl ProjectManifestComponentField {
-    pub fn new(component_path: &str, canister_id: Option<String>) -> Self {
+    pub fn new(component_path: &str, _canister_id: Option<String>) -> Self {
         Self {
             component_path: component_path.to_owned(),
-            canister_id
+            // canister_id // NOTE: Currently not in use
         }
     }
 }

@@ -123,7 +123,7 @@ interval: 3600
                 label: "sample_pj_snapshot_chain".to_owned(),
                 datasource: Datasource {
                     type_: DatasourceType::Contract,
-                    id: "0000000000000000000000000000000000000000".to_owned(),
+                    // id: "0000000000000000000000000000000000000000".to_owned(),
                     method: DatasourceMethod {
                         identifier: "totalSupply():(uint256)".to_owned(),
                         interface: Some("ERC20.json".to_string()),
@@ -167,7 +167,7 @@ interval: 3600
                 label: "sample_pj_snapshot_icp".to_owned(),
                 datasource: Datasource {
                     type_: DatasourceType::Canister,
-                    id: "xxxxx-xxxxx-xxxxx-xxxxx-xxx".to_owned(),
+                    // id: "xxxxx-xxxxx-xxxxx-xxxxx-xxx".to_owned(),
                     method: DatasourceMethod {
                         identifier: "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })".to_owned(),
                         interface: None,

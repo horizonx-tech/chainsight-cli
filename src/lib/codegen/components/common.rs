@@ -28,7 +28,7 @@ pub enum DestinactionType {
 pub struct Datasource {
     #[serde(rename = "type")]
     pub type_: DatasourceType,
-    pub id: String,
+    // pub id: String, // NOTE: Currently not in use
     pub method: DatasourceMethod
 }
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -60,7 +60,7 @@ impl Datasource {
     pub fn default_contract() -> Self {
         Self {
             type_: DatasourceType::Contract,
-            id: "0000000000000000000000000000000000000000".to_string(), // temp
+            // id: "0000000000000000000000000000000000000000".to_string(), // temp
             method: DatasourceMethod {
                 identifier: "totalSupply():(uint256)".to_string(),
                 interface: Some("ERC20.json".to_string()),
@@ -74,7 +74,7 @@ impl Datasource {
     ) -> Self {
         Self {
             type_: DatasourceType::Contract,
-            id: "0000000000000000000000000000000000000000".to_string(), // temp
+            // id: "0000000000000000000000000000000000000000".to_string(), // temp
             method: DatasourceMethod {
                 identifier,
                 interface,
@@ -93,7 +93,7 @@ impl Datasource {
 
         Self {
             type_: DatasourceType::Canister,
-            id: "xxxxx-xxxxx-xxxxx-xxxxx-xxx".to_string(), // temp
+            // id: "xxxxx-xxxxx-xxxxx-xxxxx-xxx".to_string(), // temp
             method: DatasourceMethod {
                 identifier,
                 interface: None,
@@ -108,7 +108,7 @@ impl Datasource {
     ) -> Self {
         Self {
             type_: DatasourceType::Canister,
-            id: "xxxxx-xxxxx-xxxxx-xxxxx-xxx".to_string(), // temp
+            // id: "xxxxx-xxxxx-xxxxx-xxxxx-xxx".to_string(), // temp
             method: DatasourceMethod {
                 identifier,
                 interface,
