@@ -71,7 +71,7 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
                 Address::from_str(&get_target_addr()).unwrap(),
                 &web3_ctx().unwrap()
             ).update_state(#sync_data_ident, None).await.unwrap();
-            ic_cdk::println!("value to sync ={:?}", datum);
+            ic_cdk::println!("value_to_sync={:?}", datum);
         }
 
         did_export!(#label);
@@ -89,10 +89,12 @@ fn generate_idents_to_call_datasource_and_sync_to_oracle(canister_response_type:
             let call_canister_response_type_ident = quote! { type CallCanisterResponse = #ty_ident; };
             match oracle_type {
                 DestinactionType::Uint256Oracle => {
+                    let arg_ident = format_ident!("datum");
+                    let quote_to_convert_datum_to_u256 = generate_quote_to_convert_datum_to_u256(arg_ident, &ty)?;
                     (
                         call_canister_response_type_ident,
                         quote! {},
-                        quote! { U256::from_dec_str(&datum).unwrap() } // TODO: Switching functions by type
+                        quote_to_convert_datum_to_u256
                     )
                 },
                 DestinactionType::StringOracle => {
@@ -144,6 +146,16 @@ fn generate_idents_to_call_datasource_and_sync_to_oracle(canister_response_type:
         },
     };
     anyhow::Ok(res)
+}
+
+fn generate_quote_to_convert_datum_to_u256(arg_ident: proc_macro2::Ident, datum_scalar_type: &str) -> anyhow::Result<proc_macro2::TokenStream> {
+    let res = match datum_scalar_type {
+        "u8" | "u16" | "u32" | "u64" | "u128" => quote! { U256::from(#arg_ident) },
+        "i8" | "i16" | "i32" | "i64" | "i128" => quote! { U256::from(#arg_ident) }, // NOTE: a positive value check needs to be performed on the generated code
+        "String" => quote! { U256::from_dec_str(&#arg_ident).unwrap() },
+        _ => bail!("This type cannot be converted to U256")
+    };
+    Ok(res)
 }
 
 pub fn generate_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macro2::TokenStream> {
