@@ -251,7 +251,13 @@ fn dfx_json(project_labels: Vec<String>) -> String {
     let canisters = project_labels.iter().map(|label| format!("\t\t\t\"{}\": {{
 \t\t\t\t\"type\": \"custom\",
 \t\t\t\t\"candid\": \"artifacts/{}.did\",
-\t\t\t\t\"wasm\": \"artifacts/{}.wasm\"
+\t\t\t\t\"wasm\": \"artifacts/{}.wasm\",
+\t\t\t\t\"metadata\": [
+\t\t\t\t\t{{
+\t\t\t\t\t\t\"name\": \"candid:service\",
+\t\t\t\t\t\t\"visibility\": \"public\"
+\t\t\t\t\t}}
+\t\t\t\t]
 \t\t\t}}", label, label, label)).collect::<Vec<String>>().join(",\n");
 
     let result = format!(r#"{{
