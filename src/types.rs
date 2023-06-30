@@ -8,7 +8,7 @@ pub enum ComponentType {
     EventIndexer,
     #[serde(rename = "snapshot")]
     Snapshot,
-    #[serde(rename = "canister")]
+    #[serde(rename = "relayer")]
     Relayer,
 }
 
