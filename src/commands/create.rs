@@ -122,5 +122,6 @@ fn template_relayer_manifest(component_name: &str) -> RelayerComponentManifest {
             None,
         ),
         DestinationField::default(),
+        3600
     )
 }

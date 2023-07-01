@@ -16,16 +16,18 @@ pub struct RelayerComponentManifest {
     pub label: String,
     pub datasource: Datasource,
     pub destination: DestinationField, // TODO: multiple destinations
+    pub interval: u32
 }
 
 impl RelayerComponentManifest {
-    pub fn new(component_label: &str, version: &str, datasource: Datasource, destination: DestinationField) -> Self {
+    pub fn new(component_label: &str, version: &str, datasource: Datasource, destination: DestinationField, interval: u32) -> Self {
         Self {
             version: version.to_owned(),
             type_: ComponentType::Relayer,
             label: component_label.to_owned(),
             datasource,
             destination,
+            interval
         }
     }
 }
@@ -77,17 +79,15 @@ pub struct DestinationField {
     pub type_: DestinactionType,
     pub oracle_address: String,
     pub rpc_url: String,
-    pub interval: u32
 }
 
 impl DestinationField {
-    pub fn new(network_id: u32, destination_type: DestinactionType, oracle_address: String, rpc_url: String, interval: u32) -> Self {
+    pub fn new(network_id: u32, destination_type: DestinactionType, oracle_address: String, rpc_url: String) -> Self {
         Self {
             network_id,
             type_: destination_type,
             oracle_address,
             rpc_url,
-            interval,
         }
     }
 }
@@ -100,7 +100,6 @@ impl Default for DestinationField {
             oracle_type,
             get_oracle_address(network_id, oracle_type),
             "https://polygon-mumbai.g.alchemy.com/v2/<YOUR_KEY>".to_string(),
-            3600
         )
     }
 }
@@ -129,7 +128,7 @@ destination:
     type: uint256
     oracle_address: 0539a0EF8e5E60891fFf0958A059E049e43020d9
     rpc_url: https://polygon-mumbai.g.alchemy.com/v2/<YOUR_KEY>
-    interval: 3600
+interval: 3600
         "#;
 
         let result = serde_yaml::from_str::<RelayerComponentManifest>(yaml);
@@ -155,8 +154,8 @@ destination:
                     type_: DestinactionType::Uint256Oracle,
                     oracle_address: "0539a0EF8e5E60891fFf0958A059E049e43020d9".to_string(),
                     rpc_url: "https://polygon-mumbai.g.alchemy.com/v2/<YOUR_KEY>".to_string(),
-                    interval: 3600
-                }
+                },
+                interval: 3600
             }
         );
     }

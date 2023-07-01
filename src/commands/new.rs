@@ -132,5 +132,6 @@ fn template_relayer_manifest(project_name: &str) -> RelayerComponentManifest {
         PROJECT_MANIFEST_VERSION,
         Datasource::default_canister(false),
         DestinationField::default(),
+        3600
     )
 }
