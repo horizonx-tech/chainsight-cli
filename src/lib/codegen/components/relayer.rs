@@ -106,7 +106,7 @@ impl Default for DestinationField {
 
 #[cfg(test)]
 mod tests {
-    use crate::lib::codegen::components::common::{DatasourceType, DatasourceMethod};
+    use crate::lib::codegen::components::common::{DatasourceType, DatasourceMethod, CanisterIdType, DatasourceLocation};
 
     use super::*;
 
@@ -118,7 +118,10 @@ type: relayer
 label: sample_pj_relayer
 datasource:
     type: canister
-    id: xxxxx-xxxxx-xxxxx-xxxxx-xxx
+    location:
+        id: datasource_canister_id
+        args:
+            id_type: canister_name
     method:
         identifier: 'get_last_snapshot : () -> (record { value : text; timestamp : nat64 })'
         interface: null
@@ -142,7 +145,10 @@ interval: 3600
                 label: "sample_pj_relayer".to_string(),
                 datasource: Datasource {
                     type_: DatasourceType::Canister,
-                    // id: "xxxxx-xxxxx-xxxxx-xxxxx-xxx".to_string(),
+                    location: DatasourceLocation::new_canister(
+                        "datasource_canister_id".to_string(),
+                        CanisterIdType::CanisterName
+                    ),
                     method: DatasourceMethod {
                         identifier: "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })".to_string(),
                         interface: None,

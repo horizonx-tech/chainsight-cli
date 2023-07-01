@@ -13,6 +13,13 @@ pub enum DatasourceType {
     Contract,
 }
 #[derive(Deserialize, Serialize, Clone, Copy, Debug, PartialEq, clap::ValueEnum)]
+pub enum CanisterIdType {
+    #[serde(rename = "canister_name")]
+    CanisterName,
+    #[serde(rename = "principal_id")]
+    PrincipalId,
+}
+#[derive(Deserialize, Serialize, Clone, Copy, Debug, PartialEq, clap::ValueEnum)]
 pub enum DestinactionType {
     #[serde(rename = "uint256")]
     Uint256Oracle,
@@ -28,8 +35,25 @@ pub enum DestinactionType {
 pub struct Datasource {
     #[serde(rename = "type")]
     pub type_: DatasourceType,
-    // pub id: String, // NOTE: Currently not in use
+    pub location: DatasourceLocation,
     pub method: DatasourceMethod
+}
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+pub struct DatasourceLocation {
+    id: String,
+    args: DatasourceLocationArgs
+}
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+pub struct DatasourceLocationArgs {
+    // for contract
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub network_id: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rpc_url: Option<String>,
+
+    // for canister
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id_type: Option<CanisterIdType>,
 }
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct DatasourceMethod {
@@ -37,43 +61,24 @@ pub struct DatasourceMethod {
     pub interface: Option<String>,
     pub args: Vec<serde_yaml::Value>,
 }
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct DatasourceMethodCustomStruct {
-    pub name: String,
-    pub fields: Vec<DatasourceMethodCustomStructField>
-}
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct DatasourceMethodCustomStructField {
-    pub name: String,
-    #[serde(rename = "type")]
-    pub type_: String
-}
-#[derive(Clone, Debug, Deserialize, Serialize)]
-
-pub struct DatasourceMethodCustomType {
-    pub name: String,
-    pub types: Vec<String>
-}
 
 impl Datasource {
     pub fn default_contract() -> Self {
-        Self {
-            type_: DatasourceType::Contract,
-            // id: "0000000000000000000000000000000000000000".to_string(),
-            method: DatasourceMethod {
-                identifier: "totalSupply():(uint256)".to_string(),
-                interface: Some("ERC20.json".to_string()),
-                args: vec![],
-            },
-        }
+        Self::new_contract(
+            "totalSupply():(uint256)".to_string(),
+            Some("ERC20.json".to_string()),
+            None,
+        )
     }
     pub fn new_contract(
         identifier: String,
         interface: Option<String>,
+        location: Option<DatasourceLocation>,
     ) -> Self {
+        let location = location.unwrap_or_else(|| DatasourceLocation::default_contract());
         Self {
             type_: DatasourceType::Contract,
-            // id: "0000000000000000000000000000000000000000".to_string(),
+            location,
             method: DatasourceMethod {
                 identifier,
                 interface,
@@ -89,29 +94,66 @@ impl Datasource {
             "get_last_snapshot_value : () -> (text)"
         }.to_string();
 
-        Self {
-            type_: DatasourceType::Canister,
-            // id: "xxxxx-xxxxx-xxxxx-xxxxx-xxx".to_string(),
-            method: DatasourceMethod {
-                identifier,
-                interface: None,
-                args: vec![],
-            },
-        }
+        Self::new_canister(
+            identifier,
+            None,
+            None
+        )
     }
 
     pub fn new_canister(
         identifier: String,
         interface: Option<String>,
+        location: Option<DatasourceLocation>,
     ) -> Self {
+        let location = location.unwrap_or_else(|| DatasourceLocation::default_canister());
         Self {
             type_: DatasourceType::Canister,
-            // id: "xxxxx-xxxxx-xxxxx-xxxxx-xxx".to_string(),
+            location,
             method: DatasourceMethod {
                 identifier,
                 interface,
                 args: vec![],
             },
+        }
+    }
+}
+
+impl DatasourceLocation {
+    pub fn default_contract() -> Self {
+        Self::new_contract(
+            "6b175474e89094c44da98b954eedeac495271d0f".to_string(), // DAI token
+            1,
+            "https://mainnet.infura.io/v3/<YOUR_KEY>".to_string()
+        )
+    }
+
+    pub fn new_contract(id: String, network_id: u32, rpc_url: String) -> Self {
+        Self {
+            id,
+            args: DatasourceLocationArgs {
+                network_id: Some(network_id),
+                rpc_url: Some(rpc_url),
+                id_type: None,
+            }
+        }
+    }
+
+    pub fn default_canister() -> Self {
+        Self::new_canister(
+            "sample_pj_snapshot_chain".to_string(),
+            CanisterIdType::CanisterName
+        )
+    }
+
+    pub fn new_canister(id: String, id_type: CanisterIdType) -> Self {
+        Self {
+            id,
+            args: DatasourceLocationArgs {
+                network_id: None,
+                rpc_url: None,
+                id_type: Some(id_type),
+            }
         }
     }
 }
