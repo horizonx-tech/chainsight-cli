@@ -4,7 +4,7 @@ use anyhow::Ok;
 use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 
-use crate::{types::ComponentType, lib::codegen::{canisters, oracle::get_oracle_address}};
+use crate::{types::{ComponentType, Network}, lib::codegen::{canisters, oracle::get_oracle_address, scripts}};
 
 use super::common::{Datasource, ComponentManifest, DestinactionType};
 
@@ -16,16 +16,18 @@ pub struct RelayerComponentManifest {
     pub label: String,
     pub datasource: Datasource,
     pub destination: DestinationField, // TODO: multiple destinations
+    pub interval: u32
 }
 
 impl RelayerComponentManifest {
-    pub fn new(component_label: &str, version: &str, datasource: Datasource, destination: DestinationField) -> Self {
+    pub fn new(component_label: &str, version: &str, datasource: Datasource, destination: DestinationField, interval: u32) -> Self {
         Self {
             version: version.to_owned(),
             type_: ComponentType::Relayer,
             label: component_label.to_owned(),
             datasource,
             destination,
+            interval
         }
     }
 }
@@ -53,6 +55,11 @@ impl ComponentManifest for RelayerComponentManifest {
         canisters::relayer::generate_codes(self)
     }
 
+    fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
+        scripts::relayer::generate_scripts(self, network)
+    }
+
+
     fn component_type(&self) -> ComponentType {
         ComponentType::Relayer
     }
@@ -77,17 +84,15 @@ pub struct DestinationField {
     pub type_: DestinactionType,
     pub oracle_address: String,
     pub rpc_url: String,
-    pub interval: u32
 }
 
 impl DestinationField {
-    pub fn new(network_id: u32, destination_type: DestinactionType, oracle_address: String, rpc_url: String, interval: u32) -> Self {
+    pub fn new(network_id: u32, destination_type: DestinactionType, oracle_address: String, rpc_url: String) -> Self {
         Self {
             network_id,
             type_: destination_type,
             oracle_address,
             rpc_url,
-            interval,
         }
     }
 }
@@ -100,14 +105,13 @@ impl Default for DestinationField {
             oracle_type,
             get_oracle_address(network_id, oracle_type),
             "https://polygon-mumbai.g.alchemy.com/v2/<YOUR_KEY>".to_string(),
-            3600
         )
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::lib::codegen::components::common::{DatasourceType, DatasourceMethod};
+    use crate::lib::codegen::components::common::{DatasourceType, DatasourceMethod, CanisterIdType, DatasourceLocation};
 
     use super::*;
 
@@ -119,7 +123,10 @@ type: relayer
 label: sample_pj_relayer
 datasource:
     type: canister
-    id: xxxxx-xxxxx-xxxxx-xxxxx-xxx
+    location:
+        id: datasource_canister_id
+        args:
+            id_type: canister_name
     method:
         identifier: 'get_last_snapshot : () -> (record { value : text; timestamp : nat64 })'
         interface: null
@@ -129,7 +136,7 @@ destination:
     type: uint256
     oracle_address: 0539a0EF8e5E60891fFf0958A059E049e43020d9
     rpc_url: https://polygon-mumbai.g.alchemy.com/v2/<YOUR_KEY>
-    interval: 3600
+interval: 3600
         "#;
 
         let result = serde_yaml::from_str::<RelayerComponentManifest>(yaml);
@@ -143,7 +150,10 @@ destination:
                 label: "sample_pj_relayer".to_string(),
                 datasource: Datasource {
                     type_: DatasourceType::Canister,
-                    // id: "xxxxx-xxxxx-xxxxx-xxxxx-xxx".to_string(),
+                    location: DatasourceLocation::new_canister(
+                        "datasource_canister_id".to_string(),
+                        CanisterIdType::CanisterName
+                    ),
                     method: DatasourceMethod {
                         identifier: "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })".to_string(),
                         interface: None,
@@ -155,8 +165,8 @@ destination:
                     type_: DestinactionType::Uint256Oracle,
                     oracle_address: "0539a0EF8e5E60891fFf0958A059E049e43020d9".to_string(),
                     rpc_url: "https://polygon-mumbai.g.alchemy.com/v2/<YOUR_KEY>".to_string(),
-                    interval: 3600
-                }
+                },
+                interval: 3600
             }
         );
     }

@@ -71,6 +71,7 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
         info!(log, r#"Skip codegen"#);
     } else {
         // generate codes
+        info!(log, r#"Processing for codegen"#);
         exec_codegen(log, &project_path_str, &artifacts_path_str, &component_data)?;
     }
 
@@ -78,6 +79,7 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
         info!(log, r#"Skip build"#);
     } else {
         // build codes generated
+        info!(log, r#"Processing for build"#);
         execute_codebuild(log, &artifacts_path_str, &component_data)?;
     }
 

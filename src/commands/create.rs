@@ -107,6 +107,7 @@ fn template_snapshot_manifest(component_name: &str) -> SnapshotComponentManifest
         Datasource::new_contract(
             "functionIdentifier()".to_string(),
             None,
+            None
         ),
         SnapshotStorage::default(),
         3600
@@ -120,7 +121,9 @@ fn template_relayer_manifest(component_name: &str) -> RelayerComponentManifest {
         Datasource::new_canister(
             "function_identifier()".to_string(),
             None,
+            None
         ),
         DestinationField::default(),
+        3600
     )
 }

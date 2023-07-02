@@ -3,7 +3,7 @@ use std::{fs::OpenOptions, path::Path, io::Read};
 use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 
-use crate::{types::ComponentType, lib::codegen::canisters};
+use crate::{types::{ComponentType, Network}, lib::codegen::{canisters, scripts}};
 
 use super::common::{Datasource, ComponentManifest, DestinactionType};
 
@@ -54,6 +54,10 @@ impl ComponentManifest for SnapshotComponentManifest {
         canisters::snapshot::generate_codes(self)
     }
 
+    fn generate_scripts(&self, _network: Network) -> anyhow::Result<String> {
+        scripts::snapshot::generate_scripts(self)
+    }
+
     fn component_type(&self) -> ComponentType {
         ComponentType::Snapshot
     }
@@ -90,7 +94,7 @@ impl Default for SnapshotStorage {
 
 #[cfg(test)]
 mod tests {
-    use crate::lib::codegen::components::common::{DatasourceMethod, DatasourceType};
+    use crate::lib::codegen::components::common::{DatasourceMethod, DatasourceType, DatasourceLocation, CanisterIdType};
 
     use super::*;
 
@@ -102,7 +106,11 @@ type: snapshot
 label: sample_pj_snapshot_chain
 datasource:
     type: contract
-    id: 0000000000000000000000000000000000000000
+    location:
+        id: 6b175474e89094c44da98b954eedeac495271d0f
+        args:
+            network_id: 1
+            rpc_url: https://mainnet.infura.io/v3/<YOUR_KEY>
     method:
         identifier: totalSupply():(uint256)
         interface: ERC20.json
@@ -123,7 +131,11 @@ interval: 3600
                 label: "sample_pj_snapshot_chain".to_owned(),
                 datasource: Datasource {
                     type_: DatasourceType::Contract,
-                    // id: "0000000000000000000000000000000000000000".to_owned(),
+                    location: DatasourceLocation::new_contract(
+                        "6b175474e89094c44da98b954eedeac495271d0f".to_string(),
+                        1,
+                        "https://mainnet.infura.io/v3/<YOUR_KEY>".to_string(),
+                    ),
                     method: DatasourceMethod {
                         identifier: "totalSupply():(uint256)".to_owned(),
                         interface: Some("ERC20.json".to_string()),
@@ -146,7 +158,10 @@ type: snapshot
 label: sample_pj_snapshot_icp
 datasource:
     type: canister
-    id: xxxxx-xxxxx-xxxxx-xxxxx-xxx
+    location:
+        id: datasource_canister_id
+        args:
+            id_type: canister_name
     method:
         identifier: 'get_last_snapshot : () -> (record { value : text; timestamp : nat64 })'
         interface: null
@@ -167,7 +182,10 @@ interval: 3600
                 label: "sample_pj_snapshot_icp".to_owned(),
                 datasource: Datasource {
                     type_: DatasourceType::Canister,
-                    // id: "xxxxx-xxxxx-xxxxx-xxxxx-xxx".to_owned(),
+                    location: DatasourceLocation::new_canister(
+                        "datasource_canister_id".to_string(),
+                        CanisterIdType::CanisterName
+                    ),
                     method: DatasourceMethod {
                         identifier: "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })".to_owned(),
                         interface: None,

@@ -1,9 +1,10 @@
 use std::{fs::OpenOptions, path::Path, io::Read};
 
+use anyhow::bail;
 use proc_macro2::TokenStream;
 use serde::{Serialize, Deserialize};
 
-use crate::{types::ComponentType, lib::codegen::canisters};
+use crate::{types::{ComponentType, Network}, lib::codegen::canisters};
 
 use super::common::ComponentManifest;
 
@@ -51,6 +52,10 @@ impl ComponentManifest for EventIndexerComponentManifest {
     fn generate_codes(&self, interface_contract: Option<ethabi::Contract>) -> anyhow::Result<TokenStream> {
         let interface_contract = interface_contract.ok_or_else(|| anyhow::anyhow!("interface contract is not found"))?;
         canisters::event_indexer::generate_codes(self, interface_contract)
+    }
+
+    fn generate_scripts(&self, _network: Network) -> anyhow::Result<String> {
+        bail!("not implemented")
     }
 
     fn component_type(&self) -> ComponentType {
