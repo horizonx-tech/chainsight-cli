@@ -94,7 +94,6 @@ fn execute_to_generate_commands(log: &Logger, builded_project_path_str: &str, ne
     }
     fs::create_dir_all(Path::new(&scripts_path_str))?;
 
-    let mut shells_to_call: Vec<String> = vec![];
     for data in component_data {
         let filepath = format!("{}/{}.sh", &scripts_path_str, data.label());
         fs::write(
@@ -105,21 +104,24 @@ fn execute_to_generate_commands(log: &Logger, builded_project_path_str: &str, ne
         let mut perms = fs::metadata(&filepath)?.permissions();
         perms.set_mode(0o755);
         fs::set_permissions(&filepath, perms)?;
-
-        shells_to_call.push(format!("./components/{}.sh", data.label()));
     }
 
     // temp
     // - automatic relative path setting
     let entrypoint_filepath = format!("{}/entrypoint.sh", &script_root_path_str);
+    let component_names = component_data.iter().map(|c| c.label().to_string()).collect::<Vec<String>>();
+    let entrypoint_contents = format!(r#"#!/bin/bash
+script_dir=$(dirname "$(readlink -f "$0")")
+
+{}
+"#, component_names.iter().map(|label| format!(". \"$script_dir/components/{}.sh\"", label)).collect::<Vec<String>>().join("\n"));
     fs::write(
         &entrypoint_filepath,
-        shells_to_call.join("\n")
+        entrypoint_contents
     )?;
     let mut perms = fs::metadata(&entrypoint_filepath)?.permissions();
     perms.set_mode(0o755);
     fs::set_permissions(&entrypoint_filepath, perms)?;
-
 
     Ok(())
 }

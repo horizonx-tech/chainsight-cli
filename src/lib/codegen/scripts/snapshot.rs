@@ -12,7 +12,9 @@ fn generate_command_to_setup_for_canister(
         CanisterIdType::PrincipalId => datasrc_id.to_string(),
     };
 
-    format!(r#"dfx canister call {} setup "(\"{}\")""#, label, target_canister)
+    format!(r#"dfx canister call {} setup "(
+    \"{}\"
+)""#, label, target_canister)
 }
 fn script_contents_for_canister(manifest: &SnapshotComponentManifest) -> String {
     let setup_contents = generate_command_to_setup_for_canister(
@@ -27,7 +29,9 @@ fn script_contents_for_canister(manifest: &SnapshotComponentManifest) -> String 
         5 // temp: fixed value, todo: make it configurable
     );
 
-    format!(r#"# setup
+    format!(r#"#!/bin/bash
+
+# setup
 {}
 # set_task
 {}
@@ -43,14 +47,14 @@ fn generate_command_to_setup_for_contract(
     let ecdsa_key_id = "LocalDevelopment"; // temp: because not to use (do not sign)
 
     format!(r#"dfx canister call {} setup "(
-        \"{}\",
-        record {{
+    \"{}\",
+    record {{
         url = \"{}\";
         from = null;
         chain_id = {};
         key = variant {{ {} }};
-        }}
-    )""#, label, datasrc_id, datasrc_rpc_url, datasrc_network_id, ecdsa_key_id)
+    }}
+)""#, label, datasrc_id, datasrc_rpc_url, datasrc_network_id, ecdsa_key_id)
 }
 fn script_contents_for_contract(
     manifest: &SnapshotComponentManifest
@@ -70,7 +74,9 @@ fn script_contents_for_contract(
         0 // temp: fixed value, todo: make it configurable
     );
 
-    format!(r#"# setup
+    format!(r#"#!/bin/bash
+
+# setup
 {}
 # set_task
 {}

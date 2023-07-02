@@ -22,14 +22,14 @@ fn generate_command_to_setup(
     };
 
     format!(r#"dfx canister call {} setup "(
-\"{}\",
-\"{}\",
-record {{
-  url = \"{}\";
-  from = null;
-  chain_id = {};
-  key = variant {{ {} }};
-}})""#, label, target_canister, dst_address, dst_rpc_url, dst_network_id, ecdsa_key_env)
+    \"{}\",
+    \"{}\",
+    record {{
+        url = \"{}\";
+        from = null;
+        chain_id = {};
+        key = variant {{ {} }};
+    }})""#, label, target_canister, dst_address, dst_rpc_url, dst_network_id, ecdsa_key_env)
 }
 
 fn script_contents(manifest: &RelayerComponentManifest, network: Network) -> String {
@@ -48,7 +48,9 @@ fn script_contents(manifest: &RelayerComponentManifest, network: Network) -> Str
         10 // temp: fixed value, todo: make it configurable
     );
 
-    format!(r#"# setup
+    format!(r#"#!/bin/bash
+
+# setup
 {}
 # set_task
 {}
