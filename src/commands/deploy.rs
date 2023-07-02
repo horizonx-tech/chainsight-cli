@@ -4,13 +4,7 @@ use anyhow::bail;
 use clap::Parser;
 use slog::{info, debug, error, Logger};
 
-use crate::lib::environment::EnvironmentImpl;
-
-#[derive(Clone, Debug, clap::ValueEnum)]
-pub enum Network {
-    Local,
-    IC // ref: https://internetcomputer.org/docs/current/developer-docs/setup/deploy-mainnet#step-2--check-the-current-status-of-the-ic-and-your-ability-to-connect-to-it-by-running-the-following-command-for-the-network-alias-ic
-}
+use crate::{lib::environment::EnvironmentImpl, types::Network};
 
 #[derive(Debug, Parser)]
 #[command(name = "deploy")]

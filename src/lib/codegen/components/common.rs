@@ -3,7 +3,7 @@ use std::{fs::OpenOptions, path::Path, io::Read};
 use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 
-use crate::types::ComponentType;
+use crate::types::{ComponentType, Network};
 
 #[derive(Deserialize, Serialize, Clone, Copy, Debug, PartialEq, clap::ValueEnum)]
 pub enum DatasourceType {
@@ -40,8 +40,8 @@ pub struct Datasource {
 }
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct DatasourceLocation {
-    id: String,
-    args: DatasourceLocationArgs
+    pub id: String,
+    pub args: DatasourceLocationArgs
 }
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct DatasourceLocationArgs {
@@ -124,7 +124,7 @@ impl DatasourceLocation {
         Self::new_contract(
             "6b175474e89094c44da98b954eedeac495271d0f".to_string(), // DAI token
             1,
-            "https://mainnet.infura.io/v3/<YOUR_KEY>".to_string()
+            "https://eth-mainnet.g.alchemy.com/v2/<YOUR_KEY>".to_string()
         )
     }
 
@@ -164,6 +164,7 @@ pub trait ComponentManifest: std::fmt::Debug {
     fn to_str_as_yaml(&self) -> anyhow::Result<String> where Self: Sized;
     fn validate_manifest(&self) -> anyhow::Result<()>;
     fn generate_codes(&self, interface_contract: Option<ethabi::Contract>) -> anyhow::Result<TokenStream>;
+    fn generate_scripts(&self, network: Network) -> anyhow::Result<String>;
 
     fn component_type(&self) -> ComponentType;
     fn label(&self) -> &str;

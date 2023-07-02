@@ -9,6 +9,7 @@ mod create;
 mod build;
 mod test;
 mod deploy;
+mod exec;
 mod remove;
 mod upgrade;
 
@@ -21,6 +22,7 @@ pub enum Command {
     Build(build::BuildOpts),
     Test(test::TestOpts),
     Deploy(deploy::DeployOpts),
+    Exec(exec::ExecOpts),
     Remove(remove::RemoveOpts),
     Upgrade(upgrade::UpgradeOpts)
 }
@@ -40,6 +42,7 @@ pub fn exec(env: &EnvironmentImpl, cmd: Command) -> anyhow::Result<()> {
         Command::Build(opts) => build::exec(env, opts),
         Command::Test(opts) => test::exec(env, opts),
         Command::Deploy(opts) => deploy::exec(env, opts),
+        Command::Exec(opts) => exec::exec(env, opts),
         Command::Remove(opts) => remove::exec(env, opts),
         Command::Upgrade(_) => {
             println!("Upgrade");

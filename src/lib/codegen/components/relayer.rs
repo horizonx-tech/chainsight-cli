@@ -4,7 +4,7 @@ use anyhow::Ok;
 use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 
-use crate::{types::ComponentType, lib::codegen::{canisters, oracle::get_oracle_address}};
+use crate::{types::{ComponentType, Network}, lib::codegen::{canisters, oracle::get_oracle_address, scripts}};
 
 use super::common::{Datasource, ComponentManifest, DestinactionType};
 
@@ -54,6 +54,11 @@ impl ComponentManifest for RelayerComponentManifest {
     fn generate_codes(&self, _interface_contract: Option<ethabi::Contract>) -> anyhow::Result<TokenStream> {
         canisters::relayer::generate_codes(self)
     }
+
+    fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
+        scripts::relayer::generate_scripts(self, network)
+    }
+
 
     fn component_type(&self) -> ComponentType {
         ComponentType::Relayer

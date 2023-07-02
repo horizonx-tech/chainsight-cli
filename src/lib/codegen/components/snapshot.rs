@@ -3,7 +3,7 @@ use std::{fs::OpenOptions, path::Path, io::Read};
 use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 
-use crate::{types::ComponentType, lib::codegen::canisters};
+use crate::{types::{ComponentType, Network}, lib::codegen::{canisters, scripts}};
 
 use super::common::{Datasource, ComponentManifest, DestinactionType};
 
@@ -52,6 +52,10 @@ impl ComponentManifest for SnapshotComponentManifest {
 
     fn generate_codes(&self, _interface_contract: Option<ethabi::Contract>) -> anyhow::Result<TokenStream> {
         canisters::snapshot::generate_codes(self)
+    }
+
+    fn generate_scripts(&self, _network: Network) -> anyhow::Result<String> {
+        scripts::snapshot::generate_scripts(self)
     }
 
     fn component_type(&self) -> ComponentType {
