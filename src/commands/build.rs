@@ -538,7 +538,39 @@ fn add_metadatas_to_wasm(
         error!(log, "{} `{}` failed", label, description);
         bail!(GLOBAL_ERROR_MSG.to_string())
     }
-    // TODO: chainsight:description
+    // chainsight:description
+    let description = "Add 'chainsight:description' metadata";
+    let output = Command::new("ic-wasm")
+        .current_dir(builded_project_path)
+        .args([
+            &wasm_path,
+            "-o",
+            &wasm_path,
+            "metadata",
+            "chainsight:description",
+            "-d",
+            &component_datum.metadata().description,
+            "-v",
+            "public",
+        ])
+        .output()
+        .expect("failed to execute process: ic-wasm metadata chainsight:description");
+    if output.status.success() {
+        debug!(
+            log,
+            "{}",
+            std::str::from_utf8(&output.stdout).unwrap_or("fail to parse stdout")
+        );
+        info!(log, "{} `{}` successfully", label, description);
+    } else {
+        debug!(
+            log,
+            "{}",
+            std::str::from_utf8(&output.stderr).unwrap_or("fail to parse stdout")
+        );
+        error!(log, "{} `{}` failed", label, description);
+        bail!(GLOBAL_ERROR_MSG.to_string())
+    }
 
     anyhow::Ok(())
 }

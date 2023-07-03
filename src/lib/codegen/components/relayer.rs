@@ -33,7 +33,7 @@ impl RelayerComponentManifest {
             version: version.to_owned(),
             metadata: ComponentMetadata {
                 label: label.to_owned(),
-                type_: ComponentType::Snapshot,
+                type_: ComponentType::Relayer,
                 description: description.to_owned(),
             },
             datasource,

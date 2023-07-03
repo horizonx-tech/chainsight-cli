@@ -187,8 +187,7 @@ pub trait ComponentManifest: std::fmt::Debug {
 
 #[derive(Deserialize)]
 pub struct ComponentTypeInManifest {
-    #[serde(rename = "type")]
-    pub type_: ComponentType,
+    pub metadata: ComponentMetadata,
 }
 impl ComponentTypeInManifest {
     pub fn determine_type(component_manifest_path: &str) -> anyhow::Result<ComponentType> {
@@ -198,6 +197,6 @@ impl ComponentTypeInManifest {
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
         let data: Self = serde_yaml::from_str(&contents)?;
-        Ok(data.type_)
+        Ok(data.metadata.type_)
     }
 }
