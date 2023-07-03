@@ -26,10 +26,8 @@ pub fn is_chainsight_project(path: Option<String>) -> Result<(), String> {
                 path.display()
             ));
         }
-    } else {
-        if !Path::new(CHAINSIGHT_FILENAME).exists() {
-            return Err("No .chainsight file found in the current directory.".to_string());
-        }
+    } else if !Path::new(CHAINSIGHT_FILENAME).exists() {
+        return Err("No .chainsight file found in the current directory.".to_string());
     }
     Ok(())
 }

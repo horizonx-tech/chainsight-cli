@@ -36,7 +36,7 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
         Network::Local => vec!["ping", &local_subnet],
         Network::IC => vec!["ping", "ic"],
     };
-    exec_command(log, "dfx", &builded_project_path, args, "Ping dfx subnet")?;
+    exec_command(log, "dfx", builded_project_path, args, "Ping dfx subnet")?;
 
     info!(log, "Check identity: Developer Id");
     let args = match network {
@@ -46,7 +46,7 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
     exec_command(
         log,
         "dfx",
-        &builded_project_path,
+        builded_project_path,
         args,
         "dfx identity whoami",
     )?;
@@ -58,7 +58,7 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
     exec_command(
         log,
         "dfx",
-        &builded_project_path,
+        builded_project_path,
         args,
         "dfx identity get-principal",
     )?;
@@ -70,7 +70,7 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
     exec_command(
         log,
         "dfx",
-        &builded_project_path,
+        builded_project_path,
         args,
         "dfx identity get-wallet",
     )?;
@@ -84,7 +84,7 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
     exec_command(
         log,
         "dfx",
-        &builded_project_path,
+        builded_project_path,
         args,
         "Executed 'dfx canister create --all",
     )?;
@@ -97,7 +97,7 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
     exec_command(
         log,
         "dfx",
-        &builded_project_path,
+        builded_project_path,
         args,
         "Executed 'dfx build'",
     )?;
@@ -110,7 +110,7 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
     exec_command(
         log,
         "dfx",
-        &builded_project_path,
+        builded_project_path,
         args,
         "Executed 'dfx canister install --all'",
     )?;
@@ -148,15 +148,15 @@ fn exec_command(
     debug!(log, "Running command: `{}`", cmd_string);
 
     let output = Command::new(cmd)
-        .current_dir(&execution_dir)
+        .current_dir(execution_dir)
         .args(args)
         .output()
-        .expect(&format!("failed to execute process: {}", cmd_string));
+        .unwrap_or_else(|_| panic!("failed to execute process: {}", cmd_string));
     if output.status.success() {
         debug!(
             log,
             "{}",
-            std::str::from_utf8(&output.stdout).unwrap_or(&"fail to parse stdout")
+            std::str::from_utf8(&output.stdout).unwrap_or("fail to parse stdout")
         );
         info!(log, "{} successfully", complete_message);
         anyhow::Ok(())
@@ -164,7 +164,7 @@ fn exec_command(
         debug!(
             log,
             "{}",
-            std::str::from_utf8(&output.stderr).unwrap_or(&"fail to parse stderr")
+            std::str::from_utf8(&output.stderr).unwrap_or("fail to parse stderr")
         );
         error!(log, "{} failed", complete_message);
         bail!(GLOBAL_ERROR_MSG.to_string())

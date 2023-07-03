@@ -62,10 +62,10 @@ pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> anyhow::Result<()> {
         ComponentType::Relayer => template_relayer_manifest(&component_name).to_str_as_yaml(),
     }?;
     let relative_component_path = format!("components/{}.yaml", component_name);
-    let (component_file_path, project_file_path) = if let Some(project_name) = project_path.clone()
+    let (component_file_path, project_file_path) = if let Some(project_name) = project_path
     {
         (
-            format!("{}/{}", project_name, relative_component_path.clone()),
+            format!("{}/{}", project_name, relative_component_path),
             format!("{}/{}", project_name, PROJECT_MANIFEST_FILENAME),
         )
     } else {
@@ -79,7 +79,7 @@ pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> anyhow::Result<()> {
     fs::write(component_file_path, codes)?;
     // update to project.yaml
     let mut data = ProjectManifestData::load(&project_file_path)?;
-    data.add_components(&vec![ProjectManifestComponentField::new(
+    data.add_components(&[ProjectManifestComponentField::new(
         &relative_component_path,
         None,
     )])?;
@@ -99,7 +99,7 @@ pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> anyhow::Result<()> {
 
 fn template_event_indexer_manifest(component_name: &str) -> EventIndexerComponentManifest {
     EventIndexerComponentManifest::new(
-        &component_name,
+        component_name,
         PROJECT_MANIFEST_VERSION,
         EventIndexerDatasource::new(
             "0000000000000000000000000000000000000000".to_string(),
@@ -111,7 +111,7 @@ fn template_event_indexer_manifest(component_name: &str) -> EventIndexerComponen
 
 fn template_snapshot_manifest(component_name: &str) -> SnapshotComponentManifest {
     SnapshotComponentManifest::new(
-        &component_name,
+        component_name,
         PROJECT_MANIFEST_VERSION,
         Datasource::new_contract("functionIdentifier()".to_string(), None, None),
         SnapshotStorage::default(),
@@ -121,7 +121,7 @@ fn template_snapshot_manifest(component_name: &str) -> SnapshotComponentManifest
 
 fn template_relayer_manifest(component_name: &str) -> RelayerComponentManifest {
     RelayerComponentManifest::new(
-        &component_name,
+        component_name,
         PROJECT_MANIFEST_VERSION,
         Datasource::new_canister("function_identifier()".to_string(), None, None),
         DestinationField::default(),

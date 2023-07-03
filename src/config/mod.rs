@@ -9,6 +9,7 @@ lazy_static! {
     static ref VERSION_STR: String = env!("CARGO_PKG_VERSION").to_string();
 }
 
+#[allow(dead_code)]
 pub fn cli_version() -> &'static Version {
     &VERSION
 }

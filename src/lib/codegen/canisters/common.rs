@@ -61,16 +61,14 @@ impl ContractMethodIdentifier {
         let params = params_result?;
 
         let return_value_capture = captures.name("return");
-        let return_value_result = if return_value_capture.is_none() {
-            Ok(vec![])
-        } else {
-            let return_value_str = return_value_capture.unwrap().as_str();
-            return_value_str
+        let return_value = if let Some(val) = return_value_capture {
+            val.as_str()
                 .split(',')
                 .map(|s| convert_type_from_abi_type(s.trim()))
                 .collect::<anyhow::Result<Vec<String>>>()
-        };
-        let return_value = return_value_result?;
+        } else {
+            Ok(vec![])
+        }?;
 
         Ok(ContractMethodIdentifier {
             identifier,
@@ -129,9 +127,8 @@ impl CanisterMethodIdentifier {
 
         // Tuple
         let captures = REGEX_TUPLE.captures(s);
-        if captures.is_some() {
-            let captures = captures.unwrap();
-            let items = captures.name("items").unwrap().as_str();
+        if let Some(captures_value) = captures {
+            let items = captures_value.name("items").unwrap().as_str();
             let tuple_result: anyhow::Result<Vec<String>> = items
                 .split(';')
                 .map(|s| convert_type_from_candid_type(s.trim()))
@@ -151,7 +148,7 @@ impl CanisterMethodIdentifier {
         if struct_items.is_empty() {
             bail!("Invalid candid's result types: {}", s);
         }
-        return Ok(CanisterMethodValueType::Struct(struct_items));
+        Ok(CanisterMethodValueType::Struct(struct_items))
     }
 }
 
@@ -195,8 +192,9 @@ pub fn convert_type_from_ethabi_param_type(param: ethabi::ParamType) -> anyhow::
 
 pub fn convert_type_from_candid_type(s: &str) -> anyhow::Result<String> {
     let err_msg = "not supported candid type".to_string(); // temp
-                                                           // ref: https://internetcomputer.org/docs/current/references/candid-ref
-    let ty_str = MAPPING_CANDID_TY.get(s.clone());
+
+    // ref: https://internetcomputer.org/docs/current/references/candid-ref
+    let ty_str = MAPPING_CANDID_TY.get(&s);
     if ty_str.is_none() {
         bail!(err_msg);
     }

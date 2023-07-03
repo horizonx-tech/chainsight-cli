@@ -78,7 +78,7 @@ fn custom_codes_for_contract(
             // If it's not a single type, it must be a tuple
             // In this case, we process it like we did before
             for (idx, elem) in response_types.iter().enumerate() {
-                let ty = syn::parse_str::<syn::Type>(&elem)?;
+                let ty = syn::parse_str::<syn::Type>(elem)?;
                 let idx_lit = proc_macro2::Literal::usize_unsuffixed(idx);
                 let (response_type_ident, response_val_ident) =
                     match_primitive_type(&ty, Some(idx_lit))?;

@@ -19,6 +19,7 @@ pub enum CanisterIdType {
     #[serde(rename = "principal_id")]
     PrincipalId,
 }
+#[allow(clippy::enum_variant_names)]
 #[derive(Deserialize, Serialize, Clone, Copy, Debug, PartialEq, clap::ValueEnum)]
 pub enum DestinactionType {
     #[serde(rename = "uint256")]
@@ -75,7 +76,7 @@ impl Datasource {
         interface: Option<String>,
         location: Option<DatasourceLocation>,
     ) -> Self {
-        let location = location.unwrap_or_else(|| DatasourceLocation::default_contract());
+        let location = location.unwrap_or_else(DatasourceLocation::default_contract);
         Self {
             type_: DatasourceType::Contract,
             location,
@@ -103,7 +104,7 @@ impl Datasource {
         interface: Option<String>,
         location: Option<DatasourceLocation>,
     ) -> Self {
-        let location = location.unwrap_or_else(|| DatasourceLocation::default_canister());
+        let location = location.unwrap_or_else(DatasourceLocation::default_canister);
         Self {
             type_: DatasourceType::Canister,
             location,
@@ -185,7 +186,7 @@ impl ComponentTypeInManifest {
     pub fn determine_type(component_manifest_path: &str) -> anyhow::Result<ComponentType> {
         let mut file = OpenOptions::new()
             .read(true)
-            .open(&Path::new(component_manifest_path))?;
+            .open(Path::new(component_manifest_path))?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
         let data: Self = serde_yaml::from_str(&contents)?;

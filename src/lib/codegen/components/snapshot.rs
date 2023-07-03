@@ -41,7 +41,7 @@ impl SnapshotComponentManifest {
 }
 impl ComponentManifest for SnapshotComponentManifest {
     fn load(path: &str) -> anyhow::Result<Self> {
-        let mut file = OpenOptions::new().read(true).open(&Path::new(path))?;
+        let mut file = OpenOptions::new().read(true).open(Path::new(path))?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
         let data: Self = serde_yaml::from_str(&contents)?;

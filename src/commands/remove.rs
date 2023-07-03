@@ -30,14 +30,14 @@ pub fn exec(env: &EnvironmentImpl, opts: RemoveOpts) -> anyhow::Result<()> {
 
     info!(log, r#"Removing project..."#);
 
-    let res = if let Some(project_name) = project_path.clone() {
+    let res = if let Some(project_name) = project_path {
         fs::remove_dir_all(Path::new(&project_name))
     } else {
         // TODO: check existence of folders/files before removing
-        let _ = fs::remove_dir_all(Path::new(&"artifacts")).map_err(|e| return e);
-        let _ = fs::remove_dir_all(Path::new(&"interfaces")).map_err(|e| return e);
-        let _ = fs::remove_dir_all(Path::new(&"components")).map_err(|e| return e);
-        let _ = fs::remove_file(CHAINSIGHT_FILENAME).map_err(|e| return e);
+        let _ = fs::remove_dir_all(Path::new(&"artifacts"));
+        let _ = fs::remove_dir_all(Path::new(&"interfaces"));
+        let _ = fs::remove_dir_all(Path::new(&"components"));
+        let _ = fs::remove_file(CHAINSIGHT_FILENAME);
         fs::remove_file(PROJECT_MANIFEST_FILENAME)
     };
     match res {

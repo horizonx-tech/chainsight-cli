@@ -109,9 +109,9 @@ fn exec_codegen(
     // generate /artifacts
     let artifacts_path = Path::new(&artifacts_path_str);
     if artifacts_path.exists() {
-        fs::remove_dir_all(&artifacts_path)?;
+        fs::remove_dir_all(artifacts_path)?;
     }
-    fs::create_dir(&artifacts_path)?;
+    fs::create_dir(artifacts_path)?;
 
     // generate /artifacts/__interfaces
     let interfaces_path_str = format!("{}/__interfaces", &artifacts_path_str);
@@ -137,15 +137,15 @@ fn exec_codegen(
                 format!("{}/interfaces/{}", &project_path_str, &interface_file);
             let user_if_file_path = Path::new(&user_if_file_path_str);
             if user_if_file_path.exists() {
-                fs::copy(&user_if_file_path, dst_interface_path)?;
+                fs::copy(user_if_file_path, dst_interface_path)?;
                 info!(
                     log,
                     r#"Interface file "{}" copied by user's interface"#, &interface_file
                 );
-                let abi_file = File::open(&user_if_file_path)?;
+                let abi_file = File::open(user_if_file_path)?;
                 interface_contract = Some(ethabi::Contract::load(abi_file)?);
             } else if let Some(contents) = buildin_interface(&interface_file) {
-                fs::write(&dst_interface_path, contents)?;
+                fs::write(dst_interface_path, contents)?;
                 info!(
                     log,
                     r#"Interface file "{}" copied by builtin interface"#, &interface_file
@@ -192,15 +192,15 @@ fn exec_codegen(
     }
     fs::write(
         format!("{}/Cargo.toml", &artifacts_path_str),
-        &root_cargo_toml(project_labels.clone()),
+        root_cargo_toml(project_labels.clone()),
     )?;
     fs::write(
         format!("{}/dfx.json", &artifacts_path_str),
-        &dfx_json(project_labels),
+        dfx_json(project_labels),
     )?;
     fs::write(
         format!("{}/Makefile.toml", &artifacts_path_str),
-        &makefile_toml(),
+        makefile_toml(),
     )?;
 
     anyhow::Ok(())
@@ -340,7 +340,7 @@ fn execute_codebuild(
     let description = "Generate interfaces (.did files)";
     info!(log, "{}", description);
     let output = Command::new("cargo")
-        .current_dir(&builded_project_path)
+        .current_dir(builded_project_path)
         .args(["make", "did"])
         .output()
         .expect("failed to execute process: cargo make did");
@@ -348,7 +348,7 @@ fn execute_codebuild(
         debug!(
             log,
             "{}",
-            std::str::from_utf8(&output.stdout).unwrap_or(&"fail to parse stdout")
+            std::str::from_utf8(&output.stdout).unwrap_or("fail to parse stdout")
         );
         info!(log, "{} successfully", description);
     } else {
@@ -360,9 +360,9 @@ fn execute_codebuild(
     let build_artifact_path_str = format!("{}/artifacts", builded_project_path_str);
     let build_artifact_path = Path::new(&build_artifact_path_str);
     if build_artifact_path.exists() {
-        fs::remove_dir_all(&build_artifact_path)?;
+        fs::remove_dir_all(build_artifact_path)?;
     }
-    fs::create_dir(&build_artifact_path)?;
+    fs::create_dir(build_artifact_path)?;
     // Copy .did to artifacts folder
     for component_datum in component_data {
         let label = component_datum.label();
@@ -374,7 +374,7 @@ fn execute_codebuild(
     let description = "Compile canisters' codes";
     info!(log, "{}", description);
     let output = Command::new("cargo")
-        .current_dir(&builded_project_path)
+        .current_dir(builded_project_path)
         .args([
             "build",
             "--target",
@@ -390,7 +390,7 @@ fn execute_codebuild(
         debug!(
             log,
             "{}",
-            std::str::from_utf8(&output.stdout).unwrap_or(&"fail to parse stdout")
+            std::str::from_utf8(&output.stdout).unwrap_or("fail to parse stdout")
         );
         info!(log, "{} successfully", description);
     } else {
@@ -405,7 +405,7 @@ fn execute_codebuild(
         let wasm_path = format!("target/wasm32-unknown-unknown/release/{}.wasm", label);
         let output_path = format!("artifacts/{}.wasm", label);
         let output = Command::new("ic-wasm")
-            .current_dir(&builded_project_path)
+            .current_dir(builded_project_path)
             .args([&wasm_path, "-o", &output_path, "shrink"])
             .output()
             .expect("failed to execute process: ic_wasm shrink");
@@ -413,14 +413,14 @@ fn execute_codebuild(
             debug!(
                 log,
                 "{}",
-                std::str::from_utf8(&output.stdout).unwrap_or(&"fail to parse stdout")
+                std::str::from_utf8(&output.stdout).unwrap_or("fail to parse stdout")
             );
             info!(log, "{} `{}` successfully", label, description);
         } else {
             debug!(
                 log,
                 "{}",
-                std::str::from_utf8(&output.stderr).unwrap_or(&"fail to parse stdout")
+                std::str::from_utf8(&output.stderr).unwrap_or("fail to parse stdout")
             );
             error!(log, "{} `{}` failed", label, description);
             bail!(GLOBAL_ERROR_MSG.to_string())
@@ -430,7 +430,7 @@ fn execute_codebuild(
     let description = "Add metadatas to canisters' modules";
     info!(log, "{}", description);
     for component_datum in component_data {
-        add_metadatas_to_wasm(log, builded_project_path_str, component_datum)?;
+        add_metadatas_to_wasm(log, builded_project_path_str, component_datum.as_ref())?;
     }
 
     anyhow::Ok(())
@@ -439,7 +439,7 @@ fn execute_codebuild(
 fn add_metadatas_to_wasm(
     log: &Logger,
     builded_project_path_str: &str,
-    component_datum: &Box<dyn ComponentManifest>,
+    component_datum: &dyn ComponentManifest,
 ) -> anyhow::Result<()> {
     let builded_project_path = Path::new(&builded_project_path_str);
 
@@ -449,7 +449,7 @@ fn add_metadatas_to_wasm(
     // chainsight:label
     let description = "Add 'chainsight:label' metadata";
     let output = Command::new("ic-wasm")
-        .current_dir(&builded_project_path)
+        .current_dir(builded_project_path)
         .args([
             &wasm_path,
             "-o",
@@ -457,7 +457,7 @@ fn add_metadatas_to_wasm(
             "metadata",
             "chainsight:label",
             "-d",
-            &label,
+            label,
             "-v",
             "public",
         ])
@@ -467,14 +467,14 @@ fn add_metadatas_to_wasm(
         debug!(
             log,
             "{}",
-            std::str::from_utf8(&output.stdout).unwrap_or(&"fail to parse stdout")
+            std::str::from_utf8(&output.stdout).unwrap_or("fail to parse stdout")
         );
         info!(log, "{} `{}` successfully", label, description);
     } else {
         debug!(
             log,
             "{}",
-            std::str::from_utf8(&output.stderr).unwrap_or(&"fail to parse stdout")
+            std::str::from_utf8(&output.stderr).unwrap_or("fail to parse stdout")
         );
         error!(log, "{} `{}` failed", label, description);
         bail!(GLOBAL_ERROR_MSG.to_string())
@@ -482,7 +482,7 @@ fn add_metadatas_to_wasm(
     // chainsight:component_type
     let description = "Add 'chainsight:component_type' metadata";
     let output = Command::new("ic-wasm")
-        .current_dir(&builded_project_path)
+        .current_dir(builded_project_path)
         .args([
             &wasm_path,
             "-o",
@@ -500,14 +500,14 @@ fn add_metadatas_to_wasm(
         debug!(
             log,
             "{}",
-            std::str::from_utf8(&output.stdout).unwrap_or(&"fail to parse stdout")
+            std::str::from_utf8(&output.stdout).unwrap_or("fail to parse stdout")
         );
         info!(log, "{} `{}` successfully", label, description);
     } else {
         debug!(
             log,
             "{}",
-            std::str::from_utf8(&output.stderr).unwrap_or(&"fail to parse stdout")
+            std::str::from_utf8(&output.stderr).unwrap_or("fail to parse stdout")
         );
         error!(log, "{} `{}` failed", label, description);
         bail!(GLOBAL_ERROR_MSG.to_string())

@@ -110,7 +110,7 @@ fn execute_to_generate_commands(
     let scripts_path_str = format!("{}/scripts/components", &builded_project_path_str);
     let script_root_path = Path::new(&script_root_path_str);
     if script_root_path.exists() {
-        fs::remove_dir_all(&script_root_path)?;
+        fs::remove_dir_all(script_root_path)?;
     }
     fs::create_dir_all(Path::new(&scripts_path_str))?;
 
@@ -171,22 +171,22 @@ fn execute_commands(log: &Logger, builded_project_path_str: &str) -> anyhow::Res
     let cmd_string = format!("./scripts/{}", ENTRYPOINT_SHELL_FILENAME);
     debug!(log, "Running command: `{}`", &cmd_string);
     let output = Command::new(&cmd_string)
-        .current_dir(&builded_project_path_str)
+        .current_dir(builded_project_path_str)
         .output()
-        .expect(&format!("failed to execute process: {}", &cmd_string));
+        .unwrap_or_else(|_| panic!("failed to execute process: {}", &cmd_string));
     let complete_msg = format!("Executed '{}'", &cmd_string);
     if output.status.success() {
         debug!(
             log,
             "{}",
-            std::str::from_utf8(&output.stdout).unwrap_or(&"fail to parse stdout")
+            std::str::from_utf8(&output.stdout).unwrap_or("fail to parse stdout")
         );
         info!(log, "{} successfully", complete_msg);
     } else {
         debug!(
             log,
             "{}",
-            std::str::from_utf8(&output.stderr).unwrap_or(&"fail to parse stderr")
+            std::str::from_utf8(&output.stderr).unwrap_or("fail to parse stderr")
         );
         error!(log, "{} failed", complete_msg);
         bail!(GLOBAL_ERROR_MSG.to_string())

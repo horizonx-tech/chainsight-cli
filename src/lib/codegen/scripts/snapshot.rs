@@ -80,8 +80,8 @@ fn script_contents_for_contract(manifest: &SnapshotComponentManifest) -> String 
     let setup_contents = generate_command_to_setup_for_contract(
         &manifest.label,
         &manifest.datasource.location.id,
-        datasrc_location_args.clone().network_id.unwrap(), // todo: check validation
-        &datasrc_location_args.clone().rpc_url.unwrap(),   // todo: check validation
+        datasrc_location_args.network_id.unwrap(), // todo: check validation
+        &datasrc_location_args.rpc_url.unwrap(),   // todo: check validation
     );
 
     let start_timer_contents = generate_command_to_set_task(

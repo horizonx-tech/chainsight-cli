@@ -66,7 +66,7 @@ fn create_project(project_name: &str) -> anyhow::Result<()> {
         ProjectManifestData::new(
             project_name,
             PROJECT_MANIFEST_VERSION,
-            &vec![
+            &[
                 ProjectManifestComponentField::new(&relative_snapshot_chain_path, None),
                 ProjectManifestComponentField::new(&relative_snapshot_icp_path, None),
                 ProjectManifestComponentField::new(&relative_relayer_path, None),
@@ -91,6 +91,7 @@ fn create_project(project_name: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
+#[allow(dead_code)]
 fn template_event_indexer_manifest(project_name: &str) -> EventIndexerComponentManifest {
     EventIndexerComponentManifest::new(
         &format!("{}_event_indexer", project_name),
