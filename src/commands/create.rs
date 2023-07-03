@@ -62,8 +62,7 @@ pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> anyhow::Result<()> {
         ComponentType::Relayer => template_relayer_manifest(&component_name).to_str_as_yaml(),
     }?;
     let relative_component_path = format!("components/{}.yaml", component_name);
-    let (component_file_path, project_file_path) = if let Some(project_name) = project_path
-    {
+    let (component_file_path, project_file_path) = if let Some(project_name) = project_path {
         (
             format!("{}/{}", project_name, relative_component_path),
             format!("{}/{}", project_name, PROJECT_MANIFEST_FILENAME),
