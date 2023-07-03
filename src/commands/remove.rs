@@ -13,6 +13,8 @@ use crate::lib::{
 #[command(name = "remove")]
 /// Delete your Chainsight project. Before this operation, you must delete your canisters.
 pub struct RemoveOpts {
+    /// Specify the path of the project to be removed.
+    /// If not specified, the current directory is targeted.
     #[arg(long)]
     path: Option<String>,
 }

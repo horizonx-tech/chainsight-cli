@@ -31,10 +31,16 @@ use crate::{
 #[command(name = "create")]
 /// Generates component manifest of specified type and adds to your project.
 pub struct CreateOpts {
+    /// Specifies the name of the component to create.
     #[arg(required = true)]
     component_name: String,
+
+    /// Specifies type of the component to create.
     #[arg(long)]
     type_: ComponentType,
+
+    /// Specify the path of the project to which the component is to be added.
+    /// If not specified, the current directory is targeted.
     #[arg(long)]
     path: Option<String>,
 }

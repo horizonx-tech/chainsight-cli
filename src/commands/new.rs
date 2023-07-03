@@ -22,6 +22,7 @@ use crate::lib::{
 #[command(name = "new")]
 /// Generates Chainsight project with built-in templates.
 pub struct NewOpts {
+    /// Specifies the name of the project to create.
     #[arg(required = true)]
     project_name: String,
 }

@@ -26,10 +26,17 @@ use crate::{
 #[command(name = "build")]
 /// Builds your project to generate canisters' modules for Chainsight.
 pub struct BuildOpts {
+    /// Specify the path of the project to be built.
+    /// If not specified, the current directory is targeted.
     #[arg(long)]
     path: Option<String>,
+
+    /// Only perform code generation.
     #[arg(long, conflicts_with = "only_build")]
     only_codegen: bool,
+
+    /// Only perform build.
+    /// Perform this steps with code already generated.
     #[arg(long, conflicts_with = "only_codegen")]
     only_build: bool,
 }

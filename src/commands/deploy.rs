@@ -9,12 +9,20 @@ use crate::{lib::environment::EnvironmentImpl, types::Network};
 #[derive(Debug, Parser)]
 #[command(name = "deploy")]
 /// Deploy the components of your project.
+/// If you want to operate on a local network, you need to build a local dfx network in advance.
 pub struct DeployOpts {
+    /// Specify the path of the project to be deployed.
+    /// If not specified, the current directory is targeted.
     #[arg(long)]
     path: Option<String>,
+
+    /// Specify the network to execute on.
     #[arg(long)]
     #[clap(default_value = "local")]
     network: Network,
+
+    /// Specifies the port to call.
+    /// This option is used only if the target is localhost.
     #[arg(long)]
     port: Option<u16>,
 }

@@ -25,15 +25,27 @@ use crate::{
 #[command(name = "exec")]
 /// Calls for component processing. Currently supports initialization and task start instructions.
 pub struct ExecOpts {
+    /// Specify the path of the project that manages the component to be called.
+    /// Refer to the manifest of this project to build the commands that should be executed.
     #[arg(long)]
     path: Option<String>,
+
+    /// Specify the name of the component you want to execute.
+    /// If this option is not specified, the command will be given to all components managed by the project.
     #[arg(long)]
     component: Option<String>,
+
+    /// Specify the network to execute on.
     #[arg(long)]
     #[clap(default_value = "local")]
     network: Network,
+
+    /// Only generate commands.
     #[arg(long, conflicts_with = "only_execute_cmds")]
     only_generate_cmds: bool,
+
+    /// Only execute commands.
+    /// Perform this steps with commands already generated.
     #[arg(long, conflicts_with = "only_generate_cmds")]
     only_execute_cmds: bool,
 }
