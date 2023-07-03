@@ -22,7 +22,10 @@ use crate::{
             project::{ProjectManifestComponentField, ProjectManifestData},
         },
         environment::EnvironmentImpl,
-        utils::{is_chainsight_project, PROJECT_MANIFEST_FILENAME, PROJECT_MANIFEST_VERSION},
+        utils::{
+            find_duplicates, is_chainsight_project, PROJECT_MANIFEST_FILENAME,
+            PROJECT_MANIFEST_VERSION,
+        },
     },
     types::ComponentType,
 };
@@ -80,19 +83,37 @@ pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> anyhow::Result<()> {
         )
     };
 
-    // write to .yaml
-    fs::write(component_file_path, codes)?;
-    // update to project.yaml
+    // update project manifest
     let mut data = ProjectManifestData::load(&project_file_path)?;
     data.add_components(&[ProjectManifestComponentField::new(
         &relative_component_path,
         None,
     )])?;
+    //// check whether manifests of the same path exist or not
+    {
+        let component_paths = data
+            .components
+            .iter()
+            .map(|c| c.component_path.to_string())
+            .collect::<Vec<String>>();
+        let duplicated_pathes = find_duplicates(&component_paths);
+        if duplicated_pathes.len() > 0 {
+            error!(
+                log,
+                r#"Duplicated component pathes found: {:?}"#, duplicated_pathes
+            );
+            bail!(GLOBAL_ERROR_MSG.to_string())
+        }
+    }
+    //// update to .yaml
     let mut file = OpenOptions::new()
         .write(true)
         .truncate(true)
         .open(&project_file_path)?;
     file.write_all(data.to_str_as_yaml()?.as_bytes())?;
+
+    // write to .yaml
+    fs::write(component_file_path, codes)?;
 
     info!(
         log,

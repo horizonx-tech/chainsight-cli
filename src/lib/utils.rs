@@ -56,3 +56,15 @@ pub fn convert_camel_to_snake(val: &str) -> String {
     // https://github.com/horizonx-tech/ic-solidity-bindgen/blob/0972bede5957927bcb8f675decd93878b849dc76/ic-solidity-bindgen-macros/src/abi_gen.rs#L192
     to_snake_case(val)
 }
+
+/// Outputs duplicate values for a given set of elements.
+pub fn find_duplicates<T: Eq + std::hash::Hash>(values: &[T]) -> Vec<&T> {
+    let mut duplicates = Vec::new();
+    let mut set = std::collections::HashSet::new();
+    for value in values {
+        if !set.insert(value) {
+            duplicates.push(value);
+        }
+    }
+    duplicates
+}

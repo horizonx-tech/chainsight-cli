@@ -13,6 +13,7 @@ use crate::lib::codegen::components::event_indexer::EventIndexerComponentManifes
 use crate::lib::codegen::components::relayer::RelayerComponentManifest;
 use crate::lib::codegen::components::snapshot::SnapshotComponentManifest;
 use crate::lib::codegen::oracle::get_oracle_attributes;
+use crate::lib::utils::find_duplicates;
 use crate::{
     lib::{
         codegen::project::ProjectManifestData,
@@ -62,6 +63,24 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
         "{}/{}",
         &project_path_str, PROJECT_MANIFEST_FILENAME
     ))?;
+
+    // check duplicated component pathes
+    {
+        let component_paths = project_manifest
+            .components
+            .iter()
+            .map(|c| c.component_path.to_string())
+            .collect::<Vec<String>>();
+        let duplicated_pathes = find_duplicates(&component_paths);
+        if duplicated_pathes.len() > 0 {
+            error!(
+                log,
+                r#"Duplicated component pathes found: {:?}"#, duplicated_pathes
+            );
+            bail!(GLOBAL_ERROR_MSG.to_string())
+        }
+    }
+
     let mut component_data = vec![];
     for component in project_manifest.components.clone() {
         // TODO: need validations
