@@ -64,8 +64,8 @@ impl ComponentManifest for SnapshotComponentManifest {
         canisters::snapshot::generate_codes(self)
     }
 
-    fn generate_scripts(&self, _network: Network) -> anyhow::Result<String> {
-        scripts::snapshot::generate_scripts(self)
+    fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
+        scripts::snapshot::generate_scripts(self, network)
     }
 
     fn component_type(&self) -> ComponentType {

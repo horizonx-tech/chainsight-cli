@@ -3,7 +3,7 @@ use anyhow::ensure;
 use crate::{
     lib::codegen::{
         components::{common::CanisterIdType, relayer::RelayerComponentManifest},
-        scripts::common::generate_command_to_set_task,
+        scripts::common::{generate_command_to_set_task, network_param},
     },
     types::{ComponentType, Network},
 };
@@ -15,7 +15,7 @@ fn generate_command_to_setup(
     dst_address: &str,
     dst_network_id: u32,
     dst_rpc_url: &str,
-    network: Network,
+    network: &Network,
 ) -> String {
     let target_canister = match datasrc_id_type {
         CanisterIdType::CanisterName => format!("$(dfx canister id {})", datasrc_id),
@@ -28,7 +28,7 @@ fn generate_command_to_setup(
     };
 
     format!(
-        r#"dfx canister call {} setup "(
+        r#"dfx canister {} call {} setup "(
     \"{}\",
     \"{}\",
     record {{
@@ -37,7 +37,13 @@ fn generate_command_to_setup(
         chain_id = {};
         key = variant {{ {} }};
     }})""#,
-        label, target_canister, dst_address, dst_rpc_url, dst_network_id, ecdsa_key_env
+        network_param(network),
+        label,
+        target_canister,
+        dst_address,
+        dst_rpc_url,
+        dst_network_id,
+        ecdsa_key_env
     )
 }
 
@@ -49,10 +55,11 @@ fn script_contents(manifest: &RelayerComponentManifest, network: Network) -> Str
         &manifest.destination.oracle_address,
         manifest.destination.network_id,
         &manifest.destination.rpc_url,
-        network,
+        &network,
     );
     let script_to_set_task = generate_command_to_set_task(
         &manifest.label,
+        &network,
         manifest.interval,
         10, // temp: fixed value, todo: make it configurable
     );
