@@ -21,7 +21,8 @@ pub struct SnapshotComponentManifest {
 
 impl SnapshotComponentManifest {
     pub fn new(
-        component_label: &str,
+        label: &str,
+        description: &str,
         version: &str,
         datasource: Datasource,
         storage: SnapshotStorage,
@@ -30,8 +31,9 @@ impl SnapshotComponentManifest {
         Self {
             version: version.to_owned(),
             metadata: ComponentMetadata {
-                label: component_label.to_owned(),
+                label: label.to_owned(),
                 type_: ComponentType::Snapshot,
+                description: description.to_owned(),
             },
             datasource,
             storage,
@@ -115,6 +117,7 @@ version: v1
 metadata:
     label: sample_pj_snapshot_chain
     type: snapshot
+    description: Description
 datasource:
     type: contract
     location:
@@ -140,7 +143,8 @@ interval: 3600
                 version: "v1".to_owned(),
                 metadata: ComponentMetadata {
                     label: "sample_pj_snapshot_chain".to_owned(),
-                    type_: ComponentType::Snapshot
+                    type_: ComponentType::Snapshot,
+                    description: "Description".to_string()
                 },
                 datasource: Datasource {
                     type_: DatasourceType::Contract,
@@ -170,6 +174,7 @@ version: v1
 metadata:
     label: sample_pj_snapshot_icp
     type: snapshot
+    description: Description
 datasource:
     type: canister
     location:
@@ -194,7 +199,8 @@ interval: 3600
                 version: "v1".to_owned(),
                 metadata: ComponentMetadata {
                     label: "sample_pj_snapshot_icp".to_owned(),
-                    type_: ComponentType::Snapshot
+                    type_: ComponentType::Snapshot,
+                    description: "Description".to_string()
                 },
                 datasource: Datasource {
                     type_: DatasourceType::Canister,

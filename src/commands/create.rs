@@ -126,6 +126,7 @@ pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> anyhow::Result<()> {
 fn template_event_indexer_manifest(component_name: &str) -> EventIndexerComponentManifest {
     EventIndexerComponentManifest::new(
         component_name,
+        "",
         PROJECT_MANIFEST_VERSION,
         EventIndexerDatasource::new(
             "0000000000000000000000000000000000000000".to_string(),
@@ -138,6 +139,7 @@ fn template_event_indexer_manifest(component_name: &str) -> EventIndexerComponen
 fn template_snapshot_manifest(component_name: &str) -> SnapshotComponentManifest {
     SnapshotComponentManifest::new(
         component_name,
+        "",
         PROJECT_MANIFEST_VERSION,
         Datasource::new_contract("functionIdentifier()".to_string(), None, None),
         SnapshotStorage::default(),
@@ -148,6 +150,7 @@ fn template_snapshot_manifest(component_name: &str) -> SnapshotComponentManifest
 fn template_relayer_manifest(component_name: &str) -> RelayerComponentManifest {
     RelayerComponentManifest::new(
         component_name,
+        "",
         PROJECT_MANIFEST_VERSION,
         Datasource::new_canister("function_identifier()".to_string(), None, None),
         DestinationField::default(),

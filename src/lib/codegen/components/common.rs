@@ -37,6 +37,7 @@ pub struct ComponentMetadata {
     pub label: String,
     #[serde(rename = "type")]
     pub type_: ComponentType,
+    pub description: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]

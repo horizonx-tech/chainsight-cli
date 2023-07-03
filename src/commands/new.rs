@@ -96,6 +96,7 @@ fn create_project(project_name: &str) -> anyhow::Result<()> {
 fn template_event_indexer_manifest(project_name: &str) -> EventIndexerComponentManifest {
     EventIndexerComponentManifest::new(
         &format!("{}_event_indexer", project_name),
+        "",
         PROJECT_MANIFEST_VERSION,
         EventIndexerDatasource::default(),
         3600,
@@ -105,6 +106,7 @@ fn template_event_indexer_manifest(project_name: &str) -> EventIndexerComponentM
 fn template_snapshot_chain_manifest(project_name: &str) -> SnapshotComponentManifest {
     SnapshotComponentManifest::new(
         &format!("{}_snapshot_chain", project_name),
+        "",
         PROJECT_MANIFEST_VERSION,
         Datasource::default_contract(),
         SnapshotStorage::default(),
@@ -115,6 +117,7 @@ fn template_snapshot_chain_manifest(project_name: &str) -> SnapshotComponentMani
 fn template_snapshot_icp_manifest(project_name: &str) -> SnapshotComponentManifest {
     SnapshotComponentManifest::new(
         &format!("{}_snapshot_icp", project_name),
+        "",
         PROJECT_MANIFEST_VERSION,
         Datasource::default_canister(true),
         SnapshotStorage::default(),
@@ -125,6 +128,7 @@ fn template_snapshot_icp_manifest(project_name: &str) -> SnapshotComponentManife
 fn template_relayer_manifest(project_name: &str) -> RelayerComponentManifest {
     RelayerComponentManifest::new(
         &format!("{}_relayer", project_name),
+        "",
         PROJECT_MANIFEST_VERSION,
         Datasource::default_canister(false),
         DestinationField::default(),

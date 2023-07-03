@@ -22,7 +22,8 @@ pub struct RelayerComponentManifest {
 
 impl RelayerComponentManifest {
     pub fn new(
-        component_label: &str,
+        label: &str,
+        description: &str,
         version: &str,
         datasource: Datasource,
         destination: DestinationField,
@@ -31,8 +32,9 @@ impl RelayerComponentManifest {
         Self {
             version: version.to_owned(),
             metadata: ComponentMetadata {
-                label: component_label.to_owned(),
-                type_: ComponentType::Relayer,
+                label: label.to_owned(),
+                type_: ComponentType::Snapshot,
+                description: description.to_owned(),
             },
             datasource,
             destination,
@@ -138,6 +140,7 @@ version: v1
 metadata:
     label: sample_pj_relayer
     type: relayer
+    description: Description
 datasource:
     type: canister
     location:
@@ -166,6 +169,7 @@ interval: 3600
                 metadata: ComponentMetadata {
                     label: "sample_pj_relayer".to_string(),
                     type_: ComponentType::Relayer,
+                    description: "Description".to_string(),
                 },
                 datasource: Datasource {
                     type_: DatasourceType::Canister,

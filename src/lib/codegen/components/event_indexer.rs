@@ -21,7 +21,8 @@ pub struct EventIndexerComponentManifest {
 
 impl EventIndexerComponentManifest {
     pub fn new(
-        component_label: &str,
+        label: &str,
+        description: &str,
         version: &str,
         datasource: EventIndexerDatasource,
         interval: u32,
@@ -29,8 +30,9 @@ impl EventIndexerComponentManifest {
         Self {
             version: version.to_owned(),
             metadata: ComponentMetadata {
-                label: component_label.to_owned(),
+                label: label.to_owned(),
                 type_: ComponentType::EventIndexer,
+                description: description.to_owned(),
             },
             datasource,
             interval,
@@ -133,6 +135,7 @@ version: v1
 metadata:
     label: sample_pj_event_indexer
     type: event_indexer
+    description: Description
 datasource:
     id: 0000000000000000000000000000000000000000
     event:
@@ -149,8 +152,9 @@ interval: 3600
             EventIndexerComponentManifest {
                 version: "v1".to_string(),
                 metadata: ComponentMetadata {
-                    type_: ComponentType::EventIndexer,
                     label: "sample_pj_event_indexer".to_string(),
+                    type_: ComponentType::EventIndexer,
+                    description: "Description".to_string(),
                 },
                 datasource: EventIndexerDatasource {
                     // id: "0000000000000000000000000000000000000000".to_string(),
