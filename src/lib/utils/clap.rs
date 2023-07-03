@@ -1,0 +1,17 @@
+use anstyle::{AnsiColor, Style};
+use clap::builder::Styles;
+
+pub fn style() -> Styles {
+    let green = Style::new().fg_color(Some(AnsiColor::Green.into()));
+    let yellow = Style::new().fg_color(Some(AnsiColor::Yellow.into()));
+    let red = Style::new()
+        .fg_color(Some(AnsiColor::BrightRed.into()))
+        .bold();
+    Styles::styled()
+        .literal(green)
+        .placeholder(green)
+        .error(red)
+        .header(yellow)
+        .invalid(yellow)
+        .valid(green)
+}

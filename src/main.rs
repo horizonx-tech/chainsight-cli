@@ -8,11 +8,11 @@ mod types;
 use clap::{ArgAction, Parser};
 use commands::{exec, Command};
 use config::cli_version_str;
-use lib::{environment::EnvironmentImpl, logger::create_root_logger};
+use lib::{environment::EnvironmentImpl, logger::create_root_logger, utils};
 use slog::error;
 
 #[derive(Debug, Parser)]
-#[command(name = "csx", version = cli_version_str(), about = "Chainsight command-line execution envirionment")]
+#[command(name = "csx", version = cli_version_str(), about = "Chainsight command-line execution envirionment", styles = utils::clap::style())]
 struct Cli {
     /// Displays detailed information about operations. -vv will generate a very large number of messages and can affect performance.
     #[arg(long, short, action = ArgAction::Count, global = true)]
