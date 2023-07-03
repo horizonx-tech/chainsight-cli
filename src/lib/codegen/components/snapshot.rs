@@ -112,8 +112,9 @@ mod tests {
     fn test_to_manifest_struct_for_chain() {
         let yaml = r#"
 version: v1
-type: snapshot
-label: sample_pj_snapshot_chain
+metadata:
+    label: sample_pj_snapshot_chain
+    type: snapshot
 datasource:
     type: contract
     location:
@@ -166,8 +167,9 @@ interval: 3600
     fn test_to_manifest_struct_for_icp() {
         let yaml = r#"
 version: v1
-type: snapshot
-label: sample_pj_snapshot_icp
+metadata:
+    label: sample_pj_snapshot_icp
+    type: snapshot
 datasource:
     type: canister
     location:

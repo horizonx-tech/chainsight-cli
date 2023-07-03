@@ -130,8 +130,9 @@ mod tests {
     fn test_to_manifest_struct() {
         let yaml = r#"
 version: v1
-type: event_indexer
-label: sample_pj_event_indexer
+metadata:
+    label: sample_pj_event_indexer
+    type: event_indexer
 datasource:
     id: 0000000000000000000000000000000000000000
     event:

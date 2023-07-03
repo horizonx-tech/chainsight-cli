@@ -135,8 +135,9 @@ mod tests {
     fn test_to_manifest_struct() {
         let yaml = r#"
 version: v1
-type: relayer
-label: sample_pj_relayer
+metadata:
+    label: sample_pj_relayer
+    type: relayer
 datasource:
     type: canister
     location:
