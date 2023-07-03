@@ -11,7 +11,7 @@ use crate::lib::{
 
 #[derive(Debug, Parser)]
 #[command(name = "remove")]
-/// Delete resources for specified your project
+/// Delete your Chainsight project. Before this operation, you must delete your canisters.
 pub struct RemoveOpts {
     #[arg(long)]
     path: Option<String>,

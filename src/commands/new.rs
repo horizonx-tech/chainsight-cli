@@ -20,7 +20,7 @@ use crate::lib::{
 
 #[derive(Debug, Parser)]
 #[command(name = "new")]
-/// Generate ChainSight project by prepared template
+/// Generates Chainsight project with built-in templates.
 pub struct NewOpts {
     #[arg(required = true)]
     project_name: String,

@@ -8,7 +8,7 @@ use crate::{lib::environment::EnvironmentImpl, types::Network};
 
 #[derive(Debug, Parser)]
 #[command(name = "deploy")]
-/// Deploy your ChainSight's project
+/// Deploy the components of your project.
 pub struct DeployOpts {
     #[arg(long)]
     path: Option<String>,

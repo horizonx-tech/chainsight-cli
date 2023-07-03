@@ -23,7 +23,7 @@ use crate::{
 
 #[derive(Debug, Parser)]
 #[command(name = "exec")]
-/// Execute Component's processing
+/// Calls for component processing. Currently supports initialization and task start instructions.
 pub struct ExecOpts {
     #[arg(long)]
     path: Option<String>,

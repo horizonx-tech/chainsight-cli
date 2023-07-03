@@ -29,7 +29,7 @@ use crate::{
 
 #[derive(Debug, Parser)]
 #[command(name = "create")]
-/// Create new component & add to your ChainSight's project
+/// Generates component manifest of specified type and adds to your project.
 pub struct CreateOpts {
     #[arg(required = true)]
     component_name: String,

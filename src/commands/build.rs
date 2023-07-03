@@ -24,7 +24,7 @@ use crate::{
 
 #[derive(Debug, Parser)]
 #[command(name = "build")]
-/// Build your ChainSight's project
+/// Builds your project to generate canisters' modules for Chainsight.
 pub struct BuildOpts {
     #[arg(long)]
     path: Option<String>,
