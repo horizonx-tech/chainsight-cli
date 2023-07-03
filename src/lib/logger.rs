@@ -1,4 +1,4 @@
-use slog::{Logger, Level, Drain};
+use slog::{Drain, Level, Logger};
 
 pub fn create_root_logger(verbose_level: i64) -> Logger {
     let log_level = match verbose_level {

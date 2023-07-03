@@ -1,5 +1,5 @@
-use std::{collections::HashMap, vec};
 use lazy_static::lazy_static;
+use std::{collections::HashMap, vec};
 
 use anyhow::bail;
 use ethabi::{param_type::Reader, ParamType};
@@ -43,15 +43,13 @@ pub struct ContractMethodIdentifier {
 }
 impl ContractMethodIdentifier {
     pub fn parse_from_str(s: &str) -> anyhow::Result<Self> {
-        let re = Regex::new(r"(?P<identifier>\w+)\((?P<params>[^)]*)\)(?::\((?P<return>[^)]*)\))?")?;
+        let re =
+            Regex::new(r"(?P<identifier>\w+)\((?P<params>[^)]*)\)(?::\((?P<return>[^)]*)\))?")?;
         let captures = re.captures(s).unwrap();
 
         let identifier = captures.name("identifier").unwrap().as_str().to_string();
 
-        let params_str = captures
-            .name("params")
-            .unwrap()
-            .as_str();
+        let params_str = captures.name("params").unwrap().as_str();
         let params_result: anyhow::Result<Vec<String>> = if params_str.is_empty() {
             Ok(vec![])
         } else {
@@ -67,7 +65,10 @@ impl ContractMethodIdentifier {
             Ok(vec![])
         } else {
             let return_value_str = return_value_capture.unwrap().as_str();
-            return_value_str.split(',').map(|s| convert_type_from_abi_type(s.trim())).collect::<anyhow::Result<Vec<String>>>()
+            return_value_str
+                .split(',')
+                .map(|s| convert_type_from_abi_type(s.trim()))
+                .collect::<anyhow::Result<Vec<String>>>()
         };
         let return_value = return_value_result?;
 
@@ -90,7 +91,7 @@ pub struct CanisterMethodIdentifier {
 pub enum CanisterMethodValueType {
     Scalar(String),
     Tuple(Vec<String>),
-    Struct(Vec<(String, String)>) // temp: Only non-nested `record` are supported.
+    Struct(Vec<(String, String)>), // temp: Only non-nested `record` are supported.
 }
 impl CanisterMethodIdentifier {
     pub fn parse_from_str(s: &str) -> anyhow::Result<Self> {
@@ -98,10 +99,7 @@ impl CanisterMethodIdentifier {
 
         let identifier = captures.name("identifier").unwrap().as_str().to_string();
 
-        let params_str = captures
-            .name("params")
-            .unwrap()
-            .as_str();
+        let params_str = captures.name("params").unwrap().as_str();
         let params_result: anyhow::Result<Vec<String>> = if params_str.is_empty() {
             Ok(vec![])
         } else {
@@ -134,7 +132,10 @@ impl CanisterMethodIdentifier {
         if captures.is_some() {
             let captures = captures.unwrap();
             let items = captures.name("items").unwrap().as_str();
-            let tuple_result: anyhow::Result<Vec<String>> = items.split(';').map(|s| convert_type_from_candid_type(s.trim())).collect();
+            let tuple_result: anyhow::Result<Vec<String>> = items
+                .split(';')
+                .map(|s| convert_type_from_candid_type(s.trim()))
+                .collect();
             let tuple = tuple_result?;
             return Ok(CanisterMethodValueType::Tuple(tuple));
         }
@@ -161,7 +162,7 @@ pub fn convert_type_from_abi_type(s: &str) -> anyhow::Result<String> {
 
 pub fn convert_type_from_ethabi_param_type(param: ethabi::ParamType) -> anyhow::Result<String> {
     let err_msg = "ic_solidity_bindgen::internal::Unimplemented".to_string(); // temp
-    // ref: https://github.com/horizonx-tech/ic-solidity-bindgen/blob/6c9ffb4354cee4c32b1df17a2210c90f16972c21/ic-solidity-bindgen-macros/src/abi_gen.rs#L124
+                                                                              // ref: https://github.com/horizonx-tech/ic-solidity-bindgen/blob/6c9ffb4354cee4c32b1df17a2210c90f16972c21/ic-solidity-bindgen-macros/src/abi_gen.rs#L124
     let ty_str = match param {
         ParamType::Address => ADDRESS_TYPE,
         ParamType::Bytes => "Vec<u8>",
@@ -184,17 +185,17 @@ pub fn convert_type_from_ethabi_param_type(param: ethabi::ParamType) -> anyhow::
         },
         ParamType::Bool => "bool",
         ParamType::String => "String",
-        ParamType::Array(_) => bail!(err_msg), // temp
-        ParamType::FixedBytes(_) => bail!(err_msg), // temp
+        ParamType::Array(_) => bail!(err_msg),         // temp
+        ParamType::FixedBytes(_) => bail!(err_msg),    // temp
         ParamType::FixedArray(_, _) => bail!(err_msg), // temp
-        ParamType::Tuple(_) => bail!(err_msg), // temp
+        ParamType::Tuple(_) => bail!(err_msg),         // temp
     };
     Ok(ty_str.to_string())
 }
 
 pub fn convert_type_from_candid_type(s: &str) -> anyhow::Result<String> {
     let err_msg = "not supported candid type".to_string(); // temp
-    // ref: https://internetcomputer.org/docs/current/references/candid-ref
+                                                           // ref: https://internetcomputer.org/docs/current/references/candid-ref
     let ty_str = MAPPING_CANDID_TY.get(s.clone());
     if ty_str.is_none() {
         bail!(err_msg);
@@ -205,7 +206,7 @@ pub fn convert_type_from_candid_type(s: &str) -> anyhow::Result<String> {
 pub enum OutsideCallIdentsType {
     Eth,
     CrossCanisterCall,
-    All
+    All,
 }
 /// Generate common identifiers such as storage, setter, etc. for outside calls
 pub fn generate_outside_call_idents(type_: OutsideCallIdentsType) -> proc_macro2::TokenStream {
@@ -228,7 +229,7 @@ pub fn generate_outside_call_idents(type_: OutsideCallIdentsType) -> proc_macro2
                     web3_ctx_param: Web3CtxParam
                 });
             }
-        },
+        }
         OutsideCallIdentsType::CrossCanisterCall => {
             quote! {
                 #cross_canister_call_idents
@@ -237,7 +238,7 @@ pub fn generate_outside_call_idents(type_: OutsideCallIdentsType) -> proc_macro2
                     target_canister: String
                 });
             }
-        },
+        }
         OutsideCallIdentsType::All => {
             quote! {
                 #eth_idents
@@ -254,52 +255,48 @@ pub fn generate_outside_call_idents(type_: OutsideCallIdentsType) -> proc_macro2
 }
 
 // Generate the part of data of the argument that calls the function of datasource contract/canister
-pub fn generate_request_arg_idents(method_args: &Vec<(String, serde_yaml::Value)>) -> (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::Ident>) {
+pub fn generate_request_arg_idents(
+    method_args: &Vec<(String, serde_yaml::Value)>,
+) -> (Vec<proc_macro2::TokenStream>, Vec<proc_macro2::Ident>) {
     let mut value_idents = vec![];
     let mut type_idents = vec![];
     for method_arg in method_args {
         let (type_, value) = method_arg;
         // temp
         let request_arg_value = match type_.clone().as_str() {
-            U256_TYPE => {
-                match value {
-                    serde_yaml::Value::String(val) => quote! { ic_web3_rs::types::U256::from_dec_str(#val).unwrap() },
-                    serde_yaml::Value::Number(val) => {
-                        match val.as_u64() {
-                            Some(val) => quote! { #val.into() },
-                            None => quote! {}
-                        }
-                    },
-                    _ => quote! {}
+            U256_TYPE => match value {
+                serde_yaml::Value::String(val) => {
+                    quote! { ic_web3_rs::types::U256::from_dec_str(#val).unwrap() }
                 }
-            }
-            ADDRESS_TYPE => {
-                match value {
-                    serde_yaml::Value::String(val) => quote! { ic_web3_rs::types::Address::from_str(#val).unwrap() },
-                    _ => quote! {}
-                }
+                serde_yaml::Value::Number(val) => match val.as_u64() {
+                    Some(val) => quote! { #val.into() },
+                    None => quote! {},
+                },
+                _ => quote! {},
             },
-            _ => {
-                match value {
-                    serde_yaml::Value::String(val) => {
-                        quote! { #val, }
-                    },
-                    serde_yaml::Value::Number(val) => {
-                        match val.as_u64() {
-                            Some(val) => {
-                                let type_ident = format_ident!("{}", type_);
-                                quote! { #val as #type_ident }
-                            },
-                            None => {
-                                quote! {}
-                            }
-                        }
-                    },
-                    _ => {
+            ADDRESS_TYPE => match value {
+                serde_yaml::Value::String(val) => {
+                    quote! { ic_web3_rs::types::Address::from_str(#val).unwrap() }
+                }
+                _ => quote! {},
+            },
+            _ => match value {
+                serde_yaml::Value::String(val) => {
+                    quote! { #val, }
+                }
+                serde_yaml::Value::Number(val) => match val.as_u64() {
+                    Some(val) => {
+                        let type_ident = format_ident!("{}", type_);
+                        quote! { #val as #type_ident }
+                    }
+                    None => {
                         quote! {}
                     }
+                },
+                _ => {
+                    quote! {}
                 }
-            }
+            },
         };
         value_idents.push(request_arg_value);
         if type_ == U256_TYPE || type_ == ADDRESS_TYPE {
@@ -308,7 +305,7 @@ pub fn generate_request_arg_idents(method_args: &Vec<(String, serde_yaml::Value)
         } else {
             type_idents.push(format_ident!("{}", type_));
         }
-    };
+    }
     (value_idents, type_idents)
 }
 
@@ -382,7 +379,8 @@ mod tests {
             }
         );
         assert_eq!(
-            ContractMethodIdentifier::parse_from_str("getPool(address,address,uint24):(address)").unwrap(),
+            ContractMethodIdentifier::parse_from_str("getPool(address,address,uint24):(address)")
+                .unwrap(),
             ContractMethodIdentifier {
                 identifier: "getPool".to_string(),
                 params: vec![
@@ -422,7 +420,10 @@ mod tests {
             }
         );
         assert_eq!(
-            CanisterMethodIdentifier::parse_from_str("get_price : (bool) -> (record { nat32; nat64 })").unwrap(),
+            CanisterMethodIdentifier::parse_from_str(
+                "get_price : (bool) -> (record { nat32; nat64 })"
+            )
+            .unwrap(),
             CanisterMethodIdentifier {
                 identifier: "get_price".to_string(),
                 params: vec!["bool".to_string()],
@@ -433,7 +434,10 @@ mod tests {
             }
         );
         assert_eq!(
-            CanisterMethodIdentifier::parse_from_str("get_snapshot_with_ts : (nat64) -> (record { value : text; timestamp : nat64 })").unwrap(),
+            CanisterMethodIdentifier::parse_from_str(
+                "get_snapshot_with_ts : (nat64) -> (record { value : text; timestamp : nat64 })"
+            )
+            .unwrap(),
             CanisterMethodIdentifier {
                 identifier: "get_snapshot_with_ts".to_string(),
                 params: vec!["u64".to_string()],

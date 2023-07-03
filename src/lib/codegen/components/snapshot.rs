@@ -1,11 +1,14 @@
-use std::{fs::OpenOptions, path::Path, io::Read};
+use std::{fs::OpenOptions, io::Read, path::Path};
 
 use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 
-use crate::{types::{ComponentType, Network}, lib::codegen::{canisters, scripts}};
+use crate::{
+    lib::codegen::{canisters, scripts},
+    types::{ComponentType, Network},
+};
 
-use super::common::{Datasource, ComponentManifest, DestinactionType};
+use super::common::{ComponentManifest, Datasource, DestinactionType};
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct SnapshotComponentManifest {
@@ -15,11 +18,17 @@ pub struct SnapshotComponentManifest {
     pub label: String,
     pub datasource: Datasource,
     pub storage: SnapshotStorage,
-    pub interval: u32
+    pub interval: u32,
 }
 
 impl SnapshotComponentManifest {
-    pub fn new(component_label: &str, version: &str, datasource: Datasource, storage: SnapshotStorage, interval: u32) -> Self {
+    pub fn new(
+        component_label: &str,
+        version: &str,
+        datasource: Datasource,
+        storage: SnapshotStorage,
+        interval: u32,
+    ) -> Self {
         Self {
             version: version.to_owned(),
             type_: ComponentType::Snapshot,
@@ -32,9 +41,7 @@ impl SnapshotComponentManifest {
 }
 impl ComponentManifest for SnapshotComponentManifest {
     fn load(path: &str) -> anyhow::Result<Self> {
-        let mut file = OpenOptions::new()
-            .read(true)
-            .open(&Path::new(path))?;
+        let mut file = OpenOptions::new().read(true).open(&Path::new(path))?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
         let data: Self = serde_yaml::from_str(&contents)?;
@@ -50,7 +57,10 @@ impl ComponentManifest for SnapshotComponentManifest {
         canisters::snapshot::validate_manifest(self)
     }
 
-    fn generate_codes(&self, _interface_contract: Option<ethabi::Contract>) -> anyhow::Result<TokenStream> {
+    fn generate_codes(
+        &self,
+        _interface_contract: Option<ethabi::Contract>,
+    ) -> anyhow::Result<TokenStream> {
         canisters::snapshot::generate_codes(self)
     }
 
@@ -81,9 +91,7 @@ pub struct SnapshotStorage {
 }
 impl SnapshotStorage {
     pub fn new(with_timestamp: bool) -> Self {
-        Self {
-            with_timestamp,
-        }
+        Self { with_timestamp }
     }
 }
 impl Default for SnapshotStorage {
@@ -94,7 +102,9 @@ impl Default for SnapshotStorage {
 
 #[cfg(test)]
 mod tests {
-    use crate::lib::codegen::components::common::{DatasourceMethod, DatasourceType, DatasourceLocation, CanisterIdType};
+    use crate::lib::codegen::components::common::{
+        CanisterIdType, DatasourceLocation, DatasourceMethod, DatasourceType,
+    };
 
     use super::*;
 
@@ -187,7 +197,9 @@ interval: 3600
                         CanisterIdType::CanisterName
                     ),
                     method: DatasourceMethod {
-                        identifier: "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })".to_owned(),
+                        identifier:
+                            "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"
+                                .to_owned(),
                         interface: None,
                         args: vec![]
                     }

@@ -6,7 +6,7 @@ impl EnvironmentImpl {
     pub fn new() -> Self {
         Self { logger: None }
     }
-    
+
     pub fn with_logger(mut self, logger: slog::Logger) -> Self {
         self.logger = Some(logger);
         self

@@ -1,16 +1,16 @@
-use clap::{Subcommand};
+use clap::Subcommand;
 
 use crate::lib::environment::EnvironmentImpl;
 
-mod config;
 mod auth;
-mod new;
-mod create;
 mod build;
-mod test;
+mod config;
+mod create;
 mod deploy;
 mod exec;
+mod new;
 mod remove;
+mod test;
 mod upgrade;
 
 #[derive(Debug, Subcommand)]
@@ -24,7 +24,7 @@ pub enum Command {
     Deploy(deploy::DeployOpts),
     Exec(exec::ExecOpts),
     Remove(remove::RemoveOpts),
-    Upgrade(upgrade::UpgradeOpts)
+    Upgrade(upgrade::UpgradeOpts),
 }
 
 pub fn exec(env: &EnvironmentImpl, cmd: Command) -> anyhow::Result<()> {
@@ -32,11 +32,11 @@ pub fn exec(env: &EnvironmentImpl, cmd: Command) -> anyhow::Result<()> {
         Command::Config(_) => {
             println!("Config");
             Ok(())
-        },
+        }
         Command::Auth(_) => {
             println!("Auth");
             Ok(())
-        },
+        }
         Command::New(opts) => new::exec(env, opts),
         Command::Create(opts) => create::exec(env, opts),
         Command::Build(opts) => build::exec(env, opts),

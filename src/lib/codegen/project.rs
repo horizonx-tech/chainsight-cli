@@ -1,4 +1,4 @@
-use std::{fs::OpenOptions, path::Path, io::{Read}};
+use std::{fs::OpenOptions, io::Read, path::Path};
 
 use serde::{Deserialize, Serialize};
 
@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 pub struct ProjectManifestData {
     pub version: String,
     pub label: String,
-    pub components: Vec<ProjectManifestComponentField>
+    pub components: Vec<ProjectManifestComponentField>,
 }
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct ProjectManifestComponentField {
@@ -15,7 +15,11 @@ pub struct ProjectManifestComponentField {
 }
 
 impl ProjectManifestData {
-    pub fn new(project_name: &str, version: &str, components: &[ProjectManifestComponentField]) -> Self {
+    pub fn new(
+        project_name: &str,
+        version: &str,
+        components: &[ProjectManifestComponentField],
+    ) -> Self {
         Self {
             version: version.to_owned(),
             label: project_name.to_owned(),
@@ -23,9 +27,7 @@ impl ProjectManifestData {
         }
     }
     pub fn load(path: &str) -> anyhow::Result<Self> {
-        let mut file = OpenOptions::new()
-            .read(true)
-            .open(&Path::new(path))?;
+        let mut file = OpenOptions::new().read(true).open(&Path::new(path))?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
         let data: Self = serde_yaml::from_str(&contents)?;
@@ -37,7 +39,10 @@ impl ProjectManifestData {
         Ok(yaml)
     }
 
-    pub fn add_components(&mut self, components: &[ProjectManifestComponentField]) -> anyhow::Result<()> {
+    pub fn add_components(
+        &mut self,
+        components: &[ProjectManifestComponentField],
+    ) -> anyhow::Result<()> {
         for component in components {
             self.components.push(component.clone());
         }

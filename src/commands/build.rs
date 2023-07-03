@@ -1,19 +1,26 @@
+use std::fmt::Debug;
 use std::fs::File;
 use std::io::Write;
 use std::process::Command;
-use std::{path::Path, fs};
-use std::fmt::Debug;
+use std::{fs, path::Path};
 
-use anyhow::{Ok, bail};
+use anyhow::{bail, Ok};
 use clap::Parser;
-use slog::{info, error, debug, Logger};
+use slog::{debug, error, info, Logger};
 
 use crate::lib::codegen::components::common::{ComponentManifest, ComponentTypeInManifest};
 use crate::lib::codegen::components::event_indexer::EventIndexerComponentManifest;
 use crate::lib::codegen::components::relayer::RelayerComponentManifest;
 use crate::lib::codegen::components::snapshot::SnapshotComponentManifest;
 use crate::lib::codegen::oracle::get_oracle_attributes;
-use crate::{lib::{environment::EnvironmentImpl, utils::{is_chainsight_project, PROJECT_MANIFEST_FILENAME}, codegen::{project::ProjectManifestData}}, types::ComponentType};
+use crate::{
+    lib::{
+        codegen::project::ProjectManifestData,
+        environment::EnvironmentImpl,
+        utils::{is_chainsight_project, PROJECT_MANIFEST_FILENAME},
+    },
+    types::ComponentType,
+};
 
 #[derive(Debug, Parser)]
 #[command(name = "build")]
@@ -34,24 +41,20 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
     let project_path = opts.path;
 
     if let Err(msg) = is_chainsight_project(project_path.clone()) {
-        error!(
-            log,
-            r#"{}"#,
-            msg
-        );
+        error!(log, r#"{}"#, msg);
         bail!(GLOBAL_ERROR_MSG.to_string())
     }
 
-    info!(
-        log,
-        r#"Building project..."#
-    );
+    info!(log, r#"Building project..."#);
 
     let project_path_str = project_path.unwrap_or(".".to_string());
     let artifacts_path_str = format!("{}/artifacts", &project_path_str);
 
     // load component definitions from manifests
-    let project_manifest = ProjectManifestData::load(&format!("{}/{}", &project_path_str, PROJECT_MANIFEST_FILENAME))?;
+    let project_manifest = ProjectManifestData::load(&format!(
+        "{}/{}",
+        &project_path_str, PROJECT_MANIFEST_FILENAME
+    ))?;
     let mut component_data = vec![];
     for component in project_manifest.components.clone() {
         // TODO: need validations
@@ -60,12 +63,14 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
         let component_type = ComponentTypeInManifest::determine_type(&component_path)?;
 
         let data: Box<dyn ComponentManifest> = match component_type {
-            ComponentType::EventIndexer => Box::new(EventIndexerComponentManifest::load(&component_path)?),
+            ComponentType::EventIndexer => {
+                Box::new(EventIndexerComponentManifest::load(&component_path)?)
+            }
             ComponentType::Snapshot => Box::new(SnapshotComponentManifest::load(&component_path)?),
             ComponentType::Relayer => Box::new(RelayerComponentManifest::load(&component_path)?),
         };
         component_data.push(data);
-    };
+    }
 
     if opts.only_build {
         info!(log, r#"Skip codegen"#);
@@ -85,19 +90,22 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
 
     info!(
         log,
-        r#"Project "{}" codes/resources generated successfully"#,
-        project_manifest.label
+        r#"Project "{}" codes/resources generated successfully"#, project_manifest.label
     );
 
     info!(
         log,
-        r#"Project "{}" builded successfully"#,
-        project_manifest.label
+        r#"Project "{}" builded successfully"#, project_manifest.label
     );
     Ok(())
 }
 
-fn exec_codegen(log: &Logger, project_path_str: &str, artifacts_path_str: &str, component_data: &Vec<Box<dyn ComponentManifest>>) -> anyhow::Result<()> {
+fn exec_codegen(
+    log: &Logger,
+    project_path_str: &str,
+    artifacts_path_str: &str,
+    component_data: &Vec<Box<dyn ComponentManifest>>,
+) -> anyhow::Result<()> {
     // generate /artifacts
     let artifacts_path = Path::new(&artifacts_path_str);
     if artifacts_path.exists() {
@@ -125,14 +133,14 @@ fn exec_codegen(log: &Logger, project_path_str: &str, artifacts_path_str: &str, 
             let dst_interface_path_str = format!("{}/{}", &interfaces_path_str, &interface_file);
             let dst_interface_path = Path::new(&dst_interface_path_str);
 
-            let user_if_file_path_str = format!("{}/interfaces/{}", &project_path_str, &interface_file);
+            let user_if_file_path_str =
+                format!("{}/interfaces/{}", &project_path_str, &interface_file);
             let user_if_file_path = Path::new(&user_if_file_path_str);
             if user_if_file_path.exists() {
                 fs::copy(&user_if_file_path, dst_interface_path)?;
                 info!(
                     log,
-                    r#"Interface file "{}" copied by user's interface"#,
-                    &interface_file
+                    r#"Interface file "{}" copied by user's interface"#, &interface_file
                 );
                 let abi_file = File::open(&user_if_file_path)?;
                 interface_contract = Some(ethabi::Contract::load(abi_file)?);
@@ -140,17 +148,12 @@ fn exec_codegen(log: &Logger, project_path_str: &str, artifacts_path_str: &str, 
                 fs::write(&dst_interface_path, contents)?;
                 info!(
                     log,
-                    r#"Interface file "{}" copied by builtin interface"#,
-                    &interface_file
+                    r#"Interface file "{}" copied by builtin interface"#, &interface_file
                 );
                 let contract: ethabi::Contract = serde_json::from_str(contents)?;
                 interface_contract = Some(contract);
             } else {
-                error!(
-                    log,
-                    r#"Interface file "{}" not found"#,
-                    &interface_file
-                );
+                error!(log, r#"Interface file "{}" not found"#, &interface_file);
                 bail!(GLOBAL_ERROR_MSG.to_string())
             }
         }
@@ -162,12 +165,16 @@ fn exec_codegen(log: &Logger, project_path_str: &str, artifacts_path_str: &str, 
         fs::create_dir_all(Path::new(&canister_code_path_str))?;
         let lib_path_str = format!("{}/lib.rs", &canister_code_path_str);
         let mut lib_file = File::create(&lib_path_str)?;
-        lib_file.write_all(data.generate_codes(interface_contract)?.to_string().as_bytes())?;
+        lib_file.write_all(
+            data.generate_codes(interface_contract)?
+                .to_string()
+                .as_bytes(),
+        )?;
 
         // generate project's Cargo.toml
         fs::write(
             format!("{}/Cargo.toml", &canister_pj_path_str),
-            &canister_project_cargo_toml(label)
+            &canister_project_cargo_toml(label),
         )?;
 
         // copy and move oracle interface
@@ -175,33 +182,36 @@ fn exec_codegen(log: &Logger, project_path_str: &str, artifacts_path_str: &str, 
             let (_, json_name, json_contents) = get_oracle_attributes(&value);
             fs::write(
                 format!("{}/{}", &interfaces_path_str, &json_name),
-                json_contents
+                json_contents,
             )?;
             info!(
                 log,
-                r#"Interface file "{}" copied by builtin interface"#,
-                &json_name
+                r#"Interface file "{}" copied by builtin interface"#, &json_name
             );
         }
     }
     fs::write(
         format!("{}/Cargo.toml", &artifacts_path_str),
-        &root_cargo_toml(project_labels.clone())
+        &root_cargo_toml(project_labels.clone()),
     )?;
     fs::write(
         format!("{}/dfx.json", &artifacts_path_str),
-        &dfx_json(project_labels)
+        &dfx_json(project_labels),
     )?;
     fs::write(
         format!("{}/Makefile.toml", &artifacts_path_str),
-        &makefile_toml()
+        &makefile_toml(),
     )?;
 
     anyhow::Ok(())
 }
 
 fn root_cargo_toml(members: Vec<String>) -> String {
-    let members = members.iter().map(|member| format!("\t\"{}\",", member)).collect::<Vec<String>>().join("\n");
+    let members = members
+        .iter()
+        .map(|member| format!("\t\"{}\",", member))
+        .collect::<Vec<String>>()
+        .join("\n");
 
     let txt = format!("[workspace]
 members = [
@@ -225,7 +235,8 @@ chainsight-cdk = {{ git = \"https://github.com/horizonx-tech/chainsight-sdk.git\
 }
 
 fn canister_project_cargo_toml(project_name: &str) -> String {
-    let txt = format!("[package]
+    let txt = format!(
+        "[package]
 name = \"{}\"
 version = \"0.1.0\"
 edition = \"2021\"
@@ -244,13 +255,19 @@ hex.workspace = true
 ic-web3-rs.workspace = true
 ic-solidity-bindgen.workspace = true
 chainsight-cdk-macros.workspace = true
-chainsight-cdk.workspace = true", project_name);
+chainsight-cdk.workspace = true",
+        project_name
+    );
 
     txt
 }
 
 fn dfx_json(project_labels: Vec<String>) -> String {
-    let canisters = project_labels.iter().map(|label| format!("\t\t\t\"{}\": {{
+    let canisters = project_labels
+        .iter()
+        .map(|label| {
+            format!(
+                "\t\t\t\"{}\": {{
 \t\t\t\t\"type\": \"custom\",
 \t\t\t\t\"candid\": \"artifacts/{}.did\",
 \t\t\t\t\"wasm\": \"artifacts/{}.wasm\",
@@ -260,9 +277,15 @@ fn dfx_json(project_labels: Vec<String>) -> String {
 \t\t\t\t\t\t\"visibility\": \"public\"
 \t\t\t\t\t}}
 \t\t\t\t]
-\t\t\t}}", label, label, label)).collect::<Vec<String>>().join(",\n");
+\t\t\t}}",
+                label, label, label
+            )
+        })
+        .collect::<Vec<String>>()
+        .join(",\n");
 
-    let result = format!(r#"{{
+    let result = format!(
+        r#"{{
     "version": 1,
     "canisters": {{
 {}
@@ -274,7 +297,9 @@ fn dfx_json(project_labels: Vec<String>) -> String {
         }}
     }},
     "output_env_file": ".env"
-}}"#, canisters);
+}}"#,
+        canisters
+    );
 
     result
 }
@@ -305,7 +330,11 @@ fn buildin_interface(name: &str) -> Option<&'static str> {
     Some(interface)
 }
 
-fn execute_codebuild(log: &Logger, builded_project_path_str: &str, component_data: &Vec<Box<dyn ComponentManifest>>) -> anyhow::Result<()> {
+fn execute_codebuild(
+    log: &Logger,
+    builded_project_path_str: &str,
+    component_data: &Vec<Box<dyn ComponentManifest>>,
+) -> anyhow::Result<()> {
     let builded_project_path = Path::new(&builded_project_path_str);
 
     let description = "Generate interfaces (.did files)";
@@ -316,7 +345,11 @@ fn execute_codebuild(log: &Logger, builded_project_path_str: &str, component_dat
         .output()
         .expect("failed to execute process: cargo make did");
     if output.status.success() {
-        debug!(log, "{}", std::str::from_utf8(&output.stdout).unwrap_or(&"fail to parse stdout"));
+        debug!(
+            log,
+            "{}",
+            std::str::from_utf8(&output.stdout).unwrap_or(&"fail to parse stdout")
+        );
         info!(log, "{} successfully", description);
     } else {
         error!(log, "{} failed", description);
@@ -342,11 +375,23 @@ fn execute_codebuild(log: &Logger, builded_project_path_str: &str, component_dat
     info!(log, "{}", description);
     let output = Command::new("cargo")
         .current_dir(&builded_project_path)
-        .args(["build", "--target", "wasm32-unknown-unknown", "--release", "--workspace"])
+        .args([
+            "build",
+            "--target",
+            "wasm32-unknown-unknown",
+            "--release",
+            "--workspace",
+        ])
         .output()
-        .expect("failed to execute process: cargo build --target wasm32-unknown-unknown --workspace");
+        .expect(
+            "failed to execute process: cargo build --target wasm32-unknown-unknown --workspace",
+        );
     if output.status.success() {
-        debug!(log, "{}", std::str::from_utf8(&output.stdout).unwrap_or(&"fail to parse stdout"));
+        debug!(
+            log,
+            "{}",
+            std::str::from_utf8(&output.stdout).unwrap_or(&"fail to parse stdout")
+        );
         info!(log, "{} successfully", description);
     } else {
         error!(log, "{} failed", description);
@@ -365,10 +410,18 @@ fn execute_codebuild(log: &Logger, builded_project_path_str: &str, component_dat
             .output()
             .expect("failed to execute process: ic_wasm shrink");
         if output.status.success() {
-            debug!(log, "{}", std::str::from_utf8(&output.stdout).unwrap_or(&"fail to parse stdout"));
+            debug!(
+                log,
+                "{}",
+                std::str::from_utf8(&output.stdout).unwrap_or(&"fail to parse stdout")
+            );
             info!(log, "{} `{}` successfully", label, description);
         } else {
-            debug!(log, "{}", std::str::from_utf8(&output.stderr).unwrap_or(&"fail to parse stdout"));
+            debug!(
+                log,
+                "{}",
+                std::str::from_utf8(&output.stderr).unwrap_or(&"fail to parse stdout")
+            );
             error!(log, "{} `{}` failed", label, description);
             bail!(GLOBAL_ERROR_MSG.to_string())
         }
@@ -383,7 +436,11 @@ fn execute_codebuild(log: &Logger, builded_project_path_str: &str, component_dat
     anyhow::Ok(())
 }
 
-fn add_metadatas_to_wasm(log: &Logger, builded_project_path_str: &str, component_datum: &Box<dyn ComponentManifest>) -> anyhow::Result<()> {
+fn add_metadatas_to_wasm(
+    log: &Logger,
+    builded_project_path_str: &str,
+    component_datum: &Box<dyn ComponentManifest>,
+) -> anyhow::Result<()> {
     let builded_project_path = Path::new(&builded_project_path_str);
 
     let label = component_datum.label();
@@ -393,14 +450,32 @@ fn add_metadatas_to_wasm(log: &Logger, builded_project_path_str: &str, component
     let description = "Add 'chainsight:label' metadata";
     let output = Command::new("ic-wasm")
         .current_dir(&builded_project_path)
-        .args([&wasm_path, "-o", &wasm_path, "metadata", "chainsight:label", "-d", &label, "-v", "public"])
+        .args([
+            &wasm_path,
+            "-o",
+            &wasm_path,
+            "metadata",
+            "chainsight:label",
+            "-d",
+            &label,
+            "-v",
+            "public",
+        ])
         .output()
         .expect("failed to execute process: ic-wasm metadata chainsight:label");
     if output.status.success() {
-        debug!(log, "{}", std::str::from_utf8(&output.stdout).unwrap_or(&"fail to parse stdout"));
+        debug!(
+            log,
+            "{}",
+            std::str::from_utf8(&output.stdout).unwrap_or(&"fail to parse stdout")
+        );
         info!(log, "{} `{}` successfully", label, description);
     } else {
-        debug!(log, "{}", std::str::from_utf8(&output.stderr).unwrap_or(&"fail to parse stdout"));
+        debug!(
+            log,
+            "{}",
+            std::str::from_utf8(&output.stderr).unwrap_or(&"fail to parse stdout")
+        );
         error!(log, "{} `{}` failed", label, description);
         bail!(GLOBAL_ERROR_MSG.to_string())
     }
@@ -408,14 +483,32 @@ fn add_metadatas_to_wasm(log: &Logger, builded_project_path_str: &str, component
     let description = "Add 'chainsight:component_type' metadata";
     let output = Command::new("ic-wasm")
         .current_dir(&builded_project_path)
-        .args([&wasm_path, "-o", &wasm_path, "metadata", "chainsight:component_type", "-d", &component_datum.component_type().to_string(), "-v", "public"])
+        .args([
+            &wasm_path,
+            "-o",
+            &wasm_path,
+            "metadata",
+            "chainsight:component_type",
+            "-d",
+            &component_datum.component_type().to_string(),
+            "-v",
+            "public",
+        ])
         .output()
         .expect("failed to execute process: ic-wasm metadata chainsight:component_type");
     if output.status.success() {
-        debug!(log, "{}", std::str::from_utf8(&output.stdout).unwrap_or(&"fail to parse stdout"));
+        debug!(
+            log,
+            "{}",
+            std::str::from_utf8(&output.stdout).unwrap_or(&"fail to parse stdout")
+        );
         info!(log, "{} `{}` successfully", label, description);
     } else {
-        debug!(log, "{}", std::str::from_utf8(&output.stderr).unwrap_or(&"fail to parse stdout"));
+        debug!(
+            log,
+            "{}",
+            std::str::from_utf8(&output.stderr).unwrap_or(&"fail to parse stdout")
+        );
         error!(log, "{} `{}` failed", label, description);
         bail!(GLOBAL_ERROR_MSG.to_string())
     }

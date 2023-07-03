@@ -1,12 +1,15 @@
-use std::{fs::OpenOptions, path::Path, io::Read};
+use std::{fs::OpenOptions, io::Read, path::Path};
 
 use anyhow::Ok;
 use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 
-use crate::{types::{ComponentType, Network}, lib::codegen::{canisters, oracle::get_oracle_address, scripts}};
+use crate::{
+    lib::codegen::{canisters, oracle::get_oracle_address, scripts},
+    types::{ComponentType, Network},
+};
 
-use super::common::{Datasource, ComponentManifest, DestinactionType};
+use super::common::{ComponentManifest, Datasource, DestinactionType};
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct RelayerComponentManifest {
@@ -16,26 +19,30 @@ pub struct RelayerComponentManifest {
     pub label: String,
     pub datasource: Datasource,
     pub destination: DestinationField, // TODO: multiple destinations
-    pub interval: u32
+    pub interval: u32,
 }
 
 impl RelayerComponentManifest {
-    pub fn new(component_label: &str, version: &str, datasource: Datasource, destination: DestinationField, interval: u32) -> Self {
+    pub fn new(
+        component_label: &str,
+        version: &str,
+        datasource: Datasource,
+        destination: DestinationField,
+        interval: u32,
+    ) -> Self {
         Self {
             version: version.to_owned(),
             type_: ComponentType::Relayer,
             label: component_label.to_owned(),
             datasource,
             destination,
-            interval
+            interval,
         }
     }
 }
 impl ComponentManifest for RelayerComponentManifest {
     fn load(path: &str) -> anyhow::Result<Self> {
-        let mut file = OpenOptions::new()
-            .read(true)
-            .open(&Path::new(path))?;
+        let mut file = OpenOptions::new().read(true).open(&Path::new(path))?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
         let data: Self = serde_yaml::from_str(&contents)?;
@@ -51,14 +58,16 @@ impl ComponentManifest for RelayerComponentManifest {
         canisters::relayer::validate_manifest(self)
     }
 
-    fn generate_codes(&self, _interface_contract: Option<ethabi::Contract>) -> anyhow::Result<TokenStream> {
+    fn generate_codes(
+        &self,
+        _interface_contract: Option<ethabi::Contract>,
+    ) -> anyhow::Result<TokenStream> {
         canisters::relayer::generate_codes(self)
     }
 
     fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
         scripts::relayer::generate_scripts(self, network)
     }
-
 
     fn component_type(&self) -> ComponentType {
         ComponentType::Relayer
@@ -87,7 +96,12 @@ pub struct DestinationField {
 }
 
 impl DestinationField {
-    pub fn new(network_id: u32, destination_type: DestinactionType, oracle_address: String, rpc_url: String) -> Self {
+    pub fn new(
+        network_id: u32,
+        destination_type: DestinactionType,
+        oracle_address: String,
+        rpc_url: String,
+    ) -> Self {
         Self {
             network_id,
             type_: destination_type,
@@ -111,7 +125,9 @@ impl Default for DestinationField {
 
 #[cfg(test)]
 mod tests {
-    use crate::lib::codegen::components::common::{DatasourceType, DatasourceMethod, CanisterIdType, DatasourceLocation};
+    use crate::lib::codegen::components::common::{
+        CanisterIdType, DatasourceLocation, DatasourceMethod, DatasourceType,
+    };
 
     use super::*;
 
@@ -155,7 +171,9 @@ interval: 3600
                         CanisterIdType::CanisterName
                     ),
                     method: DatasourceMethod {
-                        identifier: "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })".to_string(),
+                        identifier:
+                            "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"
+                                .to_string(),
                         interface: None,
                         args: vec![]
                     }

@@ -1,5 +1,5 @@
-pub mod project;
-pub mod components;
 pub mod canisters;
-pub mod scripts;
+pub mod components;
 pub mod oracle;
+pub mod project;
+pub mod scripts;

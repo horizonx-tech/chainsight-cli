@@ -1,4 +1,4 @@
-use std::{fs::OpenOptions, path::Path, io::Read};
+use std::{fs::OpenOptions, io::Read, path::Path};
 
 use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
@@ -36,12 +36,12 @@ pub struct Datasource {
     #[serde(rename = "type")]
     pub type_: DatasourceType,
     pub location: DatasourceLocation,
-    pub method: DatasourceMethod
+    pub method: DatasourceMethod,
 }
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct DatasourceLocation {
     pub id: String,
-    pub args: DatasourceLocationArgs
+    pub args: DatasourceLocationArgs,
 }
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct DatasourceLocationArgs {
@@ -92,13 +92,10 @@ impl Datasource {
             "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"
         } else {
             "get_last_snapshot_value : () -> (text)"
-        }.to_string();
+        }
+        .to_string();
 
-        Self::new_canister(
-            identifier,
-            None,
-            None
-        )
+        Self::new_canister(identifier, None, None)
     }
 
     pub fn new_canister(
@@ -124,7 +121,7 @@ impl DatasourceLocation {
         Self::new_contract(
             "6b175474e89094c44da98b954eedeac495271d0f".to_string(), // DAI token
             1,
-            "https://eth-mainnet.g.alchemy.com/v2/<YOUR_KEY>".to_string()
+            "https://eth-mainnet.g.alchemy.com/v2/<YOUR_KEY>".to_string(),
         )
     }
 
@@ -135,14 +132,14 @@ impl DatasourceLocation {
                 network_id: Some(network_id),
                 rpc_url: Some(rpc_url),
                 id_type: None,
-            }
+            },
         }
     }
 
     pub fn default_canister() -> Self {
         Self::new_canister(
             "sample_pj_snapshot_chain".to_string(),
-            CanisterIdType::CanisterName
+            CanisterIdType::CanisterName,
         )
     }
 
@@ -153,17 +150,24 @@ impl DatasourceLocation {
                 network_id: None,
                 rpc_url: None,
                 id_type: Some(id_type),
-            }
+            },
         }
     }
 }
 
 /// Determine indexer type from manifest
 pub trait ComponentManifest: std::fmt::Debug {
-    fn load(path: &str) -> anyhow::Result<Self> where Self: Sized;
-    fn to_str_as_yaml(&self) -> anyhow::Result<String> where Self: Sized;
+    fn load(path: &str) -> anyhow::Result<Self>
+    where
+        Self: Sized;
+    fn to_str_as_yaml(&self) -> anyhow::Result<String>
+    where
+        Self: Sized;
     fn validate_manifest(&self) -> anyhow::Result<()>;
-    fn generate_codes(&self, interface_contract: Option<ethabi::Contract>) -> anyhow::Result<TokenStream>;
+    fn generate_codes(
+        &self,
+        interface_contract: Option<ethabi::Contract>,
+    ) -> anyhow::Result<TokenStream>;
     fn generate_scripts(&self, network: Network) -> anyhow::Result<String>;
 
     fn component_type(&self) -> ComponentType;

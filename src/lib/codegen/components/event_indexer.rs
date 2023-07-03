@@ -1,10 +1,13 @@
-use std::{fs::OpenOptions, path::Path, io::Read};
+use std::{fs::OpenOptions, io::Read, path::Path};
 
 use anyhow::bail;
 use proc_macro2::TokenStream;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-use crate::{types::{ComponentType, Network}, lib::codegen::canisters};
+use crate::{
+    lib::codegen::canisters,
+    types::{ComponentType, Network},
+};
 
 use super::common::ComponentManifest;
 
@@ -15,11 +18,16 @@ pub struct EventIndexerComponentManifest {
     pub type_: ComponentType,
     pub label: String,
     pub datasource: EventIndexerDatasource,
-    pub interval: u32
+    pub interval: u32,
 }
 
 impl EventIndexerComponentManifest {
-    pub fn new(component_label: &str, version: &str, datasource: EventIndexerDatasource, interval: u32) -> Self {
+    pub fn new(
+        component_label: &str,
+        version: &str,
+        datasource: EventIndexerDatasource,
+        interval: u32,
+    ) -> Self {
         Self {
             version: version.to_owned(),
             type_: ComponentType::EventIndexer,
@@ -31,9 +39,7 @@ impl EventIndexerComponentManifest {
 }
 impl ComponentManifest for EventIndexerComponentManifest {
     fn load(path: &str) -> anyhow::Result<Self> {
-        let mut file = OpenOptions::new()
-            .read(true)
-            .open(&Path::new(path))?;
+        let mut file = OpenOptions::new().read(true).open(&Path::new(path))?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
         let data: Self = serde_yaml::from_str(&contents)?;
@@ -49,8 +55,12 @@ impl ComponentManifest for EventIndexerComponentManifest {
         canisters::event_indexer::validate_manifest(self)
     }
 
-    fn generate_codes(&self, interface_contract: Option<ethabi::Contract>) -> anyhow::Result<TokenStream> {
-        let interface_contract = interface_contract.ok_or_else(|| anyhow::anyhow!("interface contract is not found"))?;
+    fn generate_codes(
+        &self,
+        interface_contract: Option<ethabi::Contract>,
+    ) -> anyhow::Result<TokenStream> {
+        let interface_contract =
+            interface_contract.ok_or_else(|| anyhow::anyhow!("interface contract is not found"))?;
         canisters::event_indexer::generate_codes(self, interface_contract)
     }
 
@@ -75,17 +85,16 @@ impl ComponentManifest for EventIndexerComponentManifest {
     }
 }
 
-
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct EventIndexerDatasource {
     // pub id: String, // NOTE: Currently not in use
-    pub event: EventIndexerEventDefinition
+    pub event: EventIndexerEventDefinition,
 }
 impl EventIndexerDatasource {
     pub fn new(_id: String, event: EventIndexerEventDefinition) -> Self {
         Self {
             // id,
-            event
+            event,
         }
     }
 
@@ -95,7 +104,7 @@ impl EventIndexerDatasource {
             event: EventIndexerEventDefinition::new(
                 "Transfer".to_string(),
                 Some("ERC20.json".to_string()),
-            )
+            ),
         }
     }
 }
@@ -108,7 +117,7 @@ impl EventIndexerEventDefinition {
     pub fn new(identifier: String, interface: Option<String>) -> Self {
         Self {
             identifier,
-            interface
+            interface,
         }
     }
 }

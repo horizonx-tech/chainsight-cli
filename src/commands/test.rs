@@ -1,7 +1,7 @@
 use clap::Parser;
 use slog::info;
 
-use crate::lib::{environment::EnvironmentImpl};
+use crate::lib::environment::EnvironmentImpl;
 
 #[derive(Debug, Parser)]
 #[command(name = "test")]
@@ -13,10 +13,7 @@ const _GLOBAL_ERROR_MSG: &str = "Fail 'Test' command";
 pub fn exec(env: &EnvironmentImpl, _opts: TestOpts) -> anyhow::Result<()> {
     let log = env.get_logger();
 
-    info!(
-        log,
-        r#"Testing successfully"#,
-    );
+    info!(log, r#"Testing successfully"#,);
 
     Ok(())
 }

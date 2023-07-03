@@ -1,7 +1,20 @@
-use anyhow::{ensure, bail};
-use quote::{quote, format_ident};
+use anyhow::{bail, ensure};
+use quote::{format_ident, quote};
 
-use crate::{types::ComponentType, lib::{utils::{convert_camel_to_snake, U256_TYPE, ADDRESS_TYPE}, codegen::{components::{snapshot::SnapshotComponentManifest, common::DatasourceType}, canisters::common::{generate_request_arg_idents, generate_outside_call_idents, OutsideCallIdentsType, CanisterMethodIdentifier, ContractMethodIdentifier, CanisterMethodValueType}}}};
+use crate::{
+    lib::{
+        codegen::{
+            canisters::common::{
+                generate_outside_call_idents, generate_request_arg_idents,
+                CanisterMethodIdentifier, CanisterMethodValueType, ContractMethodIdentifier,
+                OutsideCallIdentsType,
+            },
+            components::{common::DatasourceType, snapshot::SnapshotComponentManifest},
+        },
+        utils::{convert_camel_to_snake, ADDRESS_TYPE, U256_TYPE},
+    },
+    types::ComponentType,
+};
 
 fn common_codes_for_contract() -> proc_macro2::TokenStream {
     let outside_call_idents = generate_outside_call_idents(OutsideCallIdentsType::Eth);
@@ -20,22 +33,32 @@ fn common_codes_for_contract() -> proc_macro2::TokenStream {
     }
 }
 
-fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> anyhow::Result<proc_macro2::TokenStream> {
+fn custom_codes_for_contract(
+    manifest: &SnapshotComponentManifest,
+) -> anyhow::Result<proc_macro2::TokenStream> {
     let label = &manifest.label;
     let method = &manifest.datasource.method;
     let method_identifier = ContractMethodIdentifier::parse_from_str(&method.identifier)?;
     let method_ident_str = convert_camel_to_snake(&method_identifier.identifier);
     let method_ident = format_ident!("{}", method_ident_str);
 
-    let method_interface = method.interface.clone()
-        .ok_or(anyhow::anyhow!("datasource.method.interface is required for contract"))?;
+    let method_interface = method.interface.clone().ok_or(anyhow::anyhow!(
+        "datasource.method.interface is required for contract"
+    ))?;
     let contract_struct_ident = format_ident!("{}", method_interface.trim_end_matches(".json"));
     let abi_path = format!("./__interfaces/{}", method_interface);
 
     // for request values
-    ensure!(method_identifier.params.len() == method.args.len(), "The number of params and args must be the same");
-    let method_args = method.args.iter().enumerate()
-        .map(|(idx, arg)| (method_identifier.params[idx].clone(), arg.clone())).collect();
+    ensure!(
+        method_identifier.params.len() == method.args.len(),
+        "The number of params and args must be the same"
+    );
+    let method_args = method
+        .args
+        .iter()
+        .enumerate()
+        .map(|(idx, arg)| (method_identifier.params[idx].clone(), arg.clone()))
+        .collect();
     let (request_val_idents, _) = generate_request_arg_idents(&method_args);
 
     // for response types & response values
@@ -57,7 +80,8 @@ fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> anyhow::Re
             for (idx, elem) in response_types.iter().enumerate() {
                 let ty = syn::parse_str::<syn::Type>(&elem)?;
                 let idx_lit = proc_macro2::Literal::usize_unsuffixed(idx);
-                let (response_type_ident, response_val_ident) = match_primitive_type(&ty, Some(idx_lit))?;
+                let (response_type_ident, response_val_ident) =
+                    match_primitive_type(&ty, Some(idx_lit))?;
                 response_type_idents.push(response_type_ident);
                 response_val_idents.push(response_val_ident);
             }
@@ -91,7 +115,7 @@ fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> anyhow::Re
                 };
             },
             quote! { ic_cdk::println!("ts={}, snapshot={:?}", datum.timestamp, datum.value); },
-            generate_queries_without_timestamp(format_ident!("SnapshotValue"))
+            generate_queries_without_timestamp(format_ident!("SnapshotValue")),
         )
     } else {
         (
@@ -99,7 +123,7 @@ fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> anyhow::Re
             quote! {},
             quote! { let datum: Snapshot = (#(#response_val_idents),*); },
             quote! { ic_cdk::println!("snapshot={:?}", datum); },
-            quote! { }
+            quote! {},
         )
     };
 
@@ -125,45 +149,47 @@ fn custom_codes_for_contract(manifest: &SnapshotComponentManifest) -> anyhow::Re
     })
 }
 
-fn match_primitive_type(ty: &syn::Type, idx: Option<proc_macro2::Literal>) -> anyhow::Result<(proc_macro2::Ident, proc_macro2::TokenStream)> {
+fn match_primitive_type(
+    ty: &syn::Type,
+    idx: Option<proc_macro2::Literal>,
+) -> anyhow::Result<(proc_macro2::Ident, proc_macro2::TokenStream)> {
     let res = match ty {
         syn::Type::Path(type_path) => {
             let mut type_string = quote! { #type_path }.to_string();
             type_string.retain(|c| !c.is_whitespace());
 
             match type_string.as_str() {
-                U256_TYPE => {
-                    (
-                        format_ident!("String"),
-                        match idx {
-                            Some(idx_lit) => quote! { res.#idx_lit.to_string() },
-                            None => quote! { res.to_string() }
-                        }
-                    )
-                },
+                U256_TYPE => (
+                    format_ident!("String"),
+                    match idx {
+                        Some(idx_lit) => quote! { res.#idx_lit.to_string() },
+                        None => quote! { res.to_string() },
+                    },
+                ),
                 ADDRESS_TYPE => (
                     format_ident!("String"),
                     match idx {
                         Some(idx_lit) => quote! { hex::encode(res.#idx_lit) },
-                        None => quote! { hex::encode(res) }
-                    }
+                        None => quote! { hex::encode(res) },
+                    },
                 ),
                 _ => (
                     format_ident!("{}", type_string),
                     match idx {
                         Some(idx_lit) => quote! { res.#idx_lit },
-                        None => quote! { res }
-                    }
-                )
+                        None => quote! { res },
+                    },
+                ),
             }
-        },
+        }
         _ => bail!("Unsupported type"),
     };
     Ok(res)
 }
 
 fn common_codes_for_canister() -> proc_macro2::TokenStream {
-    let outside_call_idents = generate_outside_call_idents(OutsideCallIdentsType::CrossCanisterCall);
+    let outside_call_idents =
+        generate_outside_call_idents(OutsideCallIdentsType::CrossCanisterCall);
 
     quote! {
         use chainsight_cdk_macros::{manage_single_state, setup_func, manage_vec_state, timer_task_func, cross_canister_call_func, monitoring_canister_metrics, did_export};
@@ -177,7 +203,9 @@ fn common_codes_for_canister() -> proc_macro2::TokenStream {
     }
 }
 
-fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> anyhow::Result<proc_macro2::TokenStream> {
+fn custom_codes_for_canister(
+    manifest: &SnapshotComponentManifest,
+) -> anyhow::Result<proc_macro2::TokenStream> {
     let label = &manifest.label;
     let method = &manifest.datasource.method;
     let method_identifier = CanisterMethodIdentifier::parse_from_str(&method.identifier)?;
@@ -187,8 +215,12 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> anyhow::Re
 
     // for request values
     // todo: validate length of method.args and method_identifier.params
-    let method_args = method.args.iter().enumerate()
-        .map(|(idx, arg)| (method_identifier.params[idx].clone(), arg.clone())).collect();
+    let method_args = method
+        .args
+        .iter()
+        .enumerate()
+        .map(|(idx, arg)| (method_identifier.params[idx].clone(), arg.clone()))
+        .collect();
     let (request_val_idents, request_ty_idents) = generate_request_arg_idents(&method_args);
 
     // for response type
@@ -196,27 +228,30 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> anyhow::Re
     let (response_type_ident, response_type_def_ident) = match response_type {
         CanisterMethodValueType::Scalar(ty) => {
             let type_ident = format_ident!("{}", &ty);
-            (
-                quote! { type SnapshotValue = #type_ident; },
-                quote! {}
-            )
-        },
+            (quote! { type SnapshotValue = #type_ident; }, quote! {})
+        }
         CanisterMethodValueType::Tuple(tys) => {
-            let type_idents = tys.iter().map(|ty| format_ident!("{}", ty)).collect::<Vec<proc_macro2::Ident>>();
+            let type_idents = tys
+                .iter()
+                .map(|ty| format_ident!("{}", ty))
+                .collect::<Vec<proc_macro2::Ident>>();
             (
                 quote! { type SnapshotValue = (#(#type_idents),*); },
-                quote! {}
+                quote! {},
             )
-        },
+        }
         CanisterMethodValueType::Struct(values) => {
             let response_type_def_ident = format_ident!("{}", "CustomResponseStruct");
-            let struct_tokens = values.into_iter().map(|(key, ty)| {
-                let key_ident = format_ident!("{}", key);
-                let ty_ident = format_ident!("{}", ty);
-                quote! {
-                    pub #key_ident: #ty_ident
-                }
-            }).collect::<Vec<_>>();
+            let struct_tokens = values
+                .into_iter()
+                .map(|(key, ty)| {
+                    let key_ident = format_ident!("{}", key);
+                    let ty_ident = format_ident!("{}", ty);
+                    quote! {
+                        pub #key_ident: #ty_ident
+                    }
+                })
+                .collect::<Vec<_>>();
             (
                 quote! { type SnapshotValue = #response_type_def_ident; },
                 quote! {
@@ -224,9 +259,9 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> anyhow::Re
                     pub struct #response_type_def_ident {
                         #(#struct_tokens),*
                     }
-                }
+                },
             )
-        },
+        }
     };
 
     // consider whether to add timestamp information to the snapshot
@@ -235,7 +270,7 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> anyhow::Re
         expr_to_current_ts_sec,
         expr_to_gen_snapshot,
         expr_to_log_datum,
-        queries_expect_timestamp
+        queries_expect_timestamp,
     ) = if manifest.storage.with_timestamp {
         (
             quote! {
@@ -254,7 +289,7 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> anyhow::Re
                 };
             },
             quote! { ic_cdk::println!("ts={}, value={:?}", datum.timestamp, datum.value); },
-            generate_queries_without_timestamp(format_ident!("SnapshotValue"))
+            generate_queries_without_timestamp(format_ident!("SnapshotValue")),
         )
     } else {
         (
@@ -262,7 +297,7 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> anyhow::Re
             quote! {},
             quote! { let datum = res.unwrap().clone(); },
             quote! { ic_cdk::println!("snapshot={:?}", datum); },
-            quote! {}
+            quote! {},
         )
     };
 
@@ -296,8 +331,13 @@ fn custom_codes_for_canister(manifest: &SnapshotComponentManifest) -> anyhow::Re
     })
 }
 
-pub fn generate_codes(manifest: &SnapshotComponentManifest) -> anyhow::Result<proc_macro2::TokenStream> {
-    ensure!(manifest.type_ == ComponentType::Snapshot, "type is not Snapshot");
+pub fn generate_codes(
+    manifest: &SnapshotComponentManifest,
+) -> anyhow::Result<proc_macro2::TokenStream> {
+    ensure!(
+        manifest.type_ == ComponentType::Snapshot,
+        "type is not Snapshot"
+    );
 
     let (common_code_token, custom_code_token) = match manifest.datasource.type_ {
         DatasourceType::Canister => (
@@ -307,7 +347,7 @@ pub fn generate_codes(manifest: &SnapshotComponentManifest) -> anyhow::Result<pr
         DatasourceType::Contract => (
             common_codes_for_contract(),
             custom_codes_for_contract(manifest)?,
-        )
+        ),
     };
 
     let code = quote! {
@@ -319,11 +359,17 @@ pub fn generate_codes(manifest: &SnapshotComponentManifest) -> anyhow::Result<pr
 }
 
 pub fn validate_manifest(manifest: &SnapshotComponentManifest) -> anyhow::Result<()> {
-    ensure!(manifest.type_ == ComponentType::Snapshot, "type is not Snapshot");
+    ensure!(
+        manifest.type_ == ComponentType::Snapshot,
+        "type is not Snapshot"
+    );
 
     let datasource = &manifest.datasource;
     if datasource.type_ == DatasourceType::Contract {
-        ensure!(datasource.method.interface.is_some(), "datasource.method.interface is required for contract");
+        ensure!(
+            datasource.method.interface.is_some(),
+            "datasource.method.interface is required for contract"
+        );
     }
 
     // TODO

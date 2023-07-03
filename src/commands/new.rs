@@ -1,11 +1,21 @@
-use std::{path::Path, fs};
+use std::{fs, path::Path};
 
 use anyhow::bail;
 use clap::Parser;
-use slog::{info, error};
+use slog::{error, info};
 
-use crate::{
-    lib::{environment::EnvironmentImpl, codegen::{project::{ProjectManifestData, ProjectManifestComponentField}, components::{snapshot::{SnapshotComponentManifest, SnapshotStorage}, common::{Datasource, ComponentManifest}, relayer::{RelayerComponentManifest, DestinationField}, event_indexer::{EventIndexerComponentManifest, EventIndexerDatasource}}}, utils::{CHAINSIGHT_FILENAME, PROJECT_MANIFEST_FILENAME, PROJECT_MANIFEST_VERSION}}
+use crate::lib::{
+    codegen::{
+        components::{
+            common::{ComponentManifest, Datasource},
+            event_indexer::{EventIndexerComponentManifest, EventIndexerDatasource},
+            relayer::{DestinationField, RelayerComponentManifest},
+            snapshot::{SnapshotComponentManifest, SnapshotStorage},
+        },
+        project::{ProjectManifestComponentField, ProjectManifestData},
+    },
+    environment::EnvironmentImpl,
+    utils::{CHAINSIGHT_FILENAME, PROJECT_MANIFEST_FILENAME, PROJECT_MANIFEST_VERSION},
 };
 
 #[derive(Debug, Parser)]
@@ -23,35 +33,18 @@ pub fn exec(env: &EnvironmentImpl, opts: NewOpts) -> anyhow::Result<()> {
     let project_name = opts.project_name;
     let project_name_path = Path::new(&project_name);
     if project_name_path.exists() {
-        error!(
-            log,
-            r#"Project "{}" already exists"#,
-            project_name
-        );
+        error!(log, r#"Project "{}" already exists"#, project_name);
         bail!(GLOBAL_ERROR_MSG.to_string())
     }
-    info!(
-        log,
-        r#"Creating new project "{}"..."#,
-        project_name
-    );
+    info!(log, r#"Creating new project "{}"..."#, project_name);
     let res = create_project(&project_name);
     match res {
         Ok(_) => {
-            info!(
-                log,
-                r#"Project "{}" created successfully"#,
-                project_name
-            );
+            info!(log, r#"Project "{}" created successfully"#, project_name);
             Ok(())
-        },
+        }
         Err(err) => {
-            error!(
-                log,
-                r#"Fail to create project "{}": {}"#,
-                project_name,
-                err
-            );
+            error!(log, r#"Fail to create project "{}": {}"#, project_name, err);
             bail!(GLOBAL_ERROR_MSG.to_string())
         }
     }
@@ -77,21 +70,22 @@ fn create_project(project_name: &str) -> anyhow::Result<()> {
                 ProjectManifestComponentField::new(&relative_snapshot_chain_path, None),
                 ProjectManifestComponentField::new(&relative_snapshot_icp_path, None),
                 ProjectManifestComponentField::new(&relative_relayer_path, None),
-            ]
-        ).to_str_as_yaml()?,
+            ],
+        )
+        .to_str_as_yaml()?,
     )?;
 
     fs::write(
         format!("{}/{}", project_name, relative_snapshot_chain_path),
-        template_snapshot_chain_manifest(project_name).to_str_as_yaml()?
+        template_snapshot_chain_manifest(project_name).to_str_as_yaml()?,
     )?;
     fs::write(
         format!("{}/{}", project_name, relative_snapshot_icp_path),
-        template_snapshot_icp_manifest(project_name).to_str_as_yaml()?
+        template_snapshot_icp_manifest(project_name).to_str_as_yaml()?,
     )?;
     fs::write(
         format!("{}/{}", project_name, relative_relayer_path),
-        template_relayer_manifest(project_name).to_str_as_yaml()?
+        template_relayer_manifest(project_name).to_str_as_yaml()?,
     )?;
 
     Ok(())
@@ -112,7 +106,7 @@ fn template_snapshot_chain_manifest(project_name: &str) -> SnapshotComponentMani
         PROJECT_MANIFEST_VERSION,
         Datasource::default_contract(),
         SnapshotStorage::default(),
-        3600
+        3600,
     )
 }
 
@@ -122,7 +116,7 @@ fn template_snapshot_icp_manifest(project_name: &str) -> SnapshotComponentManife
         PROJECT_MANIFEST_VERSION,
         Datasource::default_canister(true),
         SnapshotStorage::default(),
-        3600
+        3600,
     )
 }
 
@@ -132,6 +126,6 @@ fn template_relayer_manifest(project_name: &str) -> RelayerComponentManifest {
         PROJECT_MANIFEST_VERSION,
         Datasource::default_canister(false),
         DestinationField::default(),
-        3600
+        3600,
     )
 }
