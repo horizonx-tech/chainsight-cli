@@ -29,6 +29,7 @@ pub struct ExecOpts {
     path: Option<String>,
     #[arg(long)]
     component: Option<String>,
+    #[arg(long)]
     #[clap(default_value = "local")]
     network: Network,
     #[arg(long, conflicts_with = "only_execute_cmds")]
@@ -76,7 +77,7 @@ pub fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
         component_data.push(data);
     }
 
-    if opts.only_generate_cmds {
+    if opts.only_execute_cmds {
         info!(log, r#"Skip to generate commands to call components"#);
     } else {
         // generate commands
@@ -84,7 +85,7 @@ pub fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
         execute_to_generate_commands(log, &artifacts_path_str, opts.network, &component_data)?;
     }
 
-    if opts.only_execute_cmds {
+    if opts.only_generate_cmds {
         info!(log, r#"Skip to execute commands to components"#);
     } else {
         // execute commands
