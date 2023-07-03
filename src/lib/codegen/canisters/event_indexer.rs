@@ -44,7 +44,7 @@ fn custom_codes(
     manifest: &EventIndexerComponentManifest,
     interface_contract: ethabi::Contract,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    let label = &manifest.label;
+    let label = &manifest.metadata.label;
     let datasource_event_def = &manifest.datasource.event;
 
     let event_interface = &manifest
@@ -141,7 +141,7 @@ pub fn generate_codes(
     interface_contract: ethabi::Contract,
 ) -> anyhow::Result<TokenStream> {
     ensure!(
-        manifest.type_ == ComponentType::EventIndexer,
+        manifest.metadata.type_ == ComponentType::EventIndexer,
         "type is not EventIndexer"
     );
 
@@ -158,7 +158,7 @@ pub fn generate_codes(
 
 pub fn validate_manifest(manifest: &EventIndexerComponentManifest) -> anyhow::Result<()> {
     ensure!(
-        manifest.type_ == ComponentType::EventIndexer,
+        manifest.metadata.type_ == ComponentType::EventIndexer,
         "type is not EventIndexer"
     );
 

@@ -33,6 +33,13 @@ pub enum DestinactionType {
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+pub struct ComponentMetadata {
+    pub label: String,
+    #[serde(rename = "type")]
+    pub type_: ComponentType,
+}
+
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct Datasource {
     #[serde(rename = "type")]
     pub type_: DatasourceType,
@@ -172,7 +179,7 @@ pub trait ComponentManifest: std::fmt::Debug {
     fn generate_scripts(&self, network: Network) -> anyhow::Result<String>;
 
     fn component_type(&self) -> ComponentType;
-    fn label(&self) -> &str;
+    fn metadata(&self) -> &ComponentMetadata;
     fn destination_type(&self) -> Option<DestinactionType>;
     fn required_interface(&self) -> Option<String>;
 }

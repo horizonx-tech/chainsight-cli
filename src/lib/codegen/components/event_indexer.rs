@@ -9,14 +9,12 @@ use crate::{
     types::{ComponentType, Network},
 };
 
-use super::common::ComponentManifest;
+use super::common::{ComponentManifest, ComponentMetadata};
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct EventIndexerComponentManifest {
     pub version: String,
-    #[serde(rename = "type")]
-    pub type_: ComponentType,
-    pub label: String,
+    pub metadata: ComponentMetadata,
     pub datasource: EventIndexerDatasource,
     pub interval: u32,
 }
@@ -30,8 +28,10 @@ impl EventIndexerComponentManifest {
     ) -> Self {
         Self {
             version: version.to_owned(),
-            type_: ComponentType::EventIndexer,
-            label: component_label.to_owned(),
+            metadata: ComponentMetadata {
+                label: component_label.to_owned(),
+                type_: ComponentType::EventIndexer,
+            },
             datasource,
             interval,
         }
@@ -72,8 +72,8 @@ impl ComponentManifest for EventIndexerComponentManifest {
         ComponentType::EventIndexer
     }
 
-    fn label(&self) -> &str {
-        self.label.as_str()
+    fn metadata(&self) -> &ComponentMetadata {
+        &self.metadata
     }
 
     fn destination_type(&self) -> Option<super::common::DestinactionType> {
@@ -147,8 +147,10 @@ interval: 3600
             component,
             EventIndexerComponentManifest {
                 version: "v1".to_string(),
-                type_: ComponentType::EventIndexer,
-                label: "sample_pj_event_indexer".to_string(),
+                metadata: ComponentMetadata {
+                    type_: ComponentType::EventIndexer,
+                    label: "sample_pj_event_indexer".to_string(),
+                },
                 datasource: EventIndexerDatasource {
                     // id: "0000000000000000000000000000000000000000".to_string(),
                     event: EventIndexerEventDefinition {

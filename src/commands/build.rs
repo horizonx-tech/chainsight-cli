@@ -184,7 +184,7 @@ fn exec_codegen(
             }
         }
 
-        let label = data.label();
+        let label = data.metadata().label.clone();
         project_labels.push(label.to_string());
         let canister_pj_path_str = format!("{}/artifacts/{}", &project_path_str, label);
         let canister_code_path_str = format!("{}/src", &canister_pj_path_str);
@@ -200,7 +200,7 @@ fn exec_codegen(
         // generate project's Cargo.toml
         fs::write(
             format!("{}/Cargo.toml", &canister_pj_path_str),
-            &canister_project_cargo_toml(label),
+            &canister_project_cargo_toml(&label),
         )?;
 
         // copy and move oracle interface
@@ -391,7 +391,7 @@ fn execute_codebuild(
     fs::create_dir(build_artifact_path)?;
     // Copy .did to artifacts folder
     for component_datum in component_data {
-        let label = component_datum.label();
+        let label = component_datum.metadata().label.clone();
         let src_path = format!("{}/{}/{}.did", builded_project_path_str, label, label);
         let dst_path = format!("{}/{}.did", build_artifact_path_str, label);
         fs::copy(src_path, dst_path)?;
@@ -427,7 +427,7 @@ fn execute_codebuild(
     let description = "Shrink/Optimize canisters' modules";
     info!(log, "{}", description);
     for component_datum in component_data {
-        let label = component_datum.label();
+        let label = component_datum.metadata().label.clone();
         let wasm_path = format!("target/wasm32-unknown-unknown/release/{}.wasm", label);
         let output_path = format!("artifacts/{}.wasm", label);
         let output = Command::new("ic-wasm")
@@ -469,7 +469,7 @@ fn add_metadatas_to_wasm(
 ) -> anyhow::Result<()> {
     let builded_project_path = Path::new(&builded_project_path_str);
 
-    let label = component_datum.label();
+    let label = component_datum.metadata().label.clone();
     let wasm_path = format!("artifacts/{}.wasm", label);
 
     // chainsight:label
@@ -483,7 +483,7 @@ fn add_metadatas_to_wasm(
             "metadata",
             "chainsight:label",
             "-d",
-            label,
+            &label,
             "-v",
             "public",
         ])

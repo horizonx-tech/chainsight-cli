@@ -128,7 +128,7 @@ fn execute_to_generate_commands(
     fs::create_dir_all(Path::new(&scripts_path_str))?;
 
     for data in component_data {
-        let filepath = format!("{}/{}.sh", &scripts_path_str, data.label());
+        let filepath = format!("{}/{}.sh", &scripts_path_str, data.metadata().label);
         fs::write(&filepath, data.generate_scripts(network.clone())?)?;
 
         let mut perms = fs::metadata(&filepath)?.permissions();
@@ -138,7 +138,7 @@ fn execute_to_generate_commands(
         info!(
             log,
             r#"Script for Component "{}" generated successfully"#,
-            data.label()
+            data.metadata().label
         );
     }
 
@@ -147,7 +147,7 @@ fn execute_to_generate_commands(
     let entrypoint_filepath = format!("{}/{}", &script_root_path_str, ENTRYPOINT_SHELL_FILENAME);
     let component_names = component_data
         .iter()
-        .map(|c| c.label().to_string())
+        .map(|c| c.metadata().label.to_string())
         .collect::<Vec<String>>();
     let entrypoint_contents = format!(
         r#"#!/bin/bash

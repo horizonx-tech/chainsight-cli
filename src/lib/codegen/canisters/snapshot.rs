@@ -36,7 +36,7 @@ fn common_codes_for_contract() -> proc_macro2::TokenStream {
 fn custom_codes_for_contract(
     manifest: &SnapshotComponentManifest,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    let label = &manifest.label;
+    let label = &manifest.metadata.label;
     let method = &manifest.datasource.method;
     let method_identifier = ContractMethodIdentifier::parse_from_str(&method.identifier)?;
     let method_ident_str = convert_camel_to_snake(&method_identifier.identifier);
@@ -206,7 +206,7 @@ fn common_codes_for_canister() -> proc_macro2::TokenStream {
 fn custom_codes_for_canister(
     manifest: &SnapshotComponentManifest,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    let label = &manifest.label;
+    let label = &manifest.metadata.label;
     let method = &manifest.datasource.method;
     let method_identifier = CanisterMethodIdentifier::parse_from_str(&method.identifier)?;
 
@@ -335,7 +335,7 @@ pub fn generate_codes(
     manifest: &SnapshotComponentManifest,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     ensure!(
-        manifest.type_ == ComponentType::Snapshot,
+        manifest.metadata.type_ == ComponentType::Snapshot,
         "type is not Snapshot"
     );
 
@@ -360,7 +360,7 @@ pub fn generate_codes(
 
 pub fn validate_manifest(manifest: &SnapshotComponentManifest) -> anyhow::Result<()> {
     ensure!(
-        manifest.type_ == ComponentType::Snapshot,
+        manifest.metadata.type_ == ComponentType::Snapshot,
         "type is not Snapshot"
     );
 

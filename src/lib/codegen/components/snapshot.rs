@@ -8,14 +8,12 @@ use crate::{
     types::{ComponentType, Network},
 };
 
-use super::common::{ComponentManifest, Datasource, DestinactionType};
+use super::common::{ComponentManifest, ComponentMetadata, Datasource, DestinactionType};
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct SnapshotComponentManifest {
     pub version: String,
-    #[serde(rename = "type")]
-    pub type_: ComponentType,
-    pub label: String,
+    pub metadata: ComponentMetadata,
     pub datasource: Datasource,
     pub storage: SnapshotStorage,
     pub interval: u32,
@@ -31,8 +29,10 @@ impl SnapshotComponentManifest {
     ) -> Self {
         Self {
             version: version.to_owned(),
-            type_: ComponentType::Snapshot,
-            label: component_label.to_owned(),
+            metadata: ComponentMetadata {
+                label: component_label.to_owned(),
+                type_: ComponentType::Snapshot,
+            },
             datasource,
             storage,
             interval,
@@ -72,8 +72,8 @@ impl ComponentManifest for SnapshotComponentManifest {
         ComponentType::Snapshot
     }
 
-    fn label(&self) -> &str {
-        self.label.as_str()
+    fn metadata(&self) -> &ComponentMetadata {
+        &self.metadata
     }
 
     fn destination_type(&self) -> Option<DestinactionType> {
@@ -137,8 +137,10 @@ interval: 3600
             component,
             SnapshotComponentManifest {
                 version: "v1".to_owned(),
-                type_: ComponentType::Snapshot,
-                label: "sample_pj_snapshot_chain".to_owned(),
+                metadata: ComponentMetadata {
+                    label: "sample_pj_snapshot_chain".to_owned(),
+                    type_: ComponentType::Snapshot
+                },
                 datasource: Datasource {
                     type_: DatasourceType::Contract,
                     location: DatasourceLocation::new_contract(
@@ -188,8 +190,10 @@ interval: 3600
             component,
             SnapshotComponentManifest {
                 version: "v1".to_owned(),
-                type_: ComponentType::Snapshot,
-                label: "sample_pj_snapshot_icp".to_owned(),
+                metadata: ComponentMetadata {
+                    label: "sample_pj_snapshot_icp".to_owned(),
+                    type_: ComponentType::Snapshot
+                },
                 datasource: Datasource {
                     type_: DatasourceType::Canister,
                     location: DatasourceLocation::new_canister(

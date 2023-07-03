@@ -33,14 +33,14 @@ fn generate_command_to_setup_for_canister(
 }
 fn script_contents_for_canister(manifest: &SnapshotComponentManifest, network: Network) -> String {
     let setup_contents = generate_command_to_setup_for_canister(
-        &manifest.label,
+        &manifest.metadata.label,
         &manifest.datasource.location.id,
         manifest.datasource.location.args.id_type.unwrap(), // todo: check validation
         &network,
     );
 
     let start_timer_contents = generate_command_to_set_task(
-        &manifest.label,
+        &manifest.metadata.label,
         &network,
         manifest.interval,
         5, // temp: fixed value, todo: make it configurable
@@ -89,7 +89,7 @@ fn script_contents_for_contract(manifest: &SnapshotComponentManifest, network: N
     let datasrc_location_args = manifest.datasource.location.args.clone();
 
     let setup_contents = generate_command_to_setup_for_contract(
-        &manifest.label,
+        &manifest.metadata.label,
         &manifest.datasource.location.id,
         datasrc_location_args.network_id.unwrap(), // todo: check validation
         &datasrc_location_args.rpc_url.unwrap(),   // todo: check validation
@@ -97,7 +97,7 @@ fn script_contents_for_contract(manifest: &SnapshotComponentManifest, network: N
     );
 
     let start_timer_contents = generate_command_to_set_task(
-        &manifest.label,
+        &manifest.metadata.label,
         &network,
         manifest.interval,
         0, // temp: fixed value, todo: make it configurable
@@ -120,7 +120,7 @@ pub fn generate_scripts(
     network: Network,
 ) -> anyhow::Result<String> {
     ensure!(
-        manifest.type_ == ComponentType::Snapshot,
+        manifest.metadata.type_ == ComponentType::Snapshot,
         "type is not Snapshot"
     );
 

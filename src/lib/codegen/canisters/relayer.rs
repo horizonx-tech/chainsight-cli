@@ -32,7 +32,7 @@ fn common_codes() -> proc_macro2::TokenStream {
 }
 
 fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macro2::TokenStream> {
-    let label = &manifest.label;
+    let label = &manifest.metadata.label;
     let method = &manifest.datasource.method;
     let method_identifier = CanisterMethodIdentifier::parse_from_str(&method.identifier)?;
 
@@ -228,7 +228,7 @@ pub fn generate_codes(
     manifest: &RelayerComponentManifest,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     ensure!(
-        manifest.type_ == ComponentType::Relayer,
+        manifest.metadata.type_ == ComponentType::Relayer,
         "type is not Relayer"
     );
 
@@ -245,7 +245,7 @@ pub fn generate_codes(
 
 pub fn validate_manifest(manifest: &RelayerComponentManifest) -> anyhow::Result<()> {
     ensure!(
-        manifest.type_ == ComponentType::Relayer,
+        manifest.metadata.type_ == ComponentType::Relayer,
         "type is not Relayer"
     );
 

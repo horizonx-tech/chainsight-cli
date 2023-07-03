@@ -9,14 +9,12 @@ use crate::{
     types::{ComponentType, Network},
 };
 
-use super::common::{ComponentManifest, Datasource, DestinactionType};
+use super::common::{ComponentManifest, ComponentMetadata, Datasource, DestinactionType};
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct RelayerComponentManifest {
     pub version: String,
-    #[serde(rename = "type")]
-    pub type_: ComponentType,
-    pub label: String,
+    pub metadata: ComponentMetadata,
     pub datasource: Datasource,
     pub destination: DestinationField, // TODO: multiple destinations
     pub interval: u32,
@@ -32,8 +30,10 @@ impl RelayerComponentManifest {
     ) -> Self {
         Self {
             version: version.to_owned(),
-            type_: ComponentType::Relayer,
-            label: component_label.to_owned(),
+            metadata: ComponentMetadata {
+                label: component_label.to_owned(),
+                type_: ComponentType::Relayer,
+            },
             datasource,
             destination,
             interval,
@@ -73,8 +73,8 @@ impl ComponentManifest for RelayerComponentManifest {
         ComponentType::Relayer
     }
 
-    fn label(&self) -> &str {
-        self.label.as_str()
+    fn metadata(&self) -> &ComponentMetadata {
+        &self.metadata
     }
 
     fn destination_type(&self) -> Option<DestinactionType> {
@@ -162,8 +162,10 @@ interval: 3600
             component,
             RelayerComponentManifest {
                 version: "v1".to_string(),
-                type_: ComponentType::Relayer,
-                label: "sample_pj_relayer".to_string(),
+                metadata: ComponentMetadata {
+                    label: "sample_pj_relayer".to_string(),
+                    type_: ComponentType::Relayer,
+                },
                 datasource: Datasource {
                     type_: DatasourceType::Canister,
                     location: DatasourceLocation::new_canister(

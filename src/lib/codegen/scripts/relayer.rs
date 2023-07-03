@@ -49,7 +49,7 @@ fn generate_command_to_setup(
 
 fn script_contents(manifest: &RelayerComponentManifest, network: Network) -> String {
     let script_to_setup = generate_command_to_setup(
-        &manifest.label,
+        &manifest.metadata.label,
         &manifest.datasource.location.id,
         manifest.datasource.location.args.id_type.unwrap(), // todo: check validation
         &manifest.destination.oracle_address,
@@ -58,7 +58,7 @@ fn script_contents(manifest: &RelayerComponentManifest, network: Network) -> Str
         &network,
     );
     let script_to_set_task = generate_command_to_set_task(
-        &manifest.label,
+        &manifest.metadata.label,
         &network,
         manifest.interval,
         10, // temp: fixed value, todo: make it configurable
@@ -81,7 +81,7 @@ pub fn generate_scripts(
     network: Network,
 ) -> anyhow::Result<String> {
     ensure!(
-        manifest.type_ == ComponentType::Relayer,
+        manifest.metadata.type_ == ComponentType::Relayer,
         "type is not Relayer"
     );
 
