@@ -24,6 +24,7 @@ jobs:
         run: |
           rustup update ${{ env.RUST_VERSION }} --no-self-update
           rustup default ${{ env.RUST_VERSION }}
+          rustup component add rustfmt
       - name: Check format
         run: cargo fmt --all --check
   lint:
@@ -42,8 +43,8 @@ jobs:
       - name: Install Rust
         run: |
           rustup update ${{ env.RUST_VERSION }} --no-self-update
-          rustup component add clippy
           rustup default ${{ env.RUST_VERSION }}
+          rustup component add clippy
       - name: Execute lint (clippy)
         run: cargo clippy -- -D clippy::all
   unit-test:
