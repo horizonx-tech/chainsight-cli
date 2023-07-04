@@ -23,3 +23,5 @@ slog = "2.7.0"
 slog-async = "2.7.0"
 slog-term = "2.9.0"
 syn = "2.0.18"
+management-canisters = { path = "./chainsight-management-canisters/src/deployment" }
+

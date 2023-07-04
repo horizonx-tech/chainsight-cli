@@ -114,13 +114,13 @@ pub fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
 
 fn execute_to_generate_commands(
     log: &Logger,
-    builded_project_path_str: &str,
+    built_project_path_str: &str,
     network: Network,
     component_data: &Vec<Box<dyn ComponentManifest>>,
 ) -> anyhow::Result<()> {
     // generate /scripts
-    let script_root_path_str = format!("{}/scripts", &builded_project_path_str);
-    let scripts_path_str = format!("{}/scripts/components", &builded_project_path_str);
+    let script_root_path_str = format!("{}/scripts", &built_project_path_str);
+    let scripts_path_str = format!("{}/scripts/components", &built_project_path_str);
     let script_root_path = Path::new(&script_root_path_str);
     if script_root_path.exists() {
         fs::remove_dir_all(script_root_path)?;
@@ -176,7 +176,7 @@ echo "Run script for '{}'"
     anyhow::Ok(())
 }
 
-fn execute_commands(log: &Logger, builded_project_path_str: &str) -> anyhow::Result<()> {
+fn execute_commands(log: &Logger, built_project_path_str: &str) -> anyhow::Result<()> {
     info!(
         log,
         "Run scripts to execute commands for deployed components"
@@ -184,7 +184,7 @@ fn execute_commands(log: &Logger, builded_project_path_str: &str) -> anyhow::Res
     let cmd_string = format!("./scripts/{}", ENTRYPOINT_SHELL_FILENAME);
     debug!(log, "Running command: `{}`", &cmd_string);
     let output = Command::new(&cmd_string)
-        .current_dir(builded_project_path_str)
+        .current_dir(built_project_path_str)
         .output()
         .unwrap_or_else(|_| panic!("failed to execute process: {}", &cmd_string));
     let complete_msg = format!("Executed '{}'", &cmd_string);

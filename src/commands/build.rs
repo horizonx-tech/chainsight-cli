@@ -121,7 +121,7 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
 
     info!(
         log,
-        r#"Project "{}" builded successfully"#, project_manifest.label
+        r#"Project "{}" built successfully"#, project_manifest.label
     );
     Ok(())
 }
@@ -358,15 +358,15 @@ fn buildin_interface(name: &str) -> Option<&'static str> {
 
 fn execute_codebuild(
     log: &Logger,
-    builded_project_path_str: &str,
+    built_project_path_str: &str,
     component_data: &Vec<Box<dyn ComponentManifest>>,
 ) -> anyhow::Result<()> {
-    let builded_project_path = Path::new(&builded_project_path_str);
+    let built_project_path = Path::new(&built_project_path_str);
 
     let description = "Generate interfaces (.did files)";
     info!(log, "{}", description);
     let output = Command::new("cargo")
-        .current_dir(builded_project_path)
+        .current_dir(built_project_path)
         .args(["make", "did"])
         .output()
         .expect("failed to execute process: cargo make did");
@@ -383,7 +383,7 @@ fn execute_codebuild(
     }
 
     // Regenerate artifacts folder
-    let build_artifact_path_str = format!("{}/artifacts", builded_project_path_str);
+    let build_artifact_path_str = format!("{}/artifacts", built_project_path_str);
     let build_artifact_path = Path::new(&build_artifact_path_str);
     if build_artifact_path.exists() {
         fs::remove_dir_all(build_artifact_path)?;
@@ -392,7 +392,7 @@ fn execute_codebuild(
     // Copy .did to artifacts folder
     for component_datum in component_data {
         let label = component_datum.metadata().label.clone();
-        let src_path = format!("{}/{}/{}.did", builded_project_path_str, label, label);
+        let src_path = format!("{}/{}/{}.did", built_project_path_str, label, label);
         let dst_path = format!("{}/{}.did", build_artifact_path_str, label);
         fs::copy(src_path, dst_path)?;
     }
@@ -400,7 +400,7 @@ fn execute_codebuild(
     let description = "Compile canisters' codes";
     info!(log, "{}", description);
     let output = Command::new("cargo")
-        .current_dir(builded_project_path)
+        .current_dir(built_project_path)
         .args([
             "build",
             "--target",
@@ -431,7 +431,7 @@ fn execute_codebuild(
         let wasm_path = format!("target/wasm32-unknown-unknown/release/{}.wasm", label);
         let output_path = format!("artifacts/{}.wasm", label);
         let output = Command::new("ic-wasm")
-            .current_dir(builded_project_path)
+            .current_dir(built_project_path)
             .args([&wasm_path, "-o", &output_path, "shrink"])
             .output()
             .expect("failed to execute process: ic_wasm shrink");
@@ -456,7 +456,7 @@ fn execute_codebuild(
     let description = "Add metadatas to canisters' modules";
     info!(log, "{}", description);
     for component_datum in component_data {
-        add_metadatas_to_wasm(log, builded_project_path_str, component_datum.as_ref())?;
+        add_metadatas_to_wasm(log, built_project_path_str, component_datum.as_ref())?;
     }
 
     anyhow::Ok(())
@@ -464,10 +464,10 @@ fn execute_codebuild(
 
 fn add_metadatas_to_wasm(
     log: &Logger,
-    builded_project_path_str: &str,
+    built_project_path_str: &str,
     component_datum: &dyn ComponentManifest,
 ) -> anyhow::Result<()> {
-    let builded_project_path = Path::new(&builded_project_path_str);
+    let built_project_path = Path::new(&built_project_path_str);
 
     let label = component_datum.metadata().label.clone();
     let wasm_path = format!("artifacts/{}.wasm", label);
@@ -475,7 +475,7 @@ fn add_metadatas_to_wasm(
     // chainsight:label
     let description = "Add 'chainsight:label' metadata";
     let output = Command::new("ic-wasm")
-        .current_dir(builded_project_path)
+        .current_dir(built_project_path)
         .args([
             &wasm_path,
             "-o",
@@ -508,7 +508,7 @@ fn add_metadatas_to_wasm(
     // chainsight:component_type
     let description = "Add 'chainsight:component_type' metadata";
     let output = Command::new("ic-wasm")
-        .current_dir(builded_project_path)
+        .current_dir(built_project_path)
         .args([
             &wasm_path,
             "-o",
@@ -541,7 +541,7 @@ fn add_metadatas_to_wasm(
     // chainsight:description
     let description = "Add 'chainsight:description' metadata";
     let output = Command::new("ic-wasm")
-        .current_dir(builded_project_path)
+        .current_dir(built_project_path)
         .args([
             &wasm_path,
             "-o",

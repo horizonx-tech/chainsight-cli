@@ -31,8 +31,8 @@ const GLOBAL_ERROR_MSG: &str = "Fail 'Deploy' command";
 
 pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
     let log = env.get_logger();
-    let builded_project_path_str = opts.path.unwrap_or(".".to_string());
-    let builded_project_path = Path::new(&builded_project_path_str);
+    let built_project_path_str = opts.path.unwrap_or(".".to_string());
+    let built_project_path = Path::new(&built_project_path_str);
     let network = opts.network;
 
     info!(log, r#"Deploy project..."#);
@@ -44,20 +44,14 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
         Network::Local => vec!["ping", &local_subnet],
         Network::IC => vec!["ping", "ic"],
     };
-    exec_command(log, "dfx", builded_project_path, args, "Ping dfx subnet")?;
+    exec_command(log, "dfx", built_project_path, args, "Ping dfx subnet")?;
 
     info!(log, "Check identity: Developer Id");
     let args = match network {
         Network::Local => vec!["identity", "whoami"],
         Network::IC => vec!["identity", "whoami", "--network", "ic"],
     };
-    exec_command(
-        log,
-        "dfx",
-        builded_project_path,
-        args,
-        "dfx identity whoami",
-    )?;
+    exec_command(log, "dfx", built_project_path, args, "dfx identity whoami")?;
     info!(log, "Check identity: Principal");
     let args = match network {
         Network::Local => vec!["identity", "get-principal"],
@@ -66,7 +60,7 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
     exec_command(
         log,
         "dfx",
-        builded_project_path,
+        built_project_path,
         args,
         "dfx identity get-principal",
     )?;
@@ -78,7 +72,7 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
     exec_command(
         log,
         "dfx",
-        builded_project_path,
+        built_project_path,
         args,
         "dfx identity get-wallet",
     )?;
@@ -92,7 +86,7 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
     exec_command(
         log,
         "dfx",
-        builded_project_path,
+        built_project_path,
         args,
         "Executed 'dfx canister create --all",
     )?;
@@ -102,13 +96,7 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
         Network::Local => vec!["build"],
         Network::IC => vec!["build", "--network", "ic"],
     };
-    exec_command(
-        log,
-        "dfx",
-        builded_project_path,
-        args,
-        "Executed 'dfx build'",
-    )?;
+    exec_command(log, "dfx", built_project_path, args, "Executed 'dfx build'")?;
 
     info!(log, "Execute 'dfx canister install --all'");
     let args = match network {
@@ -118,7 +106,7 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
     exec_command(
         log,
         "dfx",
-        builded_project_path,
+        built_project_path,
         args,
         "Executed 'dfx canister install --all'",
     )?;
@@ -128,12 +116,9 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
     let canister_ids_json_path = match network {
         Network::Local => format!(
             "{}/.dfx/local/{}",
-            builded_project_path_str, canister_ids_json_filename
+            built_project_path_str, canister_ids_json_filename
         ),
-        Network::IC => format!(
-            "{}/{}",
-            builded_project_path_str, canister_ids_json_filename
-        ),
+        Network::IC => format!("{}/{}", built_project_path_str, canister_ids_json_filename),
     };
     match fs::read_to_string(canister_ids_json_path) {
         Ok(contents) => info!(log, "{}", contents),
