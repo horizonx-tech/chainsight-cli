@@ -78,7 +78,7 @@ impl ComponentManifest for EventIndexerComponentManifest {
         &self.metadata
     }
 
-    fn destination_type(&self) -> Option<super::common::DestinactionType> {
+    fn destination_type(&self) -> Option<super::common::DestinationType> {
         None
     }
 

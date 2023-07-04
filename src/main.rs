@@ -11,6 +11,7 @@ use config::cli_version_str;
 use lib::{environment::EnvironmentImpl, logger::create_root_logger, utils};
 use slog::error;
 
+/// The Chainsight Executor
 #[derive(Debug, Parser)]
 #[command(name = "csx", version = cli_version_str(), about = "Chainsight command-line execution envirionment", styles = utils::clap::style())]
 struct Cli {

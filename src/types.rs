@@ -2,12 +2,21 @@ use std::fmt;
 
 use serde::{Deserialize, Serialize};
 
+/// Data Processing Component Types
+///
+/// Defines the types of components used to collect/process/reference data in Chainsight.
+/// Some Components are still undefined (not yet implemented) because they are still under development.
 #[derive(Deserialize, Serialize, Clone, Copy, Debug, PartialEq, clap::ValueEnum)]
 pub enum ComponentType {
+    /// To synchronize event data
     #[serde(rename = "event_indexer")]
     EventIndexer,
+
+    /// To periodically take and store snapshots from Contract and other Canisters
     #[serde(rename = "snapshot")]
     Snapshot,
+
+    /// To relay data to other blockchains
     #[serde(rename = "relayer")]
     Relayer,
 }
@@ -22,6 +31,9 @@ impl fmt::Display for ComponentType {
     }
 }
 
+/// Supported Network Types
+///
+/// IC is equivalent to '--network ic' in dfx
 #[derive(Clone, Debug, clap::ValueEnum)]
 pub enum Network {
     Local,

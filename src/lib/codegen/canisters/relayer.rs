@@ -6,7 +6,7 @@ use crate::{
         canisters::common::{
             generate_outside_call_idents, generate_request_arg_idents, OutsideCallIdentsType,
         },
-        components::{common::DestinactionType, relayer::RelayerComponentManifest},
+        components::{common::DestinationType, relayer::RelayerComponentManifest},
         oracle::get_oracle_attributes,
     },
     types::ComponentType,
@@ -94,7 +94,7 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
 
 fn generate_idents_to_call_datasource_and_sync_to_oracle(
     canister_response_type: CanisterMethodValueType,
-    oracle_type: DestinactionType,
+    oracle_type: DestinationType,
 ) -> anyhow::Result<(
     proc_macro2::TokenStream, // call_canister_response_type_ident
     proc_macro2::TokenStream, // response_type_def_ident
@@ -107,7 +107,7 @@ fn generate_idents_to_call_datasource_and_sync_to_oracle(
                 quote! { type CallCanisterResponse = #ty_ident; };
             let arg_ident = format_ident!("datum");
             match oracle_type {
-                DestinactionType::Uint256Oracle => {
+                DestinationType::Uint256Oracle => {
                     let quote_to_convert_datum_to_u256 =
                         generate_quote_to_convert_datum_to_u256(arg_ident, &ty)?;
                     (
@@ -116,7 +116,7 @@ fn generate_idents_to_call_datasource_and_sync_to_oracle(
                         quote_to_convert_datum_to_u256,
                     )
                 }
-                DestinactionType::Uint128Oracle => {
+                DestinationType::Uint128Oracle => {
                     let quote_to_convert_datum =
                         generate_quote_to_convert_datum_to_integer(arg_ident, &ty, "u128")?;
                     (
@@ -125,7 +125,7 @@ fn generate_idents_to_call_datasource_and_sync_to_oracle(
                         quote_to_convert_datum,
                     )
                 }
-                DestinactionType::Uint64Oracle => {
+                DestinationType::Uint64Oracle => {
                     let quote_to_convert_datum =
                         generate_quote_to_convert_datum_to_integer(arg_ident, &ty, "u64")?;
                     (
@@ -134,7 +134,7 @@ fn generate_idents_to_call_datasource_and_sync_to_oracle(
                         quote_to_convert_datum,
                     )
                 }
-                DestinactionType::StringOracle => (
+                DestinationType::StringOracle => (
                     call_canister_response_type_ident,
                     quote! {},
                     quote! { datum.clone().to_string() },
@@ -143,7 +143,7 @@ fn generate_idents_to_call_datasource_and_sync_to_oracle(
         }
         CanisterMethodValueType::Tuple(tys) => {
             match oracle_type {
-                DestinactionType::StringOracle => {
+                DestinationType::StringOracle => {
                     let type_idents = tys
                         .iter()
                         .map(|ty| format_ident!("{}", ty))
@@ -159,7 +159,7 @@ fn generate_idents_to_call_datasource_and_sync_to_oracle(
         }
         CanisterMethodValueType::Struct(values) => {
             match oracle_type {
-                DestinactionType::StringOracle => {
+                DestinationType::StringOracle => {
                     let response_type_def_ident = format_ident!("{}", "CustomResponseStruct");
                     let struct_tokens = values
                         .into_iter()

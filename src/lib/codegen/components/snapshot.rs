@@ -8,8 +8,9 @@ use crate::{
     types::{ComponentType, Network},
 };
 
-use super::common::{ComponentManifest, ComponentMetadata, Datasource, DestinactionType};
+use super::common::{ComponentManifest, ComponentMetadata, Datasource, DestinationType};
 
+/// Component Manifest: Snapshot
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct SnapshotComponentManifest {
     pub version: String,
@@ -78,7 +79,7 @@ impl ComponentManifest for SnapshotComponentManifest {
         &self.metadata
     }
 
-    fn destination_type(&self) -> Option<DestinactionType> {
+    fn destination_type(&self) -> Option<DestinationType> {
         None
     }
 

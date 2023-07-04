@@ -21,7 +21,7 @@ pub enum CanisterIdType {
 }
 #[allow(clippy::enum_variant_names)]
 #[derive(Deserialize, Serialize, Clone, Copy, Debug, PartialEq, clap::ValueEnum)]
-pub enum DestinactionType {
+pub enum DestinationType {
     #[serde(rename = "uint256")]
     Uint256Oracle,
     #[serde(rename = "uint128")]
@@ -164,32 +164,53 @@ impl DatasourceLocation {
     }
 }
 
-/// Determine indexer type from manifest
+/// Common Trait for Manifest of Data Processing Component
 pub trait ComponentManifest: std::fmt::Debug {
+    /// Get a structure representing the Component from the manifest
+    /// Note: assuming use of serde_yaml
     fn load(path: &str) -> anyhow::Result<Self>
     where
         Self: Sized;
+
+    /// Output Component Manifest as yaml format string
+    /// Note: assuming use of serde_yaml
     fn to_str_as_yaml(&self) -> anyhow::Result<String>
     where
         Self: Sized;
+
+    /// Check Manifest format/value
     fn validate_manifest(&self) -> anyhow::Result<()>;
+
+    /// Generate canister codes representing Component from Component Manifest
     fn generate_codes(
         &self,
         interface_contract: Option<ethabi::Contract>,
     ) -> anyhow::Result<TokenStream>;
+
+    /// Generate a script from Component Manifest containing commands to run the Component
     fn generate_scripts(&self, network: Network) -> anyhow::Result<String>;
 
+    /// Get the Component's Type
     fn component_type(&self) -> ComponentType;
+
+    /// Get the Component's Metadata
     fn metadata(&self) -> &ComponentMetadata;
-    fn destination_type(&self) -> Option<DestinactionType>;
+
+    /// Get DestinationType if Destination is defined
+    fn destination_type(&self) -> Option<DestinationType>;
+
+    /// Get the required interface for this component
+    /// ex: abi (.json), candid (.candid)
     fn required_interface(&self) -> Option<String>;
 }
 
+/// Structure for determining Indexer Type
 #[derive(Deserialize)]
 pub struct ComponentTypeInManifest {
     pub metadata: ComponentMetadata,
 }
 impl ComponentTypeInManifest {
+    /// Determine Component Type from Component Manifest
     pub fn determine_type(component_manifest_path: &str) -> anyhow::Result<ComponentType> {
         let mut file = OpenOptions::new()
             .read(true)

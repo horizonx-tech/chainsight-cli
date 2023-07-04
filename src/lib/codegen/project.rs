@@ -2,6 +2,7 @@ use std::{fs::OpenOptions, io::Read, path::Path};
 
 use serde::{Deserialize, Serialize};
 
+/// Manifest to express Chainsight Project
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct ProjectManifestData {
     pub version: String,

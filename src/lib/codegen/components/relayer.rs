@@ -9,8 +9,9 @@ use crate::{
     types::{ComponentType, Network},
 };
 
-use super::common::{ComponentManifest, ComponentMetadata, Datasource, DestinactionType};
+use super::common::{ComponentManifest, ComponentMetadata, Datasource, DestinationType};
 
+/// Component Manifest: Relayer
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct RelayerComponentManifest {
     pub version: String,
@@ -79,7 +80,7 @@ impl ComponentManifest for RelayerComponentManifest {
         &self.metadata
     }
 
-    fn destination_type(&self) -> Option<DestinactionType> {
+    fn destination_type(&self) -> Option<DestinationType> {
         Some(self.destination.type_)
     }
 
@@ -92,7 +93,7 @@ impl ComponentManifest for RelayerComponentManifest {
 pub struct DestinationField {
     pub network_id: u32,
     #[serde(rename = "type")]
-    pub type_: DestinactionType,
+    pub type_: DestinationType,
     pub oracle_address: String,
     pub rpc_url: String,
 }
@@ -100,7 +101,7 @@ pub struct DestinationField {
 impl DestinationField {
     pub fn new(
         network_id: u32,
-        destination_type: DestinactionType,
+        destination_type: DestinationType,
         oracle_address: String,
         rpc_url: String,
     ) -> Self {
@@ -115,7 +116,7 @@ impl DestinationField {
 impl Default for DestinationField {
     fn default() -> Self {
         let network_id = 80001; // NOTE: (temp) polygon mumbai
-        let oracle_type = DestinactionType::Uint256Oracle;
+        let oracle_type = DestinationType::Uint256Oracle;
         Self::new(
             network_id,
             oracle_type,
@@ -187,7 +188,7 @@ interval: 3600
                 },
                 destination: DestinationField {
                     network_id: 80001,
-                    type_: DestinactionType::Uint256Oracle,
+                    type_: DestinationType::Uint256Oracle,
                     oracle_address: "0539a0EF8e5E60891fFf0958A059E049e43020d9".to_string(),
                     rpc_url: "https://polygon-mumbai.g.alchemy.com/v2/<YOUR_KEY>".to_string(),
                 },
