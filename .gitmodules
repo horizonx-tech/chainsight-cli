@@ -1,0 +1,3 @@
+[submodule "chainsight-management-canisters"]
+	path = chainsight-management-canisters
+	url = https://github.com/horizonx-tech/chainsight-management-canisters.git
