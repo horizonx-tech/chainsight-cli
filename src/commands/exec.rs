@@ -171,7 +171,7 @@ echo "Run script for '{}'"
     perms.set_mode(0o755);
     fs::set_permissions(&entrypoint_filepath, perms)?;
 
-    info!(log, r#"Entrypoint Scriptgenerated successfully"#);
+    info!(log, r#"Entrypoint Script generated successfully"#);
 
     anyhow::Ok(())
 }
