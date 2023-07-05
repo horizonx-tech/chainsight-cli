@@ -293,7 +293,10 @@ fn custom_codes_for_canister(
         )
     } else {
         (
-            response_type_ident,
+            quote! {
+                type Snapshot = SnapshotValue;
+                #response_type_ident
+            },
             quote! {},
             quote! { let datum = res.unwrap().clone(); },
             quote! { ic_cdk::println!("snapshot={:?}", datum); },
