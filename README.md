@@ -1,34 +1,17 @@
 # Chainsight command-line execution envirionment
 
-## How to use
+Tool for users/developers to interact with the Chainsight Platform.
 
-Build CLI & Check
+This primarily builds/controls the Component running in Chainsight Platform.
 
-```bash
-cargo build --release
-alias csx="<repository_path>/target/release/csx"
-csx --version
-# -> csx x.y.z
-```
+This CLI allows users to build and operate any type of Component with their own definitions.
 
-Example of Operation Flow
+**[Getting Started](/docs/index.md)**
 
-```bash
-### Create Chainsight project
-csx new sample
+**Chainsight Platform?**
 
-# (manual) modify project/component manifests
+An interchain layer designed for data processing. This layer acts as a foundational support to data oracles, delivering a broad spectrum of data to on-chain applications that reside on various blockchains, including Ethereum and Optimism.
 
-### Build project
-csx build --path sample
+For more information, please refer to the following.
 
-### Deploy project
-## If you deploy in local, dfx network must be started (ex: 'dfx start')
-csx deploy --path sample/artifacts
-
-### Initialize Components / Start processing
-csx exec --path sample
-
-### Remove project
-target/release/csx remove --path sample
-```
+[Chainsight Network](https://docs.chainsight.network/chainsight-overview/introduction)
