@@ -32,6 +32,8 @@ lazy_static! {
 
     static ref REGEX_TUPLE: Regex = Regex::new(r"record\s\{\s(?P<items>(\w+(;\s|))+)\s\}").unwrap();
     static ref REGEX_STRUCT: Regex = Regex::new(r"(?P<field>\w+)\s*:\s*(?P<type>\w+)").unwrap();
+
+    static ref REGEX_MULTIPLE_RECORD_TYPE: Regex = Regex::new(r"record\s*\{").unwrap();
 }
 
 /// Generate method identifiers from function expressions in abi format
@@ -119,6 +121,14 @@ impl CanisterMethodIdentifier {
     }
 
     fn parse_return_value(s: &str) -> anyhow::Result<CanisterMethodValueType> {
+        let record_type_count = REGEX_MULTIPLE_RECORD_TYPE.find_iter(s).count();
+        if record_type_count >= 2 {
+            bail!(
+                "Sorry, Currently nested `record` types are not supported. This will be supported in the future.\nTarget literal = {}",
+                s
+            ); // TODO: Support nested `record` types.
+        }
+
         // Scalar
         if !s.starts_with("record") {
             let val = convert_type_from_candid_type(s)?;
