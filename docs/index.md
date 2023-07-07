@@ -4,9 +4,9 @@
 
 **csx** (Chainsight command-line execution envirionment) depends on several tools. Therefore, developers must have these tools installed and available in advance.
 
-- rust: To generate Canister code to be compiled into Module
-- cargo-make: To output interface automatically
-- dfx: To interact with Internet Computer
+- [rust](https://www.rust-lang.org/tools/install): To generate Canister code to be compiled into Module
+- [cargo-make](https://github.com/sagiegurari/cargo-make): To output interface automatically
+- [dfx](https://internetcomputer.org/docs/current/developer-docs/setup/install): To interact with Internet Computer
 
 You can confirm that it has been installed and is in the path by running the following in a terminal.
 
