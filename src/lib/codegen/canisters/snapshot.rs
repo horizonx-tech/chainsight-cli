@@ -404,7 +404,7 @@ fn generate_queries_without_timestamp(return_type: proc_macro2::Ident) -> proc_m
     quote! {
         #query_derives
         pub fn get_last_snapshot_value() -> #return_type {
-            get_last_snapshot().unwrap().value
+            get_last_snapshot().value
         }
 
         #query_derives
@@ -414,7 +414,7 @@ fn generate_queries_without_timestamp(return_type: proc_macro2::Ident) -> proc_m
 
         #query_derives
         pub fn get_snapshot_value(idx: u64) -> #return_type {
-            get_snapshot(idx).unwrap().value
+            get_snapshot(idx).value
         }
     }
 }
