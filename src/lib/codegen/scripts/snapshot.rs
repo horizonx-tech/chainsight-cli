@@ -74,7 +74,7 @@ fn generate_command_to_setup_for_contract(
         url = \"{}\";
         from = null;
         chain_id = {};
-        key = variant {{ {} }};
+        env = variant {{ {} }};
     }}
 )""#,
         network_param(network),

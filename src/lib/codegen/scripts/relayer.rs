@@ -35,8 +35,9 @@ fn generate_command_to_setup(
         url = \"{}\";
         from = null;
         chain_id = {};
-        key = variant {{ {} }};
-    }})""#,
+        env = variant {{ {} }};
+    }}
+)""#,
         network_param(network),
         label,
         target_canister,
