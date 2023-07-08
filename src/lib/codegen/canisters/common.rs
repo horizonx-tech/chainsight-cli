@@ -234,7 +234,7 @@ pub fn generate_outside_call_idents(type_: OutsideCallIdentsType) -> proc_macro2
 
                 setup_func!({
                     target_addr: String,
-                    web3_ctx_param: Web3CtxParam
+                    web3_ctx_param: chainsight_cdk::web3::Web3CtxParam
                 });
             }
         }
@@ -255,7 +255,7 @@ pub fn generate_outside_call_idents(type_: OutsideCallIdentsType) -> proc_macro2
                 setup_func!({
                     target_canister: String,
                     target_addr: String,
-                    web3_ctx_param: Web3CtxParam
+                    web3_ctx_param: chainsight_cdk::web3::Web3CtxParam
                 });
             }
         }
