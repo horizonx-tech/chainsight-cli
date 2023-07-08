@@ -249,13 +249,14 @@ candid = \"0.8\"
 ic-cdk = \"0.8\"
 ic-cdk-macros = \"0.6.10\"
 ic-cdk-timers = \"0.1\"
+ic-stable-structures = \"0.5.5\"
 serde = \"1.0.163\"
 hex = \"0.4.3\"
 
 ic-web3-rs = {{ version = \"0.1.1\" }}
 ic-solidity-bindgen = {{ version = \"0.1.5\" }}
-chainsight-cdk-macros = {{ git = \"https://github.com/horizonx-tech/chainsight-sdk.git\", rev = \"944449a81d52121463bb046041c833bc0158c87b\" }}
-chainsight-cdk = {{ git = \"https://github.com/horizonx-tech/chainsight-sdk.git\", rev = \"944449a81d52121463bb046041c833bc0158c87b\" }}", members);
+chainsight-cdk-macros = {{ git = \"https://github.com/horizonx-tech/chainsight-sdk.git\", rev = \"246a252b37837f7803f50354b64c2e5e4cd87e69\" }}
+chainsight-cdk = {{ git = \"https://github.com/horizonx-tech/chainsight-sdk.git\", rev = \"246a252b37837f7803f50354b64c2e5e4cd87e69\" }}", members);
 
     txt
 }
@@ -275,6 +276,7 @@ candid.workspace = true
 ic-cdk.workspace = true
 ic-cdk-macros.workspace = true
 ic-cdk-timers.workspace = true
+ic-stable-structures.workspace = true
 serde.workspace = true
 hex.workspace = true
 
