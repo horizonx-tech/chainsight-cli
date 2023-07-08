@@ -21,14 +21,14 @@ fn common_codes_for_contract() -> proc_macro2::TokenStream {
 
     quote! {
         use std::str::FromStr;
-        use chainsight_cdk_macros::{manage_single_state, setup_func, manage_vec_state, timer_task_func, define_transform_for_web3, define_web3_ctx, monitoring_canister_metrics, did_export};
+        use chainsight_cdk_macros::{manage_single_state, setup_func, stable_memory_for_vec, timer_task_func, define_transform_for_web3, define_web3_ctx, monitoring_canister_metrics, did_export};
         use ic_web3_rs::types::Address;
 
         monitoring_canister_metrics!(60);
 
         #outside_call_idents
 
-        manage_vec_state!("snapshot", Snapshot, true);
+        stable_memory_for_vec!("snapshot", Snapshot, 0, true);
         timer_task_func!("set_task", "execute_task", true);
     }
 }
@@ -192,13 +192,13 @@ fn common_codes_for_canister() -> proc_macro2::TokenStream {
         generate_outside_call_idents(OutsideCallIdentsType::CrossCanisterCall);
 
     quote! {
-        use chainsight_cdk_macros::{manage_single_state, setup_func, manage_vec_state, timer_task_func, cross_canister_call_func, monitoring_canister_metrics, did_export};
+        use chainsight_cdk_macros::{manage_single_state, setup_func, stable_memory_for_vec, timer_task_func, cross_canister_call_func, monitoring_canister_metrics, did_export};
 
         monitoring_canister_metrics!(60);
 
         #outside_call_idents
 
-        manage_vec_state!("snapshot", Snapshot, true);
+        stable_memory_for_vec!("snapshot", Snapshot, 0, true);
         timer_task_func!("set_task", "execute_task", true);
     }
 }
