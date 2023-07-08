@@ -249,6 +249,7 @@ candid = \"0.8\"
 ic-cdk = \"0.8\"
 ic-cdk-macros = \"0.6.10\"
 ic-cdk-timers = \"0.1\"
+ic-stable-structures = \"0.5.5\"
 serde = \"1.0.163\"
 hex = \"0.4.3\"
 
@@ -275,6 +276,7 @@ candid.workspace = true
 ic-cdk.workspace = true
 ic-cdk-macros.workspace = true
 ic-cdk-timers.workspace = true
+ic-stable-structures.workspace = true
 serde.workspace = true
 hex.workspace = true
 
