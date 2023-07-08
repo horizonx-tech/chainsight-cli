@@ -21,13 +21,15 @@ fn common_codes_for_contract() -> proc_macro2::TokenStream {
 
     quote! {
         use std::str::FromStr;
-        use chainsight_cdk_macros::{manage_single_state, setup_func, stable_memory_for_vec, timer_task_func, define_transform_for_web3, define_web3_ctx, monitoring_canister_metrics, did_export};
+        use candid::{Decode, Encode};
+        use chainsight_cdk_macros::{manage_single_state, setup_func, prepare_stable_structure, stable_memory_for_vec, StableMemoryStorable, timer_task_func, define_transform_for_web3, define_web3_ctx, monitoring_canister_metrics, did_export};
         use ic_web3_rs::types::Address;
 
         monitoring_canister_metrics!(60);
 
         #outside_call_idents
 
+        prepare_stable_structure!();
         stable_memory_for_vec!("snapshot", Snapshot, 0, true);
         timer_task_func!("set_task", "execute_task", true);
     }
@@ -98,7 +100,8 @@ fn custom_codes_for_contract(
     ) = if manifest.storage.with_timestamp {
         (
             quote! {
-                #[derive(Debug, Clone, candid::CandidType, candid::Deserialize)]
+                #[derive(Debug, Clone, candid::CandidType, candid::Deserialize, StableMemoryStorable)]
+                #[stable_mem_storable_opts(max_size = 10000, is_fixed_size = false)] // temp: max_size
                 pub struct Snapshot {
                     pub value: SnapshotValue,
                     pub timestamp: u64,
@@ -119,9 +122,13 @@ fn custom_codes_for_contract(
         )
     } else {
         (
-            quote! { type Snapshot = (#(#response_type_idents),*); },
+            quote! {
+                #[derive(Debug, Clone, candid :: CandidType, candid :: Deserialize, StableMemoryStorable)]
+                #[stable_mem_storable_opts(max_size = 10000, is_fixed_size = false)] // temp: max_size
+                pub struct Snapshot(#(pub #response_type_idents),*);
+            },
             quote! {},
-            quote! { let datum: Snapshot = (#(#response_val_idents),*); },
+            quote! { let datum = Snapshot((#(#response_val_idents),*)); },
             quote! { ic_cdk::println!("snapshot={:?}", datum); },
             quote! {},
         )
@@ -192,12 +199,14 @@ fn common_codes_for_canister() -> proc_macro2::TokenStream {
         generate_outside_call_idents(OutsideCallIdentsType::CrossCanisterCall);
 
     quote! {
-        use chainsight_cdk_macros::{manage_single_state, setup_func, stable_memory_for_vec, timer_task_func, cross_canister_call_func, monitoring_canister_metrics, did_export};
+        use candid::{Decode, Encode};
+        use chainsight_cdk_macros::{manage_single_state, setup_func, prepare_stable_structure, stable_memory_for_vec, StableMemoryStorable, timer_task_func, cross_canister_call_func, monitoring_canister_metrics, did_export};
 
         monitoring_canister_metrics!(60);
 
         #outside_call_idents
 
+        prepare_stable_structure!();
         stable_memory_for_vec!("snapshot", Snapshot, 0, true);
         timer_task_func!("set_task", "execute_task", true);
     }
@@ -274,7 +283,8 @@ fn custom_codes_for_canister(
     ) = if manifest.storage.with_timestamp {
         (
             quote! {
-                #[derive(Clone, Debug, candid::CandidType, candid::Deserialize)]
+                #[derive(Clone, Debug, candid::CandidType, candid::Deserialize, StableMemoryStorable)]
+                #[stable_mem_storable_opts(max_size = 10000, is_fixed_size = false)] // temp: max_size
                 pub struct Snapshot {
                     pub value: SnapshotValue,
                     pub timestamp: u64,
@@ -294,11 +304,14 @@ fn custom_codes_for_canister(
     } else {
         (
             quote! {
-                type Snapshot = SnapshotValue;
+                #[derive(Debug, Clone, candid :: CandidType, candid :: Deserialize, StableMemoryStorable)]
+                #[stable_mem_storable_opts(max_size = 10000, is_fixed_size = false)] // temp: max_size
+                pub struct Snapshot(pub SnapshotValue);
+
                 #response_type_ident
             },
             quote! {},
-            quote! { let datum = res.unwrap().clone(); },
+            quote! { let datum = Snapshot((res.unwrap().clone())); },
             quote! { ic_cdk::println!("snapshot={:?}", datum); },
             quote! {},
         )
@@ -391,17 +404,17 @@ fn generate_queries_without_timestamp(return_type: proc_macro2::Ident) -> proc_m
     quote! {
         #query_derives
         pub fn get_last_snapshot_value() -> #return_type {
-            get_last_snapshot().value
+            get_last_snapshot().unwrap().value
         }
 
         #query_derives
-        pub fn get_top_snapshot_values(n: usize) -> Vec<#return_type> {
+        pub fn get_top_snapshot_values(n: u64) -> Vec<#return_type> {
             get_top_snapshots(n).iter().map(|s| s.value.clone()).collect()
         }
 
         #query_derives
-        pub fn get_snapshot_value(idx: usize) -> #return_type {
-            get_snapshot(idx).value
+        pub fn get_snapshot_value(idx: u64) -> #return_type {
+            get_snapshot(idx).unwrap().value
         }
     }
 }
