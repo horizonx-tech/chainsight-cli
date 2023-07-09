@@ -128,7 +128,7 @@ fn custom_codes_for_contract(
                 pub struct Snapshot(#(pub #response_type_idents),*);
             },
             quote! {},
-            quote! { let datum = Snapshot((#(#response_val_idents),*)); },
+            quote! { let datum = Snapshot(#(#response_val_idents),*); },
             quote! { ic_cdk::println!("snapshot={:?}", datum); },
             quote! {},
         )
