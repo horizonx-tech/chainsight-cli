@@ -8,6 +8,7 @@ use anyhow::{bail, Ok};
 use clap::Parser;
 use slog::{debug, error, info, Logger};
 
+use crate::lib::codegen::components::algorithm_indexer::AlgorithmIndexerComponentManifest;
 use crate::lib::codegen::components::common::{ComponentManifest, ComponentTypeInManifest};
 use crate::lib::codegen::components::event_indexer::EventIndexerComponentManifest;
 use crate::lib::codegen::components::relayer::RelayerComponentManifest;
@@ -91,6 +92,9 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
         let data: Box<dyn ComponentManifest> = match component_type {
             ComponentType::EventIndexer => {
                 Box::new(EventIndexerComponentManifest::load(&component_path)?)
+            }
+            ComponentType::AlgorithmIndexer => {
+                Box::new(AlgorithmIndexerComponentManifest::load(&component_path)?)
             }
             ComponentType::Snapshot => Box::new(SnapshotComponentManifest::load(&component_path)?),
             ComponentType::Relayer => Box::new(RelayerComponentManifest::load(&component_path)?),
@@ -196,6 +200,11 @@ fn exec_codegen(
                 .to_string()
                 .as_bytes(),
         )?;
+        if data.user_impl_required() {
+            let app_path_str = format!("{}/app.rs", &canister_code_path_str);
+            let mut lib_file = File::create(&app_path_str)?;
+            lib_file.write_all(data.generate_user_impl_template()?.to_string().as_bytes())?;
+        }
 
         // generate project's Cargo.toml
         fs::write(
@@ -255,8 +264,8 @@ hex = \"0.4.3\"
 
 ic-web3-rs = {{ version = \"0.1.1\" }}
 ic-solidity-bindgen = {{ version = \"0.1.5\" }}
-chainsight-cdk-macros = {{ git = \"https://github.com/horizonx-tech/chainsight-sdk.git\", rev = \"246a252b37837f7803f50354b64c2e5e4cd87e69\" }}
-chainsight-cdk = {{ git = \"https://github.com/horizonx-tech/chainsight-sdk.git\", rev = \"246a252b37837f7803f50354b64c2e5e4cd87e69\" }}", members);
+chainsight-cdk-macros = {{ git = \"https://github.com/horizonx-tech/chainsight-sdk.git\", rev = \"76a6c3647c630052fc9c25accece1d37b5772fe8\" }}
+chainsight-cdk = {{ git = \"https://github.com/horizonx-tech/chainsight-sdk.git\", rev = \"76a6c3647c630052fc9c25accece1d37b5772fe8\" }}", members);
 
     txt
 }

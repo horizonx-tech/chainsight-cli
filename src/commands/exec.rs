@@ -8,6 +8,7 @@ use crate::{
     lib::{
         codegen::{
             components::{
+                algorithm_indexer::AlgorithmIndexerComponentManifest,
                 common::{ComponentManifest, ComponentTypeInManifest},
                 event_indexer::EventIndexerComponentManifest,
                 relayer::RelayerComponentManifest,
@@ -82,6 +83,9 @@ pub fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
         let data: Box<dyn ComponentManifest> = match component_type {
             ComponentType::EventIndexer => {
                 Box::new(EventIndexerComponentManifest::load(&component_path)?)
+            }
+            ComponentType::AlgorithmIndexer => {
+                Box::new(AlgorithmIndexerComponentManifest::load(&component_path)?)
             }
             ComponentType::Snapshot => Box::new(SnapshotComponentManifest::load(&component_path)?),
             ComponentType::Relayer => Box::new(RelayerComponentManifest::load(&component_path)?),

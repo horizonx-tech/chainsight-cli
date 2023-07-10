@@ -5,7 +5,7 @@ use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    lib::codegen::canisters,
+    lib::codegen::{canisters, scripts},
     types::{ComponentType, Network},
 };
 
@@ -66,8 +66,8 @@ impl ComponentManifest for EventIndexerComponentManifest {
         canisters::event_indexer::generate_codes(self, interface_contract)
     }
 
-    fn generate_scripts(&self, _network: Network) -> anyhow::Result<String> {
-        bail!("not implemented")
+    fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
+        scripts::event_indexer::generate_scripts(self, network)
     }
 
     fn component_type(&self) -> ComponentType {
@@ -85,28 +85,54 @@ impl ComponentManifest for EventIndexerComponentManifest {
     fn required_interface(&self) -> Option<String> {
         self.datasource.event.interface.clone()
     }
+    fn user_impl_required(&self) -> bool {
+        false
+    }
+    fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
+        bail!("not implemented")
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct EventIndexerDatasource {
-    // pub id: String, // NOTE: Currently not in use
+    pub id: String,
     pub event: EventIndexerEventDefinition,
+    pub network: SourceNetwork,
+    pub from: u64,
 }
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+pub struct SourceNetwork {
+    pub rpc_url: String,
+    pub chain_id: u64,
+}
+
 impl EventIndexerDatasource {
-    pub fn new(_id: String, event: EventIndexerEventDefinition) -> Self {
+    pub fn new(
+        id: String,
+        event: EventIndexerEventDefinition,
+        network: SourceNetwork,
+        from: u64,
+    ) -> Self {
         Self {
-            // id,
+            id,
             event,
+            network,
+            from,
         }
     }
 
     pub fn default() -> Self {
         Self {
-            // id: "0000000000000000000000000000000000000000".to_string(),
+            id: "0x6B175474E89094C44Da98b954EedeAC495271d0F".to_string(),
             event: EventIndexerEventDefinition::new(
                 "Transfer".to_string(),
                 Some("ERC20.json".to_string()),
             ),
+            network: SourceNetwork {
+                rpc_url: "https://mainnet.infura.io/v3/<YOUR_KEY>".to_string(),
+                chain_id: 1,
+            },
+            from: 17660942,
         }
     }
 }
@@ -137,10 +163,14 @@ metadata:
     type: event_indexer
     description: Description
 datasource:
-    id: 0000000000000000000000000000000000000000
+    id: 0x6B175474E89094C44Da98b954EedeAC495271d0F
     event:
         identifier: Transfer
         interface: ERC20.json
+    network: 
+        rpc_url: https://mainnet.infura.io/v3/<YOUR_KEY>
+        chain_id: 1
+    from: 17660942
 interval: 3600
         "#;
 
@@ -157,11 +187,16 @@ interval: 3600
                     description: "Description".to_string(),
                 },
                 datasource: EventIndexerDatasource {
-                    // id: "0000000000000000000000000000000000000000".to_string(),
+                    id: "0x6B175474E89094C44Da98b954EedeAC495271d0F".to_string(),
                     event: EventIndexerEventDefinition {
                         identifier: "Transfer".to_string(),
                         interface: Some("ERC20.json".to_string())
-                    }
+                    },
+                    network: SourceNetwork {
+                        rpc_url: "https://mainnet.infura.io/v3/<YOUR_KEY>".to_string(),
+                        chain_id: 1,
+                    },
+                    from: 17660942,
                 },
                 interval: 3600
             }

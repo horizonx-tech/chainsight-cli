@@ -202,6 +202,8 @@ pub trait ComponentManifest: std::fmt::Debug {
     /// Get the required interface for this component
     /// ex: abi (.json), candid (.candid)
     fn required_interface(&self) -> Option<String>;
+    fn user_impl_required(&self) -> bool;
+    fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream>;
 }
 
 /// Structure for determining Indexer Type

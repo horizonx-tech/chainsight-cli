@@ -9,6 +9,7 @@ edition = "2021"
 Inflector = "0.11.4"
 anstyle = "1.0.1"
 anyhow = "1.0.71"
+candid = "0.9.0"
 clap = { version = "4.3.0", features = ["derive", "env", "unstable-styles", "wrap_help"] }
 ethabi = "18.0.0"
 lazy_static = "1.4.0"

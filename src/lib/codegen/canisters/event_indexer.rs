@@ -5,10 +5,7 @@ use quote::{format_ident, quote};
 use crate::{
     lib::{
         codegen::{
-            canisters::common::{
-                convert_type_from_ethabi_param_type, generate_outside_call_idents,
-                OutsideCallIdentsType,
-            },
+            canisters::common::convert_type_from_ethabi_param_type,
             components::event_indexer::EventIndexerComponentManifest,
         },
         utils::{convert_camel_to_snake, ADDRESS_TYPE, U256_TYPE},
@@ -17,26 +14,39 @@ use crate::{
 };
 
 fn common_codes() -> TokenStream {
-    let outside_call_idents = generate_outside_call_idents(OutsideCallIdentsType::Eth);
-
-    // todo
     quote! {
-        use chainsight_cdk_macros::{
-            define_transform_for_web3, define_web3_ctx, did_export,
-            manage_single_state, monitoring_canister_metrics, setup_func, ContractEvent
+        use candid::CandidType;
+        use chainsight_cdk::{
+            indexer::{Event, Indexer, IndexingConfig},
+            storage::Data,
+            web3::Web3CtxParam,
         };
-        use ic_solidity_bindgen::types::EventLog;
+        use chainsight_cdk_macros::{
+            define_get_ethereum_address, define_transform_for_web3, define_web3_ctx, did_export, init_in,
+            manage_single_state, monitoring_canister_metrics, setup_func, web3_event_indexer,timer_task_func,
+            ContractEvent, Persist,
+        };
+        use ic_solidity_bindgen::{types::EventLog};
         use ic_web3_rs::{
+            ethabi::Address,
             futures::{future::BoxFuture, FutureExt},
             transports::ic_http_client::CallOptions,
-            types::Address
         };
-        use std::collections::HashMap;
-        use std::str::FromStr;
-
+        use serde::Serialize;
+        use std::{collections::HashMap, str::FromStr};
         monitoring_canister_metrics!(60);
+        define_web3_ctx!();
+        define_transform_for_web3!();
+        define_get_ethereum_address!();
+        timer_task_func!("set_task", "index", true);
+        manage_single_state!("target_addr", String, false);
+        setup_func!({
+            target_addr: String,
+            web3_ctx_param: Web3CtxParam,
+            config: IndexingConfig,
+        });
+        init_in!();
 
-        #outside_call_idents
     }
 }
 
@@ -82,7 +92,7 @@ fn custom_codes(
         })
         .collect::<Vec<_>>();
     let event_struct = quote! {
-        #[derive(Clone, Debug,  Default, candid::CandidType, candid::Deserialize, ContractEvent)]
+        #[derive(Clone, Debug,  Default, candid::CandidType, ContractEvent, Serialize, Persist)]
         pub struct #event_struct_name {
             #(#event_struct_field_tokens),*
         }
@@ -95,14 +105,13 @@ fn custom_codes(
                 event.into()
             }
 
-            // temp
             fn tokenize(&self) -> chainsight_cdk::storage::Data {
-                chainsight_cdk::storage::Data::new(HashMap::new()) // self._tokenize()
+                self._tokenize()
             }
 
             // temp
             fn untokenize(data: chainsight_cdk::storage::Data) -> Self {
-                #event_struct_name::default() // #event_struct_name::_untokenize(data)
+                #event_struct_name::_untokenize(data)
             }
         }
     };
@@ -112,7 +121,7 @@ fn custom_codes(
     // temp
     Ok(quote! {
         ic_solidity_bindgen::contract_abi!(#abi_path);
-
+        web3_event_indexer!(#event_struct_name);
         #event_struct
 
         fn get_logs(

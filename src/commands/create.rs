@@ -11,10 +11,14 @@ use crate::{
     lib::{
         codegen::{
             components::{
+                algorithm_indexer::{
+                    AlgorithmIndexerComponentManifest, AlgorithmIndexerDatasource,
+                    AlgorithmIndexerOutput,
+                },
                 common::{ComponentManifest, Datasource},
                 event_indexer::{
                     EventIndexerComponentManifest, EventIndexerDatasource,
-                    EventIndexerEventDefinition,
+                    EventIndexerEventDefinition, SourceNetwork,
                 },
                 relayer::{DestinationField, RelayerComponentManifest},
                 snapshot::{SnapshotComponentManifest, SnapshotStorage},
@@ -66,6 +70,9 @@ pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> anyhow::Result<()> {
     let codes = match component_type {
         ComponentType::EventIndexer => {
             template_event_indexer_manifest(&component_name).to_str_as_yaml()
+        }
+        ComponentType::AlgorithmIndexer => {
+            template_algorithm_indexer_manifest(&component_name).to_str_as_yaml()
         }
         ComponentType::Snapshot => template_snapshot_manifest(&component_name).to_str_as_yaml(),
         ComponentType::Relayer => template_relayer_manifest(&component_name).to_str_as_yaml(),
@@ -131,7 +138,23 @@ fn template_event_indexer_manifest(component_name: &str) -> EventIndexerComponen
         EventIndexerDatasource::new(
             "0000000000000000000000000000000000000000".to_string(),
             EventIndexerEventDefinition::new("EventIdentifier".to_string(), None),
+            SourceNetwork {
+                chain_id: 80001,
+                rpc_url: "https://polygon-mumbai.g.alchemy.com/v2/<YOUR_KEY>".to_string(),
+            },
+            37730337,
         ),
+        3600,
+    )
+}
+
+fn template_algorithm_indexer_manifest(component_name: &str) -> AlgorithmIndexerComponentManifest {
+    AlgorithmIndexerComponentManifest::new(
+        component_name,
+        "",
+        PROJECT_MANIFEST_VERSION,
+        AlgorithmIndexerDatasource::default(),
+        AlgorithmIndexerOutput::default(),
         3600,
     )
 }

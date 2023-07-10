@@ -12,6 +12,10 @@ pub enum ComponentType {
     #[serde(rename = "event_indexer")]
     EventIndexer,
 
+    #[serde(rename = "algorithm_indexer")]
+    /// get events from other indexer and convert it into another format
+    AlgorithmIndexer,
+
     /// To periodically take and store snapshots from Contract and other Canisters
     #[serde(rename = "snapshot")]
     Snapshot,
@@ -25,6 +29,7 @@ impl fmt::Display for ComponentType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             ComponentType::EventIndexer => write!(f, "event_indexer"),
+            ComponentType::AlgorithmIndexer => write!(f, "algorithm_indexer"),
             ComponentType::Snapshot => write!(f, "snapshot"),
             ComponentType::Relayer => write!(f, "relayer"),
         }

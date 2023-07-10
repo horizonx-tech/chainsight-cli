@@ -1,6 +1,6 @@
 use std::{fs::OpenOptions, io::Read, path::Path};
 
-use anyhow::Ok;
+use anyhow::{bail, Ok};
 use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 
@@ -86,6 +86,12 @@ impl ComponentManifest for RelayerComponentManifest {
 
     fn required_interface(&self) -> Option<String> {
         self.datasource.method.interface.clone()
+    }
+    fn user_impl_required(&self) -> bool {
+        false
+    }
+    fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
+        bail!("not implemented")
     }
 }
 
