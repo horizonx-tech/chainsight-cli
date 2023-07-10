@@ -212,9 +212,10 @@ Options:
           Specifies type of the component to create
 
           Possible values:
-          - event-indexer: To synchronize event data
-          - snapshot:      To periodically take and store snapshots from Contract and other Canisters
-          - relayer:       To relay data to other blockchains
+          - event-indexer:     To synchronize event data
+          - algorithm-indexer: To store data from chainsight-canisters and collect them into other types of data
+          - snapshot:          To periodically take and store snapshots from Contract and other Canisters
+          - relayer:           To relay data to other blockchains
 
   -v, --verbose...
           Displays detailed information about operations. -vv will generate a very large number of messages and can affect performance
@@ -351,6 +352,8 @@ example)
 version: v1
 label: example_pj
 components:
+- component_path: components/example_event_indexer.yaml
+- component_path: components/example_algorithm_indexer.yaml
 - component_path: components/example_pj_snapshot_chain.yaml
 - component_path: components/example_pj_snapshot_icp.yaml
 - component_path: components/example_pj_relayer.yaml
