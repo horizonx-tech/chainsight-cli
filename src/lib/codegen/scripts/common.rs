@@ -24,12 +24,12 @@ pub fn generate_command_to_set_task(
 
 pub fn init_in_env_task(network: &Network, label: &str) -> String {
     format!(
-        r#"dfx canister {} call {} init_in '(variant{{\"{}\"}} )'"#,
+        r#"dfx canister {} call {} init_in '(variant{{"{}"}} )'"#,
         network_param(network),
         label,
         match network {
-            Network::Local => "Production",
-            Network::IC => "LocalDevelopment",
+            Network::Local => "LocalDevelopment",
+            Network::IC => "Production",
         }
     )
 }
