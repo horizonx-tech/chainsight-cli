@@ -22,8 +22,11 @@ fn common_codes_for_contract() -> proc_macro2::TokenStream {
     quote! {
         use std::str::FromStr;
         use candid::{Decode, Encode};
-        use chainsight_cdk_macros::{manage_single_state, setup_func, prepare_stable_structure, stable_memory_for_vec, StableMemoryStorable, timer_task_func, define_transform_for_web3, define_web3_ctx, monitoring_canister_metrics, did_export};
+        use chainsight_cdk_macros::{init_in, manage_single_state, setup_func, prepare_stable_structure, stable_memory_for_vec, StableMemoryStorable, timer_task_func, define_transform_for_web3, define_web3_ctx, monitoring_canister_metrics, did_export};
+
         use ic_web3_rs::types::Address;
+        init_in!();
+
 
         monitoring_canister_metrics!(60);
 
@@ -200,8 +203,9 @@ fn common_codes_for_canister() -> proc_macro2::TokenStream {
 
     quote! {
         use candid::{Decode, Encode};
-        use chainsight_cdk_macros::{manage_single_state, setup_func, prepare_stable_structure, stable_memory_for_vec, StableMemoryStorable, timer_task_func, cross_canister_call_func, monitoring_canister_metrics, did_export};
-
+        use chainsight_cdk_macros::{init_in,manage_single_state, setup_func, prepare_stable_structure, stable_memory_for_vec, StableMemoryStorable, timer_task_func, monitoring_canister_metrics, did_export};
+        use chainsight_cdk::rpc::{CallProvider, Caller, Message};
+        init_in!();
         monitoring_canister_metrics!(60);
 
         #outside_call_idents
@@ -220,7 +224,6 @@ fn custom_codes_for_canister(
     let method_identifier = CanisterMethodIdentifier::parse_from_str(&method.identifier)?;
 
     let method_ident = &method_identifier.identifier;
-    let call_method_ident = format_ident!("call_{}", method_ident);
 
     // for request values
     // todo: validate length of method.args and method_identifier.params
@@ -326,14 +329,22 @@ fn custom_codes_for_canister(
 
         type CallCanisterArgs = (#(#request_ty_idents),*);
         type CallCanisterResponse = SnapshotValue;
-        cross_canister_call_func!(#method_ident, CallCanisterArgs, CallCanisterResponse);
         async fn execute_task() {
             #expr_to_current_ts_sec
             let target_canister = candid::Principal::from_text(get_target_canister()).unwrap();
-            let res = #call_method_ident(
-                target_canister,
-                (#(#request_val_idents),*)
-            ).await;
+            let call_result = CallProvider::new(proxy())
+                .call(
+                    Message::new::<CallCanisterArgs>(
+                        (#(#request_val_idents),*),
+                        target_canister.clone(),
+                        #method_ident
+                    ).unwrap()
+                ).await;
+            if let Err(err) = call_result {
+                ic_cdk::println!("error: {:?}", err);
+                return;
+            }
+            let res = call_result.unwrap().reply::<CallCanisterResponse>();
             if let Err(err) = res {
                 ic_cdk::println!("error: {:?}", err);
                 return;
