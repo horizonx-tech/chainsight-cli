@@ -15,7 +15,7 @@ pub struct AlgorithmIndexerComponentManifest {
     pub version: String,
     pub metadata: ComponentMetadata,
     pub datasource: AlgorithmIndexerDatasource,
-    pub output: AlgorithmIndexerOutput,
+    pub output: Vec<AlgorithmIndexerOutput>,
     pub interval: u32,
 }
 
@@ -25,7 +25,7 @@ impl AlgorithmIndexerComponentManifest {
         description: &str,
         version: &str,
         datasource: AlgorithmIndexerDatasource,
-        output: AlgorithmIndexerOutput,
+        output: Vec<AlgorithmIndexerOutput>,
         interval: u32,
     ) -> Self {
         Self {
@@ -113,6 +113,13 @@ pub struct InputStruct {
 pub struct AlgorithmIndexerOutput {
     pub name: String,
     pub fields: HashMap<String, String>,
+    pub output_type: AlgorithmOutputType,
+}
+
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+pub enum AlgorithmOutputType {
+    KeyValues,
+    KeyValue,
 }
 
 impl Default for AlgorithmIndexerOutput {
@@ -122,6 +129,7 @@ impl Default for AlgorithmIndexerOutput {
         Self {
             name: "SampleOutput".to_string(),
             fields: sample_fields,
+            output_type: AlgorithmOutputType::KeyValue,
         }
     }
 }
@@ -171,10 +179,11 @@ datasource:
             to: String
             value: String
 output:
-    name: SampleOutput
-    fields:
-        result: String
-        value: String
+    - name: SampleOutput
+        fields:
+            result: String
+            value: String
+        output_type: key_value    
 interval: 3600
 "#;
 
@@ -205,10 +214,11 @@ interval: 3600
                     printipal: "ahw5u-keaaa-aaaaa-qaaha-cai".to_string(),
                     from: 0
                 },
-                output: AlgorithmIndexerOutput {
+                output: vec!(AlgorithmIndexerOutput {
                     name: "SampleOutput".to_string(),
-                    fields: output_types
-                },
+                    fields: output_types,
+                    output_type: AlgorithmOutputType::KeyValue
+                }),
                 interval: 3600
             }
         );

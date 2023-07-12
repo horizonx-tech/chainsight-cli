@@ -154,7 +154,7 @@ fn template_algorithm_indexer_manifest(component_name: &str) -> AlgorithmIndexer
         "",
         PROJECT_MANIFEST_VERSION,
         AlgorithmIndexerDatasource::default(),
-        AlgorithmIndexerOutput::default(),
+        vec![AlgorithmIndexerOutput::default()],
         3600,
     )
 }
