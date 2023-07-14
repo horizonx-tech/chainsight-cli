@@ -5,11 +5,11 @@ use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    lib::codegen::{canisters, scripts},
+    lib::codegen::{canisters, components::common::SourceType, scripts},
     types::{ComponentType, Network},
 };
 
-use super::common::{ComponentManifest, ComponentMetadata, Datasource, DestinationType};
+use super::common::{ComponentManifest, ComponentMetadata, Datasource, DestinationType, Sources};
 
 /// Component Manifest: Snapshot
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -36,6 +36,11 @@ impl SnapshotComponentManifest {
                 label: label.to_owned(),
                 type_: ComponentType::Snapshot,
                 description: description.to_owned(),
+                tags: Some(vec![
+                    "ERC20".to_string(),
+                    "Ethereum".to_string(),
+                    "DAI".to_string(),
+                ]),
             },
             datasource,
             storage,
@@ -92,6 +97,20 @@ impl ComponentManifest for SnapshotComponentManifest {
     }
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
         bail!("Not implemented")
+    }
+    fn get_sources(&self) -> Sources {
+        #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+        struct Attributes {
+            function_name: String,
+        }
+        Sources {
+            source: self.datasource.location.id.clone(),
+            source_type: SourceType::AlgorithmIndexer,
+            attributes: serde_json::to_string(&Attributes {
+                function_name: self.datasource.clone().method.identifier,
+            })
+            .unwrap(),
+        }
     }
 }
 
@@ -152,7 +171,8 @@ interval: 3600
                 metadata: ComponentMetadata {
                     label: "sample_pj_snapshot_chain".to_owned(),
                     type_: ComponentType::Snapshot,
-                    description: "Description".to_string()
+                    description: "Description".to_string(),
+                    tags: None
                 },
                 datasource: Datasource {
                     type_: DatasourceType::Contract,
@@ -208,7 +228,8 @@ interval: 3600
                 metadata: ComponentMetadata {
                     label: "sample_pj_snapshot_icp".to_owned(),
                     type_: ComponentType::Snapshot,
-                    description: "Description".to_string()
+                    description: "Description".to_string(),
+                    tags: None
                 },
                 datasource: Datasource {
                     type_: DatasourceType::Canister,

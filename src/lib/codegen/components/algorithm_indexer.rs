@@ -8,7 +8,7 @@ use crate::{
     types::{ComponentType, Network},
 };
 
-use super::common::{ComponentManifest, ComponentMetadata};
+use super::common::{ComponentManifest, ComponentMetadata, SourceType, Sources};
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct AlgorithmIndexerComponentManifest {
@@ -34,6 +34,7 @@ impl AlgorithmIndexerComponentManifest {
                 label: label.to_owned(),
                 type_: ComponentType::AlgorithmIndexer,
                 description: description.to_owned(),
+                tags: Some(vec!["Ethereum".to_string(), "Account".to_string()]),
             },
             datasource,
             output,
@@ -71,7 +72,7 @@ impl ComponentManifest for AlgorithmIndexerComponentManifest {
     }
 
     fn component_type(&self) -> ComponentType {
-        ComponentType::EventIndexer
+        ComponentType::AlgorithmIndexer
     }
 
     fn metadata(&self) -> &ComponentMetadata {
@@ -91,6 +92,16 @@ impl ComponentManifest for AlgorithmIndexerComponentManifest {
     }
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
         canisters::algorithm_indexer::generate_app(self)
+    }
+
+    fn get_sources(&self) -> Sources {
+        #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+        struct Attributes {}
+        Sources {
+            source_type: SourceType::EventIndexer,
+            source: self.datasource.clone().printipal,
+            attributes: serde_json::to_string(&Attributes {}).unwrap(),
+        }
     }
 }
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -187,6 +198,9 @@ metadata:
     label: sample_pj_algorithm_indexer
     type: algorithm_indexer
     description: Description
+    tags: 
+      - Ethereum
+      - Account
 datasource:
     printipal: ahw5u-keaaa-aaaaa-qaaha-cai
     from: 17660942
@@ -225,6 +239,7 @@ interval: 3600
                     label: "sample_pj_algorithm_indexer".to_string(),
                     type_: ComponentType::AlgorithmIndexer,
                     description: "Description".to_string(),
+                    tags: Some(vec!["Ethereum".to_string(), "Account".to_string()])
                 },
                 datasource: AlgorithmIndexerDatasource {
                     input: InputStruct {

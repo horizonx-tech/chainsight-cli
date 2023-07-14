@@ -478,6 +478,41 @@ fn execute_codebuild(
     anyhow::Ok(())
 }
 
+fn add_meta(
+    key: &str,
+    value: &str,
+    target: &Path,
+    label: &str,
+    log: &Logger,
+) -> anyhow::Result<()> {
+    let wasm_path = format!("artifacts/{}.wasm", label);
+    let description = format!("Add metadata `{}`", key);
+    let output = Command::new("ic-wasm")
+        .current_dir(target)
+        .args([
+            &wasm_path, "-o", &wasm_path, "metadata", key, "-d", value, "-v", "public",
+        ])
+        .output()
+        .unwrap_or_else(|_| panic!("failed to execute process: ic-wasm metadata {}", key));
+    if output.status.success() {
+        debug!(
+            log,
+            "{}",
+            std::str::from_utf8(&output.stdout).unwrap_or("fail to parse stdout")
+        );
+        info!(log, "{} `{}` successfully", label, description);
+    } else {
+        debug!(
+            log,
+            "{}",
+            std::str::from_utf8(&output.stderr).unwrap_or("fail to parse stdout")
+        );
+        error!(log, "{} `{}` failed", label, description);
+        bail!(GLOBAL_ERROR_MSG.to_string())
+    };
+    anyhow::Ok(())
+}
+
 fn add_metadatas_to_wasm(
     log: &Logger,
     built_project_path_str: &str,
@@ -485,108 +520,29 @@ fn add_metadatas_to_wasm(
 ) -> anyhow::Result<()> {
     let built_project_path = Path::new(&built_project_path_str);
 
-    let label = component_datum.metadata().label.clone();
-    let wasm_path = format!("artifacts/{}.wasm", label);
+    let wasm_name = component_datum.metadata().label.clone();
+    let put_meta = |key: &str, value: &str| -> anyhow::Result<()> {
+        add_meta(key, value, built_project_path, &wasm_name, log)
+    };
 
     // chainsight:label
-    let description = "Add 'chainsight:label' metadata";
-    let output = Command::new("ic-wasm")
-        .current_dir(built_project_path)
-        .args([
-            &wasm_path,
-            "-o",
-            &wasm_path,
-            "metadata",
-            "chainsight:label",
-            "-d",
-            &label,
-            "-v",
-            "public",
-        ])
-        .output()
-        .expect("failed to execute process: ic-wasm metadata chainsight:label");
-    if output.status.success() {
-        debug!(
-            log,
-            "{}",
-            std::str::from_utf8(&output.stdout).unwrap_or("fail to parse stdout")
-        );
-        info!(log, "{} `{}` successfully", label, description);
-    } else {
-        debug!(
-            log,
-            "{}",
-            std::str::from_utf8(&output.stderr).unwrap_or("fail to parse stdout")
-        );
-        error!(log, "{} `{}` failed", label, description);
-        bail!(GLOBAL_ERROR_MSG.to_string())
-    }
-    // chainsight:component_type
-    let description = "Add 'chainsight:component_type' metadata";
-    let output = Command::new("ic-wasm")
-        .current_dir(built_project_path)
-        .args([
-            &wasm_path,
-            "-o",
-            &wasm_path,
-            "metadata",
-            "chainsight:component_type",
-            "-d",
-            &component_datum.component_type().to_string(),
-            "-v",
-            "public",
-        ])
-        .output()
-        .expect("failed to execute process: ic-wasm metadata chainsight:component_type");
-    if output.status.success() {
-        debug!(
-            log,
-            "{}",
-            std::str::from_utf8(&output.stdout).unwrap_or("fail to parse stdout")
-        );
-        info!(log, "{} `{}` successfully", label, description);
-    } else {
-        debug!(
-            log,
-            "{}",
-            std::str::from_utf8(&output.stderr).unwrap_or("fail to parse stdout")
-        );
-        error!(log, "{} `{}` failed", label, description);
-        bail!(GLOBAL_ERROR_MSG.to_string())
-    }
-    // chainsight:description
-    let description = "Add 'chainsight:description' metadata";
-    let output = Command::new("ic-wasm")
-        .current_dir(built_project_path)
-        .args([
-            &wasm_path,
-            "-o",
-            &wasm_path,
-            "metadata",
-            "chainsight:description",
-            "-d",
-            &component_datum.metadata().description,
-            "-v",
-            "public",
-        ])
-        .output()
-        .expect("failed to execute process: ic-wasm metadata chainsight:description");
-    if output.status.success() {
-        debug!(
-            log,
-            "{}",
-            std::str::from_utf8(&output.stdout).unwrap_or("fail to parse stdout")
-        );
-        info!(log, "{} `{}` successfully", label, description);
-    } else {
-        debug!(
-            log,
-            "{}",
-            std::str::from_utf8(&output.stderr).unwrap_or("fail to parse stdout")
-        );
-        error!(log, "{} `{}` failed", label, description);
-        bail!(GLOBAL_ERROR_MSG.to_string())
-    }
+    put_meta("chainsight:label", &wasm_name)?;
+    put_meta(
+        "chainsight:component_type",
+        &component_datum.component_type().to_string(),
+    )?;
+    put_meta(
+        "chainsight:description",
+        &component_datum.metadata().description,
+    )?;
+    let tags = component_datum.metadata().tags.clone().unwrap_or(vec![]);
+    let tags_str = serde_json::to_string(&tags)?;
 
+    put_meta("chainsight:tags", tags_str.as_str())?;
+    let meta_json = serde_json::to_string(&component_datum.get_sources())?;
+    put_meta("chainsight:sources", meta_json.as_str())?;
+    for (key, value) in component_datum.custom_tags().iter() {
+        put_meta(key, value)?;
+    }
     anyhow::Ok(())
 }

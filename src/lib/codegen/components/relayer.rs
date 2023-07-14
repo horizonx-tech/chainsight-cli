@@ -1,4 +1,4 @@
-use std::{fs::OpenOptions, io::Read, path::Path};
+use std::{collections::HashMap, fs::OpenOptions, io::Read, path::Path};
 
 use anyhow::{bail, Ok};
 use proc_macro2::TokenStream;
@@ -9,7 +9,9 @@ use crate::{
     types::{ComponentType, Network},
 };
 
-use super::common::{ComponentManifest, ComponentMetadata, Datasource, DestinationType};
+use super::common::{
+    ComponentManifest, ComponentMetadata, Datasource, DestinationType, SourceType, Sources,
+};
 
 /// Component Manifest: Relayer
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -36,6 +38,7 @@ impl RelayerComponentManifest {
                 label: label.to_owned(),
                 type_: ComponentType::Relayer,
                 description: description.to_owned(),
+                tags: Some(vec!["Oracle".to_string(), "snapshot".to_string()]),
             },
             datasource,
             destination,
@@ -90,8 +93,42 @@ impl ComponentManifest for RelayerComponentManifest {
     fn user_impl_required(&self) -> bool {
         false
     }
+    fn get_sources(&self) -> Sources {
+        #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+        struct Attributes {}
+        Sources {
+            source: self.datasource.clone().location.id,
+            source_type: SourceType::SnapshotIndexer,
+            attributes: serde_json::to_string(&Attributes {}).unwrap(),
+        }
+    }
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
         bail!("not implemented")
+    }
+    fn custom_tags(&self) -> HashMap<String, String> {
+        #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+        struct Attributes {
+            chain_id: u32,
+        }
+        #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+        struct Destination {
+            destination_type: String,
+            address: String,
+            attributes: Attributes,
+        }
+        let mut res = HashMap::new();
+        let dest = Destination {
+            destination_type: "EVM".to_string(),
+            address: self.destination.oracle_address.clone(),
+            attributes: Attributes {
+                chain_id: self.destination.network_id,
+            },
+        };
+        res.insert(
+            "chainsight::destination".to_string(),
+            serde_json::to_string(&dest).unwrap(),
+        );
+        res
     }
 }
 
@@ -177,6 +214,7 @@ interval: 3600
                     label: "sample_pj_relayer".to_string(),
                     type_: ComponentType::Relayer,
                     description: "Description".to_string(),
+                    tags: None
                 },
                 datasource: Datasource {
                     type_: DatasourceType::Canister,
