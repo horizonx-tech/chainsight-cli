@@ -38,7 +38,7 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
     let method = &manifest.datasource.method;
     let method_identifier = CanisterMethodIdentifier::parse_from_str(&method.identifier)?;
 
-    let method_ident = &method_identifier.identifier;
+    let method_ident = "proxy_".to_string() + &method_identifier.identifier;
 
     // from destination: about oracle
     let destination = &manifest.destination;

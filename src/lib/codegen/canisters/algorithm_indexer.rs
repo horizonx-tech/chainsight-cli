@@ -1,10 +1,10 @@
 use anyhow::ensure;
 use proc_macro2::{Ident, TokenStream};
-use quote::quote;
+use quote::{format_ident, quote};
 
 use crate::{
     lib::codegen::components::algorithm_indexer::{
-        AlgorithmIndexerComponentManifest, AlgorithmOutputType,
+        AlgorithmIndexerComponentManifest, AlgorithmInputType, AlgorithmOutputType,
     },
     types::ComponentType,
 };
@@ -13,10 +13,7 @@ fn common_codes() -> TokenStream {
     quote! {
         use candid::CandidType;
         use chainsight_cdk::{indexer::IndexingConfig, storage::Data};
-        use chainsight_cdk_macros::{
-            algorithm_indexer, did_export, init_in, manage_single_state, monitoring_canister_metrics,
-            setup_func, timer_task_func, KeyValueStore, KeyValuesStore, Persist,
-        };
+        use chainsight_cdk_macros::*;
         use serde::{Deserialize, Serialize};
         use std::collections::HashMap;
         monitoring_canister_metrics!(60);
@@ -33,56 +30,84 @@ fn common_codes() -> TokenStream {
     }
 }
 
+fn input_type_ident(manifest: &AlgorithmIndexerComponentManifest) -> TokenStream {
+    let event_struct = format_ident!("{}", &manifest.datasource.input.name);
+    let source_type = manifest.datasource.source_type.clone();
+    match source_type {
+        AlgorithmInputType::EventIndexer => {
+            // HashMap<u64, Vec<event_struct>>
+            let source_ident = format_ident!("{}", &"HashMap".to_string());
+            quote! {
+                #source_ident<u64, Vec<#event_struct>>
+            }
+        }
+        AlgorithmInputType::KeyValue => {
+            // HashMap<String, event_struct>
+            let source_ident = format_ident!("{}", &"HashMap".to_string());
+            quote! {
+                #source_ident<String, #event_struct>
+            }
+        }
+        AlgorithmInputType::KeyValues => {
+            // HashMap<String, Vec<event_struct>>
+            let source_ident = format_ident!("{}", &"HashMap".to_string());
+            quote! {
+                #source_ident<String, Vec<#event_struct>>
+            }
+        }
+    }
+}
 fn custom_codes(
     manifest: &AlgorithmIndexerComponentManifest,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     let label = &manifest.metadata.label;
 
     let event_interfaces = &manifest.datasource.input.fields;
+    let event_struct = format_ident!("{}", &manifest.datasource.input.name);
+    let source_ident = input_type_ident(manifest);
+    let method = &manifest.datasource.method;
 
-    let event_struct = quote::format_ident!("{}", &manifest.datasource.input.name);
     let input_field_idents: Vec<Ident> = event_interfaces
         .iter()
-        .map(|(k, _)| quote::format_ident!("{}", k.clone()))
+        .map(|(k, _)| format_ident!("{}", k.clone()))
         .collect();
 
     let input_field_types: Vec<Ident> = event_interfaces
         .iter()
-        .map(|(_, v)| quote::format_ident!("{}", v.clone()))
+        .map(|(_, v)| format_ident!("{}", v.clone()))
         .collect();
 
     let mut output_structs_quotes = Vec::new();
-    let mut key_value_count = 1;
-    let mut key_values_count = 1;
+    let (mut key_value_count, mut key_values_count) = (0, 0);
     for i in 0..manifest.output.len() {
-        let output_struct = quote::format_ident!("{}", &manifest.output[i].name.clone());
+        let output_struct = format_ident!("{}", &manifest.output[i].name.clone());
 
         let output_fields_idents: Vec<Ident> = manifest.output[i]
             .fields
             .iter()
-            .map(|(k, _)| quote::format_ident!("{}", k.clone()))
+            .map(|(k, _)| format_ident!("{}", k.clone()))
             .collect();
         let output_field_types: Vec<Ident> = manifest.output[i]
             .fields
             .iter()
-            .map(|(_, v)| quote::format_ident!("{}", v.clone()))
+            .map(|(_, v)| format_ident!("{}", v.clone()))
             .collect();
         let storage_type = &manifest.output[i].output_type;
         let (storage_ident, idx) = match storage_type {
             AlgorithmOutputType::KeyValue => {
-                let ident = quote::format_ident!("chainsight_cdk_macros::KeyValueStore");
+                let storage_ident = format_ident!("{}", &"KeyValueStore".to_string());
                 key_value_count += 1;
-                (ident, key_value_count)
+                (storage_ident, key_value_count)
             }
             _ => {
-                let ident = quote::format_ident!("chainsight_cdk_macros::KeyValuesStore");
+                let storage_ident = format_ident!("{}", &"KeyValuesStore".to_string());
                 key_values_count += 1;
-                (ident, key_values_count)
+                (storage_ident, key_values_count)
             }
         };
 
         output_structs_quotes.push(quote! {
-            #[derive(Clone, Debug,  Default, CandidType, Deserialize, Serialize, chainsight_cdk_macros::Persist,#storage_ident)]
+            #[derive(Clone, Debug,  Default, CandidType, Deserialize, Serialize, Persist, #storage_ident)]
             #[memory_id(#idx)]
             pub struct #output_struct {
                 #(pub #output_fields_idents: #output_field_types),*
@@ -90,7 +115,7 @@ fn custom_codes(
         });
     }
     let out = quote! {
-        algorithm_indexer!(#event_struct);
+        algorithm_indexer!(#source_ident,#method);
 
         #[derive(Clone, Debug,  Default, CandidType, Serialize, Deserialize)]
         pub struct #event_struct {
@@ -125,12 +150,12 @@ pub fn generate_codes(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::R
 }
 
 pub fn generate_app(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Result<TokenStream> {
-    let event_struct = quote::format_ident!("{}", &manifest.datasource.input.name);
-
+    let input_type = input_type_ident(manifest);
+    let event_struct = format_ident!("{}", &manifest.datasource.input.name);
     let code = quote! {
         use std::collections::HashMap;
         use crate::#event_struct;
-        pub fn persist(elem: HashMap<u64, Vec<#event_struct>>) {
+        pub fn persist(elem: #input_type) {
             todo!()
         }
     };

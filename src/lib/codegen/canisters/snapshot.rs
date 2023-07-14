@@ -103,7 +103,7 @@ fn custom_codes_for_contract(
     ) = if manifest.storage.with_timestamp {
         (
             quote! {
-                #[derive(Debug, Clone, candid::CandidType, candid::Deserialize, StableMemoryStorable)]
+                #[derive(Debug, Clone, candid::CandidType, candid::Deserialize, serde::Serialize, StableMemoryStorable)]
                 #[stable_mem_storable_opts(max_size = 10000, is_fixed_size = false)] // temp: max_size
                 pub struct Snapshot {
                     pub value: SnapshotValue,
@@ -126,7 +126,7 @@ fn custom_codes_for_contract(
     } else {
         (
             quote! {
-                #[derive(Debug, Clone, candid :: CandidType, candid :: Deserialize, StableMemoryStorable)]
+                #[derive(Debug, Clone, candid :: CandidType, candid :: Deserialize, serde::Serialize, StableMemoryStorable)]
                 #[stable_mem_storable_opts(max_size = 10000, is_fixed_size = false)] // temp: max_size
                 pub struct Snapshot(#(pub #response_type_idents),*);
             },
@@ -267,7 +267,7 @@ fn custom_codes_for_canister(
             (
                 quote! { type SnapshotValue = #response_type_def_ident; },
                 quote! {
-                    #[derive(Clone, Debug, candid::CandidType, candid::Deserialize)]
+                    #[derive(Clone, Debug, candid::CandidType, serde::Serialize, candid::Deserialize)]
                     pub struct #response_type_def_ident {
                         #(#struct_tokens),*
                     }
@@ -286,7 +286,7 @@ fn custom_codes_for_canister(
     ) = if manifest.storage.with_timestamp {
         (
             quote! {
-                #[derive(Clone, Debug, candid::CandidType, candid::Deserialize, StableMemoryStorable)]
+                #[derive(Clone, Debug, candid::CandidType, candid::Deserialize, serde::Serialize, StableMemoryStorable)]
                 #[stable_mem_storable_opts(max_size = 10000, is_fixed_size = false)] // temp: max_size
                 pub struct Snapshot {
                     pub value: SnapshotValue,
@@ -307,7 +307,7 @@ fn custom_codes_for_canister(
     } else {
         (
             quote! {
-                #[derive(Debug, Clone, candid :: CandidType, candid :: Deserialize, StableMemoryStorable)]
+                #[derive(Debug, Clone, candid :: CandidType, candid :: Deserialize, serde::Serialize, StableMemoryStorable)]
                 #[stable_mem_storable_opts(max_size = 10000, is_fixed_size = false)] // temp: max_size
                 pub struct Snapshot(pub SnapshotValue);
 
