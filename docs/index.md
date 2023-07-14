@@ -22,6 +22,16 @@ dfx 0.14.0
 ic-wasm 0.3.7
 ```
 
+## Note
+
+Before you can deploy on your local machine, you need to deploy [chainsight-management-canisters](https://github.com/horizonx-tech/chainsight-management-canisters.git) to your local dfx environment.
+  
+  ```bash
+    git clone https://github.com/horizonx-tech/chainsight-management-canisters.git
+    cd chainsight-management-canisters
+    make local port=${YOUR_DFX_PORT}
+  ```
+
 ## Install CLI
 
 You can choose between the following two methods of installation.
