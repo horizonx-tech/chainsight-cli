@@ -84,13 +84,13 @@ fn custom_codes(
 
         let output_fields_idents: Vec<Ident> = manifest.output[i]
             .fields
-            .iter()
-            .map(|(k, _)| format_ident!("{}", k.clone()))
+            .keys()
+            .map(|k| format_ident!("{}", k.clone()))
             .collect();
         let output_field_types: Vec<Ident> = manifest.output[i]
             .fields
-            .iter()
-            .map(|(_, v)| format_ident!("{}", v.clone()))
+            .values()
+            .map(|v| format_ident!("{}", v.clone()))
             .collect();
         let storage_type = &manifest.output[i].output_type;
         let (storage_ident, idx) = match storage_type {
