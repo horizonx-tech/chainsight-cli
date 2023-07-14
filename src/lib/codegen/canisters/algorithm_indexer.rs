@@ -16,7 +16,7 @@ fn common_codes() -> TokenStream {
         use chainsight_cdk_macros::*;
         use serde::{Deserialize, Serialize};
         use std::collections::HashMap;
-        monitoring_canister_metrics!(60);
+        chainsight_common!(60);
         init_in!();
         manage_single_state!("target_addr", String, false);
 

@@ -94,12 +94,10 @@ impl ComponentManifest for RelayerComponentManifest {
         false
     }
     fn get_sources(&self) -> Sources {
-        #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-        struct Attributes {}
         Sources {
             source: self.datasource.clone().location.id,
             source_type: SourceType::SnapshotIndexer,
-            attributes: serde_json::to_string(&Attributes {}).unwrap(),
+            attributes: HashMap::new(),
         }
     }
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {

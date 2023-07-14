@@ -1,8 +1,9 @@
-use std::{fs::OpenOptions, io::Read, path::Path};
+use std::{collections::HashMap, fs::OpenOptions, io::Read, path::Path};
 
 use anyhow::bail;
 use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 
 use crate::{
     lib::codegen::{canisters, scripts},
@@ -93,20 +94,30 @@ impl ComponentManifest for EventIndexerComponentManifest {
             event_name: String,
             contract_name: String,
         }
+        let mut attr = HashMap::new();
+        attr.insert(
+            "chain_id".to_string(),
+            json!(self.datasource.network.chain_id),
+        );
+        attr.insert(
+            "event_name".to_string(),
+            json!(self.datasource.event.identifier),
+        );
+        attr.insert(
+            "contract_name".to_string(),
+            json!(self
+                .datasource
+                .event
+                .interface
+                .clone()
+                .map(|s| { s.replace(".json", "") })
+                .unwrap()),
+        );
+
         Sources {
             source_type: SourceType::Evm,
             source: self.datasource.clone().id,
-            attributes: serde_json::to_string(&Attributes {
-                chain_id: self.datasource.network.chain_id,
-                event_name: self.datasource.event.identifier.clone(),
-                contract_name: self
-                    .datasource
-                    .event
-                    .interface
-                    .clone()
-                    .unwrap_or("".to_string()),
-            })
-            .unwrap(),
+            attributes: attr,
         }
     }
 

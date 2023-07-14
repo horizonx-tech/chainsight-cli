@@ -95,12 +95,10 @@ impl ComponentManifest for AlgorithmIndexerComponentManifest {
     }
 
     fn get_sources(&self) -> Sources {
-        #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-        struct Attributes {}
         Sources {
             source_type: SourceType::EventIndexer,
             source: self.datasource.clone().printipal,
-            attributes: serde_json::to_string(&Attributes {}).unwrap(),
+            attributes: HashMap::new(),
         }
     }
 }

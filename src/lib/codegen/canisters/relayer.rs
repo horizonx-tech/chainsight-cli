@@ -18,11 +18,11 @@ fn common_codes() -> proc_macro2::TokenStream {
     let outside_call_idents = generate_outside_call_idents(OutsideCallIdentsType::All);
     quote! {
         use std::str::FromStr;
-        use chainsight_cdk_macros::{manage_single_state, setup_func, init_in, timer_task_func, define_web3_ctx, define_transform_for_web3, define_get_ethereum_address, monitoring_canister_metrics, did_export};
+        use chainsight_cdk_macros::{manage_single_state, setup_func, init_in, timer_task_func, define_web3_ctx, define_transform_for_web3, define_get_ethereum_address, chainsight_common, did_export};
         use ic_web3_rs::types::{Address, U256};
         use chainsight_cdk::rpc::{CallProvider, Caller, Message};
 
-        monitoring_canister_metrics!(60);
+        chainsight_common!(60);
 
         #outside_call_idents
 

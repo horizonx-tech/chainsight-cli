@@ -1,8 +1,9 @@
-use std::{fs::OpenOptions, io::Read, path::Path};
+use std::{collections::HashMap, fs::OpenOptions, io::Read, path::Path};
 
 use anyhow::bail;
 use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 
 use crate::{
     lib::codegen::{canisters, components::common::SourceType, scripts},
@@ -99,17 +100,15 @@ impl ComponentManifest for SnapshotComponentManifest {
         bail!("Not implemented")
     }
     fn get_sources(&self) -> Sources {
-        #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-        struct Attributes {
-            function_name: String,
-        }
+        let mut attr = HashMap::new();
+        attr.insert(
+            "function_name".to_string(),
+            json!(self.datasource.clone().method.identifier),
+        );
         Sources {
             source: self.datasource.location.id.clone(),
             source_type: SourceType::AlgorithmIndexer,
-            attributes: serde_json::to_string(&Attributes {
-                function_name: self.datasource.clone().method.identifier,
-            })
-            .unwrap(),
+            attributes: attr,
         }
     }
 }

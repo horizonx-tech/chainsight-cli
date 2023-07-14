@@ -2,6 +2,7 @@ use std::{collections::HashMap, fs::OpenOptions, io::Read, path::Path};
 
 use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 use crate::types::{ComponentType, Network};
 
@@ -50,7 +51,7 @@ pub enum SourceType {
 pub struct Sources {
     pub source_type: SourceType,
     pub source: String,
-    pub attributes: String,
+    pub attributes: HashMap<String, Value>,
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -220,6 +221,7 @@ pub trait ComponentManifest: std::fmt::Debug {
 
     /// Get DestinationType if Destination is defined
     fn destination_type(&self) -> Option<DestinationType>;
+
     fn custom_tags(&self) -> HashMap<String, String> {
         HashMap::new()
     }
