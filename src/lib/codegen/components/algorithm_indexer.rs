@@ -15,7 +15,7 @@ pub struct AlgorithmIndexerComponentManifest {
     pub version: String,
     pub metadata: ComponentMetadata,
     pub datasource: AlgorithmIndexerDatasource,
-    pub output: AlgorithmIndexerOutput,
+    pub output: Vec<AlgorithmIndexerOutput>,
     pub interval: u32,
 }
 
@@ -25,7 +25,7 @@ impl AlgorithmIndexerComponentManifest {
         description: &str,
         version: &str,
         datasource: AlgorithmIndexerDatasource,
-        output: AlgorithmIndexerOutput,
+        output: Vec<AlgorithmIndexerOutput>,
         interval: u32,
     ) -> Self {
         Self {
@@ -113,15 +113,35 @@ pub struct InputStruct {
 pub struct AlgorithmIndexerOutput {
     pub name: String,
     pub fields: HashMap<String, String>,
+    pub output_type: AlgorithmOutputType,
+}
+
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+pub enum AlgorithmOutputType {
+    #[serde(rename = "key_values")]
+    KeyValues,
+    #[serde(rename = "key_value")]
+    KeyValue,
+}
+
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+pub enum AlgorithmInputType {
+    #[serde(rename = "event_indexer")]
+    EventIndexer,
+    #[serde(rename = "key_value")]
+    KeyValue,
+    #[serde(rename = "key_values")]
+    KeyValues,
 }
 
 impl Default for AlgorithmIndexerOutput {
     fn default() -> Self {
         let mut sample_fields = HashMap::new();
-        sample_fields.insert("value".to_string(), "u128".to_string());
+        sample_fields.insert("address".to_string(), "String".to_string());
         Self {
-            name: "SampleOutput".to_string(),
+            name: "Account".to_string(),
             fields: sample_fields,
+            output_type: AlgorithmOutputType::KeyValue,
         }
     }
 }
@@ -131,20 +151,26 @@ pub struct AlgorithmIndexerDatasource {
     pub printipal: String,
     pub input: InputStruct,
     pub from: u64,
+    pub method: String,
+    pub source_type: AlgorithmInputType,
 }
 
 impl Default for AlgorithmIndexerDatasource {
     fn default() -> Self {
         let mut sample_fields = HashMap::new();
-        sample_fields.insert("result".to_string(), "String".to_string());
+        sample_fields.insert("from".to_string(), "String".to_string());
+        sample_fields.insert("to".to_string(), "String".to_string());
+        sample_fields.insert("value".to_string(), "String".to_string());
 
         Self {
-            printipal: "".to_string(),
+            printipal: "be2us-64aaa-aaaaa-qaabq-cai".to_string(),
             input: InputStruct {
-                name: "SampleSource".to_string(),
+                name: "Transfer".to_string(),
                 fields: sample_fields,
             },
-            from: 0,
+            source_type: AlgorithmInputType::EventIndexer,
+            method: "proxy_call".to_string(),
+            from: 17660942,
         }
     }
 }
@@ -163,16 +189,19 @@ metadata:
     description: Description
 datasource:
     printipal: ahw5u-keaaa-aaaaa-qaaha-cai
-    from: 0
+    from: 17660942
     input:
         name: Transfer
         fields:
             from: String
             to: String
             value: String
+    method: proxy_call
+    source_type: event_indexer
 output:
-    name: SampleOutput
-    fields:
+    - name: SampleOutput
+      output_type: key_value
+      fields:
         result: String
         value: String
 interval: 3600
@@ -203,12 +232,15 @@ interval: 3600
                         fields: input_types
                     },
                     printipal: "ahw5u-keaaa-aaaaa-qaaha-cai".to_string(),
-                    from: 0
+                    from: 17660942,
+                    method: "proxy_call".to_string(),
+                    source_type: AlgorithmInputType::EventIndexer
                 },
-                output: AlgorithmIndexerOutput {
+                output: vec!(AlgorithmIndexerOutput {
                     name: "SampleOutput".to_string(),
-                    fields: output_types
-                },
+                    fields: output_types,
+                    output_type: AlgorithmOutputType::KeyValue
+                }),
                 interval: 3600
             }
         );

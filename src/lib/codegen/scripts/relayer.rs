@@ -3,7 +3,7 @@ use anyhow::ensure;
 use crate::{
     lib::codegen::{
         components::{common::CanisterIdType, relayer::RelayerComponentManifest},
-        scripts::common::{generate_command_to_set_task, network_param},
+        scripts::common::{generate_command_to_set_task, init_in_env_task, network_param},
     },
     types::{ComponentType, Network},
 };
@@ -64,16 +64,18 @@ fn script_contents(manifest: &RelayerComponentManifest, network: Network) -> Str
         manifest.interval,
         10, // temp: fixed value, todo: make it configurable
     );
+    let init_in_env_task = init_in_env_task(&network, &manifest.metadata.label);
 
     format!(
         r#"#!/bin/bash
-
+# init
+{}
 # setup
 {}
 # set_task
 {}
 "#,
-        script_to_setup, script_to_set_task
+        init_in_env_task, script_to_setup, script_to_set_task
     )
 }
 

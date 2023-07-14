@@ -202,6 +202,11 @@ fn exec_codegen(
         )?;
         if data.user_impl_required() {
             let app_path_str = format!("{}/app.rs", &canister_code_path_str);
+            // if file exists, skip
+            if Path::new(&app_path_str).exists() {
+                info!(log, r#"app.rs already exists. skip creating"#);
+                continue;
+            }
             let mut lib_file = File::create(&app_path_str)?;
             lib_file.write_all(data.generate_user_impl_template()?.to_string().as_bytes())?;
         }
@@ -264,8 +269,8 @@ hex = \"0.4.3\"
 
 ic-web3-rs = {{ version = \"0.1.1\" }}
 ic-solidity-bindgen = {{ version = \"0.1.5\" }}
-chainsight-cdk-macros = {{ git = \"https://github.com/horizonx-tech/chainsight-sdk.git\", rev = \"76a6c3647c630052fc9c25accece1d37b5772fe8\" }}
-chainsight-cdk = {{ git = \"https://github.com/horizonx-tech/chainsight-sdk.git\", rev = \"76a6c3647c630052fc9c25accece1d37b5772fe8\" }}", members);
+chainsight-cdk-macros = {{ git = \"https://github.com/horizonx-tech/chainsight-sdk.git\", rev = \"b5e0af3439360c0ec8a2fe6d46687fad1e0eea32\" }}
+chainsight-cdk = {{ git = \"https://github.com/horizonx-tech/chainsight-sdk.git\", rev = \"b5e0af3439360c0ec8a2fe6d46687fad1e0eea32\" }}", members);
 
     txt
 }

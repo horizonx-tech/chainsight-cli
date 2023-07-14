@@ -98,18 +98,10 @@ fn custom_codes(
         }
 
         impl chainsight_cdk::indexer::Event<EventLog> for #event_struct_name {
-            fn from(event: EventLog) -> Self
-            where
-                EventLog: Into<Self>,
-            {
-                event.into()
-            }
-
             fn tokenize(&self) -> chainsight_cdk::storage::Data {
                 self._tokenize()
             }
 
-            // temp
             fn untokenize(data: chainsight_cdk::storage::Data) -> Self {
                 #event_struct_name::_untokenize(data)
             }
