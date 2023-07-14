@@ -10,7 +10,9 @@ use crate::{
     types::{ComponentType, Network},
 };
 
-use super::common::{ComponentManifest, ComponentMetadata, SourceType, Sources};
+use super::common::{
+    custom_tags_interval_sec, ComponentManifest, ComponentMetadata, SourceType, Sources,
+};
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct EventIndexerComponentManifest {
@@ -129,6 +131,12 @@ impl ComponentManifest for EventIndexerComponentManifest {
     }
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
         bail!("not implemented")
+    }
+    fn custom_tags(&self) -> HashMap<String, String> {
+        let mut res = HashMap::new();
+        let (interval_key, interval_val) = custom_tags_interval_sec(self.interval);
+        res.insert(interval_key, interval_val);
+        res
     }
 }
 

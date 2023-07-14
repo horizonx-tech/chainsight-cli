@@ -10,7 +10,10 @@ use crate::{
     types::{ComponentType, Network},
 };
 
-use super::common::{ComponentManifest, ComponentMetadata, Datasource, DestinationType, Sources};
+use super::common::{
+    custom_tags_interval_sec, ComponentManifest, ComponentMetadata, Datasource, DestinationType,
+    Sources,
+};
 
 /// Component Manifest: Snapshot
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -110,6 +113,12 @@ impl ComponentManifest for SnapshotComponentManifest {
             source_type: SourceType::AlgorithmIndexer,
             attributes: attr,
         }
+    }
+    fn custom_tags(&self) -> HashMap<String, String> {
+        let mut res = HashMap::new();
+        let (interval_key, interval_val) = custom_tags_interval_sec(self.interval);
+        res.insert(interval_key, interval_val);
+        res
     }
 }
 

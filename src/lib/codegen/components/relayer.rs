@@ -5,7 +5,10 @@ use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    lib::codegen::{canisters, oracle::get_oracle_address, scripts},
+    lib::codegen::{
+        canisters, components::common::custom_tags_interval_sec, oracle::get_oracle_address,
+        scripts,
+    },
     types::{ComponentType, Network},
 };
 
@@ -126,6 +129,8 @@ impl ComponentManifest for RelayerComponentManifest {
             "chainsight::destination".to_string(),
             serde_json::to_string(&dest).unwrap(),
         );
+        let (interval_key, interval_val) = custom_tags_interval_sec(self.interval);
+        res.insert(interval_key, interval_val);
         res
     }
 }

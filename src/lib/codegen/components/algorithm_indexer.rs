@@ -8,7 +8,9 @@ use crate::{
     types::{ComponentType, Network},
 };
 
-use super::common::{ComponentManifest, ComponentMetadata, SourceType, Sources};
+use super::common::{
+    custom_tags_interval_sec, ComponentManifest, ComponentMetadata, SourceType, Sources,
+};
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct AlgorithmIndexerComponentManifest {
@@ -100,6 +102,12 @@ impl ComponentManifest for AlgorithmIndexerComponentManifest {
             source: self.datasource.clone().printipal,
             attributes: HashMap::new(),
         }
+    }
+    fn custom_tags(&self) -> HashMap<String, String> {
+        let mut res = HashMap::new();
+        let (interval_key, interval_val) = custom_tags_interval_sec(self.interval);
+        res.insert(interval_key, interval_val);
+        res
     }
 }
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]

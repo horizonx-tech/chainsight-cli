@@ -234,6 +234,12 @@ pub trait ComponentManifest: std::fmt::Debug {
     fn get_sources(&self) -> Sources;
 }
 
+pub fn custom_tags_interval_sec(interval_sec: u32) -> (String, String) {
+    (
+        "chainsight:intervalSec".to_string(),
+        interval_sec.to_string(),
+    )
+}
 /// Structure for determining Indexer Type
 #[derive(Deserialize)]
 pub struct ComponentTypeInManifest {
