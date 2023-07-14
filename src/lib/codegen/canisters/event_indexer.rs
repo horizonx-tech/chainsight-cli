@@ -23,7 +23,7 @@ fn common_codes() -> TokenStream {
         };
         use chainsight_cdk_macros::{
             define_get_ethereum_address, define_transform_for_web3, define_web3_ctx, did_export, init_in,
-            manage_single_state, monitoring_canister_metrics, setup_func, web3_event_indexer,timer_task_func,
+            manage_single_state, chainsight_common, setup_func, web3_event_indexer,timer_task_func,
             ContractEvent, Persist,
         };
         use ic_solidity_bindgen::{types::EventLog};
@@ -34,7 +34,7 @@ fn common_codes() -> TokenStream {
         };
         use serde::Serialize;
         use std::{collections::HashMap, str::FromStr};
-        monitoring_canister_metrics!(60);
+        chainsight_common!(60);
         define_web3_ctx!();
         define_transform_for_web3!();
         define_get_ethereum_address!();

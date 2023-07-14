@@ -1,15 +1,18 @@
-use std::{fs::OpenOptions, io::Read, path::Path};
+use std::{collections::HashMap, fs::OpenOptions, io::Read, path::Path};
 
 use anyhow::bail;
 use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 
 use crate::{
     lib::codegen::{canisters, scripts},
     types::{ComponentType, Network},
 };
 
-use super::common::{ComponentManifest, ComponentMetadata};
+use super::common::{
+    custom_tags_interval_sec, ComponentManifest, ComponentMetadata, SourceType, Sources,
+};
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct EventIndexerComponentManifest {
@@ -33,6 +36,11 @@ impl EventIndexerComponentManifest {
                 label: label.to_owned(),
                 type_: ComponentType::EventIndexer,
                 description: description.to_owned(),
+                tags: Some(vec![
+                    "Ethereum".to_string(),
+                    "ERC20".to_string(),
+                    "Transfer".to_string(),
+                ]),
             },
             datasource,
             interval,
@@ -81,6 +89,39 @@ impl ComponentManifest for EventIndexerComponentManifest {
     fn destination_type(&self) -> Option<super::common::DestinationType> {
         None
     }
+    fn get_sources(&self) -> Sources {
+        #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+        struct Attributes {
+            chain_id: u64,
+            event_name: String,
+            contract_name: String,
+        }
+        let mut attr = HashMap::new();
+        attr.insert(
+            "chain_id".to_string(),
+            json!(self.datasource.network.chain_id),
+        );
+        attr.insert(
+            "event_name".to_string(),
+            json!(self.datasource.event.identifier),
+        );
+        attr.insert(
+            "contract_name".to_string(),
+            json!(self
+                .datasource
+                .event
+                .interface
+                .clone()
+                .map(|s| { s.replace(".json", "") })
+                .unwrap()),
+        );
+
+        Sources {
+            source_type: SourceType::Evm,
+            source: self.datasource.clone().id,
+            attributes: attr,
+        }
+    }
 
     fn required_interface(&self) -> Option<String> {
         self.datasource.event.interface.clone()
@@ -90,6 +131,12 @@ impl ComponentManifest for EventIndexerComponentManifest {
     }
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
         bail!("not implemented")
+    }
+    fn custom_tags(&self) -> HashMap<String, String> {
+        let mut res = HashMap::new();
+        let (interval_key, interval_val) = custom_tags_interval_sec(self.interval);
+        res.insert(interval_key, interval_val);
+        res
     }
 }
 
@@ -185,6 +232,7 @@ interval: 3600
                     label: "sample_pj_event_indexer".to_string(),
                     type_: ComponentType::EventIndexer,
                     description: "Description".to_string(),
+                    tags: None
                 },
                 datasource: EventIndexerDatasource {
                     id: "0x6B175474E89094C44Da98b954EedeAC495271d0F".to_string(),

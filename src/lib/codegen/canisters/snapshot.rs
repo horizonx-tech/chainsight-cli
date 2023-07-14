@@ -22,13 +22,13 @@ fn common_codes_for_contract() -> proc_macro2::TokenStream {
     quote! {
         use std::str::FromStr;
         use candid::{Decode, Encode};
-        use chainsight_cdk_macros::{init_in, manage_single_state, setup_func, prepare_stable_structure, stable_memory_for_vec, StableMemoryStorable, timer_task_func, define_transform_for_web3, define_web3_ctx, monitoring_canister_metrics, did_export};
+        use chainsight_cdk_macros::{init_in, manage_single_state, setup_func, prepare_stable_structure, stable_memory_for_vec, StableMemoryStorable, timer_task_func, define_transform_for_web3, define_web3_ctx, chainsight_common, did_export};
 
         use ic_web3_rs::types::Address;
         init_in!();
 
 
-        monitoring_canister_metrics!(60);
+        chainsight_common!(60);
 
         #outside_call_idents
 
@@ -203,10 +203,10 @@ fn common_codes_for_canister() -> proc_macro2::TokenStream {
 
     quote! {
         use candid::{Decode, Encode};
-        use chainsight_cdk_macros::{init_in,manage_single_state, setup_func, prepare_stable_structure, stable_memory_for_vec, StableMemoryStorable, timer_task_func, monitoring_canister_metrics, did_export};
+        use chainsight_cdk_macros::{init_in,manage_single_state, setup_func, prepare_stable_structure, stable_memory_for_vec, StableMemoryStorable, timer_task_func, chainsight_common, did_export};
         use chainsight_cdk::rpc::{CallProvider, Caller, Message};
         init_in!();
-        monitoring_canister_metrics!(60);
+        chainsight_common!(60);
 
         #outside_call_idents
 

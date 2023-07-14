@@ -1,7 +1,8 @@
-use std::{fs::OpenOptions, io::Read, path::Path};
+use std::{collections::HashMap, fs::OpenOptions, io::Read, path::Path};
 
 use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 use crate::types::{ComponentType, Network};
 
@@ -31,6 +32,27 @@ pub enum DestinationType {
     #[serde(rename = "string")]
     StringOracle,
 }
+#[derive(Deserialize, Serialize, Clone, Copy, Debug, PartialEq, clap::ValueEnum)]
+
+pub enum SourceType {
+    #[serde(rename = "evm")]
+    Evm,
+    #[serde(rename = "event_indexer")]
+    EventIndexer,
+    #[serde(rename = "algorithm_indexer")]
+    AlgorithmIndexer,
+    #[serde(rename = "algorithm_lens")]
+    AlgorithmLens,
+    #[serde(rename = "snapshot_indexer")]
+    SnapshotIndexer,
+}
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+
+pub struct Sources {
+    pub source_type: SourceType,
+    pub source: String,
+    pub attributes: HashMap<String, Value>,
+}
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct ComponentMetadata {
@@ -38,6 +60,7 @@ pub struct ComponentMetadata {
     #[serde(rename = "type")]
     pub type_: ComponentType,
     pub description: String,
+    pub tags: Option<Vec<String>>,
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -199,13 +222,24 @@ pub trait ComponentManifest: std::fmt::Debug {
     /// Get DestinationType if Destination is defined
     fn destination_type(&self) -> Option<DestinationType>;
 
+    fn custom_tags(&self) -> HashMap<String, String> {
+        HashMap::new()
+    }
+
     /// Get the required interface for this component
     /// ex: abi (.json), candid (.candid)
     fn required_interface(&self) -> Option<String>;
     fn user_impl_required(&self) -> bool;
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream>;
+    fn get_sources(&self) -> Sources;
 }
 
+pub fn custom_tags_interval_sec(interval_sec: u32) -> (String, String) {
+    (
+        "chainsight:intervalSec".to_string(),
+        interval_sec.to_string(),
+    )
+}
 /// Structure for determining Indexer Type
 #[derive(Deserialize)]
 pub struct ComponentTypeInManifest {
