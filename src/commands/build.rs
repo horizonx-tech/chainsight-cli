@@ -525,7 +525,6 @@ fn add_metadatas_to_wasm(
         add_meta(key, value, built_project_path, &wasm_name, log)
     };
 
-    // chainsight:label
     put_meta("chainsight:label", &wasm_name)?;
     put_meta(
         "chainsight:component_type",
