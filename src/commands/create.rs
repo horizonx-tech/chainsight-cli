@@ -143,6 +143,7 @@ fn template_event_indexer_manifest(component_name: &str) -> EventIndexerComponen
                 rpc_url: "https://polygon-mumbai.g.alchemy.com/v2/<YOUR_KEY>".to_string(),
             },
             37730337,
+            Some("ERC-20".to_string()),
         ),
         3600,
     )

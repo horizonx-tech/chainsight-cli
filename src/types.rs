@@ -17,7 +17,7 @@ pub enum ComponentType {
     AlgorithmIndexer,
 
     /// To periodically take and store snapshots from Contract and other Canisters
-    #[serde(rename = "snapshot")]
+    #[serde(rename = "snapshot_indexer")]
     Snapshot,
 
     /// To relay data to other blockchains
@@ -30,7 +30,7 @@ impl fmt::Display for ComponentType {
         match self {
             ComponentType::EventIndexer => write!(f, "event_indexer"),
             ComponentType::AlgorithmIndexer => write!(f, "algorithm_indexer"),
-            ComponentType::Snapshot => write!(f, "snapshot"),
+            ComponentType::Snapshot => write!(f, "snapshot_indexer"),
             ComponentType::Relayer => write!(f, "relayer"),
         }
     }

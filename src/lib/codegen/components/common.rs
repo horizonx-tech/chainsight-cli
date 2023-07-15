@@ -37,14 +37,8 @@ pub enum DestinationType {
 pub enum SourceType {
     #[serde(rename = "evm")]
     Evm,
-    #[serde(rename = "event_indexer")]
-    EventIndexer,
-    #[serde(rename = "algorithm_indexer")]
-    AlgorithmIndexer,
-    #[serde(rename = "algorithm_lens")]
-    AlgorithmLens,
-    #[serde(rename = "snapshot_indexer")]
-    SnapshotIndexer,
+    #[serde(rename = "chainsight")]
+    Chainsight,
 }
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 

@@ -539,7 +539,7 @@ fn add_metadatas_to_wasm(
     let tags_str = serde_json::to_string(&tags)?;
 
     put_meta("chainsight:tags", tags_str.as_str())?;
-    let meta_json = serde_json::to_string(&component_datum.get_sources())?;
+    let meta_json = serde_json::to_string(&vec![component_datum.get_sources()])?;
     put_meta("chainsight:sources", meta_json.as_str())?;
     for (key, value) in component_datum.custom_tags().iter() {
         put_meta(key, value)?;
