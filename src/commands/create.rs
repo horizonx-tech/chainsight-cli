@@ -15,6 +15,9 @@ use crate::{
                     AlgorithmIndexerComponentManifest, AlgorithmIndexerDatasource,
                     AlgorithmIndexerOutput,
                 },
+                algorithm_lens::{
+                    AlgorithmLensComponentManifest, AlgorithmLensDataSource, AlgorithmLensOutput,
+                },
                 common::{ComponentManifest, Datasource},
                 event_indexer::{
                     EventIndexerComponentManifest, EventIndexerDatasource,
@@ -76,6 +79,9 @@ pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> anyhow::Result<()> {
         }
         ComponentType::Snapshot => template_snapshot_manifest(&component_name).to_str_as_yaml(),
         ComponentType::Relayer => template_relayer_manifest(&component_name).to_str_as_yaml(),
+        ComponentType::AlgorithmLens => {
+            template_algorithm_lens_manifest(&component_name).to_str_as_yaml()
+        }
     }?;
     let relative_component_path = format!("components/{}.yaml", component_name);
     let (component_file_path, project_file_path) = if let Some(project_name) = project_path {
@@ -179,5 +185,15 @@ fn template_relayer_manifest(component_name: &str) -> RelayerComponentManifest {
         Datasource::new_canister("function_identifier()".to_string(), None, None),
         DestinationField::default(),
         3600,
+    )
+}
+
+fn template_algorithm_lens_manifest(component_name: &str) -> AlgorithmLensComponentManifest {
+    AlgorithmLensComponentManifest::new(
+        component_name,
+        "",
+        PROJECT_MANIFEST_VERSION,
+        AlgorithmLensDataSource::default(),
+        AlgorithmLensOutput::default(),
     )
 }

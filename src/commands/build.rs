@@ -9,6 +9,7 @@ use clap::Parser;
 use slog::{debug, error, info, Logger};
 
 use crate::lib::codegen::components::algorithm_indexer::AlgorithmIndexerComponentManifest;
+use crate::lib::codegen::components::algorithm_lens::AlgorithmLensComponentManifest;
 use crate::lib::codegen::components::common::{ComponentManifest, ComponentTypeInManifest};
 use crate::lib::codegen::components::event_indexer::EventIndexerComponentManifest;
 use crate::lib::codegen::components::relayer::RelayerComponentManifest;
@@ -98,6 +99,9 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
             }
             ComponentType::Snapshot => Box::new(SnapshotComponentManifest::load(&component_path)?),
             ComponentType::Relayer => Box::new(RelayerComponentManifest::load(&component_path)?),
+            ComponentType::AlgorithmLens => {
+                Box::new(AlgorithmLensComponentManifest::load(&component_path)?)
+            }
         };
         component_data.push(data);
     }

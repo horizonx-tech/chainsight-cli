@@ -11,6 +11,9 @@ use crate::lib::{
                 AlgorithmIndexerComponentManifest, AlgorithmIndexerDatasource,
                 AlgorithmIndexerOutput,
             },
+            algorithm_lens::{
+                AlgorithmLensComponentManifest, AlgorithmLensDataSource, AlgorithmLensOutput,
+            },
             common::{ComponentManifest, Datasource},
             event_indexer::{EventIndexerComponentManifest, EventIndexerDatasource},
             relayer::{DestinationField, RelayerComponentManifest},
@@ -68,6 +71,7 @@ fn create_project(project_name: &str) -> anyhow::Result<()> {
     let relative_snapshot_chain_path = format!("components/{}_snapshot_chain.yaml", project_name);
     let relative_snapshot_icp_path = format!("components/{}_snapshot_icp.yaml", project_name);
     let relative_relayer_path = format!("components/{}_relayer.yaml", project_name);
+    let relative_algorithmlens_path = format!("interfaces/{}_algorithm_lens.yaml", project_name);
 
     fs::write(
         format!("{}/{}", project_name, PROJECT_MANIFEST_FILENAME),
@@ -80,6 +84,7 @@ fn create_project(project_name: &str) -> anyhow::Result<()> {
                 ProjectManifestComponentField::new(&relative_snapshot_chain_path, None),
                 ProjectManifestComponentField::new(&relative_snapshot_icp_path, None),
                 ProjectManifestComponentField::new(&relative_relayer_path, None),
+                ProjectManifestComponentField::new(&relative_algorithmlens_path, None),
             ],
         )
         .to_str_as_yaml()?,
@@ -103,6 +108,10 @@ fn create_project(project_name: &str) -> anyhow::Result<()> {
     fs::write(
         format!("{}/{}", project_name, relative_relayer_path),
         template_relayer_manifest(project_name).to_str_as_yaml()?,
+    )?;
+    fs::write(
+        format!("{}/{}", project_name, relative_relayer_path),
+        tempalte_algorithm_lens_manifest(project_name).to_str_as_yaml()?,
     )?;
 
     Ok(())
@@ -159,5 +168,14 @@ fn template_relayer_manifest(project_name: &str) -> RelayerComponentManifest {
         Datasource::default_canister(false),
         DestinationField::default(),
         3600,
+    )
+}
+fn tempalte_algorithm_lens_manifest(project_name: &str) -> AlgorithmLensComponentManifest {
+    AlgorithmLensComponentManifest::new(
+        &format!("{}_algorithm_lens", project_name),
+        "",
+        PROJECT_MANIFEST_VERSION,
+        AlgorithmLensDataSource::default(),
+        AlgorithmLensOutput::default(),
     )
 }

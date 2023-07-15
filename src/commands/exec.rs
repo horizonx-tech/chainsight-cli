@@ -89,6 +89,9 @@ pub fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
             }
             ComponentType::Snapshot => Box::new(SnapshotComponentManifest::load(&component_path)?),
             ComponentType::Relayer => Box::new(RelayerComponentManifest::load(&component_path)?),
+            ComponentType::AlgorithmLens => {
+                Box::new(AlgorithmIndexerComponentManifest::load(&component_path)?)
+            }
         };
         component_data.push(data);
     }

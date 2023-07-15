@@ -23,6 +23,8 @@ pub enum ComponentType {
     /// To relay data to other blockchains
     #[serde(rename = "relayer")]
     Relayer,
+    #[serde(rename = "algorithm_lens")]
+    AlgorithmLens,
 }
 
 impl fmt::Display for ComponentType {
