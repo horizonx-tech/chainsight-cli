@@ -106,15 +106,15 @@ impl ComponentManifest for SnapshotComponentManifest {
         let mut attr = HashMap::new();
         let mut method_identifier = self.datasource.clone().method.identifier;
         if method_identifier.contains(':') {
-            method_identifier = method_identifier.split(":").collect::<Vec<&str>>()[0]
+            method_identifier = method_identifier.split(':').collect::<Vec<&str>>()[0]
                 .to_string()
-                .replace(" ", "");
+                .replace(' ', "");
         }
 
         attr.insert("function_name".to_string(), json!(method_identifier));
         Sources {
             source: self.datasource.location.id.clone(),
-            source_type: SourceType::AlgorithmIndexer,
+            source_type: SourceType::Chainsight,
             attributes: attr,
         }
     }

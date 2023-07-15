@@ -99,7 +99,7 @@ impl ComponentManifest for RelayerComponentManifest {
     fn get_sources(&self) -> Sources {
         Sources {
             source: self.datasource.clone().location.id,
-            source_type: SourceType::SnapshotIndexer,
+            source_type: SourceType::Chainsight,
             attributes: HashMap::new(),
         }
     }

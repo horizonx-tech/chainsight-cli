@@ -98,7 +98,7 @@ impl ComponentManifest for AlgorithmIndexerComponentManifest {
 
     fn get_sources(&self) -> Sources {
         Sources {
-            source_type: SourceType::EventIndexer,
+            source_type: SourceType::Chainsight,
             source: self.datasource.clone().printipal,
             attributes: HashMap::new(),
         }

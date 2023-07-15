@@ -103,7 +103,6 @@ impl ComponentManifest for EventIndexerComponentManifest {
                 .clone()
                 .map(|s| s.replace(".json", ""))
                 .unwrap()
-                .clone()
         });
 
         let mut attr = HashMap::new();
