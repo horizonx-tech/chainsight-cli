@@ -41,7 +41,7 @@ impl SnapshotComponentManifest {
                 type_: ComponentType::Snapshot,
                 description: description.to_owned(),
                 tags: Some(vec![
-                    "ERC20".to_string(),
+                    "ERC-20".to_string(),
                     "Ethereum".to_string(),
                     "DAI".to_string(),
                 ]),
@@ -104,10 +104,14 @@ impl ComponentManifest for SnapshotComponentManifest {
     }
     fn get_sources(&self) -> Sources {
         let mut attr = HashMap::new();
-        attr.insert(
-            "function_name".to_string(),
-            json!(self.datasource.clone().method.identifier),
-        );
+        let mut method_identifier = self.datasource.clone().method.identifier;
+        if method_identifier.contains(':') {
+            method_identifier = method_identifier.split(":").collect::<Vec<&str>>()[0]
+                .to_string()
+                .replace(" ", "");
+        }
+
+        attr.insert("function_name".to_string(), json!(method_identifier));
         Sources {
             source: self.datasource.location.id.clone(),
             source_type: SourceType::AlgorithmIndexer,
@@ -151,7 +155,7 @@ mod tests {
 version: v1
 metadata:
     label: sample_pj_snapshot_chain
-    type: snapshot
+    type: snapshot_indexer
     description: Description
 datasource:
     type: contract
@@ -209,7 +213,7 @@ interval: 3600
 version: v1
 metadata:
     label: sample_pj_snapshot_icp
-    type: snapshot
+    type: snapshot_indexer
     description: Description
 datasource:
     type: canister

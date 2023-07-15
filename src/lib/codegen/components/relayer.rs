@@ -114,19 +114,19 @@ impl ComponentManifest for RelayerComponentManifest {
         #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
         struct Destination {
             destination_type: String,
-            address: String,
+            destination: String,
             attributes: Attributes,
         }
         let mut res = HashMap::new();
         let dest = Destination {
-            destination_type: "EVM".to_string(),
-            address: self.destination.oracle_address.clone(),
+            destination_type: "evm".to_string(),
+            destination: self.destination.oracle_address.clone(),
             attributes: Attributes {
                 chain_id: self.destination.network_id,
             },
         };
         res.insert(
-            "chainsight::destination".to_string(),
+            "chainsight:destination".to_string(),
             serde_json::to_string(&dest).unwrap(),
         );
         let (interval_key, interval_val) = custom_tags_interval_sec(self.interval);

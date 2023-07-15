@@ -38,7 +38,7 @@ impl EventIndexerComponentManifest {
                 description: description.to_owned(),
                 tags: Some(vec![
                     "Ethereum".to_string(),
-                    "ERC20".to_string(),
+                    "ERC-20".to_string(),
                     "Transfer".to_string(),
                 ]),
             },
@@ -94,8 +94,18 @@ impl ComponentManifest for EventIndexerComponentManifest {
         struct Attributes {
             chain_id: u64,
             event_name: String,
-            contract_name: String,
+            contract_type: String,
         }
+        let contract_type = self.clone().datasource.contract_type.unwrap_or_else(|| {
+            self.datasource
+                .event
+                .interface
+                .clone()
+                .map(|s| s.replace(".json", ""))
+                .unwrap()
+                .clone()
+        });
+
         let mut attr = HashMap::new();
         attr.insert(
             "chain_id".to_string(),
@@ -105,16 +115,7 @@ impl ComponentManifest for EventIndexerComponentManifest {
             "event_name".to_string(),
             json!(self.datasource.event.identifier),
         );
-        attr.insert(
-            "contract_name".to_string(),
-            json!(self
-                .datasource
-                .event
-                .interface
-                .clone()
-                .map(|s| { s.replace(".json", "") })
-                .unwrap()),
-        );
+        attr.insert("contract_type".to_string(), json!(contract_type));
 
         Sources {
             source_type: SourceType::Evm,
@@ -146,6 +147,7 @@ pub struct EventIndexerDatasource {
     pub event: EventIndexerEventDefinition,
     pub network: SourceNetwork,
     pub from: u64,
+    pub contract_type: Option<String>,
 }
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct SourceNetwork {
@@ -159,12 +161,14 @@ impl EventIndexerDatasource {
         event: EventIndexerEventDefinition,
         network: SourceNetwork,
         from: u64,
+        contract_type: Option<String>,
     ) -> Self {
         Self {
             id,
             event,
             network,
             from,
+            contract_type,
         }
     }
 
@@ -180,6 +184,7 @@ impl EventIndexerDatasource {
                 chain_id: 1,
             },
             from: 17660942,
+            contract_type: Some("ERC0-20".to_string()),
         }
     }
 }
@@ -214,6 +219,7 @@ datasource:
     event:
         identifier: Transfer
         interface: ERC20.json
+    contract_type: ERC0-20
     network: 
         rpc_url: https://mainnet.infura.io/v3/<YOUR_KEY>
         chain_id: 1
@@ -245,6 +251,7 @@ interval: 3600
                         chain_id: 1,
                     },
                     from: 17660942,
+                    contract_type: Some("ERC0-20".to_string())
                 },
                 interval: 3600
             }
