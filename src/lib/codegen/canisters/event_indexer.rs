@@ -17,6 +17,7 @@ fn common_codes() -> TokenStream {
     quote! {
         use candid::CandidType;
         use chainsight_cdk::{
+            core::*,
             indexer::{Event, Indexer, IndexingConfig},
             storage::Data,
             web3::Web3CtxParam,
@@ -83,8 +84,10 @@ fn custom_codes(
         .map(|event| {
             let field_name_ident = format_ident!("{}", event.name);
             let field_ty = convert_type_from_ethabi_param_type(event.kind).unwrap();
-            let field_ty_ident = if field_ty == ADDRESS_TYPE || field_ty == U256_TYPE {
+            let field_ty_ident = if field_ty == ADDRESS_TYPE {
                 format_ident!("String")
+            } else if field_ty == U256_TYPE {
+                format_ident!("U256")
             } else {
                 format_ident!("{}", field_ty)
             }; // todo: refactor
@@ -92,6 +95,7 @@ fn custom_codes(
         })
         .collect::<Vec<_>>();
     let event_struct = quote! {
+
         #[derive(Clone, Debug,  Default, candid::CandidType, ContractEvent, Serialize, Persist)]
         pub struct #event_struct_name {
             #(#event_struct_field_tokens),*
