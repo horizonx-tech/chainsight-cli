@@ -183,7 +183,7 @@ impl EventIndexerDatasource {
                 chain_id: 1,
             },
             from: 17660942,
-            contract_type: Some("ERC0-20".to_string()),
+            contract_type: Some("ERC020".to_string()),
         }
     }
 }
@@ -218,7 +218,7 @@ datasource:
     event:
         identifier: Transfer
         interface: ERC20.json
-    contract_type: ERC0-20
+    contract_type: ERC20
     network: 
         rpc_url: https://mainnet.infura.io/v3/<YOUR_KEY>
         chain_id: 1
@@ -250,7 +250,7 @@ interval: 3600
                         chain_id: 1,
                     },
                     from: 17660942,
-                    contract_type: Some("ERC0-20".to_string())
+                    contract_type: Some("ERC20".to_string())
                 },
                 interval: 3600
             }

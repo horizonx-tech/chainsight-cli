@@ -12,6 +12,7 @@ use crate::{
 fn common_codes() -> TokenStream {
     quote! {
         use candid::CandidType;
+        use chainsight_cdk::{core::*};
         use chainsight_cdk::{indexer::IndexingConfig, storage::Data};
         use chainsight_cdk_macros::*;
         use serde::{Deserialize, Serialize};
