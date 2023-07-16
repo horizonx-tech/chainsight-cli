@@ -108,7 +108,8 @@ impl ComponentManifest for SnapshotComponentManifest {
         if method_identifier.contains(':') {
             method_identifier = method_identifier.split(':').collect::<Vec<&str>>()[0]
                 .to_string()
-                .replace(' ', "");
+                .replace(' ', "")
+                .replace("()", "");
         }
 
         attr.insert("function_name".to_string(), json!(method_identifier));
