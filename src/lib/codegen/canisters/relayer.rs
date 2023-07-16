@@ -22,7 +22,7 @@ fn common_codes() -> proc_macro2::TokenStream {
         use ic_web3_rs::types::{Address, U256};
         use chainsight_cdk::rpc::{CallProvider, Caller, Message};
 
-        chainsight_common!(60);
+        chainsight_common!(3600);
 
         #outside_call_idents
 

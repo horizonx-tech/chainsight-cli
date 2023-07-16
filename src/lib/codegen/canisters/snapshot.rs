@@ -28,7 +28,7 @@ fn common_codes_for_contract() -> proc_macro2::TokenStream {
         init_in!();
 
 
-        chainsight_common!(60);
+        chainsight_common!(3600);
 
         #outside_call_idents
 
@@ -206,7 +206,7 @@ fn common_codes_for_canister() -> proc_macro2::TokenStream {
         use chainsight_cdk_macros::{init_in,manage_single_state, setup_func, prepare_stable_structure, stable_memory_for_vec, StableMemoryStorable, timer_task_func, chainsight_common, did_export};
         use chainsight_cdk::rpc::{CallProvider, Caller, Message};
         init_in!();
-        chainsight_common!(60);
+        chainsight_common!(3600);
 
         #outside_call_idents
 
