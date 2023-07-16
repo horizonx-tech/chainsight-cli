@@ -35,7 +35,7 @@ fn common_codes() -> TokenStream {
         };
         use serde::Serialize;
         use std::{collections::HashMap, str::FromStr};
-        chainsight_common!(60);
+        chainsight_common!(3600);
         define_web3_ctx!();
         define_transform_for_web3!();
         define_get_ethereum_address!();

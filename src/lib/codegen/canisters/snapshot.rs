@@ -22,13 +22,13 @@ fn common_codes_for_contract() -> proc_macro2::TokenStream {
     quote! {
         use std::str::FromStr;
         use candid::{Decode, Encode};
-        use chainsight_cdk_macros::{init_in, manage_single_state, setup_func, prepare_stable_structure, stable_memory_for_vec, StableMemoryStorable, timer_task_func, define_transform_for_web3, define_web3_ctx, chainsight_common, did_export};
+        use chainsight_cdk_macros::{init_in, manage_single_state, setup_func, prepare_stable_structure, stable_memory_for_vec, StableMemoryStorable, timer_task_func, define_transform_for_web3, define_web3_ctx, chainsight_common, did_export, snapshot_web3_source};
 
         use ic_web3_rs::types::Address;
         init_in!();
 
 
-        chainsight_common!(60);
+        chainsight_common!(3600);
 
         #outside_call_idents
 
@@ -143,7 +143,7 @@ fn custom_codes_for_contract(
         #queries_expect_timestamp
 
         ic_solidity_bindgen::contract_abi!(#abi_path);
-
+        snapshot_web3_source!(#method_ident_str);
         async fn execute_task() {
             #expr_to_current_ts_sec
             let res = #contract_struct_ident::new(
@@ -203,10 +203,10 @@ fn common_codes_for_canister() -> proc_macro2::TokenStream {
 
     quote! {
         use candid::{Decode, Encode};
-        use chainsight_cdk_macros::{init_in,manage_single_state, setup_func, prepare_stable_structure, stable_memory_for_vec, StableMemoryStorable, timer_task_func, chainsight_common, did_export};
+        use chainsight_cdk_macros::{init_in,manage_single_state, setup_func, prepare_stable_structure, stable_memory_for_vec, StableMemoryStorable, timer_task_func, chainsight_common, did_export, snapshot_icp_source};
         use chainsight_cdk::rpc::{CallProvider, Caller, Message};
         init_in!();
-        chainsight_common!(60);
+        chainsight_common!(3600);
 
         #outside_call_idents
 
@@ -326,6 +326,8 @@ fn custom_codes_for_canister(
         #queries_expect_timestamp
 
         #response_type_def_ident
+
+        snapshot_icp_source!(#method_ident);
 
         type CallCanisterArgs = (#(#request_ty_idents),*);
         type CallCanisterResponse = SnapshotValue;
