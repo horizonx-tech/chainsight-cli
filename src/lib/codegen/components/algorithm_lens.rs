@@ -191,19 +191,19 @@ output:
         let component = result.unwrap();
         let mut input_types = HashMap::new();
         let mut output_types = HashMap::new();
-        input_types.insert("from".to_string(), "String".to_string());
         input_types.insert("to".to_string(), "String".to_string());
         input_types.insert("value".to_string(), "String".to_string());
-        output_types.insert("result".to_string(), "String".to_string());
+        input_types.insert("from".to_string(), "String".to_string());
         output_types.insert("value".to_string(), "String".to_string());
+        output_types.insert("result".to_string(), "String".to_string());
 
         assert_eq!(
             component,
             AlgorithmLensComponentManifest {
                 version: "v1".to_string(),
                 metadata: ComponentMetadata {
-                    label: "sample_pj_algorithm_indexer".to_string(),
-                    type_: ComponentType::AlgorithmIndexer,
+                    label: "sample_pj_algorithm_lens".to_string(),
+                    type_: ComponentType::AlgorithmLens,
                     description: "Description".to_string(),
                     tags: Some(vec!["Ethereum".to_string(), "Account".to_string()])
                 },
