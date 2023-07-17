@@ -1,15 +1,15 @@
-use anyhow::ensure;
-use proc_macro2::{Ident, TokenStream};
-use quote::{format_ident, quote};
-
 use crate::{
     lib::codegen::components::algorithm_lens::AlgorithmLensComponentManifest, types::ComponentType,
 };
+use anyhow::ensure;
+use proc_macro2::{Ident, TokenStream};
+use quote::{format_ident, quote};
 
 fn common_codes() -> TokenStream {
     quote! {
         use chainsight_cdk_macros::{chainsight_common, did_export, init_in, lens_method};
         use ic_web3_rs::futures::{future::BoxFuture, FutureExt};
+        use candid::CandidType;
         mod app;
         chainsight_common!(60);
         init_in!();
@@ -57,7 +57,7 @@ fn custom_codes(
         pub struct #output_struct_ident {
             #(pub #output_fields_idents: #output_types_idents),*
         }
-        lens_method!(#input_struct_ident, #output_struct_ident)
+        lens_method!(#input_struct_ident, #output_struct_ident);
 
         did_export!(#label);
     })
@@ -65,8 +65,8 @@ fn custom_codes(
 
 pub fn generate_codes(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result<TokenStream> {
     ensure!(
-        manifest.metadata.type_ == ComponentType::AlgorithmIndexer,
-        "type is not EventIndexer"
+        manifest.metadata.type_ == ComponentType::AlgorithmLens,
+        "type is not AlgorithmLens"
     );
 
     let common_code_token = common_codes();

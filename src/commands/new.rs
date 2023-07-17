@@ -71,7 +71,7 @@ fn create_project(project_name: &str) -> anyhow::Result<()> {
     let relative_snapshot_chain_path = format!("components/{}_snapshot_chain.yaml", project_name);
     let relative_snapshot_icp_path = format!("components/{}_snapshot_icp.yaml", project_name);
     let relative_relayer_path = format!("components/{}_relayer.yaml", project_name);
-    let relative_algorithmlens_path = format!("interfaces/{}_algorithm_lens.yaml", project_name);
+    let relative_algorithmlens_path = format!("components/{}_algorithm_lens.yaml", project_name);
 
     fs::write(
         format!("{}/{}", project_name, PROJECT_MANIFEST_FILENAME),
@@ -110,7 +110,7 @@ fn create_project(project_name: &str) -> anyhow::Result<()> {
         template_relayer_manifest(project_name).to_str_as_yaml()?,
     )?;
     fs::write(
-        format!("{}/{}", project_name, relative_relayer_path),
+        format!("{}/{}", project_name, relative_algorithmlens_path),
         tempalte_algorithm_lens_manifest(project_name).to_str_as_yaml()?,
     )?;
 

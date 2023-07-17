@@ -31,7 +31,7 @@ impl AlgorithmLensComponentManifest {
             version: version.to_owned(),
             metadata: ComponentMetadata {
                 label: label.to_owned(),
-                type_: ComponentType::AlgorithmIndexer,
+                type_: ComponentType::AlgorithmLens,
                 description: description.to_owned(),
                 tags: Some(vec!["Ethereum".to_string(), "Account".to_string()]),
             },
@@ -94,7 +94,7 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
 
     fn get_sources(&self) -> Sources {
         Sources {
-            source_type: SourceType::AlgorithmIndexer,
+            source_type: SourceType::Chainsight,
             source: Principal::anonymous().to_string(),
             attributes: HashMap::new(),
         }
@@ -173,7 +173,6 @@ metadata:
       - Ethereum
       - Account
 datasource:
-    printipal: ahw5u-keaaa-aaaaa-qaaha-cai
     from: 17660942
     input:
         name: Transfer

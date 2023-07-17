@@ -136,7 +136,7 @@ fn custom_codes(
 pub fn generate_codes(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Result<TokenStream> {
     ensure!(
         manifest.metadata.type_ == ComponentType::AlgorithmIndexer,
-        "type is not EventIndexer"
+        "type is not AlgorithmIndexer"
     );
 
     let common_code_token = common_codes();
