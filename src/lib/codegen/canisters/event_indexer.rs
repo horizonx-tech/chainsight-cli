@@ -17,7 +17,7 @@ fn common_codes() -> TokenStream {
     quote! {
         use candid::CandidType;
         use chainsight_cdk::{
-            core::*,
+            core::{U256},
             indexer::{Event, Indexer, IndexingConfig},
             storage::Data,
             web3::Web3CtxParam,

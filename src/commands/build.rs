@@ -9,6 +9,7 @@ use clap::Parser;
 use slog::{debug, error, info, Logger};
 
 use crate::lib::codegen::components::algorithm_indexer::AlgorithmIndexerComponentManifest;
+use crate::lib::codegen::components::algorithm_lens::AlgorithmLensComponentManifest;
 use crate::lib::codegen::components::common::{ComponentManifest, ComponentTypeInManifest};
 use crate::lib::codegen::components::event_indexer::EventIndexerComponentManifest;
 use crate::lib::codegen::components::relayer::RelayerComponentManifest;
@@ -98,6 +99,9 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
             }
             ComponentType::Snapshot => Box::new(SnapshotComponentManifest::load(&component_path)?),
             ComponentType::Relayer => Box::new(RelayerComponentManifest::load(&component_path)?),
+            ComponentType::AlgorithmLens => {
+                Box::new(AlgorithmLensComponentManifest::load(&component_path)?)
+            }
         };
         component_data.push(data);
     }
@@ -269,8 +273,8 @@ hex = \"0.4.3\"
 
 ic-web3-rs = {{ version = \"0.1.1\" }}
 ic-solidity-bindgen = {{ version = \"0.1.5\" }}
-chainsight-cdk-macros = {{ git = \"https://github.com/horizonx-tech/chainsight-sdk.git\", rev = \"4d2ffa90c9a31c7b5f0f71ae01d4126b2229c253\" }}
-chainsight-cdk = {{ git = \"https://github.com/horizonx-tech/chainsight-sdk.git\", rev = \"4d2ffa90c9a31c7b5f0f71ae01d4126b2229c253\" }}", members);
+chainsight-cdk-macros = {{ git = \"https://github.com/horizonx-tech/chainsight-sdk.git\", rev = \"d50310c3de9b7d5af7e8b4b5f81a8b1b98a287a2\" }}
+chainsight-cdk = {{ git = \"https://github.com/horizonx-tech/chainsight-sdk.git\", rev = \"d50310c3de9b7d5af7e8b4b5f81a8b1b98a287a2\" }}", members);
 
     txt
 }
@@ -525,7 +529,6 @@ fn add_metadatas_to_wasm(
         add_meta(key, value, built_project_path, &wasm_name, log)
     };
 
-    // chainsight:label
     put_meta("chainsight:label", &wasm_name)?;
     put_meta(
         "chainsight:component_type",
