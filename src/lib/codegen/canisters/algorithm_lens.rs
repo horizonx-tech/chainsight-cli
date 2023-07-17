@@ -38,14 +38,14 @@ fn custom_codes(
     let output_fields_idents: Vec<Ident> = manifest
         .output
         .fields
-        .iter()
-        .map(|(k, _)| format_ident!("{}", k.clone()))
+        .keys()
+        .map(|k| format_ident!("{}", k.clone()))
         .collect();
     let output_types_idents: Vec<Ident> = manifest
         .output
         .fields
-        .iter()
-        .map(|(_, v)| format_ident!("{}", v.clone()))
+        .values()
+        .map(|v| format_ident!("{}", v.clone()))
         .collect();
 
     Ok(quote! {
