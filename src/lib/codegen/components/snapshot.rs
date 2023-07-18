@@ -158,6 +158,9 @@ metadata:
     label: sample_pj_snapshot_chain
     type: snapshot_indexer
     description: Description
+    tags:
+    - ERC-20
+    - Ethereum
 datasource:
     type: contract
     location:
@@ -185,7 +188,7 @@ interval: 3600
                     label: "sample_pj_snapshot_chain".to_owned(),
                     type_: ComponentType::Snapshot,
                     description: "Description".to_string(),
-                    tags: None
+                    tags: Some(vec!["ERC-20".to_string(), "Ethereum".to_string()])
                 },
                 datasource: Datasource {
                     type_: DatasourceType::Contract,
@@ -216,6 +219,9 @@ metadata:
     label: sample_pj_snapshot_icp
     type: snapshot_indexer
     description: Description
+    tags:
+    - ERC-20
+    - Ethereum
 datasource:
     type: canister
     location:
@@ -242,7 +248,7 @@ interval: 3600
                     label: "sample_pj_snapshot_icp".to_owned(),
                     type_: ComponentType::Snapshot,
                     description: "Description".to_string(),
-                    tags: None
+                    tags: Some(vec!["ERC-20".to_string(), "Ethereum".to_string()])
                 },
                 datasource: Datasource {
                     type_: DatasourceType::Canister,

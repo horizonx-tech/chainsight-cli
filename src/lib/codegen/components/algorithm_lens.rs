@@ -11,6 +11,7 @@ use crate::{
 
 use super::common::{ComponentManifest, ComponentMetadata, SourceType, Sources};
 
+/// Component Manifest: Algorithm Lens
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct AlgorithmLensComponentManifest {
     pub version: String,
@@ -170,8 +171,8 @@ metadata:
     type: algorithm_lens
     description: Description
     tags: 
-      - Ethereum
-      - Account
+    - Ethereum
+    - Account
 datasource:
     from: 17660942
     input:

@@ -14,6 +14,7 @@ use super::common::{
     custom_tags_interval_sec, ComponentManifest, ComponentMetadata, SourceType, Sources,
 };
 
+/// Component Manifest: Event Indexer
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct EventIndexerComponentManifest {
     pub version: String,
@@ -213,6 +214,10 @@ metadata:
     label: sample_pj_event_indexer
     type: event_indexer
     description: Description
+    tags:
+    - Ethereum
+    - ERC-20
+    - Transfer
 datasource:
     id: 0x6B175474E89094C44Da98b954EedeAC495271d0F
     event:
@@ -237,7 +242,11 @@ interval: 3600
                     label: "sample_pj_event_indexer".to_string(),
                     type_: ComponentType::EventIndexer,
                     description: "Description".to_string(),
-                    tags: None
+                    tags: Some(vec![
+                        "Ethereum".to_string(),
+                        "ERC-20".to_string(),
+                        "Transfer".to_string()
+                    ])
                 },
                 datasource: EventIndexerDatasource {
                     id: "0x6B175474E89094C44Da98b954EedeAC495271d0F".to_string(),

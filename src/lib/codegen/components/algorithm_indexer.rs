@@ -12,6 +12,7 @@ use super::common::{
     custom_tags_interval_sec, ComponentManifest, ComponentMetadata, SourceType, Sources,
 };
 
+/// Component Manifest: Algorithm Indexer
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct AlgorithmIndexerComponentManifest {
     pub version: String,
@@ -205,8 +206,8 @@ metadata:
     type: algorithm_indexer
     description: Description
     tags: 
-      - Ethereum
-      - Account
+    - Ethereum
+    - Account
 datasource:
     printipal: ahw5u-keaaa-aaaaa-qaaha-cai
     from: 17660942

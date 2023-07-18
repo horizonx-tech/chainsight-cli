@@ -188,6 +188,9 @@ metadata:
     label: sample_pj_relayer
     type: relayer
     description: Description
+    tags:
+    - Oracle
+    - snapshot
 datasource:
     type: canister
     location:
@@ -217,7 +220,7 @@ interval: 3600
                     label: "sample_pj_relayer".to_string(),
                     type_: ComponentType::Relayer,
                     description: "Description".to_string(),
-                    tags: None
+                    tags: Some(vec!["Oracle".to_string(), "snapshot".to_string()])
                 },
                 datasource: Datasource {
                     type_: DatasourceType::Canister,
