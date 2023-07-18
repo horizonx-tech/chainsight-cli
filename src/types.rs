@@ -12,8 +12,8 @@ pub enum ComponentType {
     #[serde(rename = "event_indexer")]
     EventIndexer,
 
+    /// To get events from other indexer and convert it into another format
     #[serde(rename = "algorithm_indexer")]
-    /// get events from other indexer and convert it into another format
     AlgorithmIndexer,
 
     /// To periodically take and store snapshots from Contract and other Canisters
@@ -23,6 +23,8 @@ pub enum ComponentType {
     /// To relay data to other blockchains
     #[serde(rename = "relayer")]
     Relayer,
+
+    /// To calculate using data obtained from the specified Source and process into an arbitrary format
     #[serde(rename = "algorithm_lens")]
     AlgorithmLens,
 }
