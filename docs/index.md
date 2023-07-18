@@ -223,9 +223,10 @@ Options:
 
           Possible values:
           - event-indexer:     To synchronize event data
-          - algorithm-indexer: To store data from chainsight-canisters and collect them into other types of data
+          - algorithm-indexer: To get events from other indexer and convert it into another format
           - snapshot:          To periodically take and store snapshots from Contract and other Canisters
           - relayer:           To relay data to other blockchains
+          - algorithm-lens:    To calculate using data obtained from the specified Source and process into an arbitrary format
 
   -v, --verbose...
           Displays detailed information about operations. -vv will generate a very large number of messages and can affect performance
@@ -362,11 +363,12 @@ example)
 version: v1
 label: example_pj
 components:
-- component_path: components/example_event_indexer.yaml
 - component_path: components/example_algorithm_indexer.yaml
+- component_path: components/example_algorithm_lens.yaml
+- component_path: components/example_event_indexer.yaml
+- component_path: components/example_pj_relayer.yaml
 - component_path: components/example_pj_snapshot_chain.yaml
 - component_path: components/example_pj_snapshot_icp.yaml
-- component_path: components/example_pj_relayer.yaml
 ```
 
 ### Component Manifest
@@ -391,6 +393,7 @@ metadata:
   label: example_pj_snapshot_chain
   type: snapshot
   description: ''
+  tags: ...
 ...
 ```
 
@@ -440,6 +443,7 @@ metadata:
   label: example_pj_snapshot_chain
   type: snapshot
   description: ''
+  tags: ...
 datasource:
   type: contract
   location:
@@ -486,6 +490,7 @@ metadata:
   label: example_pj_snapshot_icp
   type: snapshot
   description: ''
+  tags: ...
 datasource:
   type: canister
   location:
@@ -521,6 +526,7 @@ metadata:
   label: example_pj_relayer
   type: relayer
   description: ''
+  tags: ...
 datasource:
   type: canister
   location:
@@ -550,3 +556,15 @@ The following is a tentative specification, but there is a specific code below.
 [horizonx-tech/chainsight-evm-oracles](https://github.com/horizonx-tech/chainsight-evm-oracles)
 
 Currently, only EVM compatible chains are supported, so only Solidity files are placed.
+
+#### Event Indexer
+
+To be updated
+
+#### Algorithm Indexer
+
+To be updated
+
+#### Algorithm Lens
+
+To be updated
