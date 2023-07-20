@@ -207,7 +207,7 @@ This command will add a Component Manifest of the specified Type and its managem
 
 If you are familiar with it, you can do manually what this command does.
 
-```bash
+```txt
 % csx create --help
 Generates component manifest of specified type and adds to your project
 
@@ -261,7 +261,7 @@ csx build --path sample_project
 > `--only-codegen`: Perform code generation only  
 > `--only-build`: Perform build only (from already generated code)`
 
-```bash
+```txt
 % csx build --help 
 Builds your project to generate canisters' modules for Chainsight
 
@@ -291,7 +291,7 @@ It is built by wrapping the operations performed by the dfx deploy command, plus
     - local ... localhost
     - ic ... mainnet of Internet Computer
 
-```bash
+```txt
 % csx deploy --help
 Deploy the components of your project. If you want to operate on a local network, you need to build a local dfx network in advance
 
@@ -315,7 +315,7 @@ It is currently implemented to perform the following commands.
 1. Setup: Set parameters for the Component to operate as intended.
 2. Start timer task: kick periodic execution of data acquisition/processing/storage.
 
-```bash
+```txt
 % csx exec --help  
 Calls for component processing. Currently supports initialization and task start instructions
 
