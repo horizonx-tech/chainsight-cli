@@ -104,16 +104,18 @@ fn script_contents_for_contract(manifest: &SnapshotComponentManifest, network: N
         manifest.interval,
         0, // temp: fixed value, todo: make it configurable
     );
+    let init_in_env_task = init_in_env_task(&network, &manifest.metadata.label);
 
     format!(
         r#"#!/bin/bash
-
+# init
+{}
 # setup
 {}
 # set_task
 {}
 "#,
-        setup_contents, start_timer_contents
+        init_in_env_task, setup_contents, start_timer_contents
     )
 }
 

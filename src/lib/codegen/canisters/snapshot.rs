@@ -223,7 +223,7 @@ fn custom_codes_for_canister(
     let method = &manifest.datasource.method;
     let method_identifier = CanisterMethodIdentifier::parse_from_str(&method.identifier)?;
 
-    let method_ident = &method_identifier.identifier;
+    let method_ident = "proxy_".to_string() + &method_identifier.identifier; // NOTE: to call through proxy
 
     // for request values
     // todo: validate length of method.args and method_identifier.params
