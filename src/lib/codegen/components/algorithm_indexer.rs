@@ -100,7 +100,7 @@ impl ComponentManifest for AlgorithmIndexerComponentManifest {
     fn get_sources(&self) -> Sources {
         Sources {
             source_type: SourceType::Chainsight,
-            source: self.datasource.clone().printipal,
+            source: self.datasource.clone().principal,
             attributes: HashMap::new(),
         }
     }
@@ -166,7 +166,7 @@ impl Default for AlgorithmIndexerOutput {
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct AlgorithmIndexerDatasource {
-    pub printipal: String,
+    pub principal: String,
     pub input: InputStruct,
     pub from: u64,
     pub method: String,
@@ -181,7 +181,7 @@ impl Default for AlgorithmIndexerDatasource {
         sample_fields.insert("value".to_string(), "String".to_string());
 
         Self {
-            printipal: "be2us-64aaa-aaaaa-qaabq-cai".to_string(),
+            principal: "be2us-64aaa-aaaaa-qaabq-cai".to_string(),
             input: InputStruct {
                 name: "Transfer".to_string(),
                 fields: sample_fields,
@@ -209,7 +209,7 @@ metadata:
     - Ethereum
     - Account
 datasource:
-    printipal: ahw5u-keaaa-aaaaa-qaaha-cai
+    principal: ahw5u-keaaa-aaaaa-qaaha-cai
     from: 17660942
     input:
         name: Transfer
@@ -253,7 +253,7 @@ interval: 3600
                         name: "Transfer".to_string(),
                         fields: input_types
                     },
-                    printipal: "ahw5u-keaaa-aaaaa-qaaha-cai".to_string(),
+                    principal: "ahw5u-keaaa-aaaaa-qaaha-cai".to_string(),
                     from: 17660942,
                     method: "proxy_call".to_string(),
                     source_type: AlgorithmInputType::EventIndexer

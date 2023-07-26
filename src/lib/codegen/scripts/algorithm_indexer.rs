@@ -31,7 +31,7 @@ fn generate_command_to_setup(
 fn script_contents(manifest: &AlgorithmIndexerComponentManifest, network: Network) -> String {
     let script_to_setup = generate_command_to_setup(
         &manifest.metadata.label,
-        &manifest.datasource.printipal,
+        &manifest.datasource.principal,
         &network,
         manifest.datasource.from,
     );
