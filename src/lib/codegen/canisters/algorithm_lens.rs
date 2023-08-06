@@ -32,7 +32,7 @@ fn custom_codes(
         .datasource
         .locations
         .iter()
-        .map(|l| format!("{}", &l.label))
+        .map(|l| l.label.to_string())
         .collect::<Vec<_>>();
     let location_idents = locations
         .iter()
@@ -132,7 +132,7 @@ pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result
         .datasource
         .locations
         .iter()
-        .map(|l| format!("{}", &l.label))
+        .map(|l| l.label.to_string())
         .collect::<Vec<_>>();
     let location_getter_idents = locations
         .iter()
@@ -147,7 +147,7 @@ pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result
             }
         });
 
-    let _method_identifiers = get_method_identifiers(&manifest)?; // TODO: use this to set args
+    let _method_identifiers = get_method_identifiers(manifest)?; // TODO: use this to set args
     let methods = manifest.datasource.methods.clone();
     let call_func_idents = methods.iter().map(|m| format_ident!("get_{}", &m.label));
     let call_func_templates = call_func_idents.clone().map(|getter| {
