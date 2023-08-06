@@ -125,7 +125,7 @@ impl Default for AlgorithmLensOutput {
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct AlgorithmLensDataSource {
     pub locations: Vec<AlgorithmLensDataSourceLocation>,
-    pub interfaces: Vec<String>,
+    pub methods: Vec<AlgorithmLensDataSourceMethod>,
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -133,6 +133,12 @@ pub struct AlgorithmLensDataSourceLocation {
     pub id: String,
     pub id_type: CanisterIdType,
     pub label: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+pub struct AlgorithmLensDataSourceMethod {
+    pub label: String,
+    pub identifier: String,
 }
 
 impl Default for AlgorithmLensDataSource {
@@ -143,7 +149,10 @@ impl Default for AlgorithmLensDataSource {
                 id_type: CanisterIdType::CanisterName,
                 label: "sample_pj_snapshot_chain".to_string(),
             }],
-            interfaces: vec!["get_last_snapshot_value : () -> (text)".to_string()],
+            methods: vec![AlgorithmLensDataSourceMethod {
+                label: "last_snapshot_value".to_string(),
+                identifier: "get_last_snapshot_value : () -> (text)".to_string(),
+            }],
         }
     }
 }
@@ -168,8 +177,9 @@ datasource:
     - id: sample_pj_snapshot_chain
       id_type: canister_name
       label: sample_pj_snapshot_chain
-    interfaces:
-    - 'get_last_snapshot_value : () -> (text)'
+    methods:
+    - label: last_snapshot_value
+      identifier: 'get_last_snapshot_value : () -> (text)'
 output:
     name: SampleOutput
     fields:
@@ -199,7 +209,10 @@ output:
                         id_type: CanisterIdType::CanisterName,
                         label: "sample_pj_snapshot_chain".to_string(),
                     }],
-                    interfaces: vec!["get_last_snapshot_value : () -> (text)".to_string()],
+                    methods: vec![AlgorithmLensDataSourceMethod {
+                        label: "last_snapshot_value".to_string(),
+                        identifier: "get_last_snapshot_value : () -> (text)".to_string(),
+                    }],
                 },
                 output: AlgorithmLensOutput {
                     name: "SampleOutput".to_string(),
