@@ -184,7 +184,7 @@ impl EventIndexerDatasource {
                 chain_id: 1,
             },
             from: 17660942,
-            contract_type: Some("ERC020".to_string()),
+            contract_type: Some("ERC-20".to_string()),
         }
     }
 }
