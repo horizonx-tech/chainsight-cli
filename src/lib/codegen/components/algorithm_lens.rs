@@ -9,7 +9,7 @@ use crate::{
     types::{ComponentType, Network},
 };
 
-use super::common::{ComponentManifest, ComponentMetadata, SourceType, Sources};
+use super::common::{CanisterIdType, ComponentManifest, ComponentMetadata, SourceType, Sources};
 
 /// Component Manifest: Algorithm Lens
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -104,21 +104,6 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
         HashMap::new()
     }
 }
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-pub enum InputType {
-    U128,
-    U64,
-    U32,
-    U16,
-    U8,
-    String,
-}
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-
-pub struct InputStruct {
-    pub name: String,
-    pub fields: HashMap<String, String>,
-}
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct AlgorithmLensOutput {
@@ -139,21 +124,35 @@ impl Default for AlgorithmLensOutput {
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct AlgorithmLensDataSource {
-    pub input: InputStruct,
+    pub locations: Vec<AlgorithmLensDataSourceLocation>,
+    pub methods: Vec<AlgorithmLensDataSourceMethod>,
+}
+
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+pub struct AlgorithmLensDataSourceLocation {
+    pub id: String,
+    pub id_type: CanisterIdType,
+    pub label: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+pub struct AlgorithmLensDataSourceMethod {
+    pub label: String,
+    pub identifier: String,
 }
 
 impl Default for AlgorithmLensDataSource {
     fn default() -> Self {
-        let mut sample_fields = HashMap::new();
-        sample_fields.insert("from".to_string(), "String".to_string());
-        sample_fields.insert("to".to_string(), "String".to_string());
-        sample_fields.insert("value".to_string(), "String".to_string());
-
         Self {
-            input: InputStruct {
-                name: "Transfer".to_string(),
-                fields: sample_fields,
-            },
+            locations: vec![AlgorithmLensDataSourceLocation {
+                id: "sample_pj_snapshot_chain".to_string(),
+                id_type: CanisterIdType::CanisterName,
+                label: "sample_pj_snapshot_chain".to_string(),
+            }],
+            methods: vec![AlgorithmLensDataSourceMethod {
+                label: "last_snapshot_value".to_string(),
+                identifier: "get_last_snapshot_value : () -> (text)".to_string(),
+            }],
         }
     }
 }
@@ -174,13 +173,13 @@ metadata:
     - Ethereum
     - Account
 datasource:
-    from: 17660942
-    input:
-        name: Transfer
-        fields:
-            from: String
-            to: String
-            value: String
+    locations:
+    - id: sample_pj_snapshot_chain
+      id_type: canister_name
+      label: sample_pj_snapshot_chain
+    methods:
+    - label: last_snapshot_value
+      identifier: 'get_last_snapshot_value : () -> (text)'
 output:
     name: SampleOutput
     fields:
@@ -190,11 +189,7 @@ output:
 
         let result = serde_yaml::from_str::<AlgorithmLensComponentManifest>(yaml);
         let component = result.unwrap();
-        let mut input_types = HashMap::new();
         let mut output_types = HashMap::new();
-        input_types.insert("to".to_string(), "String".to_string());
-        input_types.insert("value".to_string(), "String".to_string());
-        input_types.insert("from".to_string(), "String".to_string());
         output_types.insert("value".to_string(), "String".to_string());
         output_types.insert("result".to_string(), "String".to_string());
 
@@ -209,10 +204,15 @@ output:
                     tags: Some(vec!["Ethereum".to_string(), "Account".to_string()])
                 },
                 datasource: AlgorithmLensDataSource {
-                    input: InputStruct {
-                        name: "Transfer".to_string(),
-                        fields: input_types
-                    },
+                    locations: vec![AlgorithmLensDataSourceLocation {
+                        id: "sample_pj_snapshot_chain".to_string(),
+                        id_type: CanisterIdType::CanisterName,
+                        label: "sample_pj_snapshot_chain".to_string(),
+                    }],
+                    methods: vec![AlgorithmLensDataSourceMethod {
+                        label: "last_snapshot_value".to_string(),
+                        identifier: "get_last_snapshot_value : () -> (text)".to_string(),
+                    }],
                 },
                 output: AlgorithmLensOutput {
                     name: "SampleOutput".to_string(),

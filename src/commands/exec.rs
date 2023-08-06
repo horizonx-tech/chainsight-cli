@@ -9,6 +9,7 @@ use crate::{
         codegen::{
             components::{
                 algorithm_indexer::AlgorithmIndexerComponentManifest,
+                algorithm_lens::AlgorithmLensComponentManifest,
                 common::{ComponentManifest, ComponentTypeInManifest},
                 event_indexer::EventIndexerComponentManifest,
                 relayer::RelayerComponentManifest,
@@ -90,7 +91,7 @@ pub fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
             ComponentType::Snapshot => Box::new(SnapshotComponentManifest::load(&component_path)?),
             ComponentType::Relayer => Box::new(RelayerComponentManifest::load(&component_path)?),
             ComponentType::AlgorithmLens => {
-                Box::new(AlgorithmIndexerComponentManifest::load(&component_path)?)
+                Box::new(AlgorithmLensComponentManifest::load(&component_path)?)
             }
         };
         component_data.push(data);
