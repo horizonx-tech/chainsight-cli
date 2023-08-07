@@ -567,4 +567,42 @@ To be updated
 
 #### Algorithm Lens
 
-To be updated
+Users can define arbitrary logic using Lens. All data sources on Chainsight can be used as inputs for the calculations.
+
+`datasource` specifies the source data source for the calculation. You can specify data sources by canister in Chainsight and their endpoints (e.g. functions). Multiple data sources can be specified.
+
+- `datasource.locations`: Array / Specifies the Canister from which the data originates.
+  - `id`, `id_type` ... These are the same as "Snapshot (datasource = canister)"
+  - `label`: String / Information used in the function name to get the canister id used by user when defining logic.
+- `datasource.methods`: Array / Specifies a function to retrieve data.
+  - `label`: String / Information used in the function name to do cross-canister call used by user when defining logic.
+  - `identifier` ... These are the same as "Snapshot (datasource = canister)"
+
+`output` specifies the type of calculation result to output with arbitrary logic.
+
+- `name`: String / Name of type
+- `fields`: Array / Field information for the calculation result type
+  - `(key_name)`: (Kind of Type)
+
+```yml
+version: v1
+metadata:
+  label: sample_pj_algorithm_lens
+  type: algorithm_lens
+  description: ''
+  tags:
+  - Ethereum
+  - Account
+datasource:
+  locations:
+  - id: rate_snapshot
+    id_type: canister_name
+    label: rate_snapshot
+  methods:
+  - label: last_snapshot_value
+    identifier: 'get_last_snapshot_value : () -> (text)'
+output:
+  name: Account
+  fields:
+    address: String
+```
