@@ -226,11 +226,13 @@ fn exec_codegen(
             }
         }
 
-        // generate project's Cargo.toml
-        fs::write(
-            format!("{}/Cargo.toml", &canister_pj_path_str),
-            &canister_project_cargo_toml(&label),
-        )?;
+        // generate project's Cargo.toml if not exists
+        if !Path::exists(Path::new(&format!("{}/Cargo.toml", &project_path_str))) {
+            fs::write(
+                format!("{}/Cargo.toml", &project_path_str),
+                &canister_project_cargo_toml(&label),
+            )?;
+        }
 
         // copy and move oracle interface
         if let Some(value) = data.destination_type() {
