@@ -408,7 +408,9 @@ pub fn validate_manifest(manifest: &SnapshotComponentManifest) -> anyhow::Result
     Ok(())
 }
 
-fn generate_queries_without_timestamp(return_type: proc_macro2::Ident) -> proc_macro2::TokenStream {
+pub fn generate_queries_without_timestamp(
+    return_type: proc_macro2::Ident,
+) -> proc_macro2::TokenStream {
     let query_derives = quote! {
         #[ic_cdk::query]
         #[candid::candid_method(query)]

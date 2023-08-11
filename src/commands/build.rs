@@ -147,9 +147,12 @@ fn exec_codegen(
     // generate /artifacts
     let artifacts_path = Path::new(&artifacts_path_str);
     if artifacts_path.exists() {
-        fs::remove_dir_all(artifacts_path)?;
+        // renew artifacts/__interfaces, artifacts/dfx.json
+        let _ = fs::remove_dir_all(format!("{}/__interfaces", &artifacts_path_str));
+        let _ = fs::remove_file(format!("{}/dfx.json", &artifacts_path_str));
+    } else {
+        fs::create_dir(artifacts_path)?;
     }
-    fs::create_dir(artifacts_path)?;
 
     // generate /artifacts/__interfaces
     let interfaces_path_str = format!("{}/__interfaces", &artifacts_path_str);
@@ -211,12 +214,16 @@ fn exec_codegen(
         if data.user_impl_required() {
             let app_path_str = format!("{}/app.rs", &canister_code_path_str);
             // if file exists, skip
-            if Path::new(&app_path_str).exists() {
-                info!(log, r#"app.rs already exists. skip creating"#);
-                continue;
+            if Path::new(&app_path_str).is_file() {
+                info!(
+                    log,
+                    r#"{app_path_str}/app.rs already exists, skip creating"#
+                );
+            } else {
+                println!("{}", Path::new(&app_path_str).is_file().to_string());
+                let mut lib_file: File = File::create(&app_path_str)?;
+                lib_file.write_all(data.generate_user_impl_template()?.to_string().as_bytes())?;
             }
-            let mut lib_file = File::create(&app_path_str)?;
-            lib_file.write_all(data.generate_user_impl_template()?.to_string().as_bytes())?;
         }
 
         // generate project's Cargo.toml
@@ -238,19 +245,26 @@ fn exec_codegen(
             );
         }
     }
-    fs::write(
-        format!("{}/Cargo.toml", &artifacts_path_str),
-        root_cargo_toml(project_labels.clone()),
-    )?;
+    if !Path::new(&format!("{}/Cargo.toml", &artifacts_path_str)).is_file() {
+        fs::write(
+            format!("{}/Cargo.toml", &artifacts_path_str),
+            root_cargo_toml(project_labels.clone()),
+        )?;
+    } else {
+        info!(log, r#"Cargo.toml already exists, skip creating"#)
+    }
     fs::write(
         format!("{}/dfx.json", &artifacts_path_str),
         dfx_json(project_labels),
     )?;
-    fs::write(
-        format!("{}/Makefile.toml", &artifacts_path_str),
-        makefile_toml(),
-    )?;
-
+    if !Path::new(&format!("{}/Makefile.toml", &artifacts_path_str)).is_file() {
+        fs::write(
+            format!("{}/Makefile.toml", &artifacts_path_str),
+            makefile_toml(),
+        )?;
+    } else {
+        info!(log, r#"Makefile.toml already exists, skip creating"#)
+    }
     anyhow::Ok(())
 }
 

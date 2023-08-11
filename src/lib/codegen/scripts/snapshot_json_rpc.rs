@@ -1,46 +1,37 @@
 use anyhow::ensure;
 
 use crate::{
-    lib::codegen::components::{
-        common::CanisterIdType, snapshot_json_rpc::SnapshotJsonRPCComponentManifest,
+    lib::codegen::{
+        components::snapshot_json_rpc::SnapshotJsonRPCComponentManifest,
+        scripts::common::{generate_command_to_set_task, init_in_env_task},
     },
-    types::Network,
+    types::{ComponentType, Network},
 };
 
-fn generate_command_to_setup_for_canister(
-    label: &str,
-    datasrc_id: &str,
-    datasrc_id_type: CanisterIdType,
-    network: &Network,
-) -> String {
-    todo!()
-}
-fn script_contents_for_canister(
-    manifest: &SnapshotJsonRPCComponentManifest,
-    network: Network,
-) -> String {
-    todo!()
-}
+fn script_contents(manifest: &SnapshotJsonRPCComponentManifest, network: Network) -> String {
+    let script_to_set_task =
+        generate_command_to_set_task(&manifest.metadata.label, &network, manifest.interval, 10);
+    let init_in_env_task = init_in_env_task(&network, &manifest.metadata.label);
 
-fn generate_command_to_setup_for_contract(
-    label: &str,
-    datasrc_id: &str,
-    datasrc_network_id: u32,
-    datasrc_rpc_url: &str,
-    network: &Network,
-) -> String {
-    todo!()
-}
-fn script_contents_for_contract(
-    manifest: &SnapshotJsonRPCComponentManifest,
-    network: Network,
-) -> String {
-    todo!()
+    format!(
+        r#"#!/bin/bash
+# init
+{}
+# set_task
+{}
+"#,
+        init_in_env_task, script_to_set_task
+    )
 }
 
 pub fn generate_scripts(
     manifest: &SnapshotJsonRPCComponentManifest,
     network: Network,
 ) -> anyhow::Result<String> {
-    todo!()
+    ensure!(
+        manifest.metadata.type_ == ComponentType::SnapshotJsonRPC,
+        "type is not SnapshotJsonRPC"
+    );
+
+    Ok(script_contents(manifest, network))
 }

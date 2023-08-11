@@ -1,7 +1,7 @@
 use std::{collections::HashMap, fs::OpenOptions, io::Read, path::Path};
 
-use anyhow::bail;
 use proc_macro2::TokenStream;
+use quote::quote;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -15,12 +15,28 @@ use super::{
     },
     snapshot::SnapshotStorage,
 };
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, Default)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 
 pub struct SnapshotJsonRPCDataSource {
     pub url: String,
     pub headers: HashMap<String, String>,
     pub queries: HashMap<String, String>,
+}
+impl Default for SnapshotJsonRPCDataSource {
+    fn default() -> Self {
+        Self {
+            url: "https://api.coingecko.com/api/v3/simple/price".to_string(),
+            headers: vec![("Content-Type".to_string(), "application/json".to_string())]
+                .into_iter()
+                .collect(),
+            queries: vec![
+                ("ids".to_string(), "dai".to_string()),
+                ("vs_currencies".to_string(), "usd".to_string()),
+            ]
+            .into_iter()
+            .collect(),
+        }
+    }
 }
 
 /// Component Manifest: Snapshot
@@ -46,12 +62,12 @@ impl SnapshotJsonRPCComponentManifest {
             version: version.to_owned(),
             metadata: ComponentMetadata {
                 label: label.to_owned(),
-                type_: ComponentType::Snapshot,
+                type_: ComponentType::SnapshotJsonRPC,
                 description: description.to_owned(),
                 tags: Some(vec![
                     "coingecko".to_string(),
-                    "Ethereum".to_string(),
                     "DAI".to_string(),
+                    "USD".to_string(),
                 ]),
             },
             datasource,
@@ -90,7 +106,7 @@ impl ComponentManifest for SnapshotJsonRPCComponentManifest {
     }
 
     fn component_type(&self) -> ComponentType {
-        ComponentType::Snapshot
+        ComponentType::SnapshotJsonRPC
     }
 
     fn metadata(&self) -> &ComponentMetadata {
@@ -105,10 +121,17 @@ impl ComponentManifest for SnapshotJsonRPCComponentManifest {
         None
     }
     fn user_impl_required(&self) -> bool {
-        false
+        true
     }
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
-        bail!("Not implemented")
+        let v = quote! {
+            use candid::{Decode, Encode};
+            use chainsight_cdk_macros::StableMemoryStorable;
+            #[derive(Debug, Clone, candid::CandidType, candid::Deserialize, serde::Serialize, StableMemoryStorable)]
+            pub struct SnapshotValue {
+            }
+        };
+        Ok(v)
     }
     fn get_sources(&self) -> Sources {
         Sources {
@@ -127,34 +150,28 @@ impl ComponentManifest for SnapshotJsonRPCComponentManifest {
 
 #[cfg(test)]
 mod tests {
-    use crate::lib::codegen::components::common::{
-        CanisterIdType, DatasourceLocation, DatasourceMethod, DatasourceType,
-    };
 
     use super::*;
 
     #[test]
-    fn test_to_manifest_struct_for_chain() {
+    fn test_to_manifest_struct() {
         let yaml = r#"
 version: v1
 metadata:
-    label: sample_pj_snapshot_chain
-    type: snapshot_indexer
+    label: sample_pj_snapshot_json_rpc
+    type: snapshot_json_rpc
     description: Description
     tags:
-    - ERC-20
-    - Ethereum
+    - coingecko
+    - DAI
+    - USD
 datasource:
-    type: contract
-    location:
-        id: 6b175474e89094c44da98b954eedeac495271d0f
-        args:
-            network_id: 1
-            rpc_url: https://mainnet.infura.io/v3/<YOUR_KEY>
-    method:
-        identifier: totalSupply():(uint256)
-        interface: ERC20.json
-        args: []
+    url: https://api.coingecko.com/api/v3/simple/price
+    headers: 
+        content-type: application/json
+    queries:
+        ids: dai
+        vs_currencies: usd
 storage:
     with_timestamp: true
 interval: 3600
@@ -168,67 +185,26 @@ interval: 3600
             SnapshotJsonRPCComponentManifest {
                 version: "v1".to_owned(),
                 metadata: ComponentMetadata {
-                    label: "sample_pj_snapshot_chain".to_owned(),
-                    type_: ComponentType::Snapshot,
+                    label: "sample_pj_snapshot_json_rpc".to_owned(),
+                    type_: ComponentType::SnapshotJsonRPC,
                     description: "Description".to_string(),
-                    tags: Some(vec!["ERC-20".to_string(), "Ethereum".to_string()])
+                    tags: Some(vec![
+                        "coingecko".to_string(),
+                        "DAI".to_string(),
+                        "USD".to_string()
+                    ])
                 },
                 datasource: SnapshotJsonRPCDataSource {
-                    url: "https://mainnet.infura.io/v3/<YOUR_KEY>".to_string(),
-                    headers: HashMap::new(),
-                    queries: HashMap::new(),
-                },
-                storage: SnapshotStorage {
-                    with_timestamp: true,
-                },
-                interval: 3600
-            }
-        );
-    }
-
-    #[test]
-    fn test_to_manifest_struct_for_icp() {
-        let yaml = r#"
-version: v1
-metadata:
-    label: sample_pj_snapshot_icp
-    type: snapshot_indexer
-    description: Description
-    tags:
-    - ERC-20
-    - Ethereum
-datasource:
-    type: canister
-    location:
-        id: datasource_canister_id
-        args:
-            id_type: canister_name
-    method:
-        identifier: 'get_last_snapshot : () -> (record { value : text; timestamp : nat64 })'
-        interface: null
-        args: []
-storage:
-    with_timestamp: true
-interval: 3600
-        "#;
-
-        let result = serde_yaml::from_str::<SnapshotJsonRPCComponentManifest>(yaml);
-        assert!(result.is_ok());
-        let component = result.unwrap();
-        assert_eq!(
-            component,
-            SnapshotJsonRPCComponentManifest {
-                version: "v1".to_owned(),
-                metadata: ComponentMetadata {
-                    label: "sample_pj_snapshot_icp".to_owned(),
-                    type_: ComponentType::Snapshot,
-                    description: "Description".to_string(),
-                    tags: Some(vec!["ERC-20".to_string(), "Ethereum".to_string()])
-                },
-                datasource: SnapshotJsonRPCDataSource {
-                    url: "datasource_canister_id".to_string(),
-                    headers: HashMap::new(),
-                    queries: HashMap::new(),
+                    url: "https://api.coingecko.com/api/v3/simple/price".to_string(),
+                    headers: vec![("content-type".to_string(), "application/json".to_string())]
+                        .into_iter()
+                        .collect(),
+                    queries: vec![
+                        ("ids".to_string(), "dai".to_string()),
+                        ("vs_currencies".to_string(), "usd".to_string())
+                    ]
+                    .into_iter()
+                    .collect(),
                 },
                 storage: SnapshotStorage {
                     with_timestamp: true,
