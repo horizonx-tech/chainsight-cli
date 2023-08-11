@@ -25,6 +25,7 @@ use crate::{
                 },
                 relayer::{DestinationField, RelayerComponentManifest},
                 snapshot::{SnapshotComponentManifest, SnapshotStorage},
+                snapshot_json_rpc::{SnapshotJsonRPCComponentManifest, SnapshotJsonRPCDataSource},
             },
             project::{ProjectManifestComponentField, ProjectManifestData},
         },
@@ -81,6 +82,9 @@ pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> anyhow::Result<()> {
         ComponentType::Relayer => template_relayer_manifest(&component_name).to_str_as_yaml(),
         ComponentType::AlgorithmLens => {
             template_algorithm_lens_manifest(&component_name).to_str_as_yaml()
+        }
+        ComponentType::SnapshotJsonRPC => {
+            template_snapshot_web2_manifest(&component_name).to_str_as_yaml()
         }
     }?;
     let relative_component_path = format!("components/{}.yaml", component_name);
@@ -195,5 +199,15 @@ fn template_algorithm_lens_manifest(component_name: &str) -> AlgorithmLensCompon
         PROJECT_MANIFEST_VERSION,
         AlgorithmLensDataSource::default(),
         AlgorithmLensOutput::default(),
+    )
+}
+fn template_snapshot_web2_manifest(component_name: &str) -> SnapshotJsonRPCComponentManifest {
+    SnapshotJsonRPCComponentManifest::new(
+        component_name,
+        "",
+        PROJECT_MANIFEST_VERSION,
+        SnapshotJsonRPCDataSource::default(),
+        SnapshotStorage::default(),
+        3600,
     )
 }

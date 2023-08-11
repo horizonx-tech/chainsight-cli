@@ -20,6 +20,9 @@ pub enum ComponentType {
     #[serde(rename = "snapshot_indexer")]
     Snapshot,
 
+    #[serde(rename = "snapshot_json_rpc")]
+    SnapshotJsonRPC,
+
     /// To relay data to other blockchains
     #[serde(rename = "relayer")]
     Relayer,
@@ -37,6 +40,7 @@ impl fmt::Display for ComponentType {
             ComponentType::Snapshot => write!(f, "snapshot_indexer"),
             ComponentType::Relayer => write!(f, "relayer"),
             ComponentType::AlgorithmLens => write!(f, "algorithm_lens"),
+            ComponentType::SnapshotJsonRPC => write!(f, "snapshot_json_rpc"),
         }
     }
 }

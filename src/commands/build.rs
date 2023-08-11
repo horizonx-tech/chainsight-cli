@@ -14,6 +14,7 @@ use crate::lib::codegen::components::common::{ComponentManifest, ComponentTypeIn
 use crate::lib::codegen::components::event_indexer::EventIndexerComponentManifest;
 use crate::lib::codegen::components::relayer::RelayerComponentManifest;
 use crate::lib::codegen::components::snapshot::SnapshotComponentManifest;
+use crate::lib::codegen::components::snapshot_json_rpc::SnapshotJsonRPCComponentManifest;
 use crate::lib::codegen::oracle::get_oracle_attributes;
 use crate::lib::utils::find_duplicates;
 use crate::{
@@ -101,6 +102,9 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
             ComponentType::Relayer => Box::new(RelayerComponentManifest::load(&component_path)?),
             ComponentType::AlgorithmLens => {
                 Box::new(AlgorithmLensComponentManifest::load(&component_path)?)
+            }
+            ComponentType::SnapshotJsonRPC => {
+                Box::new(SnapshotJsonRPCComponentManifest::load(&component_path)?)
             }
         };
         component_data.push(data);
@@ -273,8 +277,8 @@ hex = \"0.4.3\"
 
 ic-web3-rs = {{ version = \"0.1.1\" }}
 ic-solidity-bindgen = {{ version = \"0.1.5\" }}
-chainsight-cdk-macros = {{ git = \"https://github.com/horizonx-tech/chainsight-sdk.git\", rev = \"1544a722e5138ba18dc5c54755d2f781794a7135\" }}
-chainsight-cdk = {{ git = \"https://github.com/horizonx-tech/chainsight-sdk.git\", rev = \"1544a722e5138ba18dc5c54755d2f781794a7135\" }}", members);
+chainsight-cdk-macros = {{ git = \"https://github.com/horizonx-tech/chainsight-sdk.git\", rev = \"f7d472c99c3fddc5153607689ddfc91900c64391\" }}
+chainsight-cdk = {{ git = \"https://github.com/horizonx-tech/chainsight-sdk.git\", rev = \"f7d472c99c3fddc5153607689ddfc91900c64391\" }}", members);
 
     txt
 }

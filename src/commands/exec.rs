@@ -14,6 +14,7 @@ use crate::{
                 event_indexer::EventIndexerComponentManifest,
                 relayer::RelayerComponentManifest,
                 snapshot::SnapshotComponentManifest,
+                snapshot_json_rpc::SnapshotJsonRPCComponentManifest,
             },
             project::ProjectManifestData,
         },
@@ -92,6 +93,9 @@ pub fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
             ComponentType::Relayer => Box::new(RelayerComponentManifest::load(&component_path)?),
             ComponentType::AlgorithmLens => {
                 Box::new(AlgorithmLensComponentManifest::load(&component_path)?)
+            }
+            ComponentType::SnapshotJsonRPC => {
+                Box::new(SnapshotJsonRPCComponentManifest::load(&component_path)?)
             }
         };
         component_data.push(data);

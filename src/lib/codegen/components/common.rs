@@ -39,6 +39,8 @@ pub enum SourceType {
     Evm,
     #[serde(rename = "chainsight")]
     Chainsight,
+    #[serde(rename = "json_rpc")]
+    JsonRpc,
 }
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 
