@@ -225,13 +225,14 @@ fn exec_codegen(
                 lib_file.write_all(data.generate_user_impl_template()?.to_string().as_bytes())?;
             }
         }
-
-        // generate project's Cargo.toml if not exists
-        if !Path::exists(Path::new(&format!("{}/Cargo.toml", &project_path_str))) {
+        if !Path::new(&format!("{}/Cargo.toml", &canister_pj_path_str)).is_file() {
+            // generate project's Cargo.toml
             fs::write(
-                format!("{}/Cargo.toml", &project_path_str),
+                format!("{}/Cargo.toml", &canister_pj_path_str),
                 &canister_project_cargo_toml(&label),
             )?;
+        } else {
+            info!(log, r#"project Cargo.toml already exists, skip creating"#)
         }
 
         // copy and move oracle interface
