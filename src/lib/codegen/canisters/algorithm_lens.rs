@@ -14,8 +14,7 @@ use super::common::CanisterMethodIdentifier;
 fn common_codes() -> TokenStream {
     quote! {
         use chainsight_cdk::lens::LensFinder;
-        use chainsight_cdk_macros::{chainsight_common, did_export, init_in, algorithm_lens_finder, lens_method, manage_single_state, setup_func};
-        use ic_web3_rs::futures::{future::BoxFuture, FutureExt};
+        use chainsight_cdk_macros::{chainsight_common, did_export, init_in, algorithm_lens_finder, lens_method};
         use candid::CandidType;
         mod app;
         chainsight_common!(60);
