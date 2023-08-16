@@ -26,6 +26,10 @@ use crate::{
     types::ComponentType,
 };
 
+fn dummy_candid_blob() -> String {
+    include_str!("../../resources/sample.did").to_string()
+}
+
 #[derive(Debug, Parser)]
 #[command(name = "build")]
 /// Builds your project to generate canisters' modules for Chainsight.
@@ -157,6 +161,10 @@ fn exec_codegen(
     // generate /artifacts/__interfaces
     let interfaces_path_str = format!("{}/__interfaces", &artifacts_path_str);
     fs::create_dir(&interfaces_path_str)?;
+    let dummy_candid_file_path = format!("{}/interfaces/{}", &project_path_str, "sample.did");
+    if !Path::new(&dummy_candid_file_path).is_file() {
+        fs::write(&dummy_candid_file_path, dummy_candid_blob())?;
+    }
 
     // generate canister codes
     let mut project_labels: Vec<String> = vec![];
@@ -247,6 +255,17 @@ fn exec_codegen(
                 r#"Interface file "{}" copied by builtin interface"#, &json_name
             );
         }
+        data.additional_files(Path::new(project_path_str))
+            .iter()
+            .for_each(|d| {
+                let file_name = d.0;
+                let content = d.1;
+                fs::write(
+                    format!("{}/{}.rs", &canister_code_path_str, &file_name),
+                    content,
+                )
+                .unwrap();
+            })
     }
     if !Path::new(&format!("{}/Cargo.toml", &artifacts_path_str)).is_file() {
         fs::write(
@@ -268,6 +287,7 @@ fn exec_codegen(
     } else {
         info!(log, r#"Makefile.toml already exists, skip creating"#)
     }
+
     anyhow::Ok(())
 }
 
@@ -290,12 +310,13 @@ ic-cdk-macros = \"0.6.10\"
 ic-cdk-timers = \"0.1\"
 ic-stable-structures = \"0.5.5\"
 serde = \"1.0.163\"
+serde_bytes = \"0.11.12\"
 hex = \"0.4.3\"
 
 ic-web3-rs = {{ version = \"0.1.1\" }}
 ic-solidity-bindgen = {{ version = \"0.1.5\" }}
-chainsight-cdk-macros = {{ git = \"https://github.com/horizonx-tech/chainsight-sdk.git\", rev = \"f7d472c99c3fddc5153607689ddfc91900c64391\" }}
-chainsight-cdk = {{ git = \"https://github.com/horizonx-tech/chainsight-sdk.git\", rev = \"f7d472c99c3fddc5153607689ddfc91900c64391\" }}", members);
+chainsight-cdk-macros = {{ git = \"https://github.com/horizonx-tech/chainsight-sdk.git\", rev = \"ce096f1e850e61c692cdf0755f30f57bb01b0bfd\" }}
+chainsight-cdk = {{ git = \"https://github.com/horizonx-tech/chainsight-sdk.git\", rev = \"ce096f1e850e61c692cdf0755f30f57bb01b0bfd\" }}", members);
 
     txt
 }
@@ -317,6 +338,7 @@ ic-cdk-macros.workspace = true
 ic-cdk-timers.workspace = true
 ic-stable-structures.workspace = true
 serde.workspace = true
+serde_bytes.workspace = true
 hex.workspace = true
 
 ic-web3-rs.workspace = true

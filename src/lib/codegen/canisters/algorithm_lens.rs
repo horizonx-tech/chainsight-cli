@@ -1,7 +1,7 @@
 use crate::{
     lib::codegen::{
         canisters::common::CanisterMethodValueType,
-        components::algorithm_lens::AlgorithmLensComponentManifest,
+        components::algorithm_lens::{candid_binding_file_name, AlgorithmLensComponentManifest},
     },
     types::ComponentType,
 };
@@ -28,17 +28,6 @@ fn custom_codes(
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     let label = &manifest.metadata.label;
 
-    let locations = manifest
-        .datasource
-        .locations
-        .iter()
-        .map(|l| l.label.to_string())
-        .collect::<Vec<_>>();
-    let location_idents = locations
-        .iter()
-        .map(|l| format_ident!("{}", l))
-        .collect::<Vec<Ident>>();
-
     let method_identifiers = get_method_identifiers(manifest)?;
     let methods = &manifest.datasource.methods;
 
@@ -52,13 +41,32 @@ fn custom_codes(
             .iter()
             .map(|arg| format_ident!("{}", arg))
             .collect::<Vec<Ident>>();
-        let method_return_type = match &method_identifier.return_value {
-            CanisterMethodValueType::Scalar(ty) => format_ident!("{}", ty),
-            _ => format_ident!("{}", "TODO".to_string()), // TODO: support tuple & struct
+        let struct_file_name = candid_binding_file_name(&methods[i].candid_file_path);
+        let struct_file_ident = format_ident!("{}", struct_file_name);
+        let (import_type, method_return_type) = match &method_identifier.return_value {
+            CanisterMethodValueType::Scalar(ty, is_scalar) => match is_scalar {
+                true => {
+                    let ty = format_ident!("{}", ty.to_string());
+                    (None, ty)
+                }
+                false => (
+                    Some(format_ident!("{}", ty.to_string())),
+                    format_ident!("{}_{}", ty.to_string(), i.to_string()),
+                ),
+            },
+            _ => (None, format_ident!("{}", "TODO".to_string())), // TODO: support tuple & struct
+        };
+        let import_ident = match import_type {
+            None => quote! {},
+            Some(import_type) => quote! {
+                use crate::#struct_file_ident::#import_type as #method_return_type;
+            },
         };
 
         let ident = if method_args.is_empty() {
             quote! {
+                mod #struct_file_ident;
+                #import_ident
                 algorithm_lens_finder!(
                     #method_label,
                     #proxy_func_to_call,
@@ -92,19 +100,16 @@ fn custom_codes(
         .values()
         .map(|v| format_ident!("{}", v.clone()))
         .collect();
-
+    let input_count = manifest.datasource.methods.len();
     Ok(quote! {
         #[derive(Clone, Debug,  Default, CandidType, serde::Deserialize, serde::Serialize)]
         pub struct #output_struct_ident {
             #(pub #output_fields_idents: #output_types_idents),*
         }
 
-        #(manage_single_state!(#locations, String, false);)*
-        setup_func!({ #(#location_idents: String),* });
-
         #(#algorithm_lens_finders)*
 
-        lens_method!(#output_struct_ident);
+        lens_method!(#output_struct_ident, #input_count);
 
         did_export!(#label);
     })
@@ -128,31 +133,11 @@ pub fn generate_codes(manifest: &AlgorithmLensComponentManifest) -> anyhow::Resu
 }
 
 pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result<TokenStream> {
-    let locations = manifest
-        .datasource
-        .locations
-        .iter()
-        .map(|l| l.label.to_string())
-        .collect::<Vec<_>>();
-    let location_getter_idents = locations
-        .iter()
-        .map(|location| format_ident!("get_{}", location));
-    let locations_template = location_getter_idents
-        .clone()
-        .enumerate()
-        .map(|(i, getter)| {
-            let var_ident = format_ident!("_target_principal_{}", i);
-            quote! {
-                let #var_ident = #getter();
-            }
-        });
-
-    let _method_identifiers = get_method_identifiers(manifest)?; // TODO: use this to set args
     let methods = manifest.datasource.methods.clone();
     let call_func_idents = methods.iter().map(|m| format_ident!("get_{}", &m.label));
     let call_func_templates = call_func_idents.clone().map(|getter| {
         quote! {
-            let _ = #getter(_target_principal.clone()).await;
+            let _result = #getter(targets.get(0).unwrap().clone()).await;
         }
     });
 
@@ -161,16 +146,11 @@ pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result
     let code = quote! {
         use crate::{
             #output_type_ident,
-            #(#location_getter_idents),*,
             #(#call_func_idents),*
         };
 
-        pub async fn calculate() -> #output_type_ident {
-            #(#locations_template)*
-
-            let _target_principal = "".to_string();
+        pub async fn calculate(targets: Vec<String>, ) -> #output_type_ident {
             #(#call_func_templates)*
-
             todo!()
         }
     };

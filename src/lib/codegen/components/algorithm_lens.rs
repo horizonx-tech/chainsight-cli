@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fs::OpenOptions, io::Read, path::Path};
 
-use candid::Principal;
+use candid::{pretty_check_file, Principal};
 use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 
@@ -9,7 +9,7 @@ use crate::{
     types::{ComponentType, Network},
 };
 
-use super::common::{CanisterIdType, ComponentManifest, ComponentMetadata, SourceType, Sources};
+use super::common::{ComponentManifest, ComponentMetadata, SourceType, Sources};
 
 /// Component Manifest: Algorithm Lens
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -103,6 +103,42 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
     fn custom_tags(&self) -> HashMap<String, String> {
         HashMap::new()
     }
+
+    fn additional_files(&self, project_root: &Path) -> HashMap<String, String> {
+        self.datasource
+            .clone()
+            .methods
+            .into_iter()
+            .map(|e| {
+                let file_path = e.candid_file_path;
+                let file_name = candid_binding_file_name(file_path.as_str());
+                let binding = create_candid_rust_binding(project_root.join(file_path).as_path())
+                    .expect("generate candid binding failed");
+                (file_name, binding)
+            })
+            .fold(HashMap::new(), |mut acc, (k, v)| {
+                acc.insert(k, v);
+                acc
+            })
+    }
+}
+
+pub fn candid_binding_file_name(file_path: &str) -> String {
+    Path::new(file_path)
+        .file_stem()
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string()
+}
+
+fn create_candid_rust_binding(path: &Path) -> anyhow::Result<String> {
+    let (env, _) = pretty_check_file(path)?;
+    let config = candid::bindings::rust::Config::new();
+    let result = candid::bindings::rust::compile(&config, &env, &None)
+        .replace("use ic_cdk::api::call::CallResult as Result;", "")
+        .replace("pub enum Result", "enum Result");
+    Ok(result)
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -124,34 +160,23 @@ impl Default for AlgorithmLensOutput {
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct AlgorithmLensDataSource {
-    pub locations: Vec<AlgorithmLensDataSourceLocation>,
     pub methods: Vec<AlgorithmLensDataSourceMethod>,
-}
-
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-pub struct AlgorithmLensDataSourceLocation {
-    pub id: String,
-    pub id_type: CanisterIdType,
-    pub label: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct AlgorithmLensDataSourceMethod {
     pub label: String,
     pub identifier: String,
+    pub candid_file_path: String,
 }
 
 impl Default for AlgorithmLensDataSource {
     fn default() -> Self {
         Self {
-            locations: vec![AlgorithmLensDataSourceLocation {
-                id: "sample_pj_snapshot_chain".to_string(),
-                id_type: CanisterIdType::CanisterName,
-                label: "sample_pj_snapshot_chain".to_string(),
-            }],
             methods: vec![AlgorithmLensDataSourceMethod {
                 label: "last_snapshot_value".to_string(),
-                identifier: "get_last_snapshot_value : () -> (text)".to_string(),
+                identifier: "get_last_snapshot_value : () -> (SnapshotValue)".to_string(),
+                candid_file_path: "interfaces/sample.did".to_string(),
             }],
         }
     }
@@ -173,13 +198,10 @@ metadata:
     - Ethereum
     - Account
 datasource:
-    locations:
-    - id: sample_pj_snapshot_chain
-      id_type: canister_name
-      label: sample_pj_snapshot_chain
     methods:
     - label: last_snapshot_value
-      identifier: 'get_last_snapshot_value : () -> (text)'
+      identifier: 'get_last_snapshot_value : () -> (SnapshotValue)'
+      candid_file_path: "interfaces/sample.did"
 output:
     name: SampleOutput
     fields:
@@ -190,8 +212,8 @@ output:
         let result = serde_yaml::from_str::<AlgorithmLensComponentManifest>(yaml);
         let component = result.unwrap();
         let mut output_types = HashMap::new();
-        output_types.insert("value".to_string(), "String".to_string());
         output_types.insert("result".to_string(), "String".to_string());
+        output_types.insert("value".to_string(), "String".to_string());
 
         assert_eq!(
             component,
@@ -204,14 +226,10 @@ output:
                     tags: Some(vec!["Ethereum".to_string(), "Account".to_string()])
                 },
                 datasource: AlgorithmLensDataSource {
-                    locations: vec![AlgorithmLensDataSourceLocation {
-                        id: "sample_pj_snapshot_chain".to_string(),
-                        id_type: CanisterIdType::CanisterName,
-                        label: "sample_pj_snapshot_chain".to_string(),
-                    }],
                     methods: vec![AlgorithmLensDataSourceMethod {
                         label: "last_snapshot_value".to_string(),
-                        identifier: "get_last_snapshot_value : () -> (text)".to_string(),
+                        identifier: "get_last_snapshot_value : () -> (SnapshotValue)".to_string(),
+                        candid_file_path: "interfaces/sample.did".to_string()
                     }],
                 },
                 output: AlgorithmLensOutput {

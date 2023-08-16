@@ -228,6 +228,10 @@ pub trait ComponentManifest: std::fmt::Debug {
     fn user_impl_required(&self) -> bool;
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream>;
     fn get_sources(&self) -> Sources;
+    // map of file_name and additioal file content
+    fn additional_files(&self, _project_root: &Path) -> HashMap<String, String> {
+        HashMap::new()
+    }
 }
 
 pub fn custom_tags_interval_sec(interval_sec: u32) -> (String, String) {

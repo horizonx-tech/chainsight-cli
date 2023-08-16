@@ -106,7 +106,7 @@ fn generate_idents_to_call_datasource_and_sync_to_oracle(
     proc_macro2::TokenStream, // sync_data_ident
 )> {
     let res = match canister_response_type {
-        CanisterMethodValueType::Scalar(ty) => {
+        CanisterMethodValueType::Scalar(ty, _) => {
             let ty_ident = format_ident!("{}", ty);
             let call_canister_response_type_ident =
                 quote! { type CallCanisterResponse = #ty_ident; };
@@ -151,7 +151,7 @@ fn generate_idents_to_call_datasource_and_sync_to_oracle(
                 DestinationType::StringOracle => {
                     let type_idents = tys
                         .iter()
-                        .map(|ty| format_ident!("{}", ty))
+                        .map(|(ty, _)| format_ident!("{}", ty))
                         .collect::<Vec<proc_macro2::Ident>>();
                     (
                         quote! { type CallCanisterResponse = (#(#type_idents),*); },
@@ -168,7 +168,7 @@ fn generate_idents_to_call_datasource_and_sync_to_oracle(
                     let response_type_def_ident = format_ident!("{}", "CustomResponseStruct");
                     let struct_tokens = values
                         .into_iter()
-                        .map(|(key, ty)| {
+                        .map(|(key, ty, _)| {
                             let key_ident = format_ident!("{}", key);
                             let ty_ident = format_ident!("{}", ty);
                             quote! {

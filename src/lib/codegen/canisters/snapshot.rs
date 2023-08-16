@@ -238,14 +238,14 @@ fn custom_codes_for_canister(
     // for response type
     let response_type = method_identifier.return_value;
     let (response_type_ident, response_type_def_ident) = match response_type {
-        CanisterMethodValueType::Scalar(ty) => {
+        CanisterMethodValueType::Scalar(ty, _) => {
             let type_ident = format_ident!("{}", &ty);
             (quote! { type SnapshotValue = #type_ident; }, quote! {})
         }
         CanisterMethodValueType::Tuple(tys) => {
             let type_idents = tys
                 .iter()
-                .map(|ty| format_ident!("{}", ty))
+                .map(|(ty, _)| format_ident!("{}", ty))
                 .collect::<Vec<proc_macro2::Ident>>();
             (
                 quote! { type SnapshotValue = (#(#type_idents),*); },
@@ -256,7 +256,7 @@ fn custom_codes_for_canister(
             let response_type_def_ident = format_ident!("{}", "CustomResponseStruct");
             let struct_tokens = values
                 .into_iter()
-                .map(|(key, ty)| {
+                .map(|(key, ty, _)| {
                     let key_ident = format_ident!("{}", key);
                     let ty_ident = format_ident!("{}", ty);
                     quote! {

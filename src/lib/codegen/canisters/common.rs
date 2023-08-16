@@ -89,9 +89,9 @@ pub struct CanisterMethodIdentifier {
 }
 #[derive(Debug, Clone, PartialEq)]
 pub enum CanisterMethodValueType {
-    Scalar(String),
-    Tuple(Vec<String>),
-    Struct(Vec<(String, String)>), // temp: Only non-nested `record` are supported.
+    Scalar(String, bool),                // struct name, is_scalar
+    Tuple(Vec<(String, bool)>),          // struct_name, is_scalar
+    Struct(Vec<(String, String, bool)>), // temp: Only non-nested `record` are supported.
 }
 impl CanisterMethodIdentifier {
     pub fn parse_from_str(s: &str) -> anyhow::Result<Self> {
@@ -100,15 +100,15 @@ impl CanisterMethodIdentifier {
         let identifier = captures.name("identifier").unwrap().as_str().to_string();
 
         let params_str = captures.name("params").unwrap().as_str();
-        let params_result: anyhow::Result<Vec<String>> = if params_str.is_empty() {
-            Ok(vec![])
+        let params_result: Vec<String> = if params_str.is_empty() {
+            vec![]
         } else {
             params_str
                 .split(',')
-                .map(|s| convert_type_from_candid_type(s.trim()))
+                .map(|s| convert_type_from_candid_type(s.trim()).0)
                 .collect()
         };
-        let params = params_result?;
+        let params = params_result;
 
         let return_value_str = captures.name("return").unwrap().as_str();
         let return_value = Self::parse_return_value(return_value_str)?;
@@ -131,19 +131,19 @@ impl CanisterMethodIdentifier {
 
         // Scalar
         if !s.starts_with("record") {
-            let val = convert_type_from_candid_type(s)?;
-            return Ok(CanisterMethodValueType::Scalar(val));
+            let val = convert_type_from_candid_type(s);
+            return Ok(CanisterMethodValueType::Scalar(val.0, val.1));
         }
 
         // Tuple
         let captures = REGEX_TUPLE.captures(s);
         if let Some(captures_value) = captures {
             let items = captures_value.name("items").unwrap().as_str();
-            let tuple_result: anyhow::Result<Vec<String>> = items
+            let tuple_result: Vec<(String, bool)> = items
                 .split(';')
                 .map(|s| convert_type_from_candid_type(s.trim()))
                 .collect();
-            let tuple = tuple_result?;
+            let tuple = tuple_result;
             return Ok(CanisterMethodValueType::Tuple(tuple));
         }
 
@@ -152,8 +152,8 @@ impl CanisterMethodIdentifier {
         let mut struct_items = vec![];
         for cap in items {
             let field = cap.name("field").unwrap().as_str().to_string();
-            let ty = convert_type_from_candid_type(cap.name("type").unwrap().as_str())?;
-            struct_items.push((field, ty));
+            let ty = convert_type_from_candid_type(cap.name("type").unwrap().as_str());
+            struct_items.push((field, ty.0, ty.1));
         }
         if struct_items.is_empty() {
             bail!("Invalid candid's result types: {}", s);
@@ -200,15 +200,13 @@ pub fn convert_type_from_ethabi_param_type(param: ethabi::ParamType) -> anyhow::
     Ok(ty_str.to_string())
 }
 
-pub fn convert_type_from_candid_type(s: &str) -> anyhow::Result<String> {
-    let err_msg = "not supported candid type".to_string(); // temp
-
+pub fn convert_type_from_candid_type(s: &str) -> (String, bool) {
     // ref: https://internetcomputer.org/docs/current/references/candid-ref
     let ty_str = MAPPING_CANDID_TY.get(&s);
-    if ty_str.is_none() {
-        bail!(err_msg);
+    if let Some(ty_str) = ty_str {
+        return (ty_str.to_string(), true);
     }
-    Ok(ty_str.unwrap().to_string())
+    return (s.to_string(), false);
 }
 
 pub enum OutsideCallIdentsType {
@@ -408,7 +406,7 @@ mod tests {
             CanisterMethodIdentifier {
                 identifier: "get_chain_id".to_string(),
                 params: vec![],
-                return_value: CanisterMethodValueType::Scalar("u64".to_string())
+                return_value: CanisterMethodValueType::Scalar("u64".to_string(), true)
             }
         );
         assert_eq!(
@@ -416,7 +414,7 @@ mod tests {
             CanisterMethodIdentifier {
                 identifier: "get_oracle_address".to_string(),
                 params: vec![],
-                return_value: CanisterMethodValueType::Scalar("String".to_string())
+                return_value: CanisterMethodValueType::Scalar("String".to_string(), true)
             }
         );
         assert_eq!(
@@ -424,7 +422,7 @@ mod tests {
             CanisterMethodIdentifier {
                 identifier: "get_snapshot".to_string(),
                 params: vec!["u64".to_string()],
-                return_value: CanisterMethodValueType::Scalar("String".to_string())
+                return_value: CanisterMethodValueType::Scalar("String".to_string(), true)
             }
         );
         assert_eq!(
@@ -436,8 +434,8 @@ mod tests {
                 identifier: "get_price".to_string(),
                 params: vec!["bool".to_string()],
                 return_value: CanisterMethodValueType::Tuple(vec![
-                    "u32".to_string(),
-                    "u64".to_string()
+                    ("u32".to_string(), true),
+                    ("u64".to_string(), true)
                 ])
             }
         );
@@ -450,8 +448,8 @@ mod tests {
                 identifier: "get_snapshot_with_ts".to_string(),
                 params: vec!["u64".to_string()],
                 return_value: CanisterMethodValueType::Struct(vec![
-                    ("value".to_string(), "String".to_string()),
-                    ("timestamp".to_string(), "u64".to_string())
+                    ("value".to_string(), "String".to_string(), true),
+                    ("timestamp".to_string(), "u64".to_string(), true)
                 ])
             }
         );
