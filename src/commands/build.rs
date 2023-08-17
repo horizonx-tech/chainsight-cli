@@ -228,7 +228,6 @@ fn exec_codegen(
                     r#"{app_path_str}/app.rs already exists, skip creating"#
                 );
             } else {
-                println!("{}", Path::new(&app_path_str).is_file().to_string());
                 let mut lib_file: File = File::create(&app_path_str)?;
                 lib_file.write_all(data.generate_user_impl_template()?.to_string().as_bytes())?;
             }

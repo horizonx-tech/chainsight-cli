@@ -206,7 +206,7 @@ pub fn convert_type_from_candid_type(s: &str) -> (String, bool) {
     if let Some(ty_str) = ty_str {
         return (ty_str.to_string(), true);
     }
-    return (s.to_string(), false);
+    (s.to_string(), false)
 }
 
 pub enum OutsideCallIdentsType {
