@@ -16,6 +16,7 @@ fn common_codes() -> TokenStream {
         use chainsight_cdk::lens::LensFinder;
         use chainsight_cdk_macros::{chainsight_common, did_export, init_in, algorithm_lens_finder, lens_method};
         use candid::CandidType;
+        use ic_web3_rs::futures::{future::BoxFuture, FutureExt};
         mod app;
         chainsight_common!(60);
         init_in!();

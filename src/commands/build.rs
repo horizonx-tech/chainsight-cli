@@ -260,11 +260,12 @@ fn exec_codegen(
             .for_each(|d| {
                 let file_name = d.0;
                 let content = d.1;
-                fs::write(
-                    format!("{}/{}.rs", &canister_code_path_str, &file_name),
-                    content,
-                )
-                .unwrap();
+                let path = format!("{}/{}.rs", &canister_code_path_str, &file_name);
+                if Path::new(&path).is_file() {
+                    info!(log, r#"{} already exists, skip creating"#, &path);
+                    return;
+                }
+                fs::write(path, content).unwrap();
             })
     }
     if !Path::new(&format!("{}/Cargo.toml", &artifacts_path_str)).is_file() {
