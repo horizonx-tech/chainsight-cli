@@ -233,7 +233,7 @@ fn custom_codes_for_canister(
         .enumerate()
         .map(|(idx, arg)| (method_identifier.params[idx].clone(), arg.clone()))
         .collect();
-    let (request_val_idents, request_ty_idents) = generate_request_arg_idents(&method_args);
+    let (_request_val_idents, _request_ty_idents) = generate_request_arg_idents(&method_args);
 
     // for response type
     let response_type = method_identifier.return_value;
@@ -329,15 +329,16 @@ fn custom_codes_for_canister(
 
         snapshot_icp_source!(#method_ident);
 
-        type CallCanisterArgs = (#(#request_ty_idents),*);
+          //type CallCanisterArgs = (#(#request_ty_idents),*); TODO
+        mod app;
         type CallCanisterResponse = SnapshotValue;
         async fn execute_task() {
             #expr_to_current_ts_sec
             let target_canister = candid::Principal::from_text(get_target_canister()).unwrap();
             let call_result = CallProvider::new(proxy())
                 .call(
-                    Message::new::<CallCanisterArgs>(
-                        (#(#request_val_idents),*),
+                    Message::new::<app::CallCanisterArgs>(
+                        app::call_args(),
                         target_canister.clone(),
                         #method_ident
                     ).unwrap()

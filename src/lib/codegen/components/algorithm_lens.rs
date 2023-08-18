@@ -143,8 +143,19 @@ fn create_candid_rust_binding(path: &Path) -> anyhow::Result<String> {
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct AlgorithmLensOutput {
-    pub name: String,
-    pub fields: HashMap<String, String>,
+    pub name: Option<String>,
+    pub fields: Option<HashMap<String, String>>,
+    #[serde(rename = "type")]
+    pub type_: AlgorithmLensOutputType,
+    pub type_name: Option<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+pub enum AlgorithmLensOutputType {
+    #[serde(rename = "struct")]
+    Struct,
+    #[serde(rename = "primitive")]
+    Primitive,
 }
 
 impl Default for AlgorithmLensOutput {
@@ -152,8 +163,10 @@ impl Default for AlgorithmLensOutput {
         let mut sample_fields = HashMap::new();
         sample_fields.insert("address".to_string(), "String".to_string());
         Self {
-            name: "Account".to_string(),
-            fields: sample_fields,
+            name: Some("Account".to_string()),
+            fields: Some(sample_fields),
+            type_: AlgorithmLensOutputType::Struct,
+            type_name: None,
         }
     }
 }
@@ -204,6 +217,7 @@ datasource:
       candid_file_path: "interfaces/sample.did"
 output:
     name: SampleOutput
+    type: struct
     fields:
       result: String
       value: String
@@ -233,8 +247,10 @@ output:
                     }],
                 },
                 output: AlgorithmLensOutput {
-                    name: "SampleOutput".to_string(),
-                    fields: output_types,
+                    name: Some("SampleOutput".to_string()),
+                    fields: Some(output_types),
+                    type_: AlgorithmLensOutputType::Struct,
+                    type_name: None,
                 },
             }
         );

@@ -1,7 +1,7 @@
 use std::{collections::HashMap, fs::OpenOptions, io::Read, path::Path};
 
-use anyhow::bail;
 use proc_macro2::TokenStream;
+use quote::quote;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -97,10 +97,15 @@ impl ComponentManifest for SnapshotComponentManifest {
         self.datasource.method.interface.clone()
     }
     fn user_impl_required(&self) -> bool {
-        false
+        true
     }
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
-        bail!("Not implemented")
+        Ok(quote! {
+            pub type CallCanisterArgs = ();
+            pub fn call_args() -> CallCanisterArgs {
+                todo!()
+            }
+        })
     }
     fn get_sources(&self) -> Sources {
         let mut attr = HashMap::new();

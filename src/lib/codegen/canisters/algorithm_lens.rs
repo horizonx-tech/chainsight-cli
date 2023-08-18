@@ -1,7 +1,9 @@
 use crate::{
     lib::codegen::{
         canisters::common::CanisterMethodValueType,
-        components::algorithm_lens::{candid_binding_file_name, AlgorithmLensComponentManifest},
+        components::algorithm_lens::{
+            candid_binding_file_name, AlgorithmLensComponentManifest, AlgorithmLensOutputType,
+        },
     },
     types::ComponentType,
 };
@@ -26,10 +28,11 @@ fn common_codes() -> TokenStream {
 fn custom_codes(
     manifest: &AlgorithmLensComponentManifest,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    let label = &manifest.metadata.label;
-
     let method_identifiers = get_method_identifiers(manifest)?;
-    let methods = &manifest.datasource.methods;
+    let methods: &Vec<
+        crate::lib::codegen::components::algorithm_lens::AlgorithmLensDataSourceMethod,
+    > = &manifest.datasource.methods;
+    let label = &manifest.metadata.label;
 
     let mut algorithm_lens_finders = Vec::<proc_macro2::TokenStream>::new();
     for (i, method_identifier) in method_identifiers.iter().enumerate() {
@@ -87,32 +90,61 @@ fn custom_codes(
         algorithm_lens_finders.push(ident);
     }
 
-    let output_struct_ident = format_ident!("{}", &manifest.output.name);
-    let output_fields_idents: Vec<Ident> = manifest
-        .output
-        .fields
-        .keys()
-        .map(|k| format_ident!("{}", k.clone()))
-        .collect();
-    let output_types_idents: Vec<Ident> = manifest
-        .output
-        .fields
-        .values()
-        .map(|v| format_ident!("{}", v.clone()))
-        .collect();
-    let input_count = manifest.datasource.methods.len();
-    Ok(quote! {
-        #[derive(Clone, Debug,  Default, CandidType, serde::Deserialize, serde::Serialize)]
-        pub struct #output_struct_ident {
-            #(pub #output_fields_idents: #output_types_idents),*
+    let output_ident = match &manifest.output.type_ {
+        AlgorithmLensOutputType::Primitive => {
+            let primitive_type = format_ident!(
+                "{}",
+                &manifest
+                    .clone()
+                    .output
+                    .type_name
+                    .expect("field type_name required")
+            );
+            let input_count = manifest.datasource.methods.len();
+
+            quote! {
+                #(#algorithm_lens_finders)*
+                lens_method!(#primitive_type, #input_count);
+                did_export!(#label);
+            }
         }
+        AlgorithmLensOutputType::Struct => {
+            let output_struct_ident = format_ident!(
+                "{}",
+                &manifest.clone().output.name.expect("field name reuired")
+            );
+            let output_fields_idents: Vec<Ident> = manifest
+                .clone()
+                .output
+                .fields
+                .expect("fields required")
+                .keys()
+                .map(|k| format_ident!("{}", k.clone()))
+                .collect();
+            let output_types_idents: Vec<Ident> = manifest
+                .clone()
+                .output
+                .fields
+                .expect("fields required")
+                .values()
+                .map(|v| format_ident!("{}", v.clone()))
+                .collect();
+            let input_count = manifest.datasource.methods.len();
+            quote! {
+                #[derive(Clone, Debug,  Default, CandidType, serde::Deserialize, serde::Serialize)]
+                pub struct #output_struct_ident {
+                    #(pub #output_fields_idents: #output_types_idents),*
+                }
 
-        #(#algorithm_lens_finders)*
+                #(#algorithm_lens_finders)*
 
-        lens_method!(#output_struct_ident, #input_count);
+                lens_method!(#output_struct_ident, #input_count);
+                did_export!(#label);
+            }
+        }
+    };
 
-        did_export!(#label);
-    })
+    Ok(output_ident)
 }
 
 pub fn generate_codes(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result<TokenStream> {
@@ -141,13 +173,36 @@ pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result
         }
     });
 
-    let output_type_ident = format_ident!("{}", &manifest.output.name);
+    let output_type_ident = match &manifest.output.type_ {
+        AlgorithmLensOutputType::Struct => format_ident!(
+            "{}",
+            &manifest.clone().output.name.expect("filed name reuired")
+        ),
+        AlgorithmLensOutputType::Primitive => format_ident!(
+            "{}",
+            &manifest
+                .clone()
+                .output
+                .type_name
+                .expect("filed type_name reuired")
+        ),
+    };
+    let imports = match &manifest.output.type_ {
+        AlgorithmLensOutputType::Struct => quote! {
+            use crate::{
+                #output_type_ident,
+                #(#call_func_idents),*
+            };
+        },
+        AlgorithmLensOutputType::Primitive => quote! {
+            use crate::{
+                #(#call_func_idents),*
+            };
+        },
+    };
 
     let code = quote! {
-        use crate::{
-            #output_type_ident,
-            #(#call_func_idents),*
-        };
+        #imports
 
         pub async fn calculate(targets: Vec<String>, ) -> #output_type_ident {
             #(#call_func_templates)*

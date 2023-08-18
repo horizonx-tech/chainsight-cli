@@ -55,7 +55,7 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
         .enumerate()
         .map(|(idx, arg)| (method_identifier.params[idx].clone(), arg.clone()))
         .collect();
-    let (request_val_idents, request_ty_idents) = generate_request_arg_idents(&method_args);
+    let (_request_val_idents, _request_ty_idents) = generate_request_arg_idents(&method_args);
 
     // for response type
     let response_type: CanisterMethodValueType = method_identifier.return_value;
@@ -63,38 +63,42 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
         generate_idents_to_call_datasource_and_sync_to_oracle(response_type, destination.type_)?;
 
     Ok(quote! {
-        ic_solidity_bindgen::contract_abi!(#abi_path);
+            ic_solidity_bindgen::contract_abi!(#abi_path);
 
-        #response_type_def_ident
+            #response_type_def_ident
 
-        type CallCanisterArgs = (#(#request_ty_idents),*);
-        #call_canister_response_type_ident
+    //        type CallCanisterArgs = (#(#request_ty_idents),*); TODO
+            #call_canister_response_type_ident
+            mod app;
 
-        async fn sync() {
-            let target_canister = candid::Principal::from_text(get_target_canister()).unwrap();
-            let call_result = CallProvider::new(proxy())
-            .call(Message::new::<CallCanisterArgs>((#(#request_val_idents),*), target_canister.clone(), #method_ident).unwrap())
-            .await;
-            if let Err(err) = call_result {
-                ic_cdk::println!("error: {:?}", err);
-                return;
+            async fn sync() {
+                let target_canister = candid::Principal::from_text(get_target_canister()).unwrap();
+                let call_result = CallProvider::new(proxy())
+                .call(Message::new::<app::CallCanisterArgs>(app::call_args(), target_canister.clone(), #method_ident).unwrap())
+                .await;
+                if let Err(err) = call_result {
+                    ic_cdk::println!("error: {:?}", err);
+                    return;
+                }
+                let val = call_result.unwrap().reply::<CallCanisterResponse>();
+                if let Err(err) = val {
+                    ic_cdk::println!("error: {:?}", err);
+                    return;
+                }
+                let datum = val.unwrap();
+                if !app::filter(&datum) {
+                    return;
+                }
+
+                #oracle_ident::new(
+                    Address::from_str(&get_target_addr()).unwrap(),
+                    &web3_ctx().unwrap()
+                ).update_state(#sync_data_ident, None).await.unwrap();
+                ic_cdk::println!("value_to_sync={:?}", datum);
             }
-            let val = call_result.unwrap().reply::<CallCanisterResponse>();
-            if let Err(err) = val {
-                ic_cdk::println!("error: {:?}", err);
-                return;
-            }
-            let datum = val.unwrap();
 
-            #oracle_ident::new(
-                Address::from_str(&get_target_addr()).unwrap(),
-                &web3_ctx().unwrap()
-            ).update_state(#sync_data_ident, None).await.unwrap();
-            ic_cdk::println!("value_to_sync={:?}", datum);
-        }
-
-        did_export!(#label);
-    })
+            did_export!(#label);
+        })
 }
 
 fn generate_idents_to_call_datasource_and_sync_to_oracle(
@@ -109,7 +113,7 @@ fn generate_idents_to_call_datasource_and_sync_to_oracle(
         CanisterMethodValueType::Scalar(ty, _) => {
             let ty_ident = format_ident!("{}", ty);
             let call_canister_response_type_ident =
-                quote! { type CallCanisterResponse = #ty_ident; };
+                quote! { pub type CallCanisterResponse = #ty_ident; };
             let arg_ident = format_ident!("datum");
             match oracle_type {
                 DestinationType::Uint256Oracle => {

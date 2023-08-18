@@ -1,7 +1,8 @@
 use std::{collections::HashMap, fs::OpenOptions, io::Read, path::Path};
 
-use anyhow::{bail, Ok};
+use anyhow::Ok;
 use proc_macro2::TokenStream;
+use quote::quote;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -24,6 +25,16 @@ pub struct RelayerComponentManifest {
     pub datasource: Datasource,
     pub destination: DestinationField, // TODO: multiple destinations
     pub interval: u32,
+}
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+pub struct RelayerDataSource {
+    pub methods: Vec<RelayerDatasourceMethod>,
+}
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+pub struct RelayerDatasourceMethod {
+    pub identifier: String,
+    pub interface: Option<String>,
+    pub args: Vec<serde_yaml::Value>,
 }
 
 impl RelayerComponentManifest {
@@ -94,7 +105,7 @@ impl ComponentManifest for RelayerComponentManifest {
         self.datasource.method.interface.clone()
     }
     fn user_impl_required(&self) -> bool {
-        false
+        true
     }
     fn get_sources(&self) -> Sources {
         Sources {
@@ -104,7 +115,16 @@ impl ComponentManifest for RelayerComponentManifest {
         }
     }
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
-        bail!("not implemented")
+        Ok(quote! {
+            use crate::{CallCanisterResponse};
+            pub type CallCanisterArgs = ();
+            pub fn call_args() -> CallCanisterArgs {
+                todo!()
+            }
+            pub fn filter(_: &CallCanisterResponse) -> bool {
+                true
+            }
+        })
     }
     fn custom_tags(&self) -> HashMap<String, String> {
         #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
