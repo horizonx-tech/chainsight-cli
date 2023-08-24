@@ -73,8 +73,8 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
 
             async fn sync() {
                 let target_canister = candid::Principal::from_text(get_target_canister()).unwrap();
-                let call_result = CallProvider::new(proxy())
-                .call(Message::new::<app::CallCanisterArgs>(app::call_args(), target_canister.clone(), #method_ident).unwrap())
+                let call_result = CallProvider::new()
+                .call(Message::new::<app::CallCanisterArgs>(app::call_args(), _get_target_proxy(target_canister.clone()).await, #method_ident).unwrap())
                 .await;
                 if let Err(err) = call_result {
                     ic_cdk::println!("error: {:?}", err);

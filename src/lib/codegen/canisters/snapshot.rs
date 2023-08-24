@@ -329,17 +329,18 @@ fn custom_codes_for_canister(
 
         snapshot_icp_source!(#method_ident);
 
-          //type CallCanisterArgs = (#(#request_ty_idents),*); TODO
+        //type CallCanisterArgs = (#(#request_ty_idents),*); TODO
         mod app;
         type CallCanisterResponse = SnapshotValue;
         async fn execute_task() {
             #expr_to_current_ts_sec
             let target_canister = candid::Principal::from_text(get_target_canister()).unwrap();
-            let call_result = CallProvider::new(proxy())
+            let px = _get_target_proxy(target_canister).await;
+            let call_result = CallProvider::new()
                 .call(
                     Message::new::<app::CallCanisterArgs>(
                         app::call_args(),
-                        target_canister.clone(),
+                        px.clone(),
                         #method_ident
                     ).unwrap()
                 ).await;
@@ -450,33 +451,36 @@ pub fn generate_queries_without_timestamp(
         }
 
         #update_derives
-        pub fn proxy_get_last_snapshot_value(input: std::vec::Vec<u8>) -> std::vec::Vec<u8> {
+        pub async fn proxy_get_last_snapshot_value(input: std::vec::Vec<u8>) -> std::vec::Vec<u8> {
             use chainsight_cdk::rpc::Receiver;
             chainsight_cdk::rpc::ReceiverProviderWithoutArgs::<#return_type>::new(
                 proxy(),
                 _get_last_snapshot_value,
             )
             .reply(input)
+            .await
         }
 
         #update_derives
-        pub fn proxy_get_top_snapshot_values(input: std::vec::Vec<u8>) -> std::vec::Vec<u8> {
+        pub async fn proxy_get_top_snapshot_values(input: std::vec::Vec<u8>) -> std::vec::Vec<u8> {
             use chainsight_cdk::rpc::Receiver;
             chainsight_cdk::rpc::ReceiverProvider::<u64, Vec<#return_type>>::new(
                 proxy(),
                 _get_top_snapshot_values,
             )
             .reply(input)
+            .await
         }
 
         #update_derives
-        pub fn proxy_get_snapshot_value(input: std::vec::Vec<u8>) -> std::vec::Vec<u8> {
+        pub async fn proxy_get_snapshot_value(input: std::vec::Vec<u8>) -> std::vec::Vec<u8> {
             use chainsight_cdk::rpc::Receiver;
             chainsight_cdk::rpc::ReceiverProvider::<u64, #return_type>::new(
                 proxy(),
                 _get_snapshot_value,
             )
             .reply(input)
+            .await
         }
     }
 }
