@@ -81,17 +81,13 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
         })
         .or_else(|| Some(vec![]))
         .unwrap();
-    let lens_targets_string_ident: Vec<_> = lens_targets
-        .iter()
-        .map(|p| p.to_text())
-        .map(|txt| format_ident!("{}", txt))
-        .collect();
+    let lens_targets_string_ident: Vec<_> = lens_targets.iter().map(|p| p.to_text()).collect();
 
     let get_args_ident = match manifest.lens_targets.is_some() {
         true => quote! {
             pub fn call_args() -> Vec<String> {
                 vec![
-                    #(#lens_targets_string_ident),*
+                    #(#lens_targets_string_ident.to_string()),*
                 ]
             }
         },
