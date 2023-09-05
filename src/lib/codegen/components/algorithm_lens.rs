@@ -20,6 +20,10 @@ pub struct AlgorithmLensComponentManifest {
     pub output: AlgorithmLensOutput,
 }
 
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+pub struct LensTargets {
+    pub identifiers: Vec<String>,
+}
 impl AlgorithmLensComponentManifest {
     pub fn new(
         label: &str,

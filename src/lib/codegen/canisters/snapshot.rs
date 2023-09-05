@@ -1,4 +1,5 @@
 use anyhow::{bail, ensure};
+use candid::Principal;
 use quote::{format_ident, quote};
 
 use crate::{
@@ -320,12 +321,54 @@ fn custom_codes_for_canister(
         )
     };
 
+    let args_type_ident = match manifest.lens_targets.is_some() {
+        true => quote! {
+            type CallCanisterArgs = Vec<String>;
+        },
+        false => quote! {
+            type CallCanisterArgs = app::CallCanisterArgs;
+        },
+    };
+    let lens_targets: Vec<Principal> = manifest
+        .clone()
+        .lens_targets
+        .map(|t| {
+            t.identifiers
+                .iter()
+                .map(|p| Principal::from_text(p).expect("lens target must be principal"))
+                .collect()
+        })
+        .or_else(|| Some(vec![]))
+        .unwrap();
+    let lens_targets_string_ident: Vec<_> = lens_targets
+        .iter()
+        .map(|p| p.to_text())
+        .map(|txt| format_ident!("{}", txt))
+        .collect();
+
+    let get_args_ident = match manifest.lens_targets.is_some() {
+        true => quote! {
+            pub fn call_args() -> Vec<String> {
+                vec![
+                    #(#lens_targets_string_ident),*
+                ]
+            }
+        },
+        false => quote! {
+            pub fn call_args() -> CallCanisterArgs {
+                app::call_args()
+            }
+        },
+    };
+
     Ok(quote! {
         #snapshot_idents
 
         #queries_expect_timestamp
 
         #response_type_def_ident
+        #args_type_ident
+        #get_args_ident
 
         snapshot_icp_source!(#method_ident);
 
@@ -338,8 +381,8 @@ fn custom_codes_for_canister(
             let px = _get_target_proxy(target_canister).await;
             let call_result = CallProvider::new()
                 .call(
-                    Message::new::<app::CallCanisterArgs>(
-                        app::call_args(),
+                    Message::new::<CallCanisterArgs>(
+                        call_args(),
                         px.clone(),
                         #method_ident
                     ).unwrap()
