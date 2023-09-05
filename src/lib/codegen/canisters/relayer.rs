@@ -1,4 +1,5 @@
 use anyhow::{bail, ensure};
+use candid::Principal;
 use quote::{format_ident, quote};
 
 use crate::{
@@ -61,44 +62,80 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
     let response_type: CanisterMethodValueType = method_identifier.return_value;
     let (call_canister_response_type_ident, response_type_def_ident, sync_data_ident) =
         generate_idents_to_call_datasource_and_sync_to_oracle(response_type, destination.type_)?;
+    let args_type_ident = match manifest.lens_targets.is_some() {
+        true => quote! {
+            type CallCanisterArgs = Vec<String>;
+        },
+        false => quote! {
+            type CallCanisterArgs = app::CallCanisterArgs;
+        },
+    };
+    let lens_targets: Vec<Principal> = manifest
+        .clone()
+        .lens_targets
+        .map(|t| {
+            t.identifiers
+                .iter()
+                .map(|p| Principal::from_text(p).expect("lens target must be principal"))
+                .collect()
+        })
+        .or_else(|| Some(vec![]))
+        .unwrap();
+    let lens_targets_string_ident: Vec<_> = lens_targets.iter().map(|p| p.to_text()).collect();
+
+    let get_args_ident = match manifest.lens_targets.is_some() {
+        true => quote! {
+            pub fn call_args() -> Vec<String> {
+                vec![
+                    #(#lens_targets_string_ident.to_string()),*
+                ]
+            }
+        },
+        false => quote! {
+            pub fn call_args() -> CallCanisterArgs {
+                app::call_args()
+            }
+        },
+    };
 
     Ok(quote! {
-            ic_solidity_bindgen::contract_abi!(#abi_path);
+        ic_solidity_bindgen::contract_abi!(#abi_path);
 
-            #response_type_def_ident
+        #response_type_def_ident
+        #call_canister_response_type_ident
+        mod app;
+        #args_type_ident
+        #get_args_ident
 
-    //        type CallCanisterArgs = (#(#request_ty_idents),*); TODO
-            #call_canister_response_type_ident
-            mod app;
 
-            async fn sync() {
-                let target_canister = candid::Principal::from_text(get_target_canister()).unwrap();
-                let call_result = CallProvider::new()
-                .call(Message::new::<app::CallCanisterArgs>(app::call_args(), _get_target_proxy(target_canister.clone()).await, #method_ident).unwrap())
-                .await;
-                if let Err(err) = call_result {
-                    ic_cdk::println!("error: {:?}", err);
-                    return;
-                }
-                let val = call_result.unwrap().reply::<CallCanisterResponse>();
-                if let Err(err) = val {
-                    ic_cdk::println!("error: {:?}", err);
-                    return;
-                }
-                let datum = val.unwrap();
-                if !app::filter(&datum) {
-                    return;
-                }
-
-                #oracle_ident::new(
-                    Address::from_str(&get_target_addr()).unwrap(),
-                    &web3_ctx().unwrap()
-                ).update_state(#sync_data_ident, None).await.unwrap();
-                ic_cdk::println!("value_to_sync={:?}", datum);
+        async fn sync() {
+            let target_canister = candid::Principal::from_text(get_target_canister()).unwrap();
+            let call_result = CallProvider::new()
+            .call(Message::new::<CallCanisterArgs>(call_args(), _get_target_proxy(target_canister.clone()).await, #method_ident).unwrap())
+            .await;
+            if let Err(err) = call_result {
+                ic_cdk::println!("error: {:?}", err);
+                return;
+            }
+            let val = call_result.unwrap().reply::<CallCanisterResponse>();
+            if let Err(err) = val {
+                ic_cdk::println!("error: {:?}", err);
+                return;
+            }
+            let datum = val.unwrap();
+            if !app::filter(&datum) {
+                return;
             }
 
-            did_export!(#label);
-        })
+            #oracle_ident::new(
+                Address::from_str(&get_target_addr()).unwrap(),
+                &web3_ctx().unwrap()
+            ).update_state(#sync_data_ident, None).await.unwrap();
+            ic_cdk::println!("value_to_sync={:?}", datum);
+        }
+
+        did_export!(#label);
+    })
 }
 
 fn generate_idents_to_call_datasource_and_sync_to_oracle(

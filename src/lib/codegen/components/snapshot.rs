@@ -10,9 +10,12 @@ use crate::{
     types::{ComponentType, Network},
 };
 
-use super::common::{
-    custom_tags_interval_sec, ComponentManifest, ComponentMetadata, Datasource, DestinationType,
-    Sources,
+use super::{
+    algorithm_lens::LensTargets,
+    common::{
+        custom_tags_interval_sec, ComponentManifest, ComponentMetadata, Datasource,
+        DestinationType, Sources,
+    },
 };
 
 /// Component Manifest: Snapshot
@@ -23,6 +26,12 @@ pub struct SnapshotComponentManifest {
     pub datasource: Datasource,
     pub storage: SnapshotStorage,
     pub interval: u32,
+    pub lens_targets: Option<LensTargets>,
+}
+
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+pub struct LensTarget {
+    pub identifiers: Vec<String>,
 }
 
 impl SnapshotComponentManifest {
@@ -49,6 +58,7 @@ impl SnapshotComponentManifest {
             datasource,
             storage,
             interval,
+            lens_targets: None,
         }
     }
 }
@@ -100,12 +110,16 @@ impl ComponentManifest for SnapshotComponentManifest {
         true
     }
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
-        Ok(quote! {
-            pub type CallCanisterArgs = ();
-            pub fn call_args() -> CallCanisterArgs {
-                todo!()
-            }
-        })
+        let args_quote = match self.lens_targets.is_some() {
+            true => quote! {},
+            false => quote! {
+                pub type CallCanisterArgs = ();
+                pub fn call_args() -> CallCanisterArgs {
+                    todo!()
+                }
+            },
+        };
+        Ok(args_quote)
     }
     fn get_sources(&self) -> Sources {
         let mut attr = HashMap::new();
@@ -115,6 +129,10 @@ impl ComponentManifest for SnapshotComponentManifest {
                 .to_string()
                 .replace(' ', "")
                 .replace("()", "");
+        }
+        if self.lens_targets.is_some() {
+            let targets = self.lens_targets.clone().unwrap().identifiers;
+            attr.insert("sources".to_string(), json!(targets));
         }
 
         attr.insert("function_name".to_string(), json!(method_identifier));
@@ -211,6 +229,7 @@ interval: 3600
                 storage: SnapshotStorage {
                     with_timestamp: true,
                 },
+                lens_targets: None,
                 interval: 3600
             }
         );
@@ -272,6 +291,7 @@ interval: 3600
                 storage: SnapshotStorage {
                     with_timestamp: true,
                 },
+                lens_targets: None,
                 interval: 3600
             }
         );

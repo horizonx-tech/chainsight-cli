@@ -4,6 +4,7 @@ use anyhow::Ok;
 use proc_macro2::TokenStream;
 use quote::quote;
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 
 use crate::{
     lib::codegen::{
@@ -13,8 +14,11 @@ use crate::{
     types::{ComponentType, Network},
 };
 
-use super::common::{
-    ComponentManifest, ComponentMetadata, Datasource, DestinationType, SourceType, Sources,
+use super::{
+    algorithm_lens::LensTargets,
+    common::{
+        ComponentManifest, ComponentMetadata, Datasource, DestinationType, SourceType, Sources,
+    },
 };
 
 /// Component Manifest: Relayer
@@ -25,16 +29,7 @@ pub struct RelayerComponentManifest {
     pub datasource: Datasource,
     pub destination: DestinationField, // TODO: multiple destinations
     pub interval: u32,
-}
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-pub struct RelayerDataSource {
-    pub methods: Vec<RelayerDatasourceMethod>,
-}
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-pub struct RelayerDatasourceMethod {
-    pub identifier: String,
-    pub interface: Option<String>,
-    pub args: Vec<serde_yaml::Value>,
+    pub lens_targets: Option<LensTargets>,
 }
 
 impl RelayerComponentManifest {
@@ -56,6 +51,7 @@ impl RelayerComponentManifest {
             },
             datasource,
             destination,
+            lens_targets: None,
             interval,
         }
     }
@@ -108,6 +104,11 @@ impl ComponentManifest for RelayerComponentManifest {
         true
     }
     fn get_sources(&self) -> Sources {
+        let mut attributes = HashMap::new();
+        if self.lens_targets.is_some() {
+            let targets = self.lens_targets.clone().unwrap().identifiers;
+            attributes.insert("sources", json!(targets));
+        }
         Sources {
             source: self.datasource.clone().location.id,
             source_type: SourceType::Chainsight,
@@ -115,12 +116,18 @@ impl ComponentManifest for RelayerComponentManifest {
         }
     }
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
+        let args_quote = match self.lens_targets.is_some() {
+            true => quote! {},
+            false => quote! {
+                pub type CallCanisterArgs = ();
+                pub fn call_args() -> CallCanisterArgs {
+                    todo!()
+                }
+            },
+        };
         Ok(quote! {
             use crate::{CallCanisterResponse};
-            pub type CallCanisterArgs = ();
-            pub fn call_args() -> CallCanisterArgs {
-                todo!()
-            }
+            #args_quote
             pub fn filter(_: &CallCanisterResponse) -> bool {
                 true
             }
@@ -262,6 +269,7 @@ interval: 3600
                     oracle_address: "0539a0EF8e5E60891fFf0958A059E049e43020d9".to_string(),
                     rpc_url: "https://polygon-mumbai.g.alchemy.com/v2/<YOUR_KEY>".to_string(),
                 },
+                lens_targets: None,
                 interval: 3600
             }
         );
