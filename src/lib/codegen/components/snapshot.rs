@@ -110,12 +110,16 @@ impl ComponentManifest for SnapshotComponentManifest {
         true
     }
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
-        Ok(quote! {
-            pub type CallCanisterArgs = ();
-            pub fn call_args() -> CallCanisterArgs {
-                todo!()
-            }
-        })
+        let args_quote = match self.lens_targets.is_some() {
+            true => quote! {},
+            false => quote! {
+                pub type CallCanisterArgs = ();
+                pub fn call_args() -> CallCanisterArgs {
+                    todo!()
+                }
+            },
+        };
+        Ok(args_quote)
     }
     fn get_sources(&self) -> Sources {
         let mut attr = HashMap::new();

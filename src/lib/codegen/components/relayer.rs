@@ -116,12 +116,18 @@ impl ComponentManifest for RelayerComponentManifest {
         }
     }
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
+        let args_quote = match self.lens_targets.is_some() {
+            true => quote! {},
+            false => quote! {
+                pub type CallCanisterArgs = ();
+                pub fn call_args() -> CallCanisterArgs {
+                    todo!()
+                }
+            },
+        };
         Ok(quote! {
             use crate::{CallCanisterResponse};
-            pub type CallCanisterArgs = ();
-            pub fn call_args() -> CallCanisterArgs {
-                todo!()
-            }
+            #args_quote
             pub fn filter(_: &CallCanisterResponse) -> bool {
                 true
             }
