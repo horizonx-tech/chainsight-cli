@@ -4,6 +4,7 @@ use anyhow::Ok;
 use proc_macro2::TokenStream;
 use quote::quote;
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 
 use crate::{
     lib::codegen::{
@@ -103,6 +104,11 @@ impl ComponentManifest for RelayerComponentManifest {
         true
     }
     fn get_sources(&self) -> Sources {
+        let mut attributes = HashMap::new();
+        if self.lens_targets.is_some() {
+            let targets = self.lens_targets.clone().unwrap().identifiers;
+            attributes.insert("sources", json!(targets));
+        }
         Sources {
             source: self.datasource.clone().location.id,
             source_type: SourceType::Chainsight,

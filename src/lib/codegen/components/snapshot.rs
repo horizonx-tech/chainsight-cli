@@ -126,6 +126,10 @@ impl ComponentManifest for SnapshotComponentManifest {
                 .replace(' ', "")
                 .replace("()", "");
         }
+        if self.lens_targets.is_some() {
+            let targets = self.lens_targets.clone().unwrap().identifiers;
+            attr.insert("sources".to_string(), json!(targets));
+        }
 
         attr.insert("function_name".to_string(), json!(method_identifier));
         Sources {
