@@ -112,7 +112,7 @@ impl ComponentManifest for RelayerComponentManifest {
         Sources {
             source: self.datasource.clone().location.id,
             source_type: SourceType::Chainsight,
-            attributes: attributes,
+            attributes,
         }
     }
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
