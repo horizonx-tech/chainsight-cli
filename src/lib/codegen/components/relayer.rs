@@ -107,12 +107,12 @@ impl ComponentManifest for RelayerComponentManifest {
         let mut attributes = HashMap::new();
         if self.lens_targets.is_some() {
             let targets = self.lens_targets.clone().unwrap().identifiers;
-            attributes.insert("sources", json!(targets));
+            attributes.insert("sources".to_string(), json!(targets));
         }
         Sources {
             source: self.datasource.clone().location.id,
             source_type: SourceType::Chainsight,
-            attributes: HashMap::new(),
+            attributes: attributes,
         }
     }
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
