@@ -71,18 +71,18 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
         &project_path_str, PROJECT_MANIFEST_FILENAME
     ))?;
 
-    // check duplicated component pathes
+    // check duplicated component paths
     {
         let component_paths = project_manifest
             .components
             .iter()
             .map(|c| c.component_path.to_string())
             .collect::<Vec<String>>();
-        let duplicated_pathes = find_duplicates(&component_paths);
-        if !duplicated_pathes.is_empty() {
+        let duplicated_paths = find_duplicates(&component_paths);
+        if !duplicated_paths.is_empty() {
             error!(
                 log,
-                r#"Duplicated component pathes found: {:?}"#, duplicated_pathes
+                r#"Duplicated component paths found: {:?}"#, duplicated_paths
             );
             bail!(GLOBAL_ERROR_MSG.to_string())
         }
@@ -189,15 +189,15 @@ fn exec_codegen(
                 fs::copy(user_if_file_path, dst_interface_path)?;
                 info!(
                     log,
-                    r#"Interface file "{}" copied by user's interface"#, &interface_file
+                    r#"Interface file "{}" copied from user's interface"#, &interface_file
                 );
                 let abi_file = File::open(user_if_file_path)?;
                 interface_contract = Some(ethabi::Contract::load(abi_file)?);
-            } else if let Some(contents) = buildin_interface(&interface_file) {
+            } else if let Some(contents) = builtin_interface(&interface_file) {
                 fs::write(dst_interface_path, contents)?;
                 info!(
                     log,
-                    r#"Interface file "{}" copied by builtin interface"#, &interface_file
+                    r#"Interface file "{}" copied from builtin interface"#, &interface_file
                 );
                 let contract: ethabi::Contract = serde_json::from_str(contents)?;
                 interface_contract = Some(contract);
@@ -410,7 +410,7 @@ args= [\"test\"]";
     txt.to_string()
 }
 
-fn buildin_interface(name: &str) -> Option<&'static str> {
+fn builtin_interface(name: &str) -> Option<&'static str> {
     let interface = match name {
         "ERC20.json" => include_str!("../../resources/ERC20.json"),
         _ => return None,

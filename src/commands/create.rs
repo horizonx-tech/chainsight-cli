@@ -113,11 +113,11 @@ pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> anyhow::Result<()> {
             .iter()
             .map(|c| c.component_path.to_string())
             .collect::<Vec<String>>();
-        let duplicated_pathes = find_duplicates(&component_paths);
-        if !duplicated_pathes.is_empty() {
+        let duplicated_paths = find_duplicates(&component_paths);
+        if !duplicated_paths.is_empty() {
             error!(
                 log,
-                r#"Duplicated component pathes found: {:?}"#, duplicated_pathes
+                r#"Duplicated component paths found: {:?}"#, duplicated_paths
             );
             bail!(GLOBAL_ERROR_MSG.to_string())
         }
