@@ -6,7 +6,7 @@ use std::{fs, path::Path};
 
 use anyhow::{bail, Ok};
 use clap::Parser;
-use slog::{debug, error, info, Logger};
+use slog::{debug, info, Logger};
 
 use crate::lib::codegen::components::algorithm_indexer::AlgorithmIndexerComponentManifest;
 use crate::lib::codegen::components::algorithm_lens::AlgorithmLensComponentManifest;
@@ -49,15 +49,12 @@ pub struct BuildOpts {
     only_build: bool,
 }
 
-const GLOBAL_ERROR_MSG: &str = "Fail 'Build' command";
-
 pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
     let log = env.get_logger();
     let project_path = opts.path;
 
     if let Err(msg) = is_chainsight_project(project_path.clone()) {
-        error!(log, r#"{}"#, msg);
-        bail!(GLOBAL_ERROR_MSG.to_string())
+        bail!(format!(r#"{}"#, msg));
     }
 
     info!(log, r#"Building project..."#);
@@ -80,11 +77,10 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
             .collect::<Vec<String>>();
         let duplicated_paths = find_duplicates(&component_paths);
         if !duplicated_paths.is_empty() {
-            error!(
-                log,
-                r#"Duplicated component paths found: {:?}"#, duplicated_paths
-            );
-            bail!(GLOBAL_ERROR_MSG.to_string())
+            bail!(format!(
+                r#"Duplicated component paths found: {:?}"#,
+                duplicated_paths
+            ));
         }
     }
 
@@ -170,8 +166,7 @@ fn exec_codegen(
     let mut project_labels: Vec<String> = vec![];
     for data in component_data {
         if let Err(msg) = data.validate_manifest() {
-            error!(log, r#"{}"#, msg);
-            bail!(GLOBAL_ERROR_MSG.to_string())
+            bail!(format!(r#"{}"#, msg));
         }
 
         // Processes about interface
@@ -202,8 +197,7 @@ fn exec_codegen(
                 let contract: ethabi::Contract = serde_json::from_str(contents)?;
                 interface_contract = Some(contract);
             } else {
-                error!(log, r#"Interface file "{}" not found"#, &interface_file);
-                bail!(GLOBAL_ERROR_MSG.to_string())
+                bail!(format!(r#"Interface file "{}" not found"#, &interface_file));
             }
         }
 
@@ -441,8 +435,7 @@ fn execute_codebuild(
         );
         info!(log, "{} successfully", description);
     } else {
-        error!(log, "{} failed", description);
-        bail!(GLOBAL_ERROR_MSG.to_string())
+        bail!(format!("{} failed", description));
     }
 
     // Regenerate artifacts folder
@@ -483,8 +476,7 @@ fn execute_codebuild(
         );
         info!(log, "{} successfully", description);
     } else {
-        error!(log, "{} failed", description);
-        bail!(GLOBAL_ERROR_MSG.to_string())
+        bail!(format!("{} failed", description));
     }
 
     let description = "Shrink/Optimize canisters' modules";
@@ -511,8 +503,7 @@ fn execute_codebuild(
                 "{}",
                 std::str::from_utf8(&output.stderr).unwrap_or("fail to parse stdout")
             );
-            error!(log, "{} `{}` failed", label, description);
-            bail!(GLOBAL_ERROR_MSG.to_string())
+            bail!(format!("{} `{}` failed", label, description));
         }
     }
 
@@ -554,8 +545,7 @@ fn add_meta(
             "{}",
             std::str::from_utf8(&output.stderr).unwrap_or("fail to parse stdout")
         );
-        error!(log, "{} `{}` failed", label, description);
-        bail!(GLOBAL_ERROR_MSG.to_string())
+        bail!(format!("{} `{}` failed", label, description));
     };
     anyhow::Ok(())
 }

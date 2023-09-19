@@ -27,8 +27,6 @@ pub struct DeployOpts {
     port: Option<u16>,
 }
 
-const GLOBAL_ERROR_MSG: &str = "Fail 'Deploy' command";
-
 pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
     let log = env.get_logger();
     let built_project_path_str = opts.path.unwrap_or(".".to_string());
@@ -159,7 +157,6 @@ fn exec_command(
             "{}",
             std::str::from_utf8(&output.stderr).unwrap_or("fail to parse stderr")
         );
-        error!(log, "{} failed", complete_message);
-        bail!(GLOBAL_ERROR_MSG.to_string())
+        bail!(format!("{} failed", complete_message));
     }
 }

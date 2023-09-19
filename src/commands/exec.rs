@@ -2,7 +2,7 @@ use std::{fs, os::unix::prelude::PermissionsExt, path::Path, process::Command};
 
 use anyhow::bail;
 use clap::{arg, Parser};
-use slog::{debug, error, info, Logger};
+use slog::{debug, info, Logger};
 
 use crate::{
     lib::{
@@ -53,7 +53,6 @@ pub struct ExecOpts {
     only_execute_cmds: bool,
 }
 
-const GLOBAL_ERROR_MSG: &str = "Fail 'Exec' command";
 const ENTRYPOINT_SHELL_FILENAME: &str = "entrypoint.sh";
 
 pub fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
@@ -61,8 +60,7 @@ pub fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
     let project_path = opts.path;
 
     if let Err(msg) = is_chainsight_project(project_path.clone()) {
-        error!(log, r#"{}"#, msg);
-        bail!(GLOBAL_ERROR_MSG.to_string())
+        bail!(format!(r#"{}"#, msg));
     }
 
     info!(log, r#"Execute canister processing..."#);
@@ -213,8 +211,7 @@ fn execute_commands(log: &Logger, built_project_path_str: &str) -> anyhow::Resul
             "{}",
             std::str::from_utf8(&output.stderr).unwrap_or("fail to parse stderr")
         );
-        error!(log, "{} failed", complete_msg);
-        bail!(GLOBAL_ERROR_MSG.to_string())
+        bail!(format!("{} failed", complete_msg));
     }
 
     anyhow::Ok(())
