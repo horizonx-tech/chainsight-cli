@@ -40,18 +40,18 @@ pub fn exec(env: &EnvironmentImpl, opts: NewOpts) -> anyhow::Result<()> {
     let project_name = opts.project_name;
     let project_name_path = Path::new(&project_name);
     if project_name_path.exists() {
-        bail!(format!(r#"Project "{}" already exists"#, project_name));
+        bail!(format!(r#"Project '{}' already exists"#, project_name));
     }
-    info!(log, r#"Creating new project "{}"..."#, project_name);
+    info!(log, r#"Start creating new project '{}'..."#, project_name);
     let res = create_project(&project_name);
     match res {
         Ok(_) => {
-            info!(log, r#"Project "{}" created successfully"#, project_name);
+            info!(log, r#"Project '{}' created successfully"#, project_name);
             Ok(())
         }
         Err(err) => {
             bail!(format!(
-                r#"Fail to create project "{}": {}"#,
+                r#"Failed: Create project '{}' by: {}"#,
                 project_name, err
             ));
         }

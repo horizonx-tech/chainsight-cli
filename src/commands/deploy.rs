@@ -4,7 +4,13 @@ use anyhow::bail;
 use clap::Parser;
 use slog::{debug, error, info, Logger};
 
-use crate::{lib::environment::EnvironmentImpl, types::Network};
+use crate::{
+    lib::{
+        codegen::project::ProjectManifestData, environment::EnvironmentImpl,
+        utils::PROJECT_MANIFEST_FILENAME,
+    },
+    types::Network,
+};
 
 #[derive(Debug, Parser)]
 #[command(name = "deploy")]
@@ -31,85 +37,62 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
     let log = env.get_logger();
     let built_project_path_str = opts.path.unwrap_or(".".to_string());
     let built_project_path = Path::new(&built_project_path_str);
+    let project_manifest = ProjectManifestData::load(&format!(
+        "{}/../{}",
+        &built_project_path_str, PROJECT_MANIFEST_FILENAME
+    ))?;
     let network = opts.network;
 
-    info!(log, r#"Deploy project..."#);
-
     // exec command - check
-    info!(log, "Ping dfx subnet");
+    info!(log, "Checking environments...");
     let local_subnet = format!("http://127.0.0.1:{}", opts.port.unwrap_or(4943));
     let args = match network {
         Network::Local => vec!["ping", &local_subnet],
         Network::IC => vec!["ping", "ic"],
     };
-    exec_command(log, "dfx", built_project_path, args, "Ping dfx subnet")?;
+    exec_command(log, "dfx", built_project_path, args)?;
 
-    info!(log, "Check identity: Developer Id");
     let args = match network {
         Network::Local => vec!["identity", "whoami"],
         Network::IC => vec!["identity", "whoami", "--network", "ic"],
     };
-    exec_command(log, "dfx", built_project_path, args, "dfx identity whoami")?;
-    info!(log, "Check identity: Principal");
+    exec_command(log, "dfx", built_project_path, args)?;
     let args = match network {
         Network::Local => vec!["identity", "get-principal"],
         Network::IC => vec!["identity", "get-principal", "--network", "ic"],
     };
-    exec_command(
-        log,
-        "dfx",
-        built_project_path,
-        args,
-        "dfx identity get-principal",
-    )?;
+    exec_command(log, "dfx", built_project_path, args)?;
     let args = match network {
         Network::Local => vec!["identity", "get-wallet"],
         Network::IC => vec!["identity", "get-wallet", "--network", "ic"],
     };
-    info!(log, "Check identity: Wallet");
-    exec_command(
-        log,
-        "dfx",
-        built_project_path,
-        args,
-        "dfx identity get-wallet",
-    )?;
+    exec_command(log, "dfx", built_project_path, args)?;
+    info!(log, "Checking environments finished successfully");
 
     // exec command - execution
-    info!(log, "Execute 'dfx canister create --all'");
+    info!(
+        log,
+        r#"Start deploying project '{}'..."#, project_manifest.label
+    );
     let args = match network {
         Network::Local => vec!["canister", "create", "--all"],
         Network::IC => vec!["canister", "create", "--all", "--network", "ic"],
     };
-    exec_command(
-        log,
-        "dfx",
-        built_project_path,
-        args,
-        "Executed 'dfx canister create --all",
-    )?;
+    exec_command(log, "dfx", built_project_path, args)?;
 
-    info!(log, "Execute 'dfx build'");
     let args = match network {
         Network::Local => vec!["build"],
         Network::IC => vec!["build", "--network", "ic"],
     };
-    exec_command(log, "dfx", built_project_path, args, "Executed 'dfx build'")?;
+    exec_command(log, "dfx", built_project_path, args)?;
 
-    info!(log, "Execute 'dfx canister install --all'");
     let args = match network {
         Network::Local => vec!["canister", "install", "--all"],
         Network::IC => vec!["canister", "install", "--all", "--network", "ic"],
     };
-    exec_command(
-        log,
-        "dfx",
-        built_project_path,
-        args,
-        "Executed 'dfx canister install --all'",
-    )?;
+    exec_command(log, "dfx", built_project_path, args)?;
 
-    info!(log, "Check deployed canisters' ids");
+    info!(log, "List deployed canister ids");
     let canister_ids_json_filename = "canister_ids.json";
     let canister_ids_json_path = match network {
         Network::Local => format!(
@@ -123,7 +106,10 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
         Err(err) => error!(log, "Error reading canister_ids.json: {}", err),
     }
 
-    info!(log, r#"Deploy successfully"#,);
+    info!(
+        log,
+        r#"Project '{}' deployed successfully"#, project_manifest.label
+    );
 
     Ok(())
 }
@@ -133,10 +119,9 @@ fn exec_command(
     cmd: &str,
     execution_dir: &Path,
     args: Vec<&str>,
-    complete_message: &str,
 ) -> anyhow::Result<()> {
     let cmd_string = format!("{} {}", cmd, args.join(" "));
-    debug!(log, "Running command: `{}`", cmd_string);
+    info!(log, "Running command: '{}'", cmd_string);
 
     let output = Command::new(cmd)
         .current_dir(execution_dir)
@@ -147,16 +132,15 @@ fn exec_command(
         debug!(
             log,
             "{}",
-            std::str::from_utf8(&output.stdout).unwrap_or("fail to parse stdout")
+            std::str::from_utf8(&output.stdout).unwrap_or("failed to parse stdout")
         );
-        info!(log, "{} successfully", complete_message);
+        info!(log, "Suceeded: {}", cmd_string);
         anyhow::Ok(())
     } else {
-        debug!(
-            log,
-            "{}",
-            std::str::from_utf8(&output.stderr).unwrap_or("fail to parse stderr")
-        );
-        bail!(format!("{} failed", complete_message));
+        bail!(format!(
+            "Failed: {} by: {} ",
+            cmd_string,
+            std::str::from_utf8(&output.stderr).unwrap_or("failed to parse stderr")
+        ));
     }
 }

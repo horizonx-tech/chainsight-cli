@@ -27,9 +27,8 @@ pub fn exec(env: &EnvironmentImpl, opts: RemoveOpts) -> anyhow::Result<()> {
         bail!(format!(r#"{}"#, msg));
     }
 
-    info!(log, r#"Removing project..."#);
-
     let res = if let Some(project_name) = project_path {
+        info!(log, r#"Remove project: {}..."#, project_name);
         fs::remove_dir_all(Path::new(&project_name))
     } else {
         // TODO: check existence of folders/files before removing
@@ -45,7 +44,7 @@ pub fn exec(env: &EnvironmentImpl, opts: RemoveOpts) -> anyhow::Result<()> {
             Ok(())
         }
         Err(err) => {
-            bail!(format!(r#"Fail to remove project: {}"#, err));
+            bail!(format!(r#"Failed: Remove project: {}"#, err));
         }
     }
 }

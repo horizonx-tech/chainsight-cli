@@ -103,7 +103,7 @@ pub fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
         info!(log, r#"Skip to generate commands to call components"#);
     } else {
         // generate commands
-        info!(log, r#"Processing for commands generation"#);
+        info!(log, r#"Start processing for commands generation..."#);
         execute_to_generate_commands(log, &artifacts_path_str, opts.network, &component_data)?;
     }
 
@@ -111,7 +111,7 @@ pub fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
         info!(log, r#"Skip to execute commands to components"#);
     } else {
         // execute commands
-        info!(log, r#"Processing for commands execution"#);
+        info!(log, r#"Start processing for commands execution..."#);
         execute_commands(log, &artifacts_path_str)?;
     }
 
@@ -202,16 +202,15 @@ fn execute_commands(log: &Logger, built_project_path_str: &str) -> anyhow::Resul
         debug!(
             log,
             "{}",
-            std::str::from_utf8(&output.stdout).unwrap_or("fail to parse stdout")
+            std::str::from_utf8(&output.stdout).unwrap_or("failed to parse stdout")
         );
         info!(log, "{} successfully", complete_msg);
     } else {
-        debug!(
-            log,
-            "{}",
-            std::str::from_utf8(&output.stderr).unwrap_or("fail to parse stderr")
-        );
-        bail!(format!("{} failed", complete_msg));
+        bail!(format!(
+            "Failed: {} by: {}",
+            complete_msg,
+            std::str::from_utf8(&output.stderr).unwrap_or("failed to parse stderr")
+        ));
     }
 
     anyhow::Ok(())

@@ -66,7 +66,10 @@ pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> anyhow::Result<()> {
         bail!(format!(r#"{}"#, msg));
     }
 
-    info!(log, r#"Creating new component "{}"..."#, component_name);
+    info!(
+        log,
+        r#"Start creating new component '{}'..."#, component_name
+    );
 
     let codes = match component_type {
         ComponentType::EventIndexer => {
@@ -130,7 +133,7 @@ pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> anyhow::Result<()> {
 
     info!(
         log,
-        r#"{:?} component "{}" created successfully"#, component_type, component_name
+        r#"{:?} component '{}' created successfully"#, component_type, component_name
     );
 
     Ok(())
