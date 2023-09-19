@@ -22,7 +22,6 @@ fn common_codes() -> proc_macro2::TokenStream {
         use chainsight_cdk_macros::{manage_single_state, setup_func, init_in, timer_task_func, define_web3_ctx, define_transform_for_web3, define_get_ethereum_address, chainsight_common, did_export,relayer_source};
         use ic_web3_rs::types::{Address, U256};
         use chainsight_cdk::rpc::{CallProvider, Caller, Message};
-        relayer_source!();
 
         chainsight_common!(3600);
 
@@ -98,9 +97,18 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
         },
     };
 
+    let relayer_source_ident = match manifest.lens_targets.is_some() {
+        true => quote! {
+            relayer_source!(true);
+        },
+        false => quote! {
+            relayer_source!(false);
+        },
+    };
+
     Ok(quote! {
         ic_solidity_bindgen::contract_abi!(#abi_path);
-
+        #relayer_source_ident
         #response_type_def_ident
         #call_canister_response_type_ident
         mod app;
