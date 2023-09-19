@@ -99,10 +99,10 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
 
     let relayer_source_ident = match manifest.lens_targets.is_some() {
         true => quote! {
-            relayer_source!(false)
+            relayer_source!(true);
         },
         false => quote! {
-            relayer_source!(true)
+            relayer_source!(false);
         },
     };
 
