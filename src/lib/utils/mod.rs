@@ -7,6 +7,7 @@ pub mod clap;
 pub const CHAINSIGHT_FILENAME: &str = ".chainsight";
 pub const PROJECT_MANIFEST_FILENAME: &str = "project.yaml";
 pub const PROJECT_MANIFEST_VERSION: &str = "v1";
+pub const ARTIFACTS_DIR: &str = "artifacts";
 
 /// To handle 256bits Unsigned Integer type in ic_web3_rs
 pub const U256_TYPE: &str = "ic_web3_rs::types::U256";

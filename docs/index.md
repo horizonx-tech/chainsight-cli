@@ -93,7 +93,7 @@ Remember to have a dfx network in your local area when deploying locally.
 # Deploy project
 # NOTE: If you deploy in local, dfx network must be started (ex: 'dfx start')
 dfx start
-csx deploy --path initial_project/artifacts
+csx deploy
 ```
 
 When 'deploy' is complete, the 'exec' command sends the actual initialization and start of periodic execution instructions to the component.
