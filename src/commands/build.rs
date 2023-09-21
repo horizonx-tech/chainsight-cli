@@ -6,7 +6,7 @@ use std::{fs, path::Path};
 
 use anyhow::{bail, Ok};
 use clap::Parser;
-use slog::{debug, error, info, Logger};
+use slog::{debug, info, Logger};
 
 use crate::lib::codegen::components::algorithm_indexer::AlgorithmIndexerComponentManifest;
 use crate::lib::codegen::components::algorithm_lens::AlgorithmLensComponentManifest;
@@ -49,18 +49,13 @@ pub struct BuildOpts {
     only_build: bool,
 }
 
-const GLOBAL_ERROR_MSG: &str = "Fail 'Build' command";
-
 pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
     let log = env.get_logger();
     let project_path = opts.path;
 
     if let Err(msg) = is_chainsight_project(project_path.clone()) {
-        error!(log, r#"{}"#, msg);
-        bail!(GLOBAL_ERROR_MSG.to_string())
+        bail!(format!(r#"{}"#, msg));
     }
-
-    info!(log, r#"Building project..."#);
 
     let project_path_str = project_path.unwrap_or(".".to_string());
     let artifacts_path_str = format!("{}/artifacts", &project_path_str);
@@ -71,20 +66,24 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
         &project_path_str, PROJECT_MANIFEST_FILENAME
     ))?;
 
-    // check duplicated component pathes
+    info!(
+        log,
+        r#"Start building project '{}'"#, project_manifest.label
+    );
+
+    // check duplicated component paths
     {
         let component_paths = project_manifest
             .components
             .iter()
             .map(|c| c.component_path.to_string())
             .collect::<Vec<String>>();
-        let duplicated_pathes = find_duplicates(&component_paths);
-        if !duplicated_pathes.is_empty() {
-            error!(
-                log,
-                r#"Duplicated component pathes found: {:?}"#, duplicated_pathes
-            );
-            bail!(GLOBAL_ERROR_MSG.to_string())
+        let duplicated_paths = find_duplicates(&component_paths);
+        if !duplicated_paths.is_empty() {
+            bail!(format!(
+                r#"Duplicated component paths found: {:?}"#,
+                duplicated_paths
+            ));
         }
     }
 
@@ -118,7 +117,7 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
         info!(log, r#"Skip codegen"#);
     } else {
         // generate codes
-        info!(log, r#"Processing for codegen"#);
+        info!(log, r#"Start processing for codegen..."#);
         exec_codegen(log, &project_path_str, &artifacts_path_str, &component_data)?;
     }
 
@@ -126,18 +125,18 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
         info!(log, r#"Skip build"#);
     } else {
         // build codes generated
-        info!(log, r#"Processing for build"#);
+        info!(log, r#"Start processing for build..."#);
         execute_codebuild(log, &artifacts_path_str, &component_data)?;
     }
 
     info!(
         log,
-        r#"Project "{}" codes/resources generated successfully"#, project_manifest.label
+        r#"Project '{}' codes/resources generated successfully"#, project_manifest.label
     );
 
     info!(
         log,
-        r#"Project "{}" built successfully"#, project_manifest.label
+        r#"Project '{}' built successfully"#, project_manifest.label
     );
     Ok(())
 }
@@ -170,8 +169,11 @@ fn exec_codegen(
     let mut project_labels: Vec<String> = vec![];
     for data in component_data {
         if let Err(msg) = data.validate_manifest() {
-            error!(log, r#"{}"#, msg);
-            bail!(GLOBAL_ERROR_MSG.to_string())
+            bail!(format!(
+                r#"[{}] Invalid manifest: {}"#,
+                data.metadata().label,
+                msg
+            ));
         }
 
         // Processes about interface
@@ -189,21 +191,28 @@ fn exec_codegen(
                 fs::copy(user_if_file_path, dst_interface_path)?;
                 info!(
                     log,
-                    r#"Interface file "{}" copied by user's interface"#, &interface_file
+                    r#"[{}] Interface file '{}' copied from user's interface"#,
+                    data.metadata().label,
+                    &interface_file
                 );
                 let abi_file = File::open(user_if_file_path)?;
                 interface_contract = Some(ethabi::Contract::load(abi_file)?);
-            } else if let Some(contents) = buildin_interface(&interface_file) {
+            } else if let Some(contents) = builtin_interface(&interface_file) {
                 fs::write(dst_interface_path, contents)?;
                 info!(
                     log,
-                    r#"Interface file "{}" copied by builtin interface"#, &interface_file
+                    r#"[{}] Interface file '{}' copied from builtin interface"#,
+                    data.metadata().label,
+                    &interface_file
                 );
                 let contract: ethabi::Contract = serde_json::from_str(contents)?;
                 interface_contract = Some(contract);
             } else {
-                error!(log, r#"Interface file "{}" not found"#, &interface_file);
-                bail!(GLOBAL_ERROR_MSG.to_string())
+                bail!(format!(
+                    r#"[{}] Interface file "{}" not found"#,
+                    data.metadata().label,
+                    &interface_file
+                ));
             }
         }
 
@@ -225,7 +234,9 @@ fn exec_codegen(
             if Path::new(&app_path_str).is_file() {
                 info!(
                     log,
-                    r#"{app_path_str}/app.rs already exists, skip creating"#
+                    r#"[{}] Skip creating: '{}' already exists"#,
+                    data.metadata().label,
+                    app_path_str,
                 );
             } else {
                 let mut lib_file: File = File::create(&app_path_str)?;
@@ -239,7 +250,11 @@ fn exec_codegen(
                 &canister_project_cargo_toml(&label),
             )?;
         } else {
-            info!(log, r#"project Cargo.toml already exists, skip creating"#)
+            info!(
+                log,
+                r#"[{}] Skip creating: 'Cargo.toml' already exists"#,
+                data.metadata().label,
+            )
         }
 
         // copy and move oracle interface
@@ -251,7 +266,9 @@ fn exec_codegen(
             )?;
             info!(
                 log,
-                r#"Interface file "{}" copied by builtin interface"#, &json_name
+                r#"[{}] Interface file '{}' copied from builtin interface"#,
+                data.metadata().label,
+                &json_name
             );
         }
         data.additional_files(Path::new(project_path_str))
@@ -261,11 +278,16 @@ fn exec_codegen(
                 let content = d.1;
                 let path = format!("{}/{}.rs", &canister_code_path_str, &file_name);
                 if Path::new(&path).is_file() {
-                    info!(log, r#"{} already exists, skip creating"#, &path);
+                    info!(
+                        log,
+                        r#"[{}] Skip creating: '{}' already exists"#,
+                        data.metadata().label,
+                        &path
+                    );
                     return;
                 }
                 fs::write(path, content).unwrap();
-            })
+            });
     }
     if !Path::new(&format!("{}/Cargo.toml", &artifacts_path_str)).is_file() {
         fs::write(
@@ -273,7 +295,7 @@ fn exec_codegen(
             root_cargo_toml(project_labels.clone()),
         )?;
     } else {
-        info!(log, r#"Cargo.toml already exists, skip creating"#)
+        info!(log, r#"Skip creating: 'Cargo.toml' already exists"#,)
     }
     fs::write(
         format!("{}/dfx.json", &artifacts_path_str),
@@ -285,7 +307,7 @@ fn exec_codegen(
             makefile_toml(),
         )?;
     } else {
-        info!(log, r#"Makefile.toml already exists, skip creating"#)
+        info!(log, r#"Skip creating: 'Makefile.toml' already exists"#,)
     }
 
     anyhow::Ok(())
@@ -410,7 +432,7 @@ args= [\"test\"]";
     txt.to_string()
 }
 
-fn buildin_interface(name: &str) -> Option<&'static str> {
+fn builtin_interface(name: &str) -> Option<&'static str> {
     let interface = match name {
         "ERC20.json" => include_str!("../../resources/ERC20.json"),
         _ => return None,
@@ -426,8 +448,8 @@ fn execute_codebuild(
 ) -> anyhow::Result<()> {
     let built_project_path = Path::new(&built_project_path_str);
 
-    let description = "Generate interfaces (.did files)";
-    info!(log, "{}", description);
+    let action = "Generate interfaces (.did files)";
+    info!(log, "{}...", action);
     let output = Command::new("cargo")
         .current_dir(built_project_path)
         .args(["make", "did"])
@@ -437,12 +459,15 @@ fn execute_codebuild(
         debug!(
             log,
             "{}",
-            std::str::from_utf8(&output.stdout).unwrap_or("fail to parse stdout")
+            std::str::from_utf8(&output.stdout).unwrap_or("failed to parse stdout")
         );
-        info!(log, "{} successfully", description);
+        info!(log, "Succeeded: {}", action);
     } else {
-        error!(log, "{} failed", description);
-        bail!(GLOBAL_ERROR_MSG.to_string())
+        bail!(format!(
+            "Failed: {} by: {}",
+            action,
+            std::str::from_utf8(&output.stderr).unwrap_or("failed to parse stdout")
+        ));
     }
 
     // Regenerate artifacts folder
@@ -460,8 +485,8 @@ fn execute_codebuild(
         fs::copy(src_path, dst_path)?;
     }
 
-    let description = "Compile canisters' codes";
-    info!(log, "{}", description);
+    let action = "Compile canisters";
+    info!(log, "{}...", action);
     let output = Command::new("cargo")
         .current_dir(built_project_path)
         .args([
@@ -479,16 +504,19 @@ fn execute_codebuild(
         debug!(
             log,
             "{}",
-            std::str::from_utf8(&output.stdout).unwrap_or("fail to parse stdout")
+            std::str::from_utf8(&output.stdout).unwrap_or("failed to parse stdout")
         );
-        info!(log, "{} successfully", description);
+        info!(log, "Succeeded: {}", action);
     } else {
-        error!(log, "{} failed", description);
-        bail!(GLOBAL_ERROR_MSG.to_string())
+        bail!(format!(
+            "Failed: {} by: {}",
+            action,
+            std::str::from_utf8(&output.stderr).unwrap_or("failed to parse stdout")
+        ));
     }
 
-    let description = "Shrink/Optimize canisters' modules";
-    info!(log, "{}", description);
+    let action = "Shrink/Optimize module";
+    info!(log, "{}s...", action);
     for component_datum in component_data {
         let label = component_datum.metadata().label.clone();
         let wasm_path = format!("target/wasm32-unknown-unknown/release/{}.wasm", label);
@@ -501,26 +529,28 @@ fn execute_codebuild(
         if output.status.success() {
             debug!(
                 log,
-                "{}",
-                std::str::from_utf8(&output.stdout).unwrap_or("fail to parse stdout")
+                "[{}] {}",
+                label,
+                std::str::from_utf8(&output.stdout).unwrap_or("failed to parse stdout")
             );
-            info!(log, "{} `{}` successfully", label, description);
+            debug!(log, "[{}] Succeeded: {}", label, action);
         } else {
-            debug!(
-                log,
-                "{}",
-                std::str::from_utf8(&output.stderr).unwrap_or("fail to parse stdout")
-            );
-            error!(log, "{} `{}` failed", label, description);
-            bail!(GLOBAL_ERROR_MSG.to_string())
+            bail!(format!(
+                "[{}] Failed: '{}' by: {}",
+                label,
+                action,
+                std::str::from_utf8(&output.stderr).unwrap_or("failed to parse stdout")
+            ));
         }
     }
+    info!(log, "Succeeded: {}s", action);
 
-    let description = "Add metadatas to canisters' modules";
-    info!(log, "{}", description);
+    let action = "Add metadata to modules";
+    info!(log, "{}...", action);
     for component_datum in component_data {
-        add_metadatas_to_wasm(log, built_project_path_str, component_datum.as_ref())?;
+        add_metadata_to_wasm(log, built_project_path_str, component_datum.as_ref())?;
     }
+    info!(log, "Succeeded: {}", action);
 
     anyhow::Ok(())
 }
@@ -533,7 +563,7 @@ fn add_meta(
     log: &Logger,
 ) -> anyhow::Result<()> {
     let wasm_path = format!("artifacts/{}.wasm", label);
-    let description = format!("Add metadata `{}`", key);
+    let action = format!("Add metadata {}", key);
     let output = Command::new("ic-wasm")
         .current_dir(target)
         .args([
@@ -544,23 +574,23 @@ fn add_meta(
     if output.status.success() {
         debug!(
             log,
-            "{}",
-            std::str::from_utf8(&output.stdout).unwrap_or("fail to parse stdout")
+            "[{}] {}",
+            label,
+            std::str::from_utf8(&output.stdout).unwrap_or("failed to parse stdout")
         );
-        info!(log, "{} `{}` successfully", label, description);
+        debug!(log, "[{}] Succeeded: '{}'", label, action);
     } else {
-        debug!(
-            log,
-            "{}",
-            std::str::from_utf8(&output.stderr).unwrap_or("fail to parse stdout")
-        );
-        error!(log, "{} `{}` failed", label, description);
-        bail!(GLOBAL_ERROR_MSG.to_string())
+        bail!(format!(
+            "[{}] Failed: '{}' by: {}",
+            label,
+            action,
+            std::str::from_utf8(&output.stderr).unwrap_or("failed to parse stdout")
+        ));
     };
     anyhow::Ok(())
 }
 
-fn add_metadatas_to_wasm(
+fn add_metadata_to_wasm(
     log: &Logger,
     built_project_path_str: &str,
     component_datum: &dyn ComponentManifest,

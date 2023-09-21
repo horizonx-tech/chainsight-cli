@@ -2,7 +2,7 @@ use std::{fs, path::Path};
 
 use anyhow::bail;
 use clap::Parser;
-use slog::{error, info};
+use slog::info;
 
 use crate::lib::{
     codegen::{
@@ -35,26 +35,25 @@ pub struct NewOpts {
     project_name: String,
 }
 
-const GLOBAL_ERROR_MSG: &str = "Fail 'New' command";
-
 pub fn exec(env: &EnvironmentImpl, opts: NewOpts) -> anyhow::Result<()> {
     let log = env.get_logger();
     let project_name = opts.project_name;
     let project_name_path = Path::new(&project_name);
     if project_name_path.exists() {
-        error!(log, r#"Project "{}" already exists"#, project_name);
-        bail!(GLOBAL_ERROR_MSG.to_string())
+        bail!(format!(r#"Project '{}' already exists"#, project_name));
     }
-    info!(log, r#"Creating new project "{}"..."#, project_name);
+    info!(log, r#"Start creating new project '{}'..."#, project_name);
     let res = create_project(&project_name);
     match res {
         Ok(_) => {
-            info!(log, r#"Project "{}" created successfully"#, project_name);
+            info!(log, r#"Project '{}' created successfully"#, project_name);
             Ok(())
         }
         Err(err) => {
-            error!(log, r#"Fail to create project "{}": {}"#, project_name, err);
-            bail!(GLOBAL_ERROR_MSG.to_string())
+            bail!(format!(
+                r#"Failed: Create project '{}' by: {}"#,
+                project_name, err
+            ));
         }
     }
 }

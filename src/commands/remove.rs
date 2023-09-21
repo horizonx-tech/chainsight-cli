@@ -2,7 +2,7 @@ use std::{fs, path::Path};
 
 use anyhow::bail;
 use clap::Parser;
-use slog::{error, info};
+use slog::info;
 
 use crate::lib::{
     environment::EnvironmentImpl,
@@ -19,20 +19,16 @@ pub struct RemoveOpts {
     path: Option<String>,
 }
 
-const GLOBAL_ERROR_MSG: &str = "Fail 'Remove' command";
-
 pub fn exec(env: &EnvironmentImpl, opts: RemoveOpts) -> anyhow::Result<()> {
     let log = env.get_logger();
     let project_path = opts.path;
 
     if let Err(msg) = is_chainsight_project(project_path.clone()) {
-        error!(log, r#"{}"#, msg);
-        bail!(GLOBAL_ERROR_MSG.to_string())
+        bail!(format!(r#"{}"#, msg));
     }
 
-    info!(log, r#"Removing project..."#);
-
     let res = if let Some(project_name) = project_path {
+        info!(log, r#"Remove project: {}..."#, project_name);
         fs::remove_dir_all(Path::new(&project_name))
     } else {
         // TODO: check existence of folders/files before removing
@@ -48,8 +44,7 @@ pub fn exec(env: &EnvironmentImpl, opts: RemoveOpts) -> anyhow::Result<()> {
             Ok(())
         }
         Err(err) => {
-            error!(log, r#"Fail to remove project: {}"#, err);
-            bail!(GLOBAL_ERROR_MSG.to_string())
+            bail!(format!(r#"Failed: Remove project: {}"#, err));
         }
     }
 }

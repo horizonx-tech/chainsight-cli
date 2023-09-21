@@ -5,7 +5,7 @@ use std::{
 
 use anyhow::bail;
 use clap::Parser;
-use slog::{error, info};
+use slog::info;
 
 use crate::{
     lib::{
@@ -56,8 +56,6 @@ pub struct CreateOpts {
     path: Option<String>,
 }
 
-const GLOBAL_ERROR_MSG: &str = "Fail 'Create' command";
-
 pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> anyhow::Result<()> {
     let log = env.get_logger();
     let component_name = opts.component_name;
@@ -65,11 +63,13 @@ pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> anyhow::Result<()> {
     let project_path = opts.path;
 
     if let Err(msg) = is_chainsight_project(project_path.clone()) {
-        error!(log, r#"{}"#, msg);
-        bail!(GLOBAL_ERROR_MSG.to_string())
+        bail!(format!(r#"{}"#, msg));
     }
 
-    info!(log, r#"Creating new component "{}"..."#, component_name);
+    info!(
+        log,
+        r#"Start creating new component '{}'..."#, component_name
+    );
 
     let codes = match component_type {
         ComponentType::EventIndexer => {
@@ -113,13 +113,12 @@ pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> anyhow::Result<()> {
             .iter()
             .map(|c| c.component_path.to_string())
             .collect::<Vec<String>>();
-        let duplicated_pathes = find_duplicates(&component_paths);
-        if !duplicated_pathes.is_empty() {
-            error!(
-                log,
-                r#"Duplicated component pathes found: {:?}"#, duplicated_pathes
-            );
-            bail!(GLOBAL_ERROR_MSG.to_string())
+        let duplicated_paths = find_duplicates(&component_paths);
+        if !duplicated_paths.is_empty() {
+            bail!(format!(
+                r#"Duplicated component paths found: {:?}"#,
+                duplicated_paths
+            ));
         }
     }
     //// update to .yaml
@@ -134,7 +133,7 @@ pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> anyhow::Result<()> {
 
     info!(
         log,
-        r#"{:?} component "{}" created successfully"#, component_type, component_name
+        r#"{:?} component '{}' created successfully"#, component_type, component_name
     );
 
     Ok(())
