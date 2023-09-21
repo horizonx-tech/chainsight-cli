@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "description": "Chainsight relayer specification",
+  "description": "Chainsight Relayer specification",
   "type": "object",
   "required": ["version", "metadata", "datasource", "destination", "interval"],
   "properties": {
@@ -47,7 +47,7 @@
           "items": {
             "type": "string",
             "examples": ["Ethereum", "Relayer", "Account"],
-            "pattern": "^[a-zA-Z0-9_]+$"
+            "pattern": "^[a-zA-Z0-9_-]+$"
           }
         }
       }

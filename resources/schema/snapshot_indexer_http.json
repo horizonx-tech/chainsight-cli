@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "description": "Chainsight HTTP snapshot indexer specification",
+  "description": "Chainsight HTTP Snapshot Indexer specification",
   "type": "object",
   "required": ["version", "metadata", "datasource", "storage", "interval"],
   "properties": {
@@ -47,7 +47,7 @@
           "items": {
             "type": "string",
             "examples": ["Ethereum", "Relayer", "Account"],
-            "pattern": "^[a-zA-Z0-9_]+$"
+            "pattern": "^[a-zA-Z0-9_-]+$"
           }
         }
       }
@@ -106,7 +106,7 @@
       "properties": {
         "with_timestamp": {
           "type": "boolean",
-          "title": "stored timestamp",
+          "title": "with_timestamptamp",
           "description": "whether to store the data with timestamp",
           "examples": [true]
         }
