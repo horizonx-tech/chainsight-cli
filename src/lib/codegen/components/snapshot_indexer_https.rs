@@ -62,7 +62,7 @@ impl SnapshotJsonRPCComponentManifest {
             version: version.to_owned(),
             metadata: ComponentMetadata {
                 label: label.to_owned(),
-                type_: ComponentType::SnapshotJsonRPC,
+                type_: ComponentType::SnapshotIndexerHTTPS,
                 description: description.to_owned(),
                 tags: Some(vec![
                     "coingecko".to_string(),
@@ -98,15 +98,15 @@ impl ComponentManifest for SnapshotJsonRPCComponentManifest {
         &self,
         _interface_contract: Option<ethabi::Contract>,
     ) -> anyhow::Result<TokenStream> {
-        canisters::snapshot_json_rpc::generate_codes(self)
+        canisters::snapshot_indexer_https::generate_codes(self)
     }
 
     fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
-        scripts::snapshot_json_rpc::generate_scripts(self, network)
+        scripts::snapshot_indexer_https::generate_scripts(self, network)
     }
 
     fn component_type(&self) -> ComponentType {
-        ComponentType::SnapshotJsonRPC
+        ComponentType::SnapshotIndexerHTTPS
     }
 
     fn metadata(&self) -> &ComponentMetadata {
@@ -158,8 +158,8 @@ mod tests {
         let yaml = r#"
 version: v1
 metadata:
-    label: sample_pj_snapshot_json_rpc
-    type: snapshot_json_rpc
+    label: sample_pj_snapshot_indexer_https
+    type: snapshot_indexer_https
     description: Description
     tags:
     - coingecko
@@ -185,8 +185,8 @@ interval: 3600
             SnapshotJsonRPCComponentManifest {
                 version: "v1".to_owned(),
                 metadata: ComponentMetadata {
-                    label: "sample_pj_snapshot_json_rpc".to_owned(),
-                    type_: ComponentType::SnapshotJsonRPC,
+                    label: "sample_pj_snapshot_indexer_https".to_owned(),
+                    type_: ComponentType::SnapshotIndexerHTTPS,
                     description: "Description".to_string(),
                     tags: Some(vec![
                         "coingecko".to_string(),

@@ -14,7 +14,7 @@ use crate::{
                 event_indexer::EventIndexerComponentManifest,
                 relayer::RelayerComponentManifest,
                 snapshot_indexer::SnapshotComponentManifest,
-                snapshot_json_rpc::SnapshotJsonRPCComponentManifest,
+                snapshot_indexer_https::SnapshotJsonRPCComponentManifest,
             },
             project::ProjectManifestData,
         },
@@ -94,7 +94,7 @@ pub fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
             ComponentType::AlgorithmLens => {
                 Box::new(AlgorithmLensComponentManifest::load(&component_path)?)
             }
-            ComponentType::SnapshotJsonRPC => {
+            ComponentType::SnapshotIndexerHTTPS => {
                 Box::new(SnapshotJsonRPCComponentManifest::load(&component_path)?)
             }
         };

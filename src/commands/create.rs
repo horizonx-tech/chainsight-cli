@@ -25,7 +25,9 @@ use crate::{
                 },
                 relayer::{DestinationField, RelayerComponentManifest},
                 snapshot_indexer::{SnapshotComponentManifest, SnapshotStorage},
-                snapshot_json_rpc::{SnapshotJsonRPCComponentManifest, SnapshotJsonRPCDataSource},
+                snapshot_indexer_https::{
+                    SnapshotJsonRPCComponentManifest, SnapshotJsonRPCDataSource,
+                },
             },
             project::{ProjectManifestComponentField, ProjectManifestData},
         },
@@ -85,7 +87,7 @@ pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> anyhow::Result<()> {
         ComponentType::AlgorithmLens => {
             template_algorithm_lens_manifest(&component_name).to_str_as_yaml()
         }
-        ComponentType::SnapshotJsonRPC => {
+        ComponentType::SnapshotIndexerHTTPS => {
             template_snapshot_web2_manifest(&component_name).to_str_as_yaml()
         }
     }?;

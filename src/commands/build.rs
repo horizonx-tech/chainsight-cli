@@ -14,7 +14,7 @@ use crate::lib::codegen::components::common::{ComponentManifest, ComponentTypeIn
 use crate::lib::codegen::components::event_indexer::EventIndexerComponentManifest;
 use crate::lib::codegen::components::relayer::RelayerComponentManifest;
 use crate::lib::codegen::components::snapshot_indexer::SnapshotComponentManifest;
-use crate::lib::codegen::components::snapshot_json_rpc::SnapshotJsonRPCComponentManifest;
+use crate::lib::codegen::components::snapshot_indexer_https::SnapshotJsonRPCComponentManifest;
 use crate::lib::codegen::oracle::get_oracle_attributes;
 use crate::lib::utils::{find_duplicates, ARTIFACTS_DIR};
 use crate::{
@@ -108,7 +108,7 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
             ComponentType::AlgorithmLens => {
                 Box::new(AlgorithmLensComponentManifest::load(&component_path)?)
             }
-            ComponentType::SnapshotJsonRPC => {
+            ComponentType::SnapshotIndexerHTTPS => {
                 Box::new(SnapshotJsonRPCComponentManifest::load(&component_path)?)
             }
         };

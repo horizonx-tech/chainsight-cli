@@ -1,6 +1,6 @@
 use quote::{format_ident, quote};
 
-use crate::lib::codegen::components::snapshot_json_rpc::SnapshotJsonRPCComponentManifest;
+use crate::lib::codegen::components::snapshot_indexer_https::SnapshotJsonRPCComponentManifest;
 
 use super::snapshot_indexer::generate_queries_without_timestamp;
 

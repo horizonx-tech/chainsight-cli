@@ -2,7 +2,7 @@ use anyhow::ensure;
 
 use crate::{
     lib::codegen::{
-        components::snapshot_json_rpc::SnapshotJsonRPCComponentManifest,
+        components::snapshot_indexer_https::SnapshotJsonRPCComponentManifest,
         scripts::common::{generate_command_to_set_task, init_in_env_task},
     },
     types::{ComponentType, Network},
@@ -29,7 +29,7 @@ pub fn generate_scripts(
     network: Network,
 ) -> anyhow::Result<String> {
     ensure!(
-        manifest.metadata.type_ == ComponentType::SnapshotJsonRPC,
+        manifest.metadata.type_ == ComponentType::SnapshotIndexerHTTPS,
         "type is not SnapshotJsonRPC"
     );
 

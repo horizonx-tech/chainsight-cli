@@ -222,11 +222,12 @@ Options:
           Specifies type of the component to create
 
           Possible values:
-          - event-indexer:     To synchronize event data
-          - algorithm-indexer: To get events from other indexer and convert it into another format
-          - snapshot-indexer:  To periodically take and store snapshots from Contract and other Canisters
-          - relayer:           To relay data to other blockchains
-          - algorithm-lens:    To calculate using data obtained from the specified Source and process into an arbitrary format
+          - event-indexer:          To synchronize event data
+          - algorithm-indexer:      To get events from other indexer and convert it into another format
+          - snapshot-indexer:       To periodically take and store snapshots from Contract and other Canisters
+          - snapshot-indexer-https: To periodically take and store snapshots using HTTPS Outcall
+          - relayer:                To relay data to other blockchains
+          - algorithm-lens:         To calculate using data obtained from the specified Source and process into an arbitrary format
 
   -v, --verbose...
           Displays detailed information about operations. -vv will generate a very large number of messages and can affect performance
