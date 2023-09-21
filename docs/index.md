@@ -224,7 +224,7 @@ Options:
           Possible values:
           - event-indexer:     To synchronize event data
           - algorithm-indexer: To get events from other indexer and convert it into another format
-          - snapshot:          To periodically take and store snapshots from Contract and other Canisters
+          - snapshot-indexer:  To periodically take and store snapshots from Contract and other Canisters
           - relayer:           To relay data to other blockchains
           - algorithm-lens:    To calculate using data obtained from the specified Source and process into an arbitrary format
 
@@ -382,7 +382,7 @@ The description of each component type is different, but the following is a desc
 Of particular importance is the type, which determines the Component Type, so be sure to check and set it.
 
 - `label`: String / Component name
-- `type`: Enum / Component Type (ex: snapshot)
+- `type`: Enum / Component Type (ex: snapshot_indexer)
 - `description`: String / Component description field
 
 example)
@@ -391,7 +391,7 @@ example)
 version: v1
 metadata:
   label: example_pj_snapshot_chain
-  type: snapshot
+  type: snapshot_indexer
   description: ''
   tags: ...
 ...
@@ -441,7 +441,7 @@ example)
 version: v1
 metadata:
   label: example_pj_snapshot_chain
-  type: snapshot
+  type: snapshot_indexer
   description: ''
   tags: ...
 datasource:
@@ -488,7 +488,7 @@ example)
 version: v1
 metadata:
   label: example_pj_snapshot_icp
-  type: snapshot
+  type: snapshot_indexer
   description: ''
   tags: ...
 datasource:

@@ -24,7 +24,7 @@ use crate::{
                     EventIndexerEventDefinition, SourceNetwork,
                 },
                 relayer::{DestinationField, RelayerComponentManifest},
-                snapshot::{SnapshotComponentManifest, SnapshotStorage},
+                snapshot_indexer::{SnapshotComponentManifest, SnapshotStorage},
                 snapshot_json_rpc::{SnapshotJsonRPCComponentManifest, SnapshotJsonRPCDataSource},
             },
             project::{ProjectManifestComponentField, ProjectManifestData},
@@ -78,7 +78,9 @@ pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> anyhow::Result<()> {
         ComponentType::AlgorithmIndexer => {
             template_algorithm_indexer_manifest(&component_name).to_str_as_yaml()
         }
-        ComponentType::Snapshot => template_snapshot_manifest(&component_name).to_str_as_yaml(),
+        ComponentType::SnapshotIndexer => {
+            template_snapshot_manifest(&component_name).to_str_as_yaml()
+        }
         ComponentType::Relayer => template_relayer_manifest(&component_name).to_str_as_yaml(),
         ComponentType::AlgorithmLens => {
             template_algorithm_lens_manifest(&component_name).to_str_as_yaml()

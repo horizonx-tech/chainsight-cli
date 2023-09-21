@@ -10,7 +10,7 @@ use crate::{
                 CanisterMethodIdentifier, CanisterMethodValueType, ContractMethodIdentifier,
                 OutsideCallIdentsType,
             },
-            components::{common::DatasourceType, snapshot::SnapshotComponentManifest},
+            components::{common::DatasourceType, snapshot_indexer::SnapshotComponentManifest},
         },
         utils::{convert_camel_to_snake, ADDRESS_TYPE, U256_TYPE},
     },
@@ -405,7 +405,7 @@ pub fn generate_codes(
     manifest: &SnapshotComponentManifest,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     ensure!(
-        manifest.metadata.type_ == ComponentType::Snapshot,
+        manifest.metadata.type_ == ComponentType::SnapshotIndexer,
         "type is not Snapshot"
     );
 
@@ -430,7 +430,7 @@ pub fn generate_codes(
 
 pub fn validate_manifest(manifest: &SnapshotComponentManifest) -> anyhow::Result<()> {
     ensure!(
-        manifest.metadata.type_ == ComponentType::Snapshot,
+        manifest.metadata.type_ == ComponentType::SnapshotIndexer,
         "type is not Snapshot"
     );
 

@@ -13,7 +13,7 @@ use super::{
     common::{
         custom_tags_interval_sec, ComponentManifest, ComponentMetadata, DestinationType, Sources,
     },
-    snapshot::SnapshotStorage,
+    snapshot_indexer::SnapshotStorage,
 };
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 

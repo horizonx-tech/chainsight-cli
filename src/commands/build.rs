@@ -13,7 +13,7 @@ use crate::lib::codegen::components::algorithm_lens::AlgorithmLensComponentManif
 use crate::lib::codegen::components::common::{ComponentManifest, ComponentTypeInManifest};
 use crate::lib::codegen::components::event_indexer::EventIndexerComponentManifest;
 use crate::lib::codegen::components::relayer::RelayerComponentManifest;
-use crate::lib::codegen::components::snapshot::SnapshotComponentManifest;
+use crate::lib::codegen::components::snapshot_indexer::SnapshotComponentManifest;
 use crate::lib::codegen::components::snapshot_json_rpc::SnapshotJsonRPCComponentManifest;
 use crate::lib::codegen::oracle::get_oracle_attributes;
 use crate::lib::utils::{find_duplicates, ARTIFACTS_DIR};
@@ -101,7 +101,9 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
             ComponentType::AlgorithmIndexer => {
                 Box::new(AlgorithmIndexerComponentManifest::load(&component_path)?)
             }
-            ComponentType::Snapshot => Box::new(SnapshotComponentManifest::load(&component_path)?),
+            ComponentType::SnapshotIndexer => {
+                Box::new(SnapshotComponentManifest::load(&component_path)?)
+            }
             ComponentType::Relayer => Box::new(RelayerComponentManifest::load(&component_path)?),
             ComponentType::AlgorithmLens => {
                 Box::new(AlgorithmLensComponentManifest::load(&component_path)?)

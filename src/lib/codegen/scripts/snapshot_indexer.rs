@@ -4,7 +4,7 @@ use crate::{
     lib::codegen::{
         components::{
             common::{CanisterIdType, DatasourceType},
-            snapshot::SnapshotComponentManifest,
+            snapshot_indexer::SnapshotComponentManifest,
         },
         scripts::common::{generate_command_to_set_task, init_in_env_task, network_param},
     },
@@ -124,7 +124,7 @@ pub fn generate_scripts(
     network: Network,
 ) -> anyhow::Result<String> {
     ensure!(
-        manifest.metadata.type_ == ComponentType::Snapshot,
+        manifest.metadata.type_ == ComponentType::SnapshotIndexer,
         "type is not Snapshot"
     );
 

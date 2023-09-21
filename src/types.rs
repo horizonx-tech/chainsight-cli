@@ -18,7 +18,7 @@ pub enum ComponentType {
 
     /// To periodically take and store snapshots from Contract and other Canisters
     #[serde(rename = "snapshot_indexer")]
-    Snapshot,
+    SnapshotIndexer,
 
     #[serde(rename = "snapshot_json_rpc")]
     SnapshotJsonRPC,
@@ -37,7 +37,7 @@ impl fmt::Display for ComponentType {
         match self {
             ComponentType::EventIndexer => write!(f, "event_indexer"),
             ComponentType::AlgorithmIndexer => write!(f, "algorithm_indexer"),
-            ComponentType::Snapshot => write!(f, "snapshot_indexer"),
+            ComponentType::SnapshotIndexer => write!(f, "snapshot_indexer"),
             ComponentType::Relayer => write!(f, "relayer"),
             ComponentType::AlgorithmLens => write!(f, "algorithm_lens"),
             ComponentType::SnapshotJsonRPC => write!(f, "snapshot_json_rpc"),

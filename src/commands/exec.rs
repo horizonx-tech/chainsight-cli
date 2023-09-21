@@ -13,7 +13,7 @@ use crate::{
                 common::{ComponentManifest, ComponentTypeInManifest},
                 event_indexer::EventIndexerComponentManifest,
                 relayer::RelayerComponentManifest,
-                snapshot::SnapshotComponentManifest,
+                snapshot_indexer::SnapshotComponentManifest,
                 snapshot_json_rpc::SnapshotJsonRPCComponentManifest,
             },
             project::ProjectManifestData,
@@ -87,7 +87,9 @@ pub fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
             ComponentType::AlgorithmIndexer => {
                 Box::new(AlgorithmIndexerComponentManifest::load(&component_path)?)
             }
-            ComponentType::Snapshot => Box::new(SnapshotComponentManifest::load(&component_path)?),
+            ComponentType::SnapshotIndexer => {
+                Box::new(SnapshotComponentManifest::load(&component_path)?)
+            }
             ComponentType::Relayer => Box::new(RelayerComponentManifest::load(&component_path)?),
             ComponentType::AlgorithmLens => {
                 Box::new(AlgorithmLensComponentManifest::load(&component_path)?)

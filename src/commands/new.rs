@@ -17,7 +17,7 @@ use crate::lib::{
             common::{ComponentManifest, Datasource},
             event_indexer::{EventIndexerComponentManifest, EventIndexerDatasource},
             relayer::{DestinationField, RelayerComponentManifest},
-            snapshot::{SnapshotComponentManifest, SnapshotStorage},
+            snapshot_indexer::{SnapshotComponentManifest, SnapshotStorage},
             snapshot_json_rpc::{SnapshotJsonRPCComponentManifest, SnapshotJsonRPCDataSource},
         },
         project::{ProjectManifestComponentField, ProjectManifestData},
