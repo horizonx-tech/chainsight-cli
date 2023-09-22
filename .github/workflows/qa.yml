@@ -25,6 +25,11 @@ jobs:
         run: rm -r docs/schema/* && generate-schema-doc resources/schema/ docs/schema/ --config template_name=md
       - name: push docs if changed on current branch
         uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "docs: update schema docs"
+          commit_options: "--no-verify"
+          branch: ${{ github.ref }}
+          force: true
 
   format:
     runs-on: ubuntu-latest
