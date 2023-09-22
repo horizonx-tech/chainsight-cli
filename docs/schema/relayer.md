@@ -23,7 +23,7 @@ Chainsight Relayer specification
 | [version](#version)            | `string` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-specification-version-of-the-canister.md "#/properties/version#/properties/version") |
 | [metadata](#metadata)          | `object` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-metadata.md "#/properties/metadata#/properties/metadata")                            |
 | [datasource](#datasource)      | `object` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-datasource.md "#/properties/datasource#/properties/datasource")                      |
-| [lens\_targets](#lens_targets) | `object` | Optional | cannot be null | [Chainsight Relayer specification](relayer-properties-lens_targets.md "#/properties/lens_targets#/properties/lens_targets")                |
+| [lens\_targets](#lens_targets) | `object` | Optional | cannot be null | [Chainsight Relayer specification](relayer-properties-lens-targets.md "#/properties/lens_targets#/properties/lens_targets")                |
 | [destination](#destination)    | `object` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-destination.md "#/properties/destination#/properties/destination")                   |
 | [interval](#interval)          | `number` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-interval.md "#/properties/interval#/properties/interval")                            |
 
@@ -107,15 +107,15 @@ targets for the lens. Only used when the datasource canister is a algorithm\_len
 
 *   is optional
 
-*   Type: `object` ([Details](relayer-properties-lens_targets.md))
+*   Type: `object` ([lens targets](relayer-properties-lens-targets.md))
 
 *   cannot be null
 
-*   defined in: [Chainsight Relayer specification](relayer-properties-lens_targets.md "#/properties/lens_targets#/properties/lens_targets")
+*   defined in: [Chainsight Relayer specification](relayer-properties-lens-targets.md "#/properties/lens_targets#/properties/lens_targets")
 
 ### lens\_targets Type
 
-`object` ([Details](relayer-properties-lens_targets.md))
+`object` ([lens targets](relayer-properties-lens-targets.md))
 
 ## destination
 

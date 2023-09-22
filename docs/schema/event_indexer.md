@@ -81,13 +81,13 @@ Chainsight Event Indexer specification
 
 ## datasource
 
-
+datasource for the canister
 
 `datasource`
 
 *   is required
 
-*   Type: `object` ([Details](event_indexer-properties-datasource.md))
+*   Type: `object` ([datasource](event_indexer-properties-datasource.md))
 
 *   cannot be null
 
@@ -95,7 +95,7 @@ Chainsight Event Indexer specification
 
 ### datasource Type
 
-`object` ([Details](event_indexer-properties-datasource.md))
+`object` ([datasource](event_indexer-properties-datasource.md))
 
 ## interval
 
