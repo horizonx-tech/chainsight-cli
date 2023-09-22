@@ -1,0 +1,191 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Chainsight Relayer specification",
+  "description": "Chainsight Relayer specification",
+  "type": "object",
+  "required": ["version", "metadata", "datasource", "destination", "interval"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "title": "specification version of the canister",
+      "examples": ["v1"],
+      "pattern": "^(v1)$"
+    },
+    "metadata": {
+      "title": "metadata",
+      "$comment": "metadata for the canister",
+      "type": "object",
+      "required": ["label", "type"],
+      "properties": {
+        "label": {
+          "type": "string",
+          "title": "label for the canister",
+          "examples": ["relayer_ethusd"],
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "type": {
+          "type": "string",
+          "title": "type of the canister",
+          "examples": [
+            "event_indexer",
+            "algorithm_indexer",
+            "snapshot_indexer",
+            "snapshot_json_rpc",
+            "relayer",
+            "algorithm_lens"
+          ],
+          "pattern": "^(event_indexer|algorithm_indexer|snapshot_indexer|snapshot_json_rpc|relayer|algorithm_lens)$"
+        },
+        "description": {
+          "type": "string",
+          "title": "description of the canister",
+          "description": "Can be used to filter canisters in the UI",
+          "examples": ["Relayer for ETHUSD"]
+        },
+        "tags": {
+          "type": "array",
+          "title": "tags for the canister",
+          "description": "Can be used to filter canisters in the UI",
+          "items": {
+            "type": "string",
+            "examples": ["Ethereum", "Relayer", "Account"],
+            "pattern": "^[a-zA-Z0-9_-]+$"
+          }
+        }
+      }
+    },
+    "datasource": {
+      "type": "object",
+      "required": ["type", "location", "method"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "title": "type of the datasource",
+          "description": "currently only supports 'canister'",
+          "examples": ["canister"],
+          "pattern": "^(canister)$"
+        },
+        "location": {
+          "type": "object",
+          "title": "datasource location",
+          "required": ["id", "args"],
+          "properties": {
+            "id": {
+              "type": "string",
+              "title": "canister id",
+              "description": "canister id or name of the datasource",
+              "examples": [
+                "algorithm_lens_ethusd",
+                "bw4dl-smaaa-aaaaa-qaacq-cai"
+              ],
+              "pattern": "^[a-z0-9_-]+$"
+            },
+            "args": {
+              "type": "object",
+              "title": "location arguments",
+              "required": ["id_type"],
+              "properties": {
+                "id_type": {
+                  "type": "string",
+                  "title": "type of the id",
+                  "description": "canister_name: id is interpreted as canister name, principal_id: id is interpreted as principal id",
+                  "examples": ["canister_name", "principal_id"],
+                  "pattern": "^(canister_name|principal_id)$"
+                }
+              }
+            }
+          }
+        },
+        "method": {
+          "type": "object",
+          "title": "datasource method",
+          "description": "method to call on the canister",
+          "required": ["identifier", "args"],
+          "properties": {
+            "identifier": {
+              "type": "string",
+              "title": "method identifier",
+              "description": "method identifier. You can get it from candid definition",
+              "examples": [
+                "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"
+              ]
+            },
+            "args": {
+              "type": "array",
+              "title": "method arguments",
+              "description": "array of method arguments",
+              "examples": [["bw4dl-smaaa-aaaaa-qaacq-cai", 1, "ETHUSD"], []]
+            }
+          }
+        }
+      }
+    },
+    "lens_targets": {
+      "type": "object",
+      "description": "targets for the lens. Only used when the datasource canister is a algorithm_lens",
+      "required": ["identifiers"],
+      "properties": {
+        "identifiers": {
+          "type": "array",
+          "title": "identifiers",
+          "description": "canister ids of the lens targets. If the canister calls an algorithm_lens and the lens calls 3 canisters, you must set 3 canister ids here",
+          "examples": [
+            [
+              "bw4dl-smaaa-aaaaa-qaacq-cai",
+              "bw4dl-smaaa-aaaaa-qaacq-cai",
+              "bw4dl-smaaa-aaaaa-qaacq-cai"
+            ],
+            ["bw4dl-smaaa-aaaaa-qaacq-cai"]
+          ],
+          "items": {
+            "type": "string",
+            "examples": ["bw4dl-smaaa-aaaaa-qaacq-cai"],
+            "pattern": "^[a-z0-9_-]+$"
+          }
+        }
+      }
+    },
+    "destination": {
+      "type": "object",
+      "title": "destination",
+      "description": "destination evm network and contract for the data.",
+      "required": ["network_id", "type", "oracle_address", "rpc_url"],
+      "properties": {
+        "network_id": {
+          "type": "number",
+          "title": "network id",
+          "description": "network id of the destination evm network",
+          "examples": [31337, 1, 4],
+          "pattern": "^[0-9]+$"
+        },
+        "type": {
+          "type": "string",
+          "title": "oracle type of the destination",
+          "description": "oracle type of the destination. currently we don't suport user definined oracle types",
+          "examples": ["uint256", "uint128", "uint64", "string"],
+          "pattern": "^(uint256|uint128|uint64|string)$"
+        },
+        "oracle_address": {
+          "type": "number",
+          "title": "oracle address",
+          "description": "address of the destination oracle contract",
+          "examples": ["0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"],
+          "pattern": "^(0x)?[0-9a-fA-F]{40}$"
+        },
+        "rpc_url": {
+          "type": "string",
+          "title": "rpc url",
+          "description": "rpc url of the destination evm network. only supports https",
+          "examples": ["https://rinkeby.infura.io/v3/1a2b3c4d5e"],
+          "pattern": "^https://.*$"
+        }
+      }
+    },
+    "interval": {
+      "title": "interval",
+      "description": "interval of the canister invocation in seconds",
+      "type": "number",
+      "examples": [60]
+    }
+  }
+}
