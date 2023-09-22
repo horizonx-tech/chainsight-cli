@@ -1,7 +1,7 @@
 # output Schema
 
 ```txt
-undefined#/properties/output
+#/properties/output#/properties/output
 ```
 
 array of output struct name and fields

@@ -1,7 +1,7 @@
 # url of the datasource Schema
 
 ```txt
-undefined#/properties/datasource/properties/url
+#/properties/datasource/properties/url#/properties/datasource/properties/url
 ```
 
 

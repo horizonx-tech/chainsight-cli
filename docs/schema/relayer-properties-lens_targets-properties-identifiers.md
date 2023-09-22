@@ -1,7 +1,7 @@
 # identifiers Schema
 
 ```txt
-undefined#/properties/lens_targets/properties/identifiers
+#/properties/lens_targets/properties/identifiers#/properties/lens_targets/properties/identifiers
 ```
 
 canister ids of the lens targets. If the canister calls an algorithm\_lens and the lens calls 3 canisters, you must set 3 canister ids here

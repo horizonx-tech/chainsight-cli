@@ -1,7 +1,7 @@
 # storage Schema
 
 ```txt
-undefined#/properties/storage
+#/properties/storage#/properties/storage
 ```
 
 storage properties for the canister
@@ -16,9 +16,9 @@ storage properties for the canister
 
 # storage Properties
 
-| Property                           | Type      | Required | Nullable       | Defined by                                                                                                                                                                  |
-| :--------------------------------- | :-------- | :------- | :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [with\_timestamp](#with_timestamp) | `boolean` | Required | cannot be null | [Chainsight Snapshot Indexer specification](snapshot_indexer-properties-storage-properties-with_timestamptamp.md "undefined#/properties/storage/properties/with_timestamp") |
+| Property                           | Type      | Required | Nullable       | Defined by                                                                                                                                                                                                       |
+| :--------------------------------- | :-------- | :------- | :------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [with\_timestamp](#with_timestamp) | `boolean` | Required | cannot be null | [Chainsight Snapshot Indexer specification](snapshot_indexer-properties-storage-properties-with_timestamptamp.md "#/properties/storage/properties/with_timestamp#/properties/storage/properties/with_timestamp") |
 
 ## with\_timestamp
 
@@ -32,7 +32,7 @@ whether to store the data with timestamp
 
 *   cannot be null
 
-*   defined in: [Chainsight Snapshot Indexer specification](snapshot_indexer-properties-storage-properties-with_timestamptamp.md "undefined#/properties/storage/properties/with_timestamp")
+*   defined in: [Chainsight Snapshot Indexer specification](snapshot_indexer-properties-storage-properties-with_timestamptamp.md "#/properties/storage/properties/with_timestamp#/properties/storage/properties/with_timestamp")
 
 ### with\_timestamp Type
 

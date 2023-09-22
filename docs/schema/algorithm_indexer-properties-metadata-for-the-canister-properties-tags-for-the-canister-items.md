@@ -1,7 +1,7 @@
 # Untitled string in Chainsight Event Indexer specification Schema
 
 ```txt
-undefined#/properties/metadata/properties/tags/items
+#/properties/metadata/properties/tags/items#/properties/metadata/properties/tags/items
 ```
 
 

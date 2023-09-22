@@ -1,7 +1,7 @@
 # rpc url Schema
 
 ```txt
-undefined#/properties/destination/properties/rpc_url
+#/properties/destination/properties/rpc_url#/properties/destination/properties/rpc_url
 ```
 
 rpc url of the destination evm network. only supports https

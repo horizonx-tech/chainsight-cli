@@ -1,7 +1,7 @@
 # Untitled undefined type in Chainsight HTTP Event Indexer specification Schema
 
 ```txt
-undefined#/properties/datasource/properties/headers/patternProperties
+#/properties/datasource/properties/headers#/properties/datasource/properties/headers/patternProperties
 ```
 
 

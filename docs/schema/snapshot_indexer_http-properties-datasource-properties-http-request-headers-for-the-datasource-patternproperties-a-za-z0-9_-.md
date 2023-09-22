@@ -1,7 +1,7 @@
 # Untitled string in Chainsight HTTP Event Indexer specification Schema
 
 ```txt
-undefined#/properties/datasource/properties/headers/patternProperties/^[a-zA-Z0-9_\-]+$
+#/properties/datasource/properties/headers#/properties/datasource/properties/headers/patternProperties/^[a-zA-Z0-9_\-]+$
 ```
 
 

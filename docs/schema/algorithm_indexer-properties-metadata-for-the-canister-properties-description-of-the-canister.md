@@ -1,7 +1,7 @@
 # description of the canister Schema
 
 ```txt
-undefined#/properties/metadata/properties/description
+#/properties/metadata/properties/description#/properties/metadata/properties/description
 ```
 
 Can be used to filter canisters in the UI

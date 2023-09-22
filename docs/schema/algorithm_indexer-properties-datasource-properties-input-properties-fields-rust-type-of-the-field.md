@@ -1,7 +1,7 @@
 # rust type of the field Schema
 
 ```txt
-undefined#/properties/datasource/properties/input/properties/fields/additionalProperties
+#/properties/datasource/properties/input/properties/fields#/properties/datasource/properties/input/properties/fields/additionalProperties
 ```
 
 

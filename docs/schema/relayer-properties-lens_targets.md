@@ -1,7 +1,7 @@
 # Untitled object in Chainsight Relayer specification Schema
 
 ```txt
-undefined#/properties/lens_targets
+#/properties/lens_targets#/properties/lens_targets
 ```
 
 targets for the lens. Only used when the datasource canister is a algorithm\_lens
@@ -16,9 +16,9 @@ targets for the lens. Only used when the datasource canister is a algorithm\_len
 
 # lens\_targets Properties
 
-| Property                    | Type    | Required | Nullable       | Defined by                                                                                                                                                |
-| :-------------------------- | :------ | :------- | :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [identifiers](#identifiers) | `array` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-lens_targets-properties-identifiers.md "undefined#/properties/lens_targets/properties/identifiers") |
+| Property                    | Type    | Required | Nullable       | Defined by                                                                                                                                                                                       |
+| :-------------------------- | :------ | :------- | :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [identifiers](#identifiers) | `array` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-lens_targets-properties-identifiers.md "#/properties/lens_targets/properties/identifiers#/properties/lens_targets/properties/identifiers") |
 
 ## identifiers
 
@@ -32,7 +32,7 @@ canister ids of the lens targets. If the canister calls an algorithm\_lens and t
 
 *   cannot be null
 
-*   defined in: [Chainsight Relayer specification](relayer-properties-lens_targets-properties-identifiers.md "undefined#/properties/lens_targets/properties/identifiers")
+*   defined in: [Chainsight Relayer specification](relayer-properties-lens_targets-properties-identifiers.md "#/properties/lens_targets/properties/identifiers#/properties/lens_targets/properties/identifiers")
 
 ### identifiers Type
 

@@ -1,7 +1,7 @@
 # tags for the canister Schema
 
 ```txt
-undefined#/properties/metadata/properties/tags
+#/properties/metadata/properties/tags#/properties/metadata/properties/tags
 ```
 
 Can be used to filter canisters in the UI

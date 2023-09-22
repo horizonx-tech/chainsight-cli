@@ -1,7 +1,7 @@
 # fields Schema
 
 ```txt
-undefined#/properties/datasource/properties/input/properties/fields
+#/properties/datasource/properties/input/properties/fields#/properties/datasource/properties/input/properties/fields
 ```
 
 field names and rust types of the struct
@@ -16,9 +16,9 @@ field names and rust types of the struct
 
 # fields Properties
 
-| Property              | Type     | Required | Nullable       | Defined by                                                                                                                                                                                                                                |
-| :-------------------- | :------- | :------- | :------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Additional Properties | `string` | Optional | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-input-properties-fields-rust-type-of-the-field.md "undefined#/properties/datasource/properties/input/properties/fields/additionalProperties") |
+| Property              | Type     | Required | Nullable       | Defined by                                                                                                                                                                                                                                                                                 |
+| :-------------------- | :------- | :------- | :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Additional Properties | `string` | Optional | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-input-properties-fields-rust-type-of-the-field.md "#/properties/datasource/properties/input/properties/fields#/properties/datasource/properties/input/properties/fields/additionalProperties") |
 
 ## Additional Properties
 
@@ -32,7 +32,7 @@ Additional properties are allowed, as long as they follow this schema:
 
 *   cannot be null
 
-*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-input-properties-fields-rust-type-of-the-field.md "undefined#/properties/datasource/properties/input/properties/fields/additionalProperties")
+*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-input-properties-fields-rust-type-of-the-field.md "#/properties/datasource/properties/input/properties/fields#/properties/datasource/properties/input/properties/fields/additionalProperties")
 
 ### additionalProperties Type
 

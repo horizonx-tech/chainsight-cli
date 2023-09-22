@@ -1,7 +1,7 @@
 # name of the struct Schema
 
 ```txt
-undefined#/properties/datasource/properties/input/properties/name
+#/properties/datasource/properties/input/properties/name#/properties/datasource/properties/input/properties/name
 ```
 
 

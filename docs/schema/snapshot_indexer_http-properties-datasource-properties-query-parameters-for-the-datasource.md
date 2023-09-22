@@ -1,7 +1,7 @@
 # query parameters for the datasource Schema
 
 ```txt
-undefined#/properties/datasource/properties/queries
+#/properties/datasource/properties/queries#/properties/datasource/properties/queries
 ```
 
 query parameter names and values for the datasource

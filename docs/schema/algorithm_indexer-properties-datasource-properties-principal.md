@@ -1,7 +1,7 @@
 # principal Schema
 
 ```txt
-undefined#/properties/datasource/properties/principal
+#/properties/datasource/properties/principal#/properties/datasource/properties/principal
 ```
 
 principal of the source canister

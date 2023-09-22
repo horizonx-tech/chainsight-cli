@@ -1,10 +1,12 @@
 # Chainsight Event Indexer specification Schema
 
 ```txt
-undefined
+event_indexer
 ```
 
 Chainsight Event Indexer specification
+
+> Chainsight Event Indexer specification
 
 | Abstract            | Extensible | Status         | Identifiable | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                                 |
 | :------------------ | :--------- | :------------- | :----------- | :---------------- | :-------------------- | :------------------ | :------------------------------------------------------------------------- |
@@ -16,12 +18,12 @@ Chainsight Event Indexer specification
 
 # Chainsight Event Indexer specification Properties
 
-| Property                  | Type     | Required | Nullable       | Defined by                                                                                                                                  |
-| :------------------------ | :------- | :------- | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------ |
-| [version](#version)       | `string` | Required | cannot be null | [Chainsight Event Indexer specification](event_indexer-properties-specification-version-of-the-canister.md "undefined#/properties/version") |
-| [metadata](#metadata)     | `object` | Required | cannot be null | [Chainsight Event Indexer specification](event_indexer-properties-metadata.md "undefined#/properties/metadata")                             |
-| [datasource](#datasource) | `object` | Required | cannot be null | [Chainsight Event Indexer specification](event_indexer-properties-datasource.md "undefined#/properties/datasource")                         |
-| [interval](#interval)     | `number` | Required | cannot be null | [Chainsight Event Indexer specification](event_indexer-properties-interval.md "undefined#/properties/interval")                             |
+| Property                  | Type     | Required | Nullable       | Defined by                                                                                                                                             |
+| :------------------------ | :------- | :------- | :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [version](#version)       | `string` | Required | cannot be null | [Chainsight Event Indexer specification](event_indexer-properties-specification-version-of-the-canister.md "#/properties/version#/properties/version") |
+| [metadata](#metadata)     | `object` | Required | cannot be null | [Chainsight Event Indexer specification](event_indexer-properties-metadata.md "#/properties/metadata#/properties/metadata")                            |
+| [datasource](#datasource) | `object` | Required | cannot be null | [Chainsight Event Indexer specification](event_indexer-properties-datasource.md "#/properties/datasource#/properties/datasource")                      |
+| [interval](#interval)     | `number` | Required | cannot be null | [Chainsight Event Indexer specification](event_indexer-properties-interval.md "#/properties/interval#/properties/interval")                            |
 
 ## version
 
@@ -35,7 +37,7 @@ Chainsight Event Indexer specification
 
 *   cannot be null
 
-*   defined in: [Chainsight Event Indexer specification](event_indexer-properties-specification-version-of-the-canister.md "undefined#/properties/version")
+*   defined in: [Chainsight Event Indexer specification](event_indexer-properties-specification-version-of-the-canister.md "#/properties/version#/properties/version")
 
 ### version Type
 
@@ -71,7 +73,7 @@ Chainsight Event Indexer specification
 
 *   cannot be null
 
-*   defined in: [Chainsight Event Indexer specification](event_indexer-properties-metadata.md "undefined#/properties/metadata")
+*   defined in: [Chainsight Event Indexer specification](event_indexer-properties-metadata.md "#/properties/metadata#/properties/metadata")
 
 ### metadata Type
 
@@ -89,7 +91,7 @@ Chainsight Event Indexer specification
 
 *   cannot be null
 
-*   defined in: [Chainsight Event Indexer specification](event_indexer-properties-datasource.md "undefined#/properties/datasource")
+*   defined in: [Chainsight Event Indexer specification](event_indexer-properties-datasource.md "#/properties/datasource#/properties/datasource")
 
 ### datasource Type
 
@@ -107,7 +109,7 @@ interval of the canister invocation in seconds
 
 *   cannot be null
 
-*   defined in: [Chainsight Event Indexer specification](event_indexer-properties-interval.md "undefined#/properties/interval")
+*   defined in: [Chainsight Event Indexer specification](event_indexer-properties-interval.md "#/properties/interval#/properties/interval")
 
 ### interval Type
 

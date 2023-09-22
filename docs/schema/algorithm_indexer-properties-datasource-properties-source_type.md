@@ -1,7 +1,7 @@
 # source\_type Schema
 
 ```txt
-undefined#/properties/datasource/properties/source_type
+#/properties/datasource/properties/source_type#/properties/datasource/properties/source_type
 ```
 
 type of the source canister

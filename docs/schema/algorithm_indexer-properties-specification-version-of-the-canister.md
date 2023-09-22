@@ -1,7 +1,7 @@
 # specification version of the canister Schema
 
 ```txt
-undefined#/properties/version
+#/properties/version#/properties/version
 ```
 
 

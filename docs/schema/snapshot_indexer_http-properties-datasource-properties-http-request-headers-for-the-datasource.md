@@ -1,7 +1,7 @@
 # HTTP request headers for the datasource Schema
 
 ```txt
-undefined#/properties/datasource/properties/headers
+#/properties/datasource/properties/headers#/properties/datasource/properties/headers
 ```
 
 HTTP request headers for the datasource
@@ -24,9 +24,9 @@ HTTP request headers for the datasource
 
 # headers Properties
 
-| Property            | Type     | Required | Nullable       | Defined by                                                                                                                                                                                                                                                                 |
-| :------------------ | :------- | :------- | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `^[a-zA-Z0-9_\-]+$` | `string` | Optional | cannot be null | [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-datasource-properties-http-request-headers-for-the-datasource-patternproperties-a-za-z0-9_-.md "undefined#/properties/datasource/properties/headers/patternProperties/^\[a-zA-Z0-9_\\-]+$") |
+| Property            | Type     | Required | Nullable       | Defined by                                                                                                                                                                                                                                                                                                  |
+| :------------------ | :------- | :------- | :------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `^[a-zA-Z0-9_\-]+$` | `string` | Optional | cannot be null | [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-datasource-properties-http-request-headers-for-the-datasource-patternproperties-a-za-z0-9_-.md "#/properties/datasource/properties/headers#/properties/datasource/properties/headers/patternProperties/^\[a-zA-Z0-9_\\-]+$") |
 
 ## Pattern: `^[a-zA-Z0-9_\-]+$`
 
@@ -40,7 +40,7 @@ HTTP request headers for the datasource
 
 *   cannot be null
 
-*   defined in: [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-datasource-properties-http-request-headers-for-the-datasource-patternproperties-a-za-z0-9_-.md "undefined#/properties/datasource/properties/headers/patternProperties/^\[a-zA-Z0-9_\\-]+$")
+*   defined in: [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-datasource-properties-http-request-headers-for-the-datasource-patternproperties-a-za-z0-9_-.md "#/properties/datasource/properties/headers#/properties/datasource/properties/headers/patternProperties/^\[a-zA-Z0-9_\\-]+$")
 
 ### ^\[a-zA-Z0-9\_\\-]+$ Type
 
