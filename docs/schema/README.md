@@ -22,8 +22,6 @@
 
 *   [Untitled object in Chainsight HTTP Event Indexer specification](./snapshot_indexer_http-properties-datasource.md) – `snapshot_indexer_http#/properties/datasource`
 
-*   [Untitled object in Chainsight Relayer specification](./relayer-properties-lens_targets.md "targets for the lens") – `#/properties/lens_targets#/properties/lens_targets`
-
 *   [datasource](./algorithm_indexer-properties-datasource.md) – `#/properties/datasource#/properties/datasource`
 
 *   [destination](./relayer-properties-destination.md "destination evm network and contract for the data") – `#/properties/destination#/properties/destination`
@@ -33,6 +31,8 @@
 *   [fields](./algorithm_indexer-properties-output-output-struct-properties-fields.md "field names and rust types of the struct") – `#/properties/output/items/properties/fields#/properties/output/items/properties/fields`
 
 *   [input](./algorithm_indexer-properties-datasource-properties-input.md "struct retrived from the source canister") – `#/properties/datasource/properties/input#/properties/datasource/properties/input`
+
+*   [lens targets](./relayer-properties-lens-targets.md "targets for the lens") – `#/properties/lens_targets#/properties/lens_targets`
 
 *   [metadata for the canister](./algorithm_indexer-properties-metadata-for-the-canister.md) – `#/properties/metadata#/properties/metadata`
 
@@ -44,7 +44,7 @@
 
 ### Arrays
 
-*   [identifiers](./relayer-properties-lens_targets-properties-identifiers.md "canister ids of the lens targets") – `#/properties/lens_targets/properties/identifiers#/properties/lens_targets/properties/identifiers`
+*   [identifiers](./relayer-properties-lens-targets-properties-identifiers.md "canister ids of the lens targets") – `#/properties/lens_targets/properties/identifiers#/properties/lens_targets/properties/identifiers`
 
 *   [output](./algorithm_indexer-properties-output.md "array of output struct name and fields") – `#/properties/output#/properties/output`
 
