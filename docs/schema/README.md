@@ -8,7 +8,7 @@
 
 *   [Chainsight Event Indexer specification](./event_indexer.md "Chainsight Event Indexer specification") – `https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/event_indexer.json`
 
-*   [Chainsight HTTP Event Indexer specification](./snapshot_indexer_http.md "Chainsight HTTP Snapshot Indexer specification") – `https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/snapshot_indexer_http.json`
+*   [Chainsight HTTPS Snapshot Indexer specification](./snapshot_indexer_https.md "Chainsight HTTPS Snapshot Indexer specification") – `https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/snapshot_indexer_https.json`
 
 *   [Chainsight Relayer specification](./relayer.md "Chainsight Relayer specification") – `https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/relayer.json`
 
@@ -18,9 +18,9 @@
 
 ### Objects
 
-*   [HTTP request headers for the datasource](./snapshot_indexer_http-properties-datasource-properties-http-request-headers-for-the-datasource.md "HTTP request headers for the datasource") – `#/properties/datasource/properties/headers#/properties/datasource/properties/headers`
+*   [HTTP request headers for the datasource](./snapshot_indexer_https-properties-datasource-properties-http-request-headers-for-the-datasource.md "HTTP request headers for the datasource") – `#/properties/datasource/properties/headers#/properties/datasource/properties/headers`
 
-*   [Untitled object in Chainsight HTTP Event Indexer specification](./snapshot_indexer_http-properties-datasource.md) – `https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/snapshot_indexer_http.json#/properties/datasource`
+*   [Untitled object in Chainsight HTTPS Snapshot Indexer specification](./snapshot_indexer_https-properties-datasource.md) – `https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/snapshot_indexer_https.json#/properties/datasource`
 
 *   [datasource](./algorithm_indexer-properties-datasource.md) – `#/properties/datasource#/properties/datasource`
 
@@ -38,7 +38,7 @@
 
 *   [output struct](./algorithm_indexer-properties-output-output-struct.md) – `#/properties/output/items#/properties/output/items`
 
-*   [query parameters for the datasource](./snapshot_indexer_http-properties-datasource-properties-query-parameters-for-the-datasource.md "query parameter names and values for the datasource") – `#/properties/datasource/properties/queries#/properties/datasource/properties/queries`
+*   [query parameters for the datasource](./snapshot_indexer_https-properties-datasource-properties-query-parameters-for-the-datasource.md "query parameter names and values for the datasource") – `#/properties/datasource/properties/queries#/properties/datasource/properties/queries`
 
 *   [storage](./snapshot_indexer-properties-storage.md "storage properties for the canister") – `#/properties/storage#/properties/storage`
 
