@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Chainsight HTTP Event Indexer specification",
+  "$comment": "Chainsight HTTP Event Indexer specification",
   "description": "Chainsight HTTP Snapshot Indexer specification",
   "type": "object",
   "required": ["version", "metadata", "datasource", "storage", "interval"],

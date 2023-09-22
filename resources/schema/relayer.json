@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Chainsight Relayer specification",
+  "$comment": "Chainsight Relayer specification",
   "description": "Chainsight Relayer specification",
   "type": "object",
   "required": ["version", "metadata", "datasource", "destination", "interval"],

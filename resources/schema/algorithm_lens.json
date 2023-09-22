@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Chainsight Algorithm Lens specification",
+  "$comment": "Chainsight Algorithm Lens specification",
   "description": "Chainsight Algorithm Lens specification",
   "type": "object",
   "required": ["version", "metadata", "datasource", "output"],
