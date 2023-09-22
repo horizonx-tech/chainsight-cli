@@ -201,6 +201,8 @@ impl Default for AlgorithmLensDataSource {
 
 #[cfg(test)]
 mod tests {
+    use jsonschema::JSONSchema;
+
     use super::*;
 
     #[test]
@@ -258,5 +260,13 @@ output:
                 },
             }
         );
+        let schema = serde_json::from_str(include_str!(
+            "../../../../resources/schema/algorithm_lens.json"
+        ))
+        .expect("Invalid json");
+        let instance = serde_yaml::from_str(yaml).expect("Invalid yaml");
+        let compiled = JSONSchema::compile(&schema).expect("Invalid schema");
+        let result = compiled.validate(&instance);
+        assert!(result.is_ok());
     }
 }

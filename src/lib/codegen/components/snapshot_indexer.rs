@@ -167,6 +167,8 @@ impl Default for SnapshotStorage {
 
 #[cfg(test)]
 mod tests {
+    use jsonschema::JSONSchema;
+
     use crate::lib::codegen::components::common::{
         CanisterIdType, DatasourceLocation, DatasourceMethod, DatasourceType,
     };
@@ -254,7 +256,6 @@ datasource:
             id_type: canister_name
     method:
         identifier: 'get_last_snapshot : () -> (record { value : text; timestamp : nat64 })'
-        interface: null
         args: []
 storage:
     with_timestamp: true
@@ -295,5 +296,13 @@ interval: 3600
                 interval: 3600
             }
         );
+        let schema = serde_json::from_str(include_str!(
+            "../../../../resources/schema/snapshot_indexer.json"
+        ))
+        .expect("Invalid json");
+        let instance = serde_yaml::from_str(yaml).expect("Invalid yaml");
+        let compiled = JSONSchema::compile(&schema).expect("Invalid schema");
+        let result = compiled.validate(&instance);
+        assert!(result.is_ok());
     }
 }

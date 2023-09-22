@@ -1,0 +1,191 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/algorithm_lens.json",
+  "title": "Chainsight Algorithm Lens specification",
+  "$comment": "Chainsight Algorithm Lens specification",
+  "description": "Chainsight Algorithm Lens specification",
+  "type": "object",
+  "required": ["version", "metadata", "datasource", "output"],
+  "properties": {
+    "version": {
+      "$id": "#/properties/version",
+      "type": "string",
+      "title": "specification version of the canister",
+      "examples": ["v1"],
+      "pattern": "^(v1)$"
+    },
+    "metadata": {
+      "$id": "#/properties/metadata",
+      "title": "metadata",
+      "$comment": "metadata for the canister",
+      "type": "object",
+      "required": ["label", "type"],
+      "properties": {
+        "label": {
+          "$id": "#/properties/metadata/properties/label",
+          "type": "string",
+          "title": "label for the canister",
+          "examples": ["relayer_ethusd"],
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "type": {
+          "$id": "#/properties/metadata/properties/type",
+          "type": "string",
+          "title": "type of the canister",
+          "examples": [
+            "event_indexer",
+            "algorithm_indexer",
+            "snapshot_indexer",
+            "snapshot_json_rpc",
+            "relayer",
+            "algorithm_lens"
+          ],
+          "pattern": "^(event_indexer|algorithm_indexer|snapshot_indexer|snapshot_json_rpc|relayer|algorithm_lens)$"
+        },
+        "description": {
+          "$id": "#/properties/metadata/properties/description",
+          "type": "string",
+          "title": "description of the canister",
+          "description": "Can be used to filter canisters in the UI",
+          "examples": ["Relayer for ETHUSD"]
+        },
+        "tags": {
+          "$id": "#/properties/metadata/properties/tags",
+          "type": "array",
+          "title": "tags for the canister",
+          "description": "Can be used to filter canisters in the UI",
+          "items": {
+            "type": "string",
+            "examples": ["Ethereum", "Relayer", "Account"],
+            "pattern": "^[a-zA-Z0-9_-]+$"
+          }
+        }
+      }
+    },
+    "datasource": {
+      "$id": "#/properties/datasource",
+      "type": "object",
+      "required": ["methods"],
+      "properties": {
+        "methods": {
+          "$id": "#/properties/datasource/properties/methods",
+          "type": "array",
+          "title": "methods",
+          "description": "methods to call on the callee canisters",
+          "items": {
+            "$id": "#/properties/datasource/properties/methods/items",
+            "type": "object",
+            "title": "method",
+            "description": "method to call on the callee canister",
+            "required": ["label", "identifier", "candid_file_path"],
+            "properties": {
+              "label": {
+                "$id": "#/properties/datasource/properties/methods/items/properties/label",
+                "title": "label",
+                "description": "label of this method",
+                "examples": [
+                  "get_ethusd_price_from_coingecko",
+                  "get_ethusd_price_from_chainlink"
+                ],
+                "type": "string",
+                "pattern": "^[a-z0-9_]+$"
+              },
+              "identifier": {
+                "$id": "#/properties/datasource/properties/methods/items/properties/identifier",
+                "title": "identifier",
+                "description": "method identifier of the canister to call. You can find it in the candid file",
+                "examples": ["get_last_snapshot_value : () -> (SnapshotValue)"],
+                "type": "string"
+              },
+              "candid_file_path": {
+                "$id": "#/properties/datasource/properties/methods/items/properties/candid_file_path",
+                "title": "candid_file_path",
+                "description": "path to the candid file of the canister to call",
+                "examples": ["artifacts/chainlink/src/chainlink.did"],
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "output": {
+      "$id": "#/properties/output",
+      "title": "output",
+      "description": "output of the algorithm lens",
+      "type": "object",
+      "required": ["type"],
+      "dependencies": {
+        "type": {
+          "oneOf": [
+            {
+              "properties": {
+                "type": {
+                  "$id": "#/properties/output/properties/type",
+                  "enum": ["primitive"]
+                },
+                "type_name": {
+                  "$id": "#/properties/output/properties/type_name",
+                  "type": "string"
+                }
+              },
+              "required": ["type_name"]
+            },
+            {
+              "properties": {
+                "type": {
+                  "$id": "#/properties/output/properties/type",
+                  "enum": ["struct"]
+                },
+                "name": {
+                  "$id": "#/properties/output/properties/name",
+                  "type": "string"
+                },
+                "fields": {
+                  "$id": "#/properties/output/properties/fields",
+                  "type": "object"
+                }
+              },
+              "required": ["name", "fields"]
+            }
+          ]
+        }
+      },
+      "properties": {
+        "type": {
+          "$id": "#/properties/output/properties/type",
+          "title": "type",
+          "description": "type of the output. You can use primitive type of Rust or User defined struct",
+          "examples": ["primitive", "struct"],
+          "type": "string",
+          "pattern": "^(primitive|struct)$"
+        },
+        "type_name": {
+          "$id": "#/properties/output/properties/type_name",
+          "title": "type_name",
+          "description": "primitive type name. Required if 'output.type' is 'primitive'",
+          "examples": ["u128", "String", "bool"],
+          "type": "string"
+        },
+        "name": {
+          "$id": "#/properties/output/properties/name",
+          "title": "name",
+          "description": "name of the output struct. Required if 'output.type' is 'struct'",
+          "examples": ["ETHUSDPrice"],
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_]+$"
+        },
+        "fields": {
+          "$id": "#/properties/output/properties/fields",
+          "title": "fields",
+          "description": "set of field names and their Rust types. Required if 'output.type' is 'struct'",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "examples": ["u128", "String", "bool"]
+          }
+        }
+      }
+    }
+  }
+}

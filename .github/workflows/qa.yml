@@ -7,6 +7,20 @@ on:
 env:
   RUST_VERSION: 1.67.1
 jobs:
+  doc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the source code
+        uses: actions/checkout@v3
+      - name: Check if npm is installed
+        run: npm --version
+      - name: install @adobe/jsonschema2md
+        run: npm install -g @adobe/jsonschema2md
+      - name: Generate docs
+        run: jsonschema2md -d ./resources/schema/ -e json -o docs/schema/
+      - name: push docs if changed on current branch
+        uses: stefanzweifel/git-auto-commit-action@v4
+
   format:
     runs-on: ubuntu-latest
     steps:
