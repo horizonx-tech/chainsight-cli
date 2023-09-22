@@ -7,6 +7,32 @@ on:
 env:
   RUST_VERSION: 1.67.1
 jobs:
+  doc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the source code
+        uses: actions/checkout@v3
+      - name: Check if pip is installed
+        run: |
+          pip3 --version
+      - name: Install json-schema-for-humans
+        run: |
+          pip3 install json-schema-for-humans
+      - name: Generate docs
+        run: |
+          generate-schema-doc ./resources/schema/ ./docs/
+      - name: push docs if changed on current branch
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "docs: update docs"
+          commit_options: "--no-verify --signoff"
+          file_pattern: docs/
+          branch: ${{ github.ref }}
+          repository: ${{ github.repository }}
+          commit_user_name: ${{ github.actor }}
+          commit_user_email: ${{ github.actor }}@users.noreply.github.com
+          commit_author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+
   format:
     runs-on: ubuntu-latest
     steps:
