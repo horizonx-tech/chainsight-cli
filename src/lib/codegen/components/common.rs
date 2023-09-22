@@ -39,8 +39,8 @@ pub enum SourceType {
     Evm,
     #[serde(rename = "chainsight")]
     Chainsight,
-    #[serde(rename = "json_rpc")]
-    JsonRpc,
+    #[serde(rename = "https")]
+    HTTPS,
 }
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 
