@@ -136,7 +136,7 @@ impl ComponentManifest for SnapshotIndexerHTTPSComponentManifest {
     fn get_sources(&self) -> Sources {
         Sources {
             source: self.datasource.url.clone(),
-            source_type: SourceType::HTTPS,
+            source_type: SourceType::Https,
             attributes: HashMap::new(),
         }
     }
