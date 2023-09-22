@@ -215,7 +215,7 @@ interval: 3600
             }
         );
         let schema = serde_json::from_str(include_str!(
-            "../../../../resources/schema/snapshot_indexer_http.json"
+            "../../../../resources/schema/snapshot_indexer_https.json"
         ))
         .expect("Invalid json");
         let instance = serde_yaml::from_str(yaml).expect("Invalid yaml");

@@ -1,9 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/snapshot_indexer_http.json",
-  "title": "Chainsight HTTP Event Indexer specification",
-  "$comment": "Chainsight HTTP Event Indexer specification",
-  "description": "Chainsight HTTP Snapshot Indexer specification",
+  "$id": "https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/snapshot_indexer_https.json",
+  "title": "Chainsight HTTPS Snapshot Indexer specification",
+  "$comment": "Chainsight HTTPS Snapshot Indexer specification",
+  "description": "Chainsight HTTPS Snapshot Indexer specification",
   "type": "object",
   "required": ["version", "metadata", "datasource", "storage", "interval"],
   "properties": {
@@ -36,11 +36,11 @@
             "event_indexer",
             "algorithm_indexer",
             "snapshot_indexer",
-            "snapshot_json_rpc",
+            "snapshot_indexer_https",
             "relayer",
             "algorithm_lens"
           ],
-          "pattern": "^(event_indexer|algorithm_indexer|snapshot_indexer|snapshot_json_rpc|relayer|algorithm_lens)$"
+          "pattern": "^(event_indexer|algorithm_indexer|snapshot_indexer|snapshot_indexer_https|relayer|algorithm_lens)$"
         },
         "description": {
           "$id": "#/properties/metadata/properties/description",
