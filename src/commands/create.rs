@@ -24,9 +24,9 @@ use crate::{
                     EventIndexerEventDefinition, SourceNetwork,
                 },
                 relayer::{DestinationField, RelayerComponentManifest},
-                snapshot_indexer::{SnapshotComponentManifest, SnapshotStorage},
+                snapshot_indexer::{SnapshotIndexerComponentManifest, SnapshotStorage},
                 snapshot_indexer_https::{
-                    SnapshotJsonRPCComponentManifest, SnapshotJsonRPCDataSource,
+                    SnapshotIndexerHTTPSComponentManifest, SnapshotIndexerHTTPSDataSource,
                 },
             },
             project::{ProjectManifestComponentField, ProjectManifestData},
@@ -173,8 +173,8 @@ fn template_algorithm_indexer_manifest(component_name: &str) -> AlgorithmIndexer
     )
 }
 
-fn template_snapshot_manifest(component_name: &str) -> SnapshotComponentManifest {
-    SnapshotComponentManifest::new(
+fn template_snapshot_manifest(component_name: &str) -> SnapshotIndexerComponentManifest {
+    SnapshotIndexerComponentManifest::new(
         component_name,
         "",
         PROJECT_MANIFEST_VERSION,
@@ -204,12 +204,12 @@ fn template_algorithm_lens_manifest(component_name: &str) -> AlgorithmLensCompon
         AlgorithmLensOutput::default(),
     )
 }
-fn template_snapshot_web2_manifest(component_name: &str) -> SnapshotJsonRPCComponentManifest {
-    SnapshotJsonRPCComponentManifest::new(
+fn template_snapshot_web2_manifest(component_name: &str) -> SnapshotIndexerHTTPSComponentManifest {
+    SnapshotIndexerHTTPSComponentManifest::new(
         component_name,
         "",
         PROJECT_MANIFEST_VERSION,
-        SnapshotJsonRPCDataSource::default(),
+        SnapshotIndexerHTTPSDataSource::default(),
         SnapshotStorage::default(),
         3600,
     )

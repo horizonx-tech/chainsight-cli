@@ -17,12 +17,12 @@ use super::{
 };
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 
-pub struct SnapshotJsonRPCDataSource {
+pub struct SnapshotIndexerHTTPSDataSource {
     pub url: String,
     pub headers: HashMap<String, String>,
     pub queries: HashMap<String, String>,
 }
-impl Default for SnapshotJsonRPCDataSource {
+impl Default for SnapshotIndexerHTTPSDataSource {
     fn default() -> Self {
         Self {
             url: "https://api.coingecko.com/api/v3/simple/price".to_string(),
@@ -41,20 +41,20 @@ impl Default for SnapshotJsonRPCDataSource {
 
 /// Component Manifest: Snapshot
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-pub struct SnapshotJsonRPCComponentManifest {
+pub struct SnapshotIndexerHTTPSComponentManifest {
     pub version: String,
     pub metadata: ComponentMetadata,
-    pub datasource: SnapshotJsonRPCDataSource,
+    pub datasource: SnapshotIndexerHTTPSDataSource,
     pub storage: SnapshotStorage,
     pub interval: u32,
 }
 
-impl SnapshotJsonRPCComponentManifest {
+impl SnapshotIndexerHTTPSComponentManifest {
     pub fn new(
         label: &str,
         description: &str,
         version: &str,
-        datasource: SnapshotJsonRPCDataSource,
+        datasource: SnapshotIndexerHTTPSDataSource,
         storage: SnapshotStorage,
         interval: u32,
     ) -> Self {
@@ -76,7 +76,7 @@ impl SnapshotJsonRPCComponentManifest {
         }
     }
 }
-impl ComponentManifest for SnapshotJsonRPCComponentManifest {
+impl ComponentManifest for SnapshotIndexerHTTPSComponentManifest {
     fn load(path: &str) -> anyhow::Result<Self> {
         let mut file = OpenOptions::new().read(true).open(Path::new(path))?;
         let mut contents = String::new();
@@ -179,12 +179,12 @@ storage:
 interval: 3600
         "#;
 
-        let result = serde_yaml::from_str::<SnapshotJsonRPCComponentManifest>(yaml);
+        let result = serde_yaml::from_str::<SnapshotIndexerHTTPSComponentManifest>(yaml);
         assert!(result.is_ok());
         let component = result.unwrap();
         assert_eq!(
             component,
-            SnapshotJsonRPCComponentManifest {
+            SnapshotIndexerHTTPSComponentManifest {
                 version: "v1".to_owned(),
                 metadata: ComponentMetadata {
                     label: "sample_pj_snapshot_indexer_https".to_owned(),
@@ -196,7 +196,7 @@ interval: 3600
                         "USD".to_string()
                     ])
                 },
-                datasource: SnapshotJsonRPCDataSource {
+                datasource: SnapshotIndexerHTTPSDataSource {
                     url: "https://api.coingecko.com/api/v3/simple/price".to_string(),
                     headers: vec![("content-type".to_string(), "application/json".to_string())]
                         .into_iter()

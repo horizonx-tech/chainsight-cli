@@ -4,7 +4,7 @@ use crate::{
     lib::codegen::{
         components::{
             common::{CanisterIdType, DatasourceType},
-            snapshot_indexer::SnapshotComponentManifest,
+            snapshot_indexer::SnapshotIndexerComponentManifest,
         },
         scripts::common::{generate_command_to_set_task, init_in_env_task, network_param},
     },
@@ -31,7 +31,10 @@ fn generate_command_to_setup_for_canister(
         target_canister
     )
 }
-fn script_contents_for_canister(manifest: &SnapshotComponentManifest, network: Network) -> String {
+fn script_contents_for_canister(
+    manifest: &SnapshotIndexerComponentManifest,
+    network: Network,
+) -> String {
     let setup_contents = generate_command_to_setup_for_canister(
         &manifest.metadata.label,
         &manifest.datasource.location.id,
@@ -87,7 +90,10 @@ fn generate_command_to_setup_for_contract(
         ecdsa_key_id
     )
 }
-fn script_contents_for_contract(manifest: &SnapshotComponentManifest, network: Network) -> String {
+fn script_contents_for_contract(
+    manifest: &SnapshotIndexerComponentManifest,
+    network: Network,
+) -> String {
     let datasrc_location_args = manifest.datasource.location.args.clone();
 
     let setup_contents = generate_command_to_setup_for_contract(
@@ -120,12 +126,12 @@ fn script_contents_for_contract(manifest: &SnapshotComponentManifest, network: N
 }
 
 pub fn generate_scripts(
-    manifest: &SnapshotComponentManifest,
+    manifest: &SnapshotIndexerComponentManifest,
     network: Network,
 ) -> anyhow::Result<String> {
     ensure!(
         manifest.metadata.type_ == ComponentType::SnapshotIndexer,
-        "type is not Snapshot"
+        "type is not SnapshotIndexer"
     );
 
     let contents = match manifest.datasource.type_ {

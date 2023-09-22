@@ -13,8 +13,8 @@ use crate::{
                 common::{ComponentManifest, ComponentTypeInManifest},
                 event_indexer::EventIndexerComponentManifest,
                 relayer::RelayerComponentManifest,
-                snapshot_indexer::SnapshotComponentManifest,
-                snapshot_indexer_https::SnapshotJsonRPCComponentManifest,
+                snapshot_indexer::SnapshotIndexerComponentManifest,
+                snapshot_indexer_https::SnapshotIndexerHTTPSComponentManifest,
             },
             project::ProjectManifestData,
         },
@@ -88,15 +88,15 @@ pub fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
                 Box::new(AlgorithmIndexerComponentManifest::load(&component_path)?)
             }
             ComponentType::SnapshotIndexer => {
-                Box::new(SnapshotComponentManifest::load(&component_path)?)
+                Box::new(SnapshotIndexerComponentManifest::load(&component_path)?)
             }
             ComponentType::Relayer => Box::new(RelayerComponentManifest::load(&component_path)?),
             ComponentType::AlgorithmLens => {
                 Box::new(AlgorithmLensComponentManifest::load(&component_path)?)
             }
-            ComponentType::SnapshotIndexerHTTPS => {
-                Box::new(SnapshotJsonRPCComponentManifest::load(&component_path)?)
-            }
+            ComponentType::SnapshotIndexerHTTPS => Box::new(
+                SnapshotIndexerHTTPSComponentManifest::load(&component_path)?,
+            ),
         };
         component_data.push(data);
     }

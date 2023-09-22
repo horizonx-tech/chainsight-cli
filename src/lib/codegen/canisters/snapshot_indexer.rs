@@ -10,7 +10,9 @@ use crate::{
                 CanisterMethodIdentifier, CanisterMethodValueType, ContractMethodIdentifier,
                 OutsideCallIdentsType,
             },
-            components::{common::DatasourceType, snapshot_indexer::SnapshotComponentManifest},
+            components::{
+                common::DatasourceType, snapshot_indexer::SnapshotIndexerComponentManifest,
+            },
         },
         utils::{convert_camel_to_snake, ADDRESS_TYPE, U256_TYPE},
     },
@@ -40,7 +42,7 @@ fn common_codes_for_contract() -> proc_macro2::TokenStream {
 }
 
 fn custom_codes_for_contract(
-    manifest: &SnapshotComponentManifest,
+    manifest: &SnapshotIndexerComponentManifest,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     let label = &manifest.metadata.label;
     let method = &manifest.datasource.method;
@@ -218,7 +220,7 @@ fn common_codes_for_canister() -> proc_macro2::TokenStream {
 }
 
 fn custom_codes_for_canister(
-    manifest: &SnapshotComponentManifest,
+    manifest: &SnapshotIndexerComponentManifest,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     let label = &manifest.metadata.label;
     let method = &manifest.datasource.method;
@@ -402,11 +404,11 @@ fn custom_codes_for_canister(
 }
 
 pub fn generate_codes(
-    manifest: &SnapshotComponentManifest,
+    manifest: &SnapshotIndexerComponentManifest,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     ensure!(
         manifest.metadata.type_ == ComponentType::SnapshotIndexer,
-        "type is not Snapshot"
+        "type is not SnapshotIndexer"
     );
 
     let (common_code_token, custom_code_token) = match manifest.datasource.type_ {
@@ -428,10 +430,10 @@ pub fn generate_codes(
     Ok(code)
 }
 
-pub fn validate_manifest(manifest: &SnapshotComponentManifest) -> anyhow::Result<()> {
+pub fn validate_manifest(manifest: &SnapshotIndexerComponentManifest) -> anyhow::Result<()> {
     ensure!(
         manifest.metadata.type_ == ComponentType::SnapshotIndexer,
-        "type is not Snapshot"
+        "type is not SnapshotIndexer"
     );
 
     let datasource = &manifest.datasource;

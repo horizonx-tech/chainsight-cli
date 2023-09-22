@@ -20,7 +20,7 @@ use super::{
 
 /// Component Manifest: Snapshot
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-pub struct SnapshotComponentManifest {
+pub struct SnapshotIndexerComponentManifest {
     pub version: String,
     pub metadata: ComponentMetadata,
     pub datasource: Datasource,
@@ -34,7 +34,7 @@ pub struct LensTarget {
     pub identifiers: Vec<String>,
 }
 
-impl SnapshotComponentManifest {
+impl SnapshotIndexerComponentManifest {
     pub fn new(
         label: &str,
         description: &str,
@@ -62,7 +62,7 @@ impl SnapshotComponentManifest {
         }
     }
 }
-impl ComponentManifest for SnapshotComponentManifest {
+impl ComponentManifest for SnapshotIndexerComponentManifest {
     fn load(path: &str) -> anyhow::Result<Self> {
         let mut file = OpenOptions::new().read(true).open(Path::new(path))?;
         let mut contents = String::new();
@@ -202,12 +202,12 @@ storage:
 interval: 3600
         "#;
 
-        let result = serde_yaml::from_str::<SnapshotComponentManifest>(yaml);
+        let result = serde_yaml::from_str::<SnapshotIndexerComponentManifest>(yaml);
         assert!(result.is_ok());
         let component = result.unwrap();
         assert_eq!(
             component,
-            SnapshotComponentManifest {
+            SnapshotIndexerComponentManifest {
                 version: "v1".to_owned(),
                 metadata: ComponentMetadata {
                     label: "sample_pj_snapshot_chain".to_owned(),
@@ -262,12 +262,12 @@ storage:
 interval: 3600
         "#;
 
-        let result = serde_yaml::from_str::<SnapshotComponentManifest>(yaml);
+        let result = serde_yaml::from_str::<SnapshotIndexerComponentManifest>(yaml);
         assert!(result.is_ok());
         let component = result.unwrap();
         assert_eq!(
             component,
-            SnapshotComponentManifest {
+            SnapshotIndexerComponentManifest {
                 version: "v1".to_owned(),
                 metadata: ComponentMetadata {
                     label: "sample_pj_snapshot_icp".to_owned(),

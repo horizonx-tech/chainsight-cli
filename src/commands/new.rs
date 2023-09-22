@@ -17,8 +17,10 @@ use crate::lib::{
             common::{ComponentManifest, Datasource},
             event_indexer::{EventIndexerComponentManifest, EventIndexerDatasource},
             relayer::{DestinationField, RelayerComponentManifest},
-            snapshot_indexer::{SnapshotComponentManifest, SnapshotStorage},
-            snapshot_indexer_https::{SnapshotJsonRPCComponentManifest, SnapshotJsonRPCDataSource},
+            snapshot_indexer::{SnapshotIndexerComponentManifest, SnapshotStorage},
+            snapshot_indexer_https::{
+                SnapshotIndexerHTTPSComponentManifest, SnapshotIndexerHTTPSDataSource,
+            },
         },
         project::{ProjectManifestComponentField, ProjectManifestData},
     },
@@ -144,8 +146,8 @@ fn template_algorithm_indexer_manifest(project_name: &str) -> AlgorithmIndexerCo
     )
 }
 
-fn template_snapshot_chain_manifest(project_name: &str) -> SnapshotComponentManifest {
-    SnapshotComponentManifest::new(
+fn template_snapshot_chain_manifest(project_name: &str) -> SnapshotIndexerComponentManifest {
+    SnapshotIndexerComponentManifest::new(
         &format!("{}_snapshot_chain", project_name),
         "",
         PROJECT_MANIFEST_VERSION,
@@ -155,8 +157,8 @@ fn template_snapshot_chain_manifest(project_name: &str) -> SnapshotComponentMani
     )
 }
 
-fn template_snapshot_icp_manifest(project_name: &str) -> SnapshotComponentManifest {
-    SnapshotComponentManifest::new(
+fn template_snapshot_icp_manifest(project_name: &str) -> SnapshotIndexerComponentManifest {
+    SnapshotIndexerComponentManifest::new(
         &format!("{}_snapshot_icp", project_name),
         "",
         PROJECT_MANIFEST_VERSION,
@@ -168,12 +170,12 @@ fn template_snapshot_icp_manifest(project_name: &str) -> SnapshotComponentManife
 
 fn template_snapshot_indexer_https_manifest(
     project_name: &str,
-) -> SnapshotJsonRPCComponentManifest {
-    SnapshotJsonRPCComponentManifest::new(
+) -> SnapshotIndexerHTTPSComponentManifest {
+    SnapshotIndexerHTTPSComponentManifest::new(
         &format!("{}_snapshot_indexer_https", project_name),
         "",
         PROJECT_MANIFEST_VERSION,
-        SnapshotJsonRPCDataSource::default(),
+        SnapshotIndexerHTTPSDataSource::default(),
         SnapshotStorage::default(),
         3600,
     )
