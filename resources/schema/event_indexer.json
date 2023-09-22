@@ -63,6 +63,8 @@
       }
     },
     "datasource": {
+      "title": "datasource",
+      "description": "datasource for the canister",
       "$id": "#/properties/datasource",
       "type": "object",
       "required": ["id", "event", "network", "from"],
