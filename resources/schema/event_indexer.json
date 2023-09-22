@@ -1,5 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Chainsight Event Indexer specification",
   "description": "Chainsight Event Indexer specification",
   "type": "object",
   "required": ["version", "metadata", "datasource", "interval"],
@@ -11,6 +12,7 @@
       "pattern": "^(v1)$"
     },
     "metadata": {
+      "title": "metadata",
       "$comment": "metadata for the canister",
       "type": "object",
       "required": ["label", "type"],
