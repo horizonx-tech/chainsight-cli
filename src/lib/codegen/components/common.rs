@@ -40,7 +40,7 @@ pub enum SourceType {
     #[serde(rename = "chainsight")]
     Chainsight,
     #[serde(rename = "https")]
-    HTTPS,
+    Https,
 }
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 

@@ -12,12 +12,17 @@ jobs:
     steps:
       - name: Checkout the source code
         uses: actions/checkout@v3
-      - name: Check if npm is installed
-        run: npm --version
-      - name: install @adobe/jsonschema2md
-        run: npm install -g @adobe/jsonschema2md
+      - name: Check if pip is installed
+        run: |
+          if ! command -v pip &> /dev/null
+          then
+              echo "pip could not be found"
+              exit
+          fi
+      - name: install json-schema-for-humans
+        run: pip install json-schema-for-humans
       - name: Generate docs
-        run: jsonschema2md -d ./resources/schema/ -e json -o docs/schema/
+        run: rm -r docs/schema/* && generate-schema-doc resources/schema/ docs/schema/ --config template_name=md
       - name: push docs if changed on current branch
         uses: stefanzweifel/git-auto-commit-action@v4
 
