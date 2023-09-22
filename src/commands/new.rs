@@ -17,8 +17,10 @@ use crate::lib::{
             common::{ComponentManifest, Datasource},
             event_indexer::{EventIndexerComponentManifest, EventIndexerDatasource},
             relayer::{DestinationField, RelayerComponentManifest},
-            snapshot::{SnapshotComponentManifest, SnapshotStorage},
-            snapshot_json_rpc::{SnapshotJsonRPCComponentManifest, SnapshotJsonRPCDataSource},
+            snapshot_indexer::{SnapshotIndexerComponentManifest, SnapshotStorage},
+            snapshot_indexer_https::{
+                SnapshotIndexerHTTPSComponentManifest, SnapshotIndexerHTTPSDataSource,
+            },
         },
         project::{ProjectManifestComponentField, ProjectManifestData},
     },
@@ -72,8 +74,8 @@ fn create_project(project_name: &str) -> anyhow::Result<()> {
     let relative_snapshot_icp_path = format!("components/{}_snapshot_icp.yaml", project_name);
     let relative_relayer_path = format!("components/{}_relayer.yaml", project_name);
     let relative_algorithmlens_path = format!("components/{}_algorithm_lens.yaml", project_name);
-    let relative_snapshot_json_rpc_path =
-        format!("components/{}_snapshot_json_rpc.yaml", project_name);
+    let relative_snapshot_indexer_https_path =
+        format!("components/{}_snapshot_indexer_https.yaml", project_name);
     fs::write(
         format!("{}/{}", project_name, PROJECT_MANIFEST_FILENAME),
         ProjectManifestData::new(
@@ -86,7 +88,7 @@ fn create_project(project_name: &str) -> anyhow::Result<()> {
                 ProjectManifestComponentField::new(&relative_snapshot_icp_path, None),
                 ProjectManifestComponentField::new(&relative_relayer_path, None),
                 ProjectManifestComponentField::new(&relative_algorithmlens_path, None),
-                ProjectManifestComponentField::new(&relative_snapshot_json_rpc_path, None),
+                ProjectManifestComponentField::new(&relative_snapshot_indexer_https_path, None),
             ],
         )
         .to_str_as_yaml()?,
@@ -116,8 +118,8 @@ fn create_project(project_name: &str) -> anyhow::Result<()> {
         tempalte_algorithm_lens_manifest(project_name).to_str_as_yaml()?,
     )?;
     fs::write(
-        format!("{}/{}", project_name, relative_snapshot_json_rpc_path),
-        template_snapshot_json_rpc_manifest(project_name).to_str_as_yaml()?,
+        format!("{}/{}", project_name, relative_snapshot_indexer_https_path),
+        template_snapshot_indexer_https_manifest(project_name).to_str_as_yaml()?,
     )?;
 
     Ok(())
@@ -144,8 +146,8 @@ fn template_algorithm_indexer_manifest(project_name: &str) -> AlgorithmIndexerCo
     )
 }
 
-fn template_snapshot_chain_manifest(project_name: &str) -> SnapshotComponentManifest {
-    SnapshotComponentManifest::new(
+fn template_snapshot_chain_manifest(project_name: &str) -> SnapshotIndexerComponentManifest {
+    SnapshotIndexerComponentManifest::new(
         &format!("{}_snapshot_chain", project_name),
         "",
         PROJECT_MANIFEST_VERSION,
@@ -155,8 +157,8 @@ fn template_snapshot_chain_manifest(project_name: &str) -> SnapshotComponentMani
     )
 }
 
-fn template_snapshot_icp_manifest(project_name: &str) -> SnapshotComponentManifest {
-    SnapshotComponentManifest::new(
+fn template_snapshot_icp_manifest(project_name: &str) -> SnapshotIndexerComponentManifest {
+    SnapshotIndexerComponentManifest::new(
         &format!("{}_snapshot_icp", project_name),
         "",
         PROJECT_MANIFEST_VERSION,
@@ -166,12 +168,14 @@ fn template_snapshot_icp_manifest(project_name: &str) -> SnapshotComponentManife
     )
 }
 
-fn template_snapshot_json_rpc_manifest(project_name: &str) -> SnapshotJsonRPCComponentManifest {
-    SnapshotJsonRPCComponentManifest::new(
-        &format!("{}_snapshot_json_rpc", project_name),
+fn template_snapshot_indexer_https_manifest(
+    project_name: &str,
+) -> SnapshotIndexerHTTPSComponentManifest {
+    SnapshotIndexerHTTPSComponentManifest::new(
+        &format!("{}_snapshot_indexer_https", project_name),
         "",
         PROJECT_MANIFEST_VERSION,
-        SnapshotJsonRPCDataSource::default(),
+        SnapshotIndexerHTTPSDataSource::default(),
         SnapshotStorage::default(),
         3600,
     )

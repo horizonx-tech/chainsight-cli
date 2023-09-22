@@ -24,8 +24,10 @@ use crate::{
                     EventIndexerEventDefinition, SourceNetwork,
                 },
                 relayer::{DestinationField, RelayerComponentManifest},
-                snapshot::{SnapshotComponentManifest, SnapshotStorage},
-                snapshot_json_rpc::{SnapshotJsonRPCComponentManifest, SnapshotJsonRPCDataSource},
+                snapshot_indexer::{SnapshotIndexerComponentManifest, SnapshotStorage},
+                snapshot_indexer_https::{
+                    SnapshotIndexerHTTPSComponentManifest, SnapshotIndexerHTTPSDataSource,
+                },
             },
             project::{ProjectManifestComponentField, ProjectManifestData},
         },
@@ -78,12 +80,14 @@ pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> anyhow::Result<()> {
         ComponentType::AlgorithmIndexer => {
             template_algorithm_indexer_manifest(&component_name).to_str_as_yaml()
         }
-        ComponentType::Snapshot => template_snapshot_manifest(&component_name).to_str_as_yaml(),
+        ComponentType::SnapshotIndexer => {
+            template_snapshot_manifest(&component_name).to_str_as_yaml()
+        }
         ComponentType::Relayer => template_relayer_manifest(&component_name).to_str_as_yaml(),
         ComponentType::AlgorithmLens => {
             template_algorithm_lens_manifest(&component_name).to_str_as_yaml()
         }
-        ComponentType::SnapshotJsonRPC => {
+        ComponentType::SnapshotIndexerHTTPS => {
             template_snapshot_web2_manifest(&component_name).to_str_as_yaml()
         }
     }?;
@@ -169,8 +173,8 @@ fn template_algorithm_indexer_manifest(component_name: &str) -> AlgorithmIndexer
     )
 }
 
-fn template_snapshot_manifest(component_name: &str) -> SnapshotComponentManifest {
-    SnapshotComponentManifest::new(
+fn template_snapshot_manifest(component_name: &str) -> SnapshotIndexerComponentManifest {
+    SnapshotIndexerComponentManifest::new(
         component_name,
         "",
         PROJECT_MANIFEST_VERSION,
@@ -200,12 +204,12 @@ fn template_algorithm_lens_manifest(component_name: &str) -> AlgorithmLensCompon
         AlgorithmLensOutput::default(),
     )
 }
-fn template_snapshot_web2_manifest(component_name: &str) -> SnapshotJsonRPCComponentManifest {
-    SnapshotJsonRPCComponentManifest::new(
+fn template_snapshot_web2_manifest(component_name: &str) -> SnapshotIndexerHTTPSComponentManifest {
+    SnapshotIndexerHTTPSComponentManifest::new(
         component_name,
         "",
         PROJECT_MANIFEST_VERSION,
-        SnapshotJsonRPCDataSource::default(),
+        SnapshotIndexerHTTPSDataSource::default(),
         SnapshotStorage::default(),
         3600,
     )

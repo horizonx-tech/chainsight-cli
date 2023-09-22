@@ -1,11 +1,11 @@
 use quote::{format_ident, quote};
 
-use crate::lib::codegen::components::snapshot_json_rpc::SnapshotJsonRPCComponentManifest;
+use crate::lib::codegen::components::snapshot_indexer_https::SnapshotIndexerHTTPSComponentManifest;
 
-use super::snapshot::generate_queries_without_timestamp;
+use super::snapshot_indexer::generate_queries_without_timestamp;
 
 pub fn generate_codes(
-    manifest: &SnapshotJsonRPCComponentManifest,
+    manifest: &SnapshotIndexerHTTPSComponentManifest,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     let url = &manifest.datasource.url;
     let label = &manifest.metadata.label;

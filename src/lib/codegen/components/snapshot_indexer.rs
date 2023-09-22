@@ -20,7 +20,7 @@ use super::{
 
 /// Component Manifest: Snapshot
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-pub struct SnapshotComponentManifest {
+pub struct SnapshotIndexerComponentManifest {
     pub version: String,
     pub metadata: ComponentMetadata,
     pub datasource: Datasource,
@@ -34,7 +34,7 @@ pub struct LensTarget {
     pub identifiers: Vec<String>,
 }
 
-impl SnapshotComponentManifest {
+impl SnapshotIndexerComponentManifest {
     pub fn new(
         label: &str,
         description: &str,
@@ -47,7 +47,7 @@ impl SnapshotComponentManifest {
             version: version.to_owned(),
             metadata: ComponentMetadata {
                 label: label.to_owned(),
-                type_: ComponentType::Snapshot,
+                type_: ComponentType::SnapshotIndexer,
                 description: description.to_owned(),
                 tags: Some(vec![
                     "ERC-20".to_string(),
@@ -62,7 +62,7 @@ impl SnapshotComponentManifest {
         }
     }
 }
-impl ComponentManifest for SnapshotComponentManifest {
+impl ComponentManifest for SnapshotIndexerComponentManifest {
     fn load(path: &str) -> anyhow::Result<Self> {
         let mut file = OpenOptions::new().read(true).open(Path::new(path))?;
         let mut contents = String::new();
@@ -77,22 +77,22 @@ impl ComponentManifest for SnapshotComponentManifest {
     }
 
     fn validate_manifest(&self) -> anyhow::Result<()> {
-        canisters::snapshot::validate_manifest(self)
+        canisters::snapshot_indexer::validate_manifest(self)
     }
 
     fn generate_codes(
         &self,
         _interface_contract: Option<ethabi::Contract>,
     ) -> anyhow::Result<TokenStream> {
-        canisters::snapshot::generate_codes(self)
+        canisters::snapshot_indexer::generate_codes(self)
     }
 
     fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
-        scripts::snapshot::generate_scripts(self, network)
+        scripts::snapshot_indexer::generate_scripts(self, network)
     }
 
     fn component_type(&self) -> ComponentType {
-        ComponentType::Snapshot
+        ComponentType::SnapshotIndexer
     }
 
     fn metadata(&self) -> &ComponentMetadata {
@@ -202,16 +202,16 @@ storage:
 interval: 3600
         "#;
 
-        let result = serde_yaml::from_str::<SnapshotComponentManifest>(yaml);
+        let result = serde_yaml::from_str::<SnapshotIndexerComponentManifest>(yaml);
         assert!(result.is_ok());
         let component = result.unwrap();
         assert_eq!(
             component,
-            SnapshotComponentManifest {
+            SnapshotIndexerComponentManifest {
                 version: "v1".to_owned(),
                 metadata: ComponentMetadata {
                     label: "sample_pj_snapshot_chain".to_owned(),
-                    type_: ComponentType::Snapshot,
+                    type_: ComponentType::SnapshotIndexer,
                     description: "Description".to_string(),
                     tags: Some(vec!["ERC-20".to_string(), "Ethereum".to_string()])
                 },
@@ -262,16 +262,16 @@ storage:
 interval: 3600
         "#;
 
-        let result = serde_yaml::from_str::<SnapshotComponentManifest>(yaml);
+        let result = serde_yaml::from_str::<SnapshotIndexerComponentManifest>(yaml);
         assert!(result.is_ok());
         let component = result.unwrap();
         assert_eq!(
             component,
-            SnapshotComponentManifest {
+            SnapshotIndexerComponentManifest {
                 version: "v1".to_owned(),
                 metadata: ComponentMetadata {
                     label: "sample_pj_snapshot_icp".to_owned(),
-                    type_: ComponentType::Snapshot,
+                    type_: ComponentType::SnapshotIndexer,
                     description: "Description".to_string(),
                     tags: Some(vec!["ERC-20".to_string(), "Ethereum".to_string()])
                 },

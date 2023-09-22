@@ -19,10 +19,10 @@
 **pattern**: the string must match the following regular expression:&#x20;
 
 ```regexp
-^(event_indexer|algorithm_indexer|snapshot_indexer|snapshot_json_rpc|relayer|algorithm_lens)$
+^(event_indexer|algorithm_indexer|snapshot_indexer|snapshot_indexer_https|relayer|algorithm_lens)$
 ```
 
-[try pattern](https://regexr.com/?expression=%5E\(event_indexer%7Calgorithm_indexer%7Csnapshot_indexer%7Csnapshot_json_rpc%7Crelayer%7Calgorithm_lens\)%24 "try regular expression with regexr.com")
+[try pattern](https://regexr.com/?expression=%5E\(event_indexer%7Calgorithm_indexer%7Csnapshot_indexer%7Csnapshot_indexer_https%7Crelayer%7Calgorithm_lens\)%24 "try regular expression with regexr.com")
 
 ## type Examples
 
@@ -39,7 +39,7 @@
 ```
 
 ```json
-"snapshot_json_rpc"
+"snapshot_indexer_https"
 ```
 
 ```json
