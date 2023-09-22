@@ -1,7 +1,7 @@
 # Untitled object in Chainsight HTTP Event Indexer specification Schema
 
 ```txt
-snapshot_indexer_http#/properties/datasource
+https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/snapshot_indexer_http.json#/properties/datasource
 ```
 
 

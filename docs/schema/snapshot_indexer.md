@@ -1,7 +1,7 @@
 # Chainsight Snapshot Indexer specification Schema
 
 ```txt
-snapshot_indexer
+https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/snapshot_indexer.json
 ```
 
 Chainsight Snapshot Indexer specification

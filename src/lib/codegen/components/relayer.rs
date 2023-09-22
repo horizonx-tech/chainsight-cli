@@ -201,6 +201,8 @@ impl Default for DestinationField {
 
 #[cfg(test)]
 mod tests {
+    use jsonschema::JSONSchema;
+
     use crate::lib::codegen::components::common::{
         CanisterIdType, DatasourceLocation, DatasourceMethod, DatasourceType,
     };
@@ -231,7 +233,7 @@ datasource:
 destination:
     network_id: 80001
     type: uint256
-    oracle_address: 0539a0EF8e5E60891fFf0958A059E049e43020d9
+    oracle_address: 0x0539a0EF8e5E60891fFf0958A059E049e43020d9
     rpc_url: https://polygon-mumbai.g.alchemy.com/v2/<YOUR_KEY>
 interval: 3600
         "#;
@@ -266,12 +268,19 @@ interval: 3600
                 destination: DestinationField {
                     network_id: 80001,
                     type_: DestinationType::Uint256Oracle,
-                    oracle_address: "0539a0EF8e5E60891fFf0958A059E049e43020d9".to_string(),
+                    oracle_address: "0x0539a0EF8e5E60891fFf0958A059E049e43020d9".to_string(),
                     rpc_url: "https://polygon-mumbai.g.alchemy.com/v2/<YOUR_KEY>".to_string(),
                 },
                 lens_targets: None,
                 interval: 3600
             }
         );
+        let schema =
+            serde_json::from_str(include_str!("../../../../resources/schema/relayer.json"))
+                .expect("Invalid json");
+        let instance = serde_yaml::from_str(yaml).expect("Invalid yaml");
+        let compiled = JSONSchema::compile(&schema).expect("Invalid schema");
+        let result = compiled.validate(&instance);
+        assert!(result.is_ok());
     }
 }
