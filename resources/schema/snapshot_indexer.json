@@ -59,46 +59,54 @@
         "type": {
           "type": "string",
           "title": "type of the datasource",
-          "description": "type of the datasource. Only contract is supported for Snapshot Indexer. If you want to get data from HTTP outcall, you can use HTTP Snapshot Indexer",
-          "examples": ["contract"],
-          "pattern": "^(contract)$",
-          "enum": ["contract"]
+          "description": "type of the datasource.If you want to get data from HTTP outcall, you can use HTTP Snapshot Indexer",
+          "examples": ["contract", "canister"],
+          "pattern": "^(contract|canister)$",
+          "enum": ["contract", "canister"]
         },
         "location": {
           "type": "object",
           "title": "location of the datasource",
-          "description": "location of the datasource. For contract, it is the contract address, chain id and rpc url.",
+          "description": "location of the datasource. For contract, it is the contract address. For canister, it is the canister id or canister name defined in dfx.json.",
           "required": ["id", "args"],
           "properties": {
             "id": {
               "type": "string",
               "title": "id of the datasource",
-              "description": "id of the datasource. For contract, it is the contract address",
+              "description": "id of the datasource. For contract, it is the contract address. For canister, it is the canister id or canister name defined in dfx.json.",
               "examples": [
                 "9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
-                "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
-              ],
-              "pattern": "^(0x)?[a-fA-F0-9]{40}$"
+                "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+                "pj_snapshot_chain",
+                "rrkah-fqaaa-aaaaa-aaaaq-cai"
+              ]
             },
             "args": {
               "title": "args",
-              "description": "args for the datasource. For contract, it is the chain id and rpc url.",
+              "description": "args for the datasource.",
               "type": "object",
-              "required": ["network_id", "rpc_url"],
               "properties": {
                 "network_id": {
                   "type": "integer",
                   "title": "network id",
-                  "description": "network id of the datasource. For contract, it is the chain id",
+                  "description": "chain id. It is required if type is contract.",
                   "examples": [1, 31337],
                   "pattern": "^[0-9]+$"
                 },
                 "rpc_url": {
                   "type": "string",
                   "title": "rpc url",
-                  "description": "rpc url of the datasource.",
+                  "description": "rpc url of the datasource. It is required if type is contract.",
                   "examples": ["https://mainnet.infura.io/v3/YOUR_API_KEY"],
                   "pattern": "^(http|https)://"
+                },
+                "id_type": {
+                  "type": "string",
+                  "title": "id type",
+                  "description": "type of the id. It is required if type is canister.",
+                  "examples": ["canister_id", "canister_name"],
+                  "pattern": "^(canister_id|canister_name)$",
+                  "enum": ["canister_id", "canister_name"]
                 }
               }
             }
@@ -108,21 +116,22 @@
           "title": "method",
           "description": "method of the datasource. The canister will call this method to get data.",
           "type": "object",
-          "required": ["identifier", "interface"],
+          "required": ["identifier"],
           "properties": {
             "identifier": {
               "type": "string",
               "title": "identifier of the method",
-              "description": "contract function and its return values to call.",
+              "description": "contract of candid function and its return values to call.",
               "examples": [
                 "latestAnswer():(uint256)",
-                "balanceOf(address):(uint256)"
+                "balanceOf(address):(uint256)",
+                "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"
               ]
             },
             "interface": {
               "type": "string",
               "title": "interface",
-              "description": "abi json file to use. This file must be in ./interfaces folder.",
+              "description": "abi json file to use. This file must be in ./interfaces folder. It is required if type is contract.",
               "examples": ["AggregatorV3Interface.json", "IERC20.json"]
             },
             "args": {
