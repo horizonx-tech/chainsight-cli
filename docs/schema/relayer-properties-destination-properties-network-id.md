@@ -1,7 +1,7 @@
 # network id Schema
 
 ```txt
-undefined#/properties/destination/properties/network_id
+#/properties/destination/properties/network_id#/properties/destination/properties/network_id
 ```
 
 network id of the destination evm network

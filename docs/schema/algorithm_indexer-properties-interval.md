@@ -1,7 +1,7 @@
 # interval Schema
 
 ```txt
-undefined#/properties/interval
+#/properties/interval#/properties/interval
 ```
 
 interval of the canister invocation in seconds

@@ -1,7 +1,7 @@
 # metadata for the canister Schema
 
 ```txt
-undefined#/properties/metadata
+#/properties/metadata#/properties/metadata
 ```
 
 
@@ -18,12 +18,12 @@ undefined#/properties/metadata
 
 # metadata Properties
 
-| Property                    | Type     | Required | Nullable       | Defined by                                                                                                                                                                                         |
-| :-------------------------- | :------- | :------- | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [label](#label)             | `string` | Required | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-metadata-for-the-canister-properties-label-for-the-canister.md "undefined#/properties/metadata/properties/label")            |
-| [type](#type)               | `string` | Required | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-metadata-for-the-canister-properties-type-of-the-canister.md "undefined#/properties/metadata/properties/type")               |
-| [description](#description) | `string` | Optional | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-metadata-for-the-canister-properties-description-of-the-canister.md "undefined#/properties/metadata/properties/description") |
-| [tags](#tags)               | `array`  | Optional | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-metadata-for-the-canister-properties-tags-for-the-canister.md "undefined#/properties/metadata/properties/tags")              |
+| Property                    | Type     | Required | Nullable       | Defined by                                                                                                                                                                                                                            |
+| :-------------------------- | :------- | :------- | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [label](#label)             | `string` | Required | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-metadata-for-the-canister-properties-label-for-the-canister.md "#/properties/metadata/properties/label#/properties/metadata/properties/label")                  |
+| [type](#type)               | `string` | Required | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-metadata-for-the-canister-properties-type-of-the-canister.md "#/properties/metadata/properties/type#/properties/metadata/properties/type")                      |
+| [description](#description) | `string` | Optional | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-metadata-for-the-canister-properties-description-of-the-canister.md "#/properties/metadata/properties/description#/properties/metadata/properties/description") |
+| [tags](#tags)               | `array`  | Optional | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-metadata-for-the-canister-properties-tags-for-the-canister.md "#/properties/metadata/properties/tags#/properties/metadata/properties/tags")                     |
 
 ## label
 
@@ -37,7 +37,7 @@ undefined#/properties/metadata
 
 *   cannot be null
 
-*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-metadata-for-the-canister-properties-label-for-the-canister.md "undefined#/properties/metadata/properties/label")
+*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-metadata-for-the-canister-properties-label-for-the-canister.md "#/properties/metadata/properties/label#/properties/metadata/properties/label")
 
 ### label Type
 
@@ -71,7 +71,7 @@ undefined#/properties/metadata
 
 *   cannot be null
 
-*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-metadata-for-the-canister-properties-type-of-the-canister.md "undefined#/properties/metadata/properties/type")
+*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-metadata-for-the-canister-properties-type-of-the-canister.md "#/properties/metadata/properties/type#/properties/metadata/properties/type")
 
 ### type Type
 
@@ -125,7 +125,7 @@ Can be used to filter canisters in the UI
 
 *   cannot be null
 
-*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-metadata-for-the-canister-properties-description-of-the-canister.md "undefined#/properties/metadata/properties/description")
+*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-metadata-for-the-canister-properties-description-of-the-canister.md "#/properties/metadata/properties/description#/properties/metadata/properties/description")
 
 ### description Type
 
@@ -149,7 +149,7 @@ Can be used to filter canisters in the UI
 
 *   cannot be null
 
-*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-metadata-for-the-canister-properties-tags-for-the-canister.md "undefined#/properties/metadata/properties/tags")
+*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-metadata-for-the-canister-properties-tags-for-the-canister.md "#/properties/metadata/properties/tags#/properties/metadata/properties/tags")
 
 ### tags Type
 

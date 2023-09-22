@@ -1,7 +1,7 @@
 # output\_type Schema
 
 ```txt
-undefined#/properties/output/items/properties/output_type
+#/properties/output/items/properties/output_type#/properties/output/items/properties/output_type
 ```
 
 type of the output. KeyValues: HashMap\<Key, Vec<Values>>, KeyValue: HashMap\<Key, Value>

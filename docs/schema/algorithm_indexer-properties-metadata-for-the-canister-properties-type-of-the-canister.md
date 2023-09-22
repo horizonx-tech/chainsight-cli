@@ -1,7 +1,7 @@
 # type of the canister Schema
 
 ```txt
-undefined#/properties/metadata/properties/type
+#/properties/metadata/properties/type#/properties/metadata/properties/type
 ```
 
 

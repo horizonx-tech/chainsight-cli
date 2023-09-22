@@ -1,7 +1,7 @@
 # output struct Schema
 
 ```txt
-undefined#/properties/output/items
+#/properties/output/items#/properties/output/items
 ```
 
 
@@ -16,11 +16,11 @@ undefined#/properties/output/items
 
 # items Properties
 
-| Property                     | Type     | Required | Nullable       | Defined by                                                                                                                                                                        |
-| :--------------------------- | :------- | :------- | :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [name](#name)                | `string` | Required | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-output-output-struct-properties-name-of-the-struct.md "undefined#/properties/output/items/properties/name") |
-| [fields](#fields)            | `object` | Required | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-output-output-struct-properties-fields.md "undefined#/properties/output/items/properties/fields")           |
-| [output\_type](#output_type) | `string` | Required | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-output-output-struct-properties-output_type.md "undefined#/properties/output/items/properties/output_type") |
+| Property                     | Type     | Required | Nullable       | Defined by                                                                                                                                                                                                               |
+| :--------------------------- | :------- | :------- | :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [name](#name)                | `string` | Required | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-output-output-struct-properties-name-of-the-struct.md "#/properties/output/items/properties/name#/properties/output/items/properties/name")        |
+| [fields](#fields)            | `object` | Required | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-output-output-struct-properties-fields.md "#/properties/output/items/properties/fields#/properties/output/items/properties/fields")                |
+| [output\_type](#output_type) | `string` | Required | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-output-output-struct-properties-output_type.md "#/properties/output/items/properties/output_type#/properties/output/items/properties/output_type") |
 
 ## name
 
@@ -34,7 +34,7 @@ undefined#/properties/output/items
 
 *   cannot be null
 
-*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-output-output-struct-properties-name-of-the-struct.md "undefined#/properties/output/items/properties/name")
+*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-output-output-struct-properties-name-of-the-struct.md "#/properties/output/items/properties/name#/properties/output/items/properties/name")
 
 ### name Type
 
@@ -68,7 +68,7 @@ field names and rust types of the struct
 
 *   cannot be null
 
-*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-output-output-struct-properties-fields.md "undefined#/properties/output/items/properties/fields")
+*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-output-output-struct-properties-fields.md "#/properties/output/items/properties/fields#/properties/output/items/properties/fields")
 
 ### fields Type
 
@@ -86,7 +86,7 @@ type of the output. KeyValues: HashMap\<Key, Vec<Values>>, KeyValue: HashMap\<Ke
 
 *   cannot be null
 
-*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-output-output-struct-properties-output_type.md "undefined#/properties/output/items/properties/output_type")
+*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-output-output-struct-properties-output_type.md "#/properties/output/items/properties/output_type#/properties/output/items/properties/output_type")
 
 ### output\_type Type
 

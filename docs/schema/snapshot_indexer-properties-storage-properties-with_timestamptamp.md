@@ -1,7 +1,7 @@
 # with\_timestamptamp Schema
 
 ```txt
-undefined#/properties/storage/properties/with_timestamp
+#/properties/storage/properties/with_timestamp#/properties/storage/properties/with_timestamp
 ```
 
 whether to store the data with timestamp

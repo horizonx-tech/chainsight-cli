@@ -1,7 +1,7 @@
 # oracle address Schema
 
 ```txt
-undefined#/properties/destination/properties/oracle_address
+#/properties/destination/properties/oracle_address#/properties/destination/properties/oracle_address
 ```
 
 address of the destination oracle contract

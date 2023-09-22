@@ -1,10 +1,12 @@
 # Chainsight Relayer specification Schema
 
 ```txt
-undefined
+relayer
 ```
 
 Chainsight Relayer specification
+
+> Chainsight Relayer specification
 
 | Abstract            | Extensible | Status         | Identifiable | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                    |
 | :------------------ | :--------- | :------------- | :----------- | :---------------- | :-------------------- | :------------------ | :------------------------------------------------------------ |
@@ -16,14 +18,14 @@ Chainsight Relayer specification
 
 # Chainsight Relayer specification Properties
 
-| Property                       | Type     | Required | Nullable       | Defined by                                                                                                                      |
-| :----------------------------- | :------- | :------- | :------------- | :------------------------------------------------------------------------------------------------------------------------------ |
-| [version](#version)            | `string` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-specification-version-of-the-canister.md "undefined#/properties/version") |
-| [metadata](#metadata)          | `object` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-metadata.md "undefined#/properties/metadata")                             |
-| [datasource](#datasource)      | `object` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-datasource.md "undefined#/properties/datasource")                         |
-| [lens\_targets](#lens_targets) | `object` | Optional | cannot be null | [Chainsight Relayer specification](relayer-properties-lens_targets.md "undefined#/properties/lens_targets")                     |
-| [destination](#destination)    | `object` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-destination.md "undefined#/properties/destination")                       |
-| [interval](#interval)          | `number` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-interval.md "undefined#/properties/interval")                             |
+| Property                       | Type     | Required | Nullable       | Defined by                                                                                                                                 |
+| :----------------------------- | :------- | :------- | :------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
+| [version](#version)            | `string` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-specification-version-of-the-canister.md "#/properties/version#/properties/version") |
+| [metadata](#metadata)          | `object` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-metadata.md "#/properties/metadata#/properties/metadata")                            |
+| [datasource](#datasource)      | `object` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-datasource.md "#/properties/datasource#/properties/datasource")                      |
+| [lens\_targets](#lens_targets) | `object` | Optional | cannot be null | [Chainsight Relayer specification](relayer-properties-lens_targets.md "#/properties/lens_targets#/properties/lens_targets")                |
+| [destination](#destination)    | `object` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-destination.md "#/properties/destination#/properties/destination")                   |
+| [interval](#interval)          | `number` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-interval.md "#/properties/interval#/properties/interval")                            |
 
 ## version
 
@@ -37,7 +39,7 @@ Chainsight Relayer specification
 
 *   cannot be null
 
-*   defined in: [Chainsight Relayer specification](relayer-properties-specification-version-of-the-canister.md "undefined#/properties/version")
+*   defined in: [Chainsight Relayer specification](relayer-properties-specification-version-of-the-canister.md "#/properties/version#/properties/version")
 
 ### version Type
 
@@ -73,7 +75,7 @@ Chainsight Relayer specification
 
 *   cannot be null
 
-*   defined in: [Chainsight Relayer specification](relayer-properties-metadata.md "undefined#/properties/metadata")
+*   defined in: [Chainsight Relayer specification](relayer-properties-metadata.md "#/properties/metadata#/properties/metadata")
 
 ### metadata Type
 
@@ -91,7 +93,7 @@ Chainsight Relayer specification
 
 *   cannot be null
 
-*   defined in: [Chainsight Relayer specification](relayer-properties-datasource.md "undefined#/properties/datasource")
+*   defined in: [Chainsight Relayer specification](relayer-properties-datasource.md "#/properties/datasource#/properties/datasource")
 
 ### datasource Type
 
@@ -109,7 +111,7 @@ targets for the lens. Only used when the datasource canister is a algorithm\_len
 
 *   cannot be null
 
-*   defined in: [Chainsight Relayer specification](relayer-properties-lens_targets.md "undefined#/properties/lens_targets")
+*   defined in: [Chainsight Relayer specification](relayer-properties-lens_targets.md "#/properties/lens_targets#/properties/lens_targets")
 
 ### lens\_targets Type
 
@@ -127,7 +129,7 @@ destination evm network and contract for the data.
 
 *   cannot be null
 
-*   defined in: [Chainsight Relayer specification](relayer-properties-destination.md "undefined#/properties/destination")
+*   defined in: [Chainsight Relayer specification](relayer-properties-destination.md "#/properties/destination#/properties/destination")
 
 ### destination Type
 
@@ -145,7 +147,7 @@ interval of the canister invocation in seconds
 
 *   cannot be null
 
-*   defined in: [Chainsight Relayer specification](relayer-properties-interval.md "undefined#/properties/interval")
+*   defined in: [Chainsight Relayer specification](relayer-properties-interval.md "#/properties/interval#/properties/interval")
 
 ### interval Type
 

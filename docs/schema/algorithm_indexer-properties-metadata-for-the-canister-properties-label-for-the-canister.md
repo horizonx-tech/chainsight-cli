@@ -1,7 +1,7 @@
 # label for the canister Schema
 
 ```txt
-undefined#/properties/metadata/properties/label
+#/properties/metadata/properties/label#/properties/metadata/properties/label
 ```
 
 

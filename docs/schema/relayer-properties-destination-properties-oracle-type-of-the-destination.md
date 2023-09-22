@@ -1,7 +1,7 @@
 # oracle type of the destination Schema
 
 ```txt
-undefined#/properties/destination/properties/type
+#/properties/destination/properties/type#/properties/destination/properties/type
 ```
 
 oracle type of the destination. currently we don't suport user definined oracle types

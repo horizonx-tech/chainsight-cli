@@ -1,7 +1,7 @@
 # from Schema
 
 ```txt
-undefined#/properties/datasource/properties/from
+#/properties/datasource/properties/from#/properties/datasource/properties/from
 ```
 
 key to start the query from

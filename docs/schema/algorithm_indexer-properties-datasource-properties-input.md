@@ -1,7 +1,7 @@
 # input Schema
 
 ```txt
-undefined#/properties/datasource/properties/input
+#/properties/datasource/properties/input#/properties/datasource/properties/input
 ```
 
 struct retrived from the source canister
@@ -16,10 +16,10 @@ struct retrived from the source canister
 
 # input Properties
 
-| Property          | Type     | Required | Nullable       | Defined by                                                                                                                                                                                              |
-| :---------------- | :------- | :------- | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [name](#name)     | `string` | Required | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-input-properties-name-of-the-struct.md "undefined#/properties/datasource/properties/input/properties/name") |
-| [fields](#fields) | `object` | Required | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-input-properties-fields.md "undefined#/properties/datasource/properties/input/properties/fields")           |
+| Property          | Type     | Required | Nullable       | Defined by                                                                                                                                                                                                                                             |
+| :---------------- | :------- | :------- | :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [name](#name)     | `string` | Required | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-input-properties-name-of-the-struct.md "#/properties/datasource/properties/input/properties/name#/properties/datasource/properties/input/properties/name") |
+| [fields](#fields) | `object` | Required | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-input-properties-fields.md "#/properties/datasource/properties/input/properties/fields#/properties/datasource/properties/input/properties/fields")         |
 
 ## name
 
@@ -33,7 +33,7 @@ struct retrived from the source canister
 
 *   cannot be null
 
-*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-input-properties-name-of-the-struct.md "undefined#/properties/datasource/properties/input/properties/name")
+*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-input-properties-name-of-the-struct.md "#/properties/datasource/properties/input/properties/name#/properties/datasource/properties/input/properties/name")
 
 ### name Type
 
@@ -67,7 +67,7 @@ field names and rust types of the struct
 
 *   cannot be null
 
-*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-input-properties-fields.md "undefined#/properties/datasource/properties/input/properties/fields")
+*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-input-properties-fields.md "#/properties/datasource/properties/input/properties/fields#/properties/datasource/properties/input/properties/fields")
 
 ### fields Type
 

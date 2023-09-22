@@ -1,7 +1,7 @@
 # destination Schema
 
 ```txt
-undefined#/properties/destination
+#/properties/destination#/properties/destination
 ```
 
 destination evm network and contract for the data.
@@ -16,12 +16,12 @@ destination evm network and contract for the data.
 
 # destination Properties
 
-| Property                           | Type     | Required | Nullable       | Defined by                                                                                                                                                          |
-| :--------------------------------- | :------- | :------- | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [network\_id](#network_id)         | `number` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-destination-properties-network-id.md "undefined#/properties/destination/properties/network_id")               |
-| [type](#type)                      | `string` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-destination-properties-oracle-type-of-the-destination.md "undefined#/properties/destination/properties/type") |
-| [oracle\_address](#oracle_address) | `number` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-destination-properties-oracle-address.md "undefined#/properties/destination/properties/oracle_address")       |
-| [rpc\_url](#rpc_url)               | `string` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-destination-properties-rpc-url.md "undefined#/properties/destination/properties/rpc_url")                     |
+| Property                           | Type     | Required | Nullable       | Defined by                                                                                                                                                                                             |
+| :--------------------------------- | :------- | :------- | :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [network\_id](#network_id)         | `number` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-destination-properties-network-id.md "#/properties/destination/properties/network_id#/properties/destination/properties/network_id")             |
+| [type](#type)                      | `string` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-destination-properties-oracle-type-of-the-destination.md "#/properties/destination/properties/type#/properties/destination/properties/type")     |
+| [oracle\_address](#oracle_address) | `number` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-destination-properties-oracle-address.md "#/properties/destination/properties/oracle_address#/properties/destination/properties/oracle_address") |
+| [rpc\_url](#rpc_url)               | `string` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-destination-properties-rpc-url.md "#/properties/destination/properties/rpc_url#/properties/destination/properties/rpc_url")                      |
 
 ## network\_id
 
@@ -35,7 +35,7 @@ network id of the destination evm network
 
 *   cannot be null
 
-*   defined in: [Chainsight Relayer specification](relayer-properties-destination-properties-network-id.md "undefined#/properties/destination/properties/network_id")
+*   defined in: [Chainsight Relayer specification](relayer-properties-destination-properties-network-id.md "#/properties/destination/properties/network_id#/properties/destination/properties/network_id")
 
 ### network\_id Type
 
@@ -77,7 +77,7 @@ oracle type of the destination. currently we don't suport user definined oracle 
 
 *   cannot be null
 
-*   defined in: [Chainsight Relayer specification](relayer-properties-destination-properties-oracle-type-of-the-destination.md "undefined#/properties/destination/properties/type")
+*   defined in: [Chainsight Relayer specification](relayer-properties-destination-properties-oracle-type-of-the-destination.md "#/properties/destination/properties/type#/properties/destination/properties/type")
 
 ### type Type
 
@@ -123,7 +123,7 @@ address of the destination oracle contract
 
 *   cannot be null
 
-*   defined in: [Chainsight Relayer specification](relayer-properties-destination-properties-oracle-address.md "undefined#/properties/destination/properties/oracle_address")
+*   defined in: [Chainsight Relayer specification](relayer-properties-destination-properties-oracle-address.md "#/properties/destination/properties/oracle_address#/properties/destination/properties/oracle_address")
 
 ### oracle\_address Type
 
@@ -157,7 +157,7 @@ rpc url of the destination evm network. only supports https
 
 *   cannot be null
 
-*   defined in: [Chainsight Relayer specification](relayer-properties-destination-properties-rpc-url.md "undefined#/properties/destination/properties/rpc_url")
+*   defined in: [Chainsight Relayer specification](relayer-properties-destination-properties-rpc-url.md "#/properties/destination/properties/rpc_url#/properties/destination/properties/rpc_url")
 
 ### rpc\_url Type
 

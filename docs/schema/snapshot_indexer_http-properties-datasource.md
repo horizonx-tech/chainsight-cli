@@ -1,7 +1,7 @@
 # Untitled object in Chainsight HTTP Event Indexer specification Schema
 
 ```txt
-undefined#/properties/datasource
+snapshot_indexer_http#/properties/datasource
 ```
 
 
@@ -16,11 +16,11 @@ undefined#/properties/datasource
 
 # datasource Properties
 
-| Property            | Type     | Required | Nullable       | Defined by                                                                                                                                                                                             |
-| :------------------ | :------- | :------- | :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [url](#url)         | `string` | Required | cannot be null | [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-datasource-properties-url-of-the-datasource.md "undefined#/properties/datasource/properties/url")                       |
-| [headers](#headers) | `object` | Optional | cannot be null | [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-datasource-properties-http-request-headers-for-the-datasource.md "undefined#/properties/datasource/properties/headers") |
-| [queries](#queries) | `object` | Optional | cannot be null | [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-datasource-properties-query-parameters-for-the-datasource.md "undefined#/properties/datasource/properties/queries")     |
+| Property            | Type     | Required | Nullable       | Defined by                                                                                                                                                                                                                              |
+| :------------------ | :------- | :------- | :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [url](#url)         | `string` | Required | cannot be null | [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-datasource-properties-url-of-the-datasource.md "#/properties/datasource/properties/url#/properties/datasource/properties/url")                           |
+| [headers](#headers) | `object` | Optional | cannot be null | [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-datasource-properties-http-request-headers-for-the-datasource.md "#/properties/datasource/properties/headers#/properties/datasource/properties/headers") |
+| [queries](#queries) | `object` | Optional | cannot be null | [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-datasource-properties-query-parameters-for-the-datasource.md "#/properties/datasource/properties/queries#/properties/datasource/properties/queries")     |
 
 ## url
 
@@ -34,7 +34,7 @@ undefined#/properties/datasource
 
 *   cannot be null
 
-*   defined in: [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-datasource-properties-url-of-the-datasource.md "undefined#/properties/datasource/properties/url")
+*   defined in: [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-datasource-properties-url-of-the-datasource.md "#/properties/datasource/properties/url#/properties/datasource/properties/url")
 
 ### url Type
 
@@ -68,7 +68,7 @@ HTTP request headers for the datasource
 
 *   cannot be null
 
-*   defined in: [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-datasource-properties-http-request-headers-for-the-datasource.md "undefined#/properties/datasource/properties/headers")
+*   defined in: [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-datasource-properties-http-request-headers-for-the-datasource.md "#/properties/datasource/properties/headers#/properties/datasource/properties/headers")
 
 ### headers Type
 
@@ -94,7 +94,7 @@ query parameter names and values for the datasource
 
 *   cannot be null
 
-*   defined in: [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-datasource-properties-query-parameters-for-the-datasource.md "undefined#/properties/datasource/properties/queries")
+*   defined in: [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-datasource-properties-query-parameters-for-the-datasource.md "#/properties/datasource/properties/queries#/properties/datasource/properties/queries")
 
 ### queries Type
 

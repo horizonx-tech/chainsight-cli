@@ -1,7 +1,7 @@
 # datasource Schema
 
 ```txt
-undefined#/properties/datasource
+#/properties/datasource#/properties/datasource
 ```
 
 
@@ -16,13 +16,13 @@ undefined#/properties/datasource
 
 # datasource Properties
 
-| Property                     | Type     | Required | Nullable       | Defined by                                                                                                                                                            |
-| :--------------------------- | :------- | :------- | :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [principal](#principal)      | `string` | Required | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-principal.md "undefined#/properties/datasource/properties/principal")     |
-| [input](#input)              | `object` | Required | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-input.md "undefined#/properties/datasource/properties/input")             |
-| [from](#from)                | `number` | Required | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-from.md "undefined#/properties/datasource/properties/from")               |
-| [method](#method)            | `string` | Required | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-method.md "undefined#/properties/datasource/properties/method")           |
-| [source\_type](#source_type) | `string` | Required | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-source_type.md "undefined#/properties/datasource/properties/source_type") |
+| Property                     | Type     | Required | Nullable       | Defined by                                                                                                                                                                                                 |
+| :--------------------------- | :------- | :------- | :------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [principal](#principal)      | `string` | Required | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-principal.md "#/properties/datasource/properties/principal#/properties/datasource/properties/principal")       |
+| [input](#input)              | `object` | Required | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-input.md "#/properties/datasource/properties/input#/properties/datasource/properties/input")                   |
+| [from](#from)                | `number` | Required | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-from.md "#/properties/datasource/properties/from#/properties/datasource/properties/from")                      |
+| [method](#method)            | `string` | Required | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-method.md "#/properties/datasource/properties/method#/properties/datasource/properties/method")                |
+| [source\_type](#source_type) | `string` | Required | cannot be null | [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-source_type.md "#/properties/datasource/properties/source_type#/properties/datasource/properties/source_type") |
 
 ## principal
 
@@ -36,7 +36,7 @@ principal of the source canister
 
 *   cannot be null
 
-*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-principal.md "undefined#/properties/datasource/properties/principal")
+*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-principal.md "#/properties/datasource/properties/principal#/properties/datasource/properties/principal")
 
 ### principal Type
 
@@ -64,7 +64,7 @@ struct retrived from the source canister
 
 *   cannot be null
 
-*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-input.md "undefined#/properties/datasource/properties/input")
+*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-input.md "#/properties/datasource/properties/input#/properties/datasource/properties/input")
 
 ### input Type
 
@@ -82,7 +82,7 @@ key to start the query from
 
 *   cannot be null
 
-*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-from.md "undefined#/properties/datasource/properties/from")
+*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-from.md "#/properties/datasource/properties/from#/properties/datasource/properties/from")
 
 ### from Type
 
@@ -106,7 +106,7 @@ method to query the canister
 
 *   cannot be null
 
-*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-method.md "undefined#/properties/datasource/properties/method")
+*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-method.md "#/properties/datasource/properties/method#/properties/datasource/properties/method")
 
 ### method Type
 
@@ -134,7 +134,7 @@ type of the source canister
 
 *   cannot be null
 
-*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-source_type.md "undefined#/properties/datasource/properties/source_type")
+*   defined in: [Chainsight Event Indexer specification](algorithm_indexer-properties-datasource-properties-source_type.md "#/properties/datasource/properties/source_type#/properties/datasource/properties/source_type")
 
 ### source\_type Type
 

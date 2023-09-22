@@ -1,7 +1,7 @@
 # method Schema
 
 ```txt
-undefined#/properties/datasource/properties/method
+#/properties/datasource/properties/method#/properties/datasource/properties/method
 ```
 
 method to query the canister

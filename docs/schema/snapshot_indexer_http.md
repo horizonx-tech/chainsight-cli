@@ -1,10 +1,12 @@
 # Chainsight HTTP Event Indexer specification Schema
 
 ```txt
-undefined
+snapshot_indexer_http
 ```
 
 Chainsight HTTP Snapshot Indexer specification
+
+> Chainsight HTTP Event Indexer specification
 
 | Abstract            | Extensible | Status         | Identifiable | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                                                  |
 | :------------------ | :--------- | :------------- | :----------- | :---------------- | :-------------------- | :------------------ | :------------------------------------------------------------------------------------------ |
@@ -16,13 +18,13 @@ Chainsight HTTP Snapshot Indexer specification
 
 # Chainsight HTTP Event Indexer specification Properties
 
-| Property                  | Type     | Required | Nullable       | Defined by                                                                                                                                               |
-| :------------------------ | :------- | :------- | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [version](#version)       | `string` | Required | cannot be null | [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-specification-version-of-the-canister.md "undefined#/properties/version") |
-| [metadata](#metadata)     | `object` | Required | cannot be null | [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-metadata.md "undefined#/properties/metadata")                             |
-| [datasource](#datasource) | `object` | Required | cannot be null | [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-datasource.md "undefined#/properties/datasource")                         |
-| [storage](#storage)       | `object` | Required | cannot be null | [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-storage.md "undefined#/properties/storage")                               |
-| [interval](#interval)     | `number` | Required | cannot be null | [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-interval.md "undefined#/properties/interval")                             |
+| Property                  | Type     | Required | Nullable       | Defined by                                                                                                                                                          |
+| :------------------------ | :------- | :------- | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [version](#version)       | `string` | Required | cannot be null | [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-specification-version-of-the-canister.md "#/properties/version#/properties/version") |
+| [metadata](#metadata)     | `object` | Required | cannot be null | [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-metadata.md "#/properties/metadata#/properties/metadata")                            |
+| [datasource](#datasource) | `object` | Required | cannot be null | [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-datasource.md "snapshot_indexer_http#/properties/datasource")                        |
+| [storage](#storage)       | `object` | Required | cannot be null | [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-storage.md "#/properties/storage#/properties/storage")                               |
+| [interval](#interval)     | `number` | Required | cannot be null | [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-interval.md "#/properties/interval#/properties/interval")                            |
 
 ## version
 
@@ -36,7 +38,7 @@ Chainsight HTTP Snapshot Indexer specification
 
 *   cannot be null
 
-*   defined in: [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-specification-version-of-the-canister.md "undefined#/properties/version")
+*   defined in: [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-specification-version-of-the-canister.md "#/properties/version#/properties/version")
 
 ### version Type
 
@@ -72,7 +74,7 @@ Chainsight HTTP Snapshot Indexer specification
 
 *   cannot be null
 
-*   defined in: [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-metadata.md "undefined#/properties/metadata")
+*   defined in: [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-metadata.md "#/properties/metadata#/properties/metadata")
 
 ### metadata Type
 
@@ -90,7 +92,7 @@ Chainsight HTTP Snapshot Indexer specification
 
 *   cannot be null
 
-*   defined in: [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-datasource.md "undefined#/properties/datasource")
+*   defined in: [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-datasource.md "snapshot_indexer_http#/properties/datasource")
 
 ### datasource Type
 
@@ -108,7 +110,7 @@ storage properties for the canister
 
 *   cannot be null
 
-*   defined in: [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-storage.md "undefined#/properties/storage")
+*   defined in: [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-storage.md "#/properties/storage#/properties/storage")
 
 ### storage Type
 
@@ -126,7 +128,7 @@ interval of the canister invocation in seconds
 
 *   cannot be null
 
-*   defined in: [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-interval.md "undefined#/properties/interval")
+*   defined in: [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-interval.md "#/properties/interval#/properties/interval")
 
 ### interval Type
 

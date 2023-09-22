@@ -1,7 +1,7 @@
 # Untitled string in Chainsight Relayer specification Schema
 
 ```txt
-undefined#/properties/lens_targets/properties/identifiers/items
+#/properties/lens_targets/properties/identifiers/items#/properties/lens_targets/properties/identifiers/items
 ```
 
 
