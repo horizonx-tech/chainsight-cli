@@ -2,17 +2,17 @@
 
 ## Top-level Schemas
 
-*   [Chainsight Algorithm Lens specification](./algorithm_lens.md "Chainsight Algorithm Lens specification") – `algorithm_lens`
+*   [Chainsight Algorithm Lens specification](./algorithm_lens.md "Chainsight Algorithm Lens specification") – `https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/algorithm_lens.json`
 
-*   [Chainsight Event Indexer specification](./algorithm_indexer.md "Chainsight Algorithm Indexer specification") – `algorithm_indexer`
+*   [Chainsight Event Indexer specification](./algorithm_indexer.md "Chainsight Algorithm Indexer specification") – `https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/algorithm_indexer.json`
 
-*   [Chainsight Event Indexer specification](./event_indexer.md "Chainsight Event Indexer specification") – `event_indexer`
+*   [Chainsight Event Indexer specification](./event_indexer.md "Chainsight Event Indexer specification") – `https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/event_indexer.json`
 
-*   [Chainsight HTTP Event Indexer specification](./snapshot_indexer_http.md "Chainsight HTTP Snapshot Indexer specification") – `snapshot_indexer_http`
+*   [Chainsight HTTP Event Indexer specification](./snapshot_indexer_http.md "Chainsight HTTP Snapshot Indexer specification") – `https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/snapshot_indexer_http.json`
 
-*   [Chainsight Relayer specification](./relayer.md "Chainsight Relayer specification") – `relayer`
+*   [Chainsight Relayer specification](./relayer.md "Chainsight Relayer specification") – `https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/relayer.json`
 
-*   [Chainsight Snapshot Indexer specification](./snapshot_indexer.md "Chainsight Snapshot Indexer specification") – `snapshot_indexer`
+*   [Chainsight Snapshot Indexer specification](./snapshot_indexer.md "Chainsight Snapshot Indexer specification") – `https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/snapshot_indexer.json`
 
 ## Other Schemas
 
@@ -20,7 +20,7 @@
 
 *   [HTTP request headers for the datasource](./snapshot_indexer_http-properties-datasource-properties-http-request-headers-for-the-datasource.md "HTTP request headers for the datasource") – `#/properties/datasource/properties/headers#/properties/datasource/properties/headers`
 
-*   [Untitled object in Chainsight HTTP Event Indexer specification](./snapshot_indexer_http-properties-datasource.md) – `snapshot_indexer_http#/properties/datasource`
+*   [Untitled object in Chainsight HTTP Event Indexer specification](./snapshot_indexer_http-properties-datasource.md) – `https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/snapshot_indexer_http.json#/properties/datasource`
 
 *   [datasource](./algorithm_indexer-properties-datasource.md) – `#/properties/datasource#/properties/datasource`
 

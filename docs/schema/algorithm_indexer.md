@@ -1,7 +1,7 @@
 # Chainsight Event Indexer specification Schema
 
 ```txt
-algorithm_indexer
+https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/algorithm_indexer.json
 ```
 
 Chainsight Algorithm Indexer specification

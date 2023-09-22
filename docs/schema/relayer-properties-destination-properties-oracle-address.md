@@ -12,7 +12,7 @@ address of the destination oracle contract
 
 ## oracle\_address Type
 
-`number` ([oracle address](relayer-properties-destination-properties-oracle-address.md))
+`string` ([oracle address](relayer-properties-destination-properties-oracle-address.md))
 
 ## oracle\_address Constraints
 

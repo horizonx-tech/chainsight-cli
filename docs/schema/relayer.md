@@ -1,7 +1,7 @@
 # Chainsight Relayer specification Schema
 
 ```txt
-relayer
+https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/relayer.json
 ```
 
 Chainsight Relayer specification

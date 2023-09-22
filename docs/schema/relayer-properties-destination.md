@@ -20,7 +20,7 @@ destination evm network and contract for the data.
 | :--------------------------------- | :------- | :------- | :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [network\_id](#network_id)         | `number` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-destination-properties-network-id.md "#/properties/destination/properties/network_id#/properties/destination/properties/network_id")             |
 | [type](#type)                      | `string` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-destination-properties-oracle-type-of-the-destination.md "#/properties/destination/properties/type#/properties/destination/properties/type")     |
-| [oracle\_address](#oracle_address) | `number` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-destination-properties-oracle-address.md "#/properties/destination/properties/oracle_address#/properties/destination/properties/oracle_address") |
+| [oracle\_address](#oracle_address) | `string` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-destination-properties-oracle-address.md "#/properties/destination/properties/oracle_address#/properties/destination/properties/oracle_address") |
 | [rpc\_url](#rpc_url)               | `string` | Required | cannot be null | [Chainsight Relayer specification](relayer-properties-destination-properties-rpc-url.md "#/properties/destination/properties/rpc_url#/properties/destination/properties/rpc_url")                      |
 
 ## network\_id
@@ -119,7 +119,7 @@ address of the destination oracle contract
 
 *   is required
 
-*   Type: `number` ([oracle address](relayer-properties-destination-properties-oracle-address.md))
+*   Type: `string` ([oracle address](relayer-properties-destination-properties-oracle-address.md))
 
 *   cannot be null
 
@@ -127,7 +127,7 @@ address of the destination oracle contract
 
 ### oracle\_address Type
 
-`number` ([oracle address](relayer-properties-destination-properties-oracle-address.md))
+`string` ([oracle address](relayer-properties-destination-properties-oracle-address.md))
 
 ### oracle\_address Constraints
 

@@ -1,7 +1,7 @@
 # Chainsight Algorithm Lens specification Schema
 
 ```txt
-algorithm_lens
+https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/algorithm_lens.json
 ```
 
 Chainsight Algorithm Lens specification

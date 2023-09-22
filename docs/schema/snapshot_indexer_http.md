@@ -1,7 +1,7 @@
 # Chainsight HTTP Event Indexer specification Schema
 
 ```txt
-snapshot_indexer_http
+https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/snapshot_indexer_http.json
 ```
 
 Chainsight HTTP Snapshot Indexer specification
@@ -18,13 +18,13 @@ Chainsight HTTP Snapshot Indexer specification
 
 # Chainsight HTTP Event Indexer specification Properties
 
-| Property                  | Type     | Required | Nullable       | Defined by                                                                                                                                                          |
-| :------------------------ | :------- | :------- | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [version](#version)       | `string` | Required | cannot be null | [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-specification-version-of-the-canister.md "#/properties/version#/properties/version") |
-| [metadata](#metadata)     | `object` | Required | cannot be null | [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-metadata.md "#/properties/metadata#/properties/metadata")                            |
-| [datasource](#datasource) | `object` | Required | cannot be null | [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-datasource.md "snapshot_indexer_http#/properties/datasource")                        |
-| [storage](#storage)       | `object` | Required | cannot be null | [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-storage.md "#/properties/storage#/properties/storage")                               |
-| [interval](#interval)     | `number` | Required | cannot be null | [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-interval.md "#/properties/interval#/properties/interval")                            |
+| Property                  | Type     | Required | Nullable       | Defined by                                                                                                                                                                                                                             |
+| :------------------------ | :------- | :------- | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [version](#version)       | `string` | Required | cannot be null | [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-specification-version-of-the-canister.md "#/properties/version#/properties/version")                                                                    |
+| [metadata](#metadata)     | `object` | Required | cannot be null | [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-metadata.md "#/properties/metadata#/properties/metadata")                                                                                               |
+| [datasource](#datasource) | `object` | Required | cannot be null | [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-datasource.md "https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/snapshot_indexer_http.json#/properties/datasource") |
+| [storage](#storage)       | `object` | Required | cannot be null | [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-storage.md "#/properties/storage#/properties/storage")                                                                                                  |
+| [interval](#interval)     | `number` | Required | cannot be null | [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-interval.md "#/properties/interval#/properties/interval")                                                                                               |
 
 ## version
 
@@ -92,7 +92,7 @@ Chainsight HTTP Snapshot Indexer specification
 
 *   cannot be null
 
-*   defined in: [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-datasource.md "snapshot_indexer_http#/properties/datasource")
+*   defined in: [Chainsight HTTP Event Indexer specification](snapshot_indexer_http-properties-datasource.md "https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/snapshot_indexer_http.json#/properties/datasource")
 
 ### datasource Type
 
