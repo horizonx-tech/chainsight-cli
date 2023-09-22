@@ -23,9 +23,10 @@ jobs:
         run: pip install json-schema-for-humans
       - name: Generate docs
         run: rm -r docs/schema/* && generate-schema-doc resources/schema/ docs/schema/ --config template_name=md
-      - name: push docs if changed on current branch
+      - name: if updated, push them
         uses: stefanzweifel/git-auto-commit-action@v4
-
+        if: ${{ steps.changes.outputs.files_changed == 'true' }}
+        
   format:
     runs-on: ubuntu-latest
     steps:
