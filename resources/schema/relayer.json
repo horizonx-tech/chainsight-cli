@@ -8,24 +8,28 @@
   "required": ["version", "metadata", "datasource", "destination", "interval"],
   "properties": {
     "version": {
+      "$id": "#/properties/version",
       "type": "string",
       "title": "specification version of the canister",
       "examples": ["v1"],
       "pattern": "^(v1)$"
     },
     "metadata": {
+      "$id": "#/properties/metadata",
       "title": "metadata",
       "$comment": "metadata for the canister",
       "type": "object",
       "required": ["label", "type"],
       "properties": {
         "label": {
+          "$id": "#/properties/metadata/properties/label",
           "type": "string",
           "title": "label for the canister",
           "examples": ["relayer_ethusd"],
           "pattern": "^[a-z0-9_]+$"
         },
         "type": {
+          "$id": "#/properties/metadata/properties/type",
           "type": "string",
           "title": "type of the canister",
           "examples": [
@@ -39,12 +43,14 @@
           "pattern": "^(event_indexer|algorithm_indexer|snapshot_indexer|snapshot_json_rpc|relayer|algorithm_lens)$"
         },
         "description": {
+          "$id": "#/properties/metadata/properties/description",
           "type": "string",
           "title": "description of the canister",
           "description": "Can be used to filter canisters in the UI",
           "examples": ["Relayer for ETHUSD"]
         },
         "tags": {
+          "$id": "#/properties/metadata/properties/tags",
           "type": "array",
           "title": "tags for the canister",
           "description": "Can be used to filter canisters in the UI",
@@ -57,10 +63,12 @@
       }
     },
     "datasource": {
+      "$id": "#/properties/datasource",
       "type": "object",
       "required": ["type", "location", "method"],
       "properties": {
         "type": {
+          "$id": "#/properties/datasource/properties/type",
           "type": "string",
           "title": "type of the datasource",
           "description": "currently only supports 'canister'",
@@ -68,11 +76,13 @@
           "pattern": "^(canister)$"
         },
         "location": {
+          "$id": "#/properties/datasource/properties/location",
           "type": "object",
           "title": "datasource location",
           "required": ["id", "args"],
           "properties": {
             "id": {
+              "$id": "#/properties/datasource/properties/location/properties/id",
               "type": "string",
               "title": "canister id",
               "description": "canister id or name of the datasource",
@@ -83,11 +93,13 @@
               "pattern": "^[a-z0-9_-]+$"
             },
             "args": {
+              "$id": "#/properties/datasource/properties/location/properties/args",
               "type": "object",
               "title": "location arguments",
               "required": ["id_type"],
               "properties": {
                 "id_type": {
+                  "$id": "#/properties/datasource/properties/location/properties/args/properties/id_type",
                   "type": "string",
                   "title": "type of the id",
                   "description": "canister_name: id is interpreted as canister name, principal_id: id is interpreted as principal id",
@@ -99,12 +111,14 @@
           }
         },
         "method": {
+          "$id": "#/properties/datasource/properties/method",
           "type": "object",
           "title": "datasource method",
           "description": "method to call on the canister",
           "required": ["identifier", "args"],
           "properties": {
             "identifier": {
+              "$id": "#/properties/datasource/properties/method/properties/identifier",
               "type": "string",
               "title": "method identifier",
               "description": "method identifier. You can get it from candid definition",
@@ -113,6 +127,7 @@
               ]
             },
             "args": {
+              "$id": "#/properties/datasource/properties/method/properties/args",
               "type": "array",
               "title": "method arguments",
               "description": "array of method arguments",
@@ -123,11 +138,13 @@
       }
     },
     "lens_targets": {
+      "$id": "#/properties/lens_targets",
       "type": "object",
       "description": "targets for the lens. Only used when the datasource canister is a algorithm_lens",
       "required": ["identifiers"],
       "properties": {
         "identifiers": {
+          "$id": "#/properties/lens_targets/properties/identifiers",
           "type": "array",
           "title": "identifiers",
           "description": "canister ids of the lens targets. If the canister calls an algorithm_lens and the lens calls 3 canisters, you must set 3 canister ids here",
@@ -140,6 +157,7 @@
             ["bw4dl-smaaa-aaaaa-qaacq-cai"]
           ],
           "items": {
+            "$id": "#/properties/lens_targets/properties/identifiers/items",
             "type": "string",
             "examples": ["bw4dl-smaaa-aaaaa-qaacq-cai"],
             "pattern": "^[a-z0-9_-]+$"
@@ -148,12 +166,14 @@
       }
     },
     "destination": {
+      "$id": "#/properties/destination",
       "type": "object",
       "title": "destination",
       "description": "destination evm network and contract for the data.",
       "required": ["network_id", "type", "oracle_address", "rpc_url"],
       "properties": {
         "network_id": {
+          "$id": "#/properties/destination/properties/network_id",
           "type": "number",
           "title": "network id",
           "description": "network id of the destination evm network",
@@ -161,6 +181,7 @@
           "pattern": "^[0-9]+$"
         },
         "type": {
+          "$id": "#/properties/destination/properties/type",
           "type": "string",
           "title": "oracle type of the destination",
           "description": "oracle type of the destination. currently we don't suport user definined oracle types",
@@ -168,6 +189,7 @@
           "pattern": "^(uint256|uint128|uint64|string)$"
         },
         "oracle_address": {
+          "$id": "#/properties/destination/properties/oracle_address",
           "type": "number",
           "title": "oracle address",
           "description": "address of the destination oracle contract",
@@ -175,6 +197,7 @@
           "pattern": "^(0x)?[0-9a-fA-F]{40}$"
         },
         "rpc_url": {
+          "$id": "#/properties/destination/properties/rpc_url",
           "type": "string",
           "title": "rpc url",
           "description": "rpc url of the destination evm network. only supports https",
@@ -184,6 +207,7 @@
       }
     },
     "interval": {
+      "$id": "#/properties/interval",
       "title": "interval",
       "description": "interval of the canister invocation in seconds",
       "type": "number",

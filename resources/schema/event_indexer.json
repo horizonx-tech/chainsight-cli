@@ -8,24 +8,28 @@
   "required": ["version", "metadata", "datasource", "interval"],
   "properties": {
     "version": {
+      "$id": "#/properties/version",
       "type": "string",
       "title": "specification version of the canister",
       "examples": ["v1"],
       "pattern": "^(v1)$"
     },
     "metadata": {
+      "$id": "#/properties/metadata",
       "title": "metadata",
       "$comment": "metadata for the canister",
       "type": "object",
       "required": ["label", "type"],
       "properties": {
         "label": {
+          "$id": "#/properties/metadata/properties/label",
           "type": "string",
           "title": "label for the canister",
           "examples": ["relayer_ethusd"],
           "pattern": "^[a-z0-9_]+$"
         },
         "type": {
+          "$id": "#/properties/metadata/properties/type",
           "type": "string",
           "title": "type of the canister",
           "examples": [
@@ -39,12 +43,14 @@
           "pattern": "^(event_indexer|algorithm_indexer|snapshot_indexer|snapshot_json_rpc|relayer|algorithm_lens)$"
         },
         "description": {
+          "$id": "#/properties/metadata/properties/description",
           "type": "string",
           "title": "description of the canister",
           "description": "Can be used to filter canisters in the UI",
           "examples": ["Relayer for ETHUSD"]
         },
         "tags": {
+          "$id": "#/properties/metadata/properties/tags",
           "type": "array",
           "title": "tags for the canister",
           "description": "Can be used to filter canisters in the UI",
@@ -57,22 +63,26 @@
       }
     },
     "datasource": {
+      "$id": "#/properties/datasource",
       "type": "object",
       "required": ["id", "event", "network", "from"],
       "properties": {
         "id": {
           "title": "id",
+          "$id": "#/properties/datasource/properties/id",
           "description": "contract address",
           "examples": ["0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"],
           "pattern": "^(0x)?[0-9a-fA-F]{40}$"
         },
         "event": {
+          "$id": "#/properties/datasource/properties/event",
           "title": "event",
           "description": "event identifier to save",
           "type": "object",
           "required": ["identifier", "interface"],
           "properties": {
             "identifier": {
+              "$id": "#/properties/datasource/properties/event/properties/identifier",
               "type": "string",
               "title": "identifier",
               "description": "event name. You can find it in the abi",
@@ -80,6 +90,7 @@
               "pattern": "^[a-zA-Z0-9_-]+$"
             },
             "interface": {
+              "$id": "#/properties/datasource/properties/event/properties/interface",
               "title": "interface",
               "description": "abi json file. It must be in ./interfaces folder",
               "type": "string",
@@ -89,24 +100,28 @@
           }
         },
         "from": {
+          "$id": "#/properties/datasource/properties/from",
           "title": "from",
           "description": "block number to start the query from",
           "type": "number",
           "examples": [0]
         },
         "network": {
+          "$id": "#/properties/datasource/properties/network",
           "title": "network",
           "description": "chain id and rpc url",
           "type": "object",
           "required": ["chain_id", "rpc_url"],
           "properties": {
             "chain_id": {
+              "$id": "#/properties/datasource/properties/network/properties/chain_id",
               "title": "chain_id",
               "description": "chain id",
               "type": "number",
               "examples": [1]
             },
             "rpc_url": {
+              "$id": "#/properties/datasource/properties/network/properties/rpc_url",
               "title": "rpc_url",
               "description": "rpc url",
               "type": "string",
@@ -116,6 +131,7 @@
           }
         },
         "contract_type": {
+          "$id": "#/properties/datasource/properties/contract_type",
           "title": "contract_type",
           "description": "type of the contract. It is not required, but it is useful to filter canisters in the UI",
           "type": "string",
@@ -124,6 +140,7 @@
       }
     },
     "interval": {
+      "$id": "#/properties/interval",
       "title": "interval",
       "description": "interval of the canister invocation in seconds",
       "type": "number",
