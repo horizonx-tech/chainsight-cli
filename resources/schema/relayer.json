@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "relayer",
+  "$id": "https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/relayer.json",
   "title": "Chainsight Relayer specification",
   "$comment": "Chainsight Relayer specification",
   "description": "Chainsight Relayer specification",
@@ -191,7 +191,7 @@
         },
         "oracle_address": {
           "$id": "#/properties/destination/properties/oracle_address",
-          "type": "number",
+          "type": "string",
           "title": "oracle address",
           "description": "address of the destination oracle contract",
           "examples": ["0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"],

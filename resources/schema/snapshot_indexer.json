@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "snapshot_indexer",
+  "$id": "https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/snapshot_indexer.json",
   "title": "Chainsight Snapshot Indexer specification",
   "$comment": "Chainsight Snapshot Indexer specification",
   "description": "Chainsight Snapshot Indexer specification",

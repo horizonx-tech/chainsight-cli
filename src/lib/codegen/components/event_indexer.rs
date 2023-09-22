@@ -204,6 +204,8 @@ impl EventIndexerEventDefinition {
 
 #[cfg(test)]
 mod tests {
+    use jsonschema::JSONSchema;
+
     use super::*;
 
     #[test]
@@ -264,5 +266,13 @@ interval: 3600
                 interval: 3600
             }
         );
+        let schema = serde_json::from_str(include_str!(
+            "../../../../resources/schema/event_indexer.json"
+        ))
+        .expect("Invalid json");
+        let instance = serde_yaml::from_str(yaml).expect("Invalid yaml");
+        let compiled = JSONSchema::compile(&schema).expect("Invalid schema");
+        let result = compiled.validate(&instance);
+        assert!(result.is_ok());
     }
 }
