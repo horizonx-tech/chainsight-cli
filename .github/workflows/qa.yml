@@ -23,15 +23,6 @@ jobs:
           generate-schema-doc ./resources/schema/ ./docs/
       - name: push docs if changed on current branch
         uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: "docs: update docs"
-          commit_options: "--no-verify --signoff"
-          file_pattern: docs/
-          branch: ${{ github.ref }}
-          repository: ${{ github.repository }}
-          commit_user_name: ${{ github.actor }}
-          commit_user_email: ${{ github.actor }}@users.noreply.github.com
-          commit_author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
 
   format:
     runs-on: ubuntu-latest
