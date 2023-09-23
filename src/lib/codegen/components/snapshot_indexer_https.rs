@@ -87,7 +87,7 @@ impl ComponentManifest for SnapshotIndexerHTTPSComponentManifest {
 
     fn to_str_as_yaml(&self) -> anyhow::Result<String> {
         let yaml = serde_yaml::to_string(&self)?;
-        Ok(yaml)
+        Ok(self.yaml_str_with_configs(yaml, "snapshot_indexer_https".to_string()))
     }
 
     fn validate_manifest(&self) -> anyhow::Result<()> {

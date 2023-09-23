@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/relayer.json
+version: v1
+metadata:
+  label: relayer_ethusd
+  type: relayer
+  description: ""
+  tags:
+    - Chainlink
+    - ETH
+datasource:
+  type: canister
+  location:
+    id: aggregator_lens_ethusd
+    args:
+      id_type: canister_name
+  method:
+    identifier: "get_result : (vec text) -> (nat)"
+    interface: null
+    args: []
+lens_targets:
+  identifiers:
+    # id of chainlink_ethusd
+    - bw4dl-smaaa-aaaaa-qaacq-cai
+
+destination:
+  network_id: 31337
+  type: uint128
+  # Oracle ETH
+  oracle_address: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+  rpc_url: https://3c6d-240f-77-2850-3117-a1d5-f465-ee68-f75b.ngrok-free.app
+interval: 30
