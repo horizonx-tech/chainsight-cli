@@ -202,7 +202,7 @@ pub trait ComponentManifest: std::fmt::Debug {
                 .to_string();
         let schema_url = format!("{}{}{}", url_prefix, schema_file_name, ".json");
 
-        format!("# yaml-language-server: $schema= {}\n{}", schema_url, yaml)
+        format!("# yaml-language-server: $schema={}\n{}", schema_url, yaml)
     }
     /// Check Manifest format/value
     fn validate_manifest(&self) -> anyhow::Result<()>;
