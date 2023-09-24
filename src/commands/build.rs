@@ -293,6 +293,8 @@ fn exec_codegen(
     }
 
     // generate canister interfaces
+    let action = "Generate interfaces (.did files)";
+    info!(log, "{}...", action);
     for data in component_data {
         let label = data.metadata().label.to_string();
         let canister_pj_path_str = format!("{}/artifacts/{}", &project_path_str, label);
@@ -304,17 +306,30 @@ fn exec_codegen(
                 let file_name = d.0;
                 let content = d.1;
                 let path = format!("{}/{}.rs", &canister_code_path_str, &file_name);
-                if Path::new(&path).is_file() {
-                    info!(
-                        log,
-                        r#"[{}] Skip creating: '{}' already exists"#,
-                        data.metadata().label,
-                        &path
-                    );
-                    return;
-                }
                 fs::write(path, content).unwrap();
             });
+
+        let output = Command::new("cargo")
+            .current_dir(format!("{}/{}", artifacts_path_str, label))
+            .args(["test"])
+            .output()
+            .expect("failed to execute process: cargo test");
+
+        if output.status.success() {
+            debug!(
+                log,
+                "{}",
+                std::str::from_utf8(&output.stdout).unwrap_or("failed to parse stdout")
+            );
+            info!(log, r#"[{}] Succeeded: {}"#, label, action);
+        } else {
+            bail!(format!(
+                r#"[{}] Failed: {} by: {}"#,
+                label,
+                action,
+                std::str::from_utf8(&output.stderr).unwrap_or("failed to parse stdout")
+            ));
+        }
     }
 
     anyhow::Ok(())
@@ -454,28 +469,6 @@ fn execute_codebuild(
     component_data: &Vec<Box<dyn ComponentManifest>>,
 ) -> anyhow::Result<()> {
     let built_project_path = Path::new(&built_project_path_str);
-
-    let action = "Generate interfaces (.did files)";
-    info!(log, "{}...", action);
-    let output = Command::new("cargo")
-        .current_dir(built_project_path)
-        .args(["make", "did"])
-        .output()
-        .expect("failed to execute process: cargo make did");
-    if output.status.success() {
-        debug!(
-            log,
-            "{}",
-            std::str::from_utf8(&output.stdout).unwrap_or("failed to parse stdout")
-        );
-        info!(log, "Succeeded: {}", action);
-    } else {
-        bail!(format!(
-            "Failed: {} by: {}",
-            action,
-            std::str::from_utf8(&output.stderr).unwrap_or("failed to parse stdout")
-        ));
-    }
 
     // Regenerate artifacts folder
     let build_artifact_path_str = format!("{}/artifacts", built_project_path_str);
