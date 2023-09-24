@@ -159,6 +159,33 @@ fn exec_codegen(
         fs::create_dir(artifacts_path)?;
     }
 
+    // generate workspace
+    let projects = component_data
+        .iter()
+        .map(|data| data.metadata().label.to_string())
+        .collect::<Vec<String>>();
+    if !Path::new(&format!("{}/Cargo.toml", &artifacts_path_str)).is_file() {
+        fs::write(
+            format!("{}/Cargo.toml", &artifacts_path_str),
+            root_cargo_toml(projects.clone()),
+        )?;
+    } else {
+        info!(log, r#"Skip creating: 'Cargo.toml' already exists"#,)
+    }
+    fs::write(
+        format!("{}/dfx.json", &artifacts_path_str),
+        dfx_json(projects),
+    )?;
+
+    if !Path::new(&format!("{}/Makefile.toml", &artifacts_path_str)).is_file() {
+        fs::write(
+            format!("{}/Makefile.toml", &artifacts_path_str),
+            makefile_toml(),
+        )?;
+    } else {
+        info!(log, r#"Skip creating: 'Makefile.toml' already exists"#,)
+    }
+
     // generate /artifacts/__interfaces
     let interfaces_path_str = format!("{}/__interfaces", &artifacts_path_str);
     fs::create_dir(&interfaces_path_str)?;
@@ -290,26 +317,6 @@ fn exec_codegen(
                 }
                 fs::write(path, content).unwrap();
             });
-    }
-    if !Path::new(&format!("{}/Cargo.toml", &artifacts_path_str)).is_file() {
-        fs::write(
-            format!("{}/Cargo.toml", &artifacts_path_str),
-            root_cargo_toml(project_labels.clone()),
-        )?;
-    } else {
-        info!(log, r#"Skip creating: 'Cargo.toml' already exists"#,)
-    }
-    fs::write(
-        format!("{}/dfx.json", &artifacts_path_str),
-        dfx_json(project_labels),
-    )?;
-    if !Path::new(&format!("{}/Makefile.toml", &artifacts_path_str)).is_file() {
-        fs::write(
-            format!("{}/Makefile.toml", &artifacts_path_str),
-            makefile_toml(),
-        )?;
-    } else {
-        info!(log, r#"Skip creating: 'Makefile.toml' already exists"#,)
     }
 
     anyhow::Ok(())
