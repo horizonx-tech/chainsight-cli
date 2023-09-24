@@ -194,16 +194,14 @@ fn exec_codegen(
         fs::write(&dummy_candid_file_path, dummy_candid_blob())?;
     }
 
-    // generate canister codes
-    let mut project_labels: Vec<String> = vec![];
+    // generate canister projects
     for data in component_data {
+        let label = data.metadata().label.to_string();
+
         if let Err(msg) = data.validate_manifest() {
-            bail!(format!(
-                r#"[{}] Invalid manifest: {}"#,
-                data.metadata().label,
-                msg
-            ));
+            bail!(format!(r#"[{}] Invalid manifest: {}"#, label, msg));
         }
+        info!(log, r#"[{}] Start processing..."#, label);
 
         // Processes about interface
         // - copy and move any necessary interfaces to canister
@@ -221,7 +219,7 @@ fn exec_codegen(
                 info!(
                     log,
                     r#"[{}] Interface file '{}' copied from user's interface"#,
-                    data.metadata().label,
+                    label,
                     &interface_file
                 );
                 let abi_file = File::open(user_if_file_path)?;
@@ -231,7 +229,7 @@ fn exec_codegen(
                 info!(
                     log,
                     r#"[{}] Interface file '{}' copied from builtin interface"#,
-                    data.metadata().label,
+                    label,
                     &interface_file
                 );
                 let contract: ethabi::Contract = serde_json::from_str(contents)?;
@@ -239,14 +237,11 @@ fn exec_codegen(
             } else {
                 bail!(format!(
                     r#"[{}] Interface file "{}" not found"#,
-                    data.metadata().label,
-                    &interface_file
+                    label, &interface_file
                 ));
             }
         }
 
-        let label = data.metadata().label.clone();
-        project_labels.push(label.to_string());
         let canister_pj_path_str = format!("{}/artifacts/{}", &project_path_str, label);
         let canister_code_path_str = format!("{}/src", &canister_pj_path_str);
         fs::create_dir_all(Path::new(&canister_code_path_str))?;
@@ -263,9 +258,7 @@ fn exec_codegen(
             if Path::new(&app_path_str).is_file() {
                 info!(
                     log,
-                    r#"[{}] Skip creating: '{}' already exists"#,
-                    data.metadata().label,
-                    app_path_str,
+                    r#"[{}] Skip creating: '{}' already exists"#, label, app_path_str,
                 );
             } else {
                 let mut lib_file: File = File::create(&app_path_str)?;
@@ -281,8 +274,7 @@ fn exec_codegen(
         } else {
             info!(
                 log,
-                r#"[{}] Skip creating: 'Cargo.toml' already exists"#,
-                data.metadata().label,
+                r#"[{}] Skip creating: 'Cargo.toml' already exists"#, label,
             )
         }
 
@@ -295,11 +287,17 @@ fn exec_codegen(
             )?;
             info!(
                 log,
-                r#"[{}] Interface file '{}' copied from builtin interface"#,
-                data.metadata().label,
-                &json_name
+                r#"[{}] Interface file '{}' copied from builtin interface"#, label, &json_name
             );
         }
+    }
+
+    // generate canister interfaces
+    for data in component_data {
+        let label = data.metadata().label.to_string();
+        let canister_pj_path_str = format!("{}/artifacts/{}", &project_path_str, label);
+        let canister_code_path_str = format!("{}/src", &canister_pj_path_str);
+
         data.additional_files(Path::new(project_path_str))
             .iter()
             .for_each(|d| {
