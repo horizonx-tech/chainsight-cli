@@ -2,6 +2,7 @@ use std::{collections::HashMap, fs::OpenOptions, io::Read, path::Path};
 
 use candid::{pretty_check_file, Principal};
 use proc_macro2::TokenStream;
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -142,7 +143,9 @@ fn create_candid_rust_binding(path: &Path) -> anyhow::Result<String> {
     let result = candid::bindings::rust::compile(&config, &env, &None)
         .replace("use ic_cdk::api::call::CallResult as Result;", "")
         .replace("pub enum Result", "enum Result");
-    Ok(result)
+    let re = Regex::new(r"[^{](\w+): ").unwrap();
+    let result = re.replace_all(&result, " pub ${1}: ");
+    Ok(result.to_string())
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
