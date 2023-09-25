@@ -200,3 +200,88 @@ fn tempalte_algorithm_lens_manifest(project_name: &str) -> AlgorithmLensComponen
         AlgorithmLensOutput::default(),
     )
 }
+
+#[cfg(test)]
+mod tests {
+
+    use std::panic;
+
+    use crate::lib::logger::create_root_logger;
+
+    use super::*;
+    fn teardown(project_name: &str) {
+        let project_name_path = Path::new(project_name);
+        if project_name_path.exists() {
+            fs::remove_dir_all(project_name).unwrap();
+        }
+    }
+
+    #[test]
+    fn test_create() {
+        run_test("test_create", || {
+            let project_name = "test_create";
+            create_project(project_name).unwrap();
+            let project_name_path = Path::new(&project_name);
+            assert!(project_name_path.exists());
+            assert!(project_name_path.join(CHAINSIGHT_FILENAME).exists());
+            assert!(project_name_path.join(PROJECT_MANIFEST_FILENAME).exists());
+            assert!(project_name_path
+                .join(format!("components/{}_event_indexer.yaml", project_name))
+                .exists());
+            assert!(project_name_path
+                .join(format!(
+                    "components/{}_algorithm_indexer.yaml",
+                    project_name
+                ))
+                .exists());
+            assert!(project_name_path
+                .join(format!("components/{}_snapshot_chain.yaml", project_name))
+                .exists());
+            assert!(project_name_path
+                .join(format!("components/{}_snapshot_icp.yaml", project_name))
+                .exists());
+            assert!(project_name_path
+                .join(format!("components/{}_relayer.yaml", project_name))
+                .exists());
+            assert!(project_name_path
+                .join(format!("components/{}_algorithm_lens.yaml", project_name))
+                .exists());
+            assert!(project_name_path
+                .join(format!(
+                    "components/{}_snapshot_indexer_https.yaml",
+                    project_name
+                ))
+                .exists());
+        })
+    }
+
+    #[test]
+    fn test_exec() {
+        run_test("test_exec", || {
+            let result = exec(
+                &EnvironmentImpl::new().with_logger(create_root_logger(1)),
+                NewOpts {
+                    project_name: "test_exec".to_string(),
+                },
+            );
+            if let Err(msg) = result {
+                println!("{}", msg);
+                teardown("test_exec");
+                assert!(false);
+            }
+            let project_name_path = Path::new("test_exec");
+            assert!(project_name_path.exists());
+        })
+    }
+
+    fn run_test<T>(project_name: &str, test: T) -> ()
+    where
+        T: FnOnce() -> () + panic::UnwindSafe,
+    {
+        let result = panic::catch_unwind(|| test());
+
+        teardown(project_name);
+
+        assert!(result.is_ok())
+    }
+}
