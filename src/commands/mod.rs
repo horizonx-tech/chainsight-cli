@@ -2,12 +2,13 @@ use clap::Subcommand;
 
 use crate::lib::environment::EnvironmentImpl;
 
+mod add;
 mod auth;
 mod build;
 mod config;
-mod create;
 mod deploy;
 mod exec;
+mod generate;
 mod new;
 mod remove;
 mod test;
@@ -18,7 +19,8 @@ pub enum Command {
     // Config(config::ConfigOpts),
     // Auth(auth::AuthOpts),
     New(new::NewOpts),
-    Create(create::CreateOpts),
+    Add(add::AddOpts),
+    Generate(generate::GenerateOpts),
     Build(build::BuildOpts),
     // Test(test::TestOpts),
     Deploy(deploy::DeployOpts),
@@ -38,7 +40,8 @@ pub fn exec(env: &EnvironmentImpl, cmd: Command) -> anyhow::Result<()> {
         //     Ok(())
         // }
         Command::New(opts) => new::exec(env, opts),
-        Command::Create(opts) => create::exec(env, opts),
+        Command::Add(opts) => add::exec(env, opts),
+        Command::Generate(opts) => generate::exec(env, opts),
         Command::Build(opts) => build::exec(env, opts),
         // Command::Test(_) => {
         //     println!("Not implemented yet...");

@@ -39,6 +39,7 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
     let method = &manifest.datasource.method;
     let method_identifier = CanisterMethodIdentifier::parse_from_str(&method.identifier)?;
 
+    let label_ident = format_ident!("{}", &manifest.metadata.label);
     let method_ident = "proxy_".to_string() + &method_identifier.identifier;
 
     // from destination: about oracle
@@ -59,14 +60,13 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
 
     // for response type
     let response_type: CanisterMethodValueType = method_identifier.return_value;
-    let (call_canister_response_type_ident, response_type_def_ident, sync_data_ident) =
-        generate_idents_to_call_datasource_and_sync_to_oracle(response_type, destination.type_)?;
+    let sync_data_ident = generate_ident_sync_to_oracle(response_type, destination.type_)?;
     let args_type_ident = match manifest.lens_targets.is_some() {
         true => quote! {
             type CallCanisterArgs = Vec<String>;
         },
         false => quote! {
-            type CallCanisterArgs = app::CallCanisterArgs;
+            type CallCanisterArgs = #label_ident::CallCanisterArgs;
         },
     };
     let lens_targets: Vec<Principal> = manifest
@@ -92,7 +92,7 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
         },
         false => quote! {
             pub fn call_args() -> CallCanisterArgs {
-                app::call_args()
+                #label_ident::call_args()
             }
         },
     };
@@ -108,10 +108,8 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
 
     Ok(quote! {
         ic_solidity_bindgen::contract_abi!(#abi_path);
+        use #label_ident::*;
         #relayer_source_ident
-        #response_type_def_ident
-        #call_canister_response_type_ident
-        mod app;
         #args_type_ident
         #get_args_ident
 
@@ -131,7 +129,7 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
                 return;
             }
             let datum = val.unwrap();
-            if !app::filter(&datum) {
+            if !filter(&datum) {
                 return;
             }
 
@@ -146,95 +144,38 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
     })
 }
 
-fn generate_idents_to_call_datasource_and_sync_to_oracle(
+fn generate_ident_sync_to_oracle(
     canister_response_type: CanisterMethodValueType,
     oracle_type: DestinationType,
-) -> anyhow::Result<(
-    proc_macro2::TokenStream, // call_canister_response_type_ident
-    proc_macro2::TokenStream, // response_type_def_ident
-    proc_macro2::TokenStream, // sync_data_ident
-)> {
+) -> anyhow::Result<proc_macro2::TokenStream> {
     let res = match canister_response_type {
         CanisterMethodValueType::Scalar(ty, _) => {
-            let ty_ident = format_ident!("{}", ty);
-            let call_canister_response_type_ident =
-                quote! { pub type CallCanisterResponse = #ty_ident; };
             let arg_ident = format_ident!("datum");
             match oracle_type {
                 DestinationType::Uint256Oracle => {
-                    let quote_to_convert_datum_to_u256 =
-                        generate_quote_to_convert_datum_to_u256(arg_ident, &ty)?;
-                    (
-                        call_canister_response_type_ident,
-                        quote! {},
-                        quote_to_convert_datum_to_u256,
-                    )
+                    generate_quote_to_convert_datum_to_u256(arg_ident, &ty)?
                 }
                 DestinationType::Uint128Oracle => {
-                    let quote_to_convert_datum =
-                        generate_quote_to_convert_datum_to_integer(arg_ident, &ty, "u128")?;
-                    (
-                        call_canister_response_type_ident,
-                        quote! {},
-                        quote_to_convert_datum,
-                    )
+                    generate_quote_to_convert_datum_to_integer(arg_ident, &ty, "u128")?
                 }
                 DestinationType::Uint64Oracle => {
-                    let quote_to_convert_datum =
-                        generate_quote_to_convert_datum_to_integer(arg_ident, &ty, "u64")?;
-                    (
-                        call_canister_response_type_ident,
-                        quote! {},
-                        quote_to_convert_datum,
-                    )
+                    generate_quote_to_convert_datum_to_integer(arg_ident, &ty, "u64")?
                 }
-                DestinationType::StringOracle => (
-                    call_canister_response_type_ident,
-                    quote! {},
-                    quote! { datum.clone().to_string() },
-                ),
+                DestinationType::StringOracle => quote! { datum.clone().to_string() },
             }
         }
-        CanisterMethodValueType::Tuple(tys) => {
+        CanisterMethodValueType::Tuple(_) => {
             match oracle_type {
                 DestinationType::StringOracle => {
-                    let type_idents = tys
-                        .iter()
-                        .map(|(ty, _)| format_ident!("{}", ty))
-                        .collect::<Vec<proc_macro2::Ident>>();
-                    (
-                        quote! { type CallCanisterResponse = (#(#type_idents),*); },
-                        quote! {},
-                        quote! { format!("{:?}", &datum) }, // temp
-                    )
+                    quote! { format!("{:?}", &datum) } // temp
                 }
                 _ => bail!("not support tuple type for oracle"),
             }
         }
-        CanisterMethodValueType::Struct(values) => {
+        CanisterMethodValueType::Struct(_) => {
             match oracle_type {
                 DestinationType::StringOracle => {
-                    let response_type_def_ident = format_ident!("{}", "CustomResponseStruct");
-                    let struct_tokens = values
-                        .into_iter()
-                        .map(|(key, ty, _)| {
-                            let key_ident = format_ident!("{}", key);
-                            let ty_ident = format_ident!("{}", ty);
-                            quote! {
-                                pub #key_ident: #ty_ident
-                            }
-                        })
-                        .collect::<Vec<_>>();
-                    (
-                        quote! { type CallCanisterResponse = #response_type_def_ident; },
-                        quote! {
-                            #[derive(Clone, Debug, candid::CandidType, candid::Deserialize)]
-                            pub struct #response_type_def_ident {
-                                #(#struct_tokens),*
-                            }
-                        },
-                        quote! { format!("{:?}", &datum) }, // temp
-                    )
+                    quote! { format!("{:?}", &datum) } // temp
                 }
                 _ => bail!("not support struct type for oracle"),
             }

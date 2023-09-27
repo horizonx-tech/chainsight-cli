@@ -59,7 +59,7 @@ fn custom_codes_for_contract(
     // for request values
     ensure!(
         method_identifier.params.len() == method.args.len(),
-        "The number of params and args must be the same"
+        "datatource.method is not valid: The number of params in 'identifier' and 'args' must be the same"
     );
     let method_args = method
         .args
@@ -74,7 +74,7 @@ fn custom_codes_for_contract(
     let mut response_val_idents: Vec<proc_macro2::TokenStream> = vec![];
     let response_types = method_identifier.return_value;
     match response_types.len() {
-        0 => bail!("The number of response types must be greater than 0"),
+        0 => bail!("datatource.method.identifier is not valid: Response required"),
         1 => {
             // If it's a single type, we process it like we did before
             let ty = syn::parse_str::<syn::Type>(&response_types[0])?;
@@ -226,6 +226,7 @@ fn custom_codes_for_canister(
     let method = &manifest.datasource.method;
     let method_identifier = CanisterMethodIdentifier::parse_from_str(&method.identifier)?;
 
+    let label_ident = format_ident!("{}", label);
     let method_ident = "proxy_".to_string() + &method_identifier.identifier; // NOTE: to call through proxy
 
     // for request values
@@ -328,7 +329,7 @@ fn custom_codes_for_canister(
             type CallCanisterArgs = Vec<String>;
         },
         false => quote! {
-            type CallCanisterArgs = app::CallCanisterArgs;
+            type CallCanisterArgs = #label_ident::CallCanisterArgs;
         },
     };
     let lens_targets: Vec<Principal> = manifest
@@ -354,7 +355,7 @@ fn custom_codes_for_canister(
         },
         false => quote! {
             pub fn call_args() -> CallCanisterArgs {
-                app::call_args()
+                #label_ident::call_args()
             }
         },
     };
@@ -371,7 +372,6 @@ fn custom_codes_for_canister(
         snapshot_icp_source!(#method_ident);
 
         //type CallCanisterArgs = (#(#request_ty_idents),*); TODO
-        mod app;
         type CallCanisterResponse = SnapshotValue;
         async fn execute_task() {
             #expr_to_current_ts_sec

@@ -69,7 +69,9 @@ fn custom_codes(
     let contract_struct_ident = format_ident!("{}", event_interface.trim_end_matches(".json")); // temp: specify the extension (only .json?)
     let abi_path = format!("./__interfaces/{}", event_interface);
 
-    let events = interface_contract.events_by_name(&datasource_event_def.identifier)?;
+    let events = interface_contract
+        .events_by_name(&datasource_event_def.identifier)
+        .map_err(|err| anyhow::anyhow!("failed to resolve event: {}", err))?;
     ensure!(
         events.len() == 1,
         "event is not found or there are multiple events"

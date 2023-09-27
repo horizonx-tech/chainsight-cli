@@ -142,6 +142,9 @@ impl ComponentManifest for SnapshotIndexerComponentManifest {
             attributes: attr,
         }
     }
+    fn default_query_identifier(&self) -> Option<&str> {
+        Option::Some("get_last_snapshot_value : () -> (text)")
+    }
     fn custom_tags(&self) -> HashMap<String, String> {
         let mut res = HashMap::new();
         let (interval_key, interval_val) = custom_tags_interval_sec(self.interval);
@@ -180,7 +183,7 @@ mod tests {
         let yaml = r#"
 version: v1
 metadata:
-    label: sample_pj_snapshot_chain
+    label: sample_snapshot_indexer_chain
     type: snapshot_indexer
     description: Description
     tags:
@@ -210,7 +213,7 @@ interval: 3600
             SnapshotIndexerComponentManifest {
                 version: "v1".to_owned(),
                 metadata: ComponentMetadata {
-                    label: "sample_pj_snapshot_chain".to_owned(),
+                    label: "sample_snapshot_indexer_chain".to_owned(),
                     type_: ComponentType::SnapshotIndexer,
                     description: "Description".to_string(),
                     tags: Some(vec!["ERC-20".to_string(), "Ethereum".to_string()])
@@ -242,7 +245,7 @@ interval: 3600
         let yaml = r#"
 version: v1
 metadata:
-    label: sample_pj_snapshot_icp
+    label: sample_snapshot_indexer_icp
     type: snapshot_indexer
     description: Description
     tags:
@@ -270,7 +273,7 @@ interval: 3600
             SnapshotIndexerComponentManifest {
                 version: "v1".to_owned(),
                 metadata: ComponentMetadata {
-                    label: "sample_pj_snapshot_icp".to_owned(),
+                    label: "sample_snapshot_indexer_icp".to_owned(),
                     type_: ComponentType::SnapshotIndexer,
                     description: "Description".to_string(),
                     tags: Some(vec!["ERC-20".to_string(), "Ethereum".to_string()])

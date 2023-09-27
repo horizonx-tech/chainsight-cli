@@ -63,20 +63,9 @@ fn custom_codes(
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     let label = &manifest.metadata.label;
 
-    let event_interfaces = &manifest.datasource.input.fields;
-    let event_struct = format_ident!("{}", &manifest.datasource.input.name);
+    let logic_ident = format_ident!("{}", label);
     let source_ident = input_type_ident(manifest);
     let method = &manifest.datasource.method;
-
-    let input_field_idents: Vec<Ident> = event_interfaces
-        .iter()
-        .map(|(k, _)| format_ident!("{}", k.clone()))
-        .collect();
-
-    let input_field_types: Vec<Ident> = event_interfaces
-        .iter()
-        .map(|(_, v)| format_ident!("{}", v.clone()))
-        .collect();
 
     let mut output_structs_quotes = Vec::new();
     let (mut key_value_count, mut key_values_count) = (0, 0);
@@ -116,12 +105,9 @@ fn custom_codes(
         });
     }
     let out = quote! {
-        algorithm_indexer!(#source_ident,#method);
+        use #logic_ident::*;
+        algorithm_indexer!(#source_ident, #method);
 
-        #[derive(Clone, Debug,  Default, CandidType, Serialize, Deserialize)]
-        pub struct #event_struct {
-            #(pub #input_field_idents: #input_field_types),*
-        }
         #(#output_structs_quotes)*
 
     };
@@ -153,9 +139,25 @@ pub fn generate_codes(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::R
 pub fn generate_app(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Result<TokenStream> {
     let input_type = input_type_ident(manifest);
     let event_struct = format_ident!("{}", &manifest.datasource.input.name);
+
+    let event_interfaces = &manifest.datasource.input.fields;
+    let input_field_idents: Vec<Ident> = event_interfaces
+        .iter()
+        .map(|(k, _)| format_ident!("{}", k.clone()))
+        .collect();
+    let input_field_types: Vec<Ident> = event_interfaces
+        .iter()
+        .map(|(_, v)| format_ident!("{}", v.clone()))
+        .collect();
+
     let code = quote! {
         use std::collections::HashMap;
-        use crate::#event_struct;
+
+        #[derive(Clone, Debug,  Default, candid::CandidType, serde::Serialize, serde::Deserialize)]
+        pub struct #event_struct {
+            #(pub #input_field_idents: #input_field_types),*
+        }
+
         pub fn persist(elem: #input_type) {
             todo!()
         }

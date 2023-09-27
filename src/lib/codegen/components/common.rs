@@ -166,7 +166,7 @@ impl DatasourceLocation {
 
     pub fn default_canister() -> Self {
         Self::new_canister(
-            "sample_pj_snapshot_chain".to_string(),
+            "sample_snapshot_indexer_chain".to_string(),
             CanisterIdType::CanisterName,
         )
     }
@@ -235,9 +235,11 @@ pub trait ComponentManifest: std::fmt::Debug {
     fn user_impl_required(&self) -> bool;
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream>;
     fn get_sources(&self) -> Sources;
-    // map of file_name and additioal file content
-    fn additional_files(&self, _project_root: &Path) -> HashMap<String, String> {
-        HashMap::new()
+    fn default_query_identifier(&self) -> Option<&str> {
+        Option::None
+    }
+    fn dependencies(&self) -> Vec<String> {
+        vec![]
     }
 }
 

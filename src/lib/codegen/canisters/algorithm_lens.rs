@@ -1,9 +1,9 @@
 use crate::{
-    lib::codegen::{
-        canisters::common::CanisterMethodValueType,
-        components::algorithm_lens::{
-            candid_binding_file_name, AlgorithmLensComponentManifest, AlgorithmLensOutputType,
+    lib::{
+        codegen::components::algorithm_lens::{
+            AlgorithmLensComponentManifest, AlgorithmLensOutputType,
         },
+        utils::paths,
     },
     types::ComponentType,
 };
@@ -11,15 +11,12 @@ use anyhow::ensure;
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote};
 
-use super::common::CanisterMethodIdentifier;
-
 fn common_codes() -> TokenStream {
     quote! {
         use chainsight_cdk::lens::LensFinder;
         use chainsight_cdk_macros::{chainsight_common, did_export, init_in, algorithm_lens_finder, lens_method};
         use candid::CandidType;
         use ic_web3_rs::futures::{future::BoxFuture, FutureExt};
-        mod app;
         chainsight_common!(60);
         init_in!();
     }
@@ -28,68 +25,9 @@ fn common_codes() -> TokenStream {
 fn custom_codes(
     manifest: &AlgorithmLensComponentManifest,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    let method_identifiers = get_method_identifiers(manifest)?;
-    let methods: &Vec<
-        crate::lib::codegen::components::algorithm_lens::AlgorithmLensDataSourceMethod,
-    > = &manifest.datasource.methods;
     let label = &manifest.metadata.label;
 
-    let mut algorithm_lens_finders = Vec::<proc_macro2::TokenStream>::new();
-    for (i, method_identifier) in method_identifiers.iter().enumerate() {
-        let method_label = &methods[i].label;
-        let func_to_call = &method_identifier.identifier.to_string();
-        let proxy_func_to_call = "proxy_".to_string() + func_to_call;
-        let method_args = method_identifier
-            .params
-            .iter()
-            .map(|arg| format_ident!("{}", arg))
-            .collect::<Vec<Ident>>();
-        let struct_file_name = candid_binding_file_name(&methods[i].candid_file_path);
-        let struct_file_ident = format_ident!("{}", struct_file_name);
-        let (import_type, method_return_type) = match &method_identifier.return_value {
-            CanisterMethodValueType::Scalar(ty, is_scalar) => match is_scalar {
-                true => {
-                    let ty = format_ident!("{}", ty.to_string());
-                    (None, ty)
-                }
-                false => (
-                    Some(format_ident!("{}", ty.to_string())),
-                    format_ident!("{}_{}", ty.to_string(), i.to_string()),
-                ),
-            },
-            _ => (None, format_ident!("{}", "TODO".to_string())), // TODO: support tuple & struct
-        };
-        let import_ident = match import_type {
-            None => quote! {},
-            Some(import_type) => quote! {
-                use crate::#struct_file_ident::#import_type as #method_return_type;
-            },
-        };
-
-        let ident = if method_args.is_empty() {
-            quote! {
-                mod #struct_file_ident;
-                #import_ident
-                algorithm_lens_finder!(
-                    #method_label,
-                    #proxy_func_to_call,
-                    #method_return_type
-                );
-            }
-        } else {
-            quote! {
-                algorithm_lens_finder!(
-                    #method_label,
-                    #proxy_func_to_call,
-                    #method_return_type,
-                    #(#method_args),*
-                );
-            }
-        };
-
-        algorithm_lens_finders.push(ident);
-    }
-
+    let logic_ident: Ident = format_ident!("{}", label);
     let output_ident = match &manifest.output.type_ {
         AlgorithmLensOutputType::Primitive => {
             let primitive_type = format_ident!(
@@ -103,7 +41,7 @@ fn custom_codes(
             let input_count = manifest.datasource.methods.len();
 
             quote! {
-                #(#algorithm_lens_finders)*
+                use #logic_ident::*;
                 lens_method!(#primitive_type, #input_count);
                 did_export!(#label);
             }
@@ -113,31 +51,9 @@ fn custom_codes(
                 "{}",
                 &manifest.clone().output.name.expect("field name reuired")
             );
-            let output_fields_idents: Vec<Ident> = manifest
-                .clone()
-                .output
-                .fields
-                .expect("fields required")
-                .keys()
-                .map(|k| format_ident!("{}", k.clone()))
-                .collect();
-            let output_types_idents: Vec<Ident> = manifest
-                .clone()
-                .output
-                .fields
-                .expect("fields required")
-                .values()
-                .map(|v| format_ident!("{}", v.clone()))
-                .collect();
             let input_count = manifest.datasource.methods.len();
             quote! {
-                #[derive(Clone, Debug,  Default, CandidType, serde::Deserialize, serde::Serialize)]
-                pub struct #output_struct_ident {
-                    #(pub #output_fields_idents: #output_types_idents),*
-                }
-
-                #(#algorithm_lens_finders)*
-
+                use #logic_ident::*;
                 lens_method!(#output_struct_ident, #input_count);
                 did_export!(#label);
             }
@@ -166,8 +82,15 @@ pub fn generate_codes(manifest: &AlgorithmLensComponentManifest) -> anyhow::Resu
 
 pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result<TokenStream> {
     let methods = manifest.datasource.methods.clone();
-    let call_func_idents = methods.iter().map(|m| format_ident!("get_{}", &m.label));
-    let call_func_templates = call_func_idents.clone().map(|getter| {
+    let call_func_imports = methods.iter().map(|m| {
+        let bindings_ident = format_ident!("{}", paths::bindings_name(&m.label));
+        let call_func_ident = format_ident!("get_{}", &m.label);
+        quote! {
+            use #bindings_ident::#call_func_ident;
+        }
+    });
+    let call_func_templates = methods.iter().map(|m| {
+        let getter = format_ident!("get_{}", &m.label);
         quote! {
             let _result = #getter(targets.get(0).unwrap().clone()).await;
         }
@@ -188,16 +111,34 @@ pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result
         ),
     };
     let imports = match &manifest.output.type_ {
-        AlgorithmLensOutputType::Struct => quote! {
-            use crate::{
-                #output_type_ident,
-                #(#call_func_idents),*
-            };
-        },
+        AlgorithmLensOutputType::Struct => {
+            let output_fields_idents: Vec<Ident> = manifest
+                .clone()
+                .output
+                .fields
+                .expect("fields required")
+                .keys()
+                .map(|k| format_ident!("{}", k.clone()))
+                .collect();
+            let output_types_idents: Vec<Ident> = manifest
+                .clone()
+                .output
+                .fields
+                .expect("fields required")
+                .values()
+                .map(|v| format_ident!("{}", v.clone()))
+                .collect();
+            quote! {
+                #[derive(Clone, Debug,  Default, candid::CandidType, serde::Deserialize, serde::Serialize)]
+                pub struct #output_type_ident {
+                    #(pub #output_fields_idents: #output_types_idents),*
+                }
+
+                #(#call_func_imports)*
+            }
+        }
         AlgorithmLensOutputType::Primitive => quote! {
-            use crate::{
-                #(#call_func_idents),*
-            };
+            #(#call_func_imports)*
         },
     };
 
@@ -220,15 +161,4 @@ pub fn validate_manifest(manifest: &AlgorithmLensComponentManifest) -> anyhow::R
     );
 
     Ok(())
-}
-
-fn get_method_identifiers(
-    manifest: &AlgorithmLensComponentManifest,
-) -> anyhow::Result<Vec<CanisterMethodIdentifier>> {
-    manifest
-        .datasource
-        .methods
-        .iter()
-        .map(|m| CanisterMethodIdentifier::parse_from_str(&m.identifier))
-        .collect::<anyhow::Result<Vec<CanisterMethodIdentifier>>>()
 }

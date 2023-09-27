@@ -205,7 +205,7 @@ mod tests {
         let yaml = r#"
 version: v1
 metadata:
-    label: sample_pj_algorithm_indexer
+    label: sample_algorithm_indexer
     type: algorithm_indexer
     description: Description
     tags: 
@@ -246,7 +246,7 @@ interval: 3600
             AlgorithmIndexerComponentManifest {
                 version: "v1".to_string(),
                 metadata: ComponentMetadata {
-                    label: "sample_pj_algorithm_indexer".to_string(),
+                    label: "sample_algorithm_indexer".to_string(),
                     type_: ComponentType::AlgorithmIndexer,
                     description: "Description".to_string(),
                     tags: Some(vec!["Ethereum".to_string(), "Account".to_string()])
