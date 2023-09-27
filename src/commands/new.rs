@@ -23,9 +23,13 @@ use crate::lib::{
             },
         },
         project::{ProjectManifestComponentField, ProjectManifestData},
+        templates::gitignore,
     },
     environment::EnvironmentImpl,
-    utils::{CHAINSIGHT_FILENAME, PROJECT_MANIFEST_FILENAME, PROJECT_MANIFEST_VERSION},
+    utils::{
+        CHAINSIGHT_FILENAME, GITIGNORE_FILENAME, PROJECT_MANIFEST_FILENAME,
+        PROJECT_MANIFEST_VERSION,
+    },
 };
 
 #[derive(Debug, Parser)]
@@ -66,6 +70,10 @@ fn create_project(project_name: &str) -> anyhow::Result<()> {
     fs::create_dir_all(format!("{}/interfaces", project_name))?;
 
     // Create files
+    fs::write(
+        format!("{}/{}", project_name, GITIGNORE_FILENAME),
+        gitignore(),
+    )?;
     fs::write(format!("{}/{}", project_name, CHAINSIGHT_FILENAME), "")?;
     let relative_event_indexer_path = format!("components/{}_event_indexer.yaml", project_name);
     let relative_algorithm_indexer_path =

@@ -159,3 +159,13 @@ pub fn dfx_json(project_labels: Vec<String>) -> String {
 
     result
 }
+
+pub fn gitignore() -> String {
+    r#"src/__interfaces
+src/bindings
+src/canisters
+src/target
+artifacts
+"#
+    .to_string()
+}
