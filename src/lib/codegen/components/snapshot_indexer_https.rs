@@ -129,6 +129,7 @@ impl ComponentManifest for SnapshotIndexerHTTPSComponentManifest {
             use chainsight_cdk_macros::StableMemoryStorable;
             #[derive(Debug, Clone, candid::CandidType, candid::Deserialize, serde::Serialize, StableMemoryStorable)]
             pub struct SnapshotValue {
+               pub dummy: u64
             }
         };
         Ok(v)
@@ -139,6 +140,9 @@ impl ComponentManifest for SnapshotIndexerHTTPSComponentManifest {
             source_type: SourceType::Https,
             attributes: HashMap::new(),
         }
+    }
+    fn default_query_identifier(&self) -> Option<&str> {
+        Option::Some("get_last_snapshot_value : () -> (SnapshotValue)")
     }
     fn custom_tags(&self) -> HashMap<String, String> {
         let mut res = HashMap::new();

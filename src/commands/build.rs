@@ -1,6 +1,5 @@
 use std::fmt::Debug;
 use std::fs::File;
-use std::io::Write;
 use std::process::Command;
 use std::{fs, path::Path};
 
@@ -8,6 +7,7 @@ use anyhow::{bail, Ok};
 use clap::Parser;
 use slog::{debug, info, Logger};
 
+use crate::lib::codegen::bindings::generate_rs_bindings;
 use crate::lib::codegen::components::algorithm_indexer::AlgorithmIndexerComponentManifest;
 use crate::lib::codegen::components::algorithm_lens::AlgorithmLensComponentManifest;
 use crate::lib::codegen::components::common::{ComponentManifest, ComponentTypeInManifest};
@@ -16,6 +16,10 @@ use crate::lib::codegen::components::relayer::RelayerComponentManifest;
 use crate::lib::codegen::components::snapshot_indexer::SnapshotIndexerComponentManifest;
 use crate::lib::codegen::components::snapshot_indexer_https::SnapshotIndexerHTTPSComponentManifest;
 use crate::lib::codegen::oracle::get_oracle_attributes;
+use crate::lib::codegen::templates::{
+    bindings_cargo_toml, canister_project_cargo_toml, dfx_json, logic_cargo_toml,
+    root_cargo_toml,
+};
 use crate::lib::utils::{find_duplicates, paths, ARTIFACTS_DIR};
 use crate::{
     lib::{
@@ -163,9 +167,6 @@ fn exec_codegen(
     let _ = fs::remove_dir_all(format!("{}/__interfaces", src_path_str));
     let _ = fs::remove_dir_all(format!("{}/bindings", src_path_str));
     let _ = fs::remove_dir_all(format!("{}/canisters", src_path_str));
-    let _ = fs::remove_file(format!("{}/Makefile.toml", src_path_str));
-
-    fs::write(format!("{}/Makefile.toml", src_path_str), makefile_toml())?;
 
     // generate /artifacts/__interfaces
     let interfaces_path_str = format!("{}/__interfaces", src_path_str);
@@ -183,6 +184,32 @@ fn exec_codegen(
             bail!(format!(r#"[{}] Invalid manifest: {}"#, label, msg));
         }
         info!(log, r#"[{}] Start processing..."#, label);
+
+        // logic template
+        let logic_path_str = &paths::logics_path_str(src_path_str, &label);
+        if Path::new(logic_path_str).is_dir() {
+            info!(
+                log,
+                r#"[{}] Skip creating logic project: '{}' already exists"#, label, logic_path_str,
+            );
+        } else {
+            create_cargo_project(
+                logic_path_str,
+                Option::Some(&logic_cargo_toml(&label, data.dependencies())),
+                Option::Some(
+                    &data
+                        .generate_user_impl_template()
+                        .unwrap_or_default()
+                        .to_string(),
+                ),
+            )
+            .map_err(|err| {
+                anyhow::Error::msg(format!(
+                    r#"[{}] Failed to create logic project by: {}"#,
+                    label, err
+                ))
+            })?;
+        }
 
         // Processes about interface
         // - copy and move any necessary interfaces to canister
@@ -223,42 +250,6 @@ fn exec_codegen(
             }
         }
 
-        let canister_pj_path_str = format!("{}/artifacts/{}", &project_path_str, label);
-        let canister_code_path_str = format!("{}/src", &canister_pj_path_str);
-        fs::create_dir_all(Path::new(&canister_code_path_str))?;
-        let lib_path_str = format!("{}/lib.rs", &canister_code_path_str);
-        let mut lib_file = File::create(&lib_path_str)?;
-        lib_file.write_all(
-            data.generate_codes(interface_contract)?
-                .to_string()
-                .as_bytes(),
-        )?;
-        if data.user_impl_required() {
-            let app_path_str = format!("{}/app.rs", &canister_code_path_str);
-            // if file exists, skip
-            if Path::new(&app_path_str).is_file() {
-                info!(
-                    log,
-                    r#"[{}] Skip creating: '{}' already exists"#, label, app_path_str,
-                );
-            } else {
-                let mut lib_file: File = File::create(&app_path_str)?;
-                lib_file.write_all(data.generate_user_impl_template()?.to_string().as_bytes())?;
-            }
-        }
-        if !Path::new(&format!("{}/Cargo.toml", &canister_pj_path_str)).is_file() {
-            // generate project's Cargo.toml
-            fs::write(
-                format!("{}/Cargo.toml", &canister_pj_path_str),
-                &canister_project_cargo_toml(&label),
-            )?;
-        } else {
-            info!(
-                log,
-                r#"[{}] Skip creating: 'Cargo.toml' already exists"#, label,
-            )
-        }
-
         // copy and move oracle interface
         if let Some(value) = data.destination_type() {
             let (_, json_name, json_contents) = get_oracle_attributes(&value);
@@ -271,30 +262,48 @@ fn exec_codegen(
                 r#"[{}] Interface file '{}' copied from builtin interface"#, label, &json_name
             );
         }
+
+        // canister
+        let canister_pj_path_str = &paths::canisters_path_str(src_path_str, &label);
+        create_cargo_project(
+            canister_pj_path_str,
+            Option::Some(&canister_project_cargo_toml(&label)),
+            Option::Some(&data.generate_codes(interface_contract)?.to_string()),
+        )
+        .map_err(|err| {
+            anyhow::Error::msg(format!(
+                r#"[{}] Failed to create canister project by: {}"#,
+                label, err
+            ))
+        })?;
+
+        // generate dummy bindings to be able to run cargo test
+        let bindings_path_str = &paths::bindings_path_str(src_path_str, &label);
+        create_cargo_project(
+            bindings_path_str,
+            Option::Some(&bindings_cargo_toml(&label)),
+            Option::None,
+        )
+        .map_err(|err| {
+            anyhow::Error::msg(format!(
+                r#"[{}] Failed to create bindings project by: {}"#,
+                label, err
+            ))
+        })?;
     }
 
-    // generate canister interfaces
+    // generate canister bindings
     let action = "Generate interfaces (.did files)";
     info!(log, "{}...", action);
     for data in component_data {
         let label = data.metadata().label.to_string();
-        let canister_pj_path_str = format!("{}/artifacts/{}", &project_path_str, label);
-        let canister_code_path_str = format!("{}/src", &canister_pj_path_str);
-
-        data.additional_files(Path::new(project_path_str))
-            .iter()
-            .for_each(|d| {
-                let file_name = d.0;
-                let content = d.1;
-                let path = format!("{}/{}.rs", &canister_code_path_str, &file_name);
-                fs::write(path, content).unwrap();
-            });
+        let canisters_path_str = paths::canisters_path_str(src_path_str, &label);
 
         let output = Command::new("cargo")
-            .current_dir(format!("{}/{}", artifacts_path_str, label))
+            .current_dir(canisters_path_str)
             .args(["test"])
             .output()
-            .expect("failed to execute process: cargo test");
+            .expect("failed to execute: cargo test");
 
         if output.status.success() {
             debug!(
@@ -311,128 +320,20 @@ fn exec_codegen(
                 std::str::from_utf8(&output.stderr).unwrap_or("failed to parse stdout")
             ));
         }
+
+        // TODO handle errors
+        let bindings = generate_rs_bindings(src_path_str, data)?;
+        fs::write(
+            Path::new(&format!(
+                "{}/src/lib.rs",
+                paths::bindings_path_str(src_path_str, &label)
+            )),
+            bindings,
+        )
+        .expect("failed to execute: write bindings");
     }
 
     anyhow::Ok(())
-}
-
-fn root_cargo_toml(members: Vec<String>) -> String {
-    let members = members
-        .iter()
-        .map(|member| format!("\t\"{}\",", member))
-        .collect::<Vec<String>>()
-        .join("\n");
-
-    let txt = format!("[workspace]
-members = [
-{}
-]
-
-[workspace.dependencies]
-candid = \"0.8\"
-ic-cdk = \"0.8\"
-ic-cdk-macros = \"0.6.10\"
-ic-cdk-timers = \"0.1\"
-ic-stable-structures = \"0.5.5\"
-serde = \"1.0.163\"
-serde_bytes = \"0.11.12\"
-hex = \"0.4.3\"
-
-ic-web3-rs = {{ version = \"0.1.1\" }}
-ic-solidity-bindgen = {{ version = \"0.1.5\" }}
-chainsight-cdk-macros = {{ git = \"https://github.com/horizonx-tech/chainsight-sdk.git\", rev = \"e46139d5d358c9b8560db01ff2e1ed04858d23c7\" }}
-chainsight-cdk = {{ git = \"https://github.com/horizonx-tech/chainsight-sdk.git\", rev = \"e46139d5d358c9b8560db01ff2e1ed04858d23c7\" }}", members);
-
-    txt
-}
-
-fn canister_project_cargo_toml(project_name: &str) -> String {
-    let txt = format!(
-        "[package]
-name = \"{}\"
-version = \"0.1.0\"
-edition = \"2021\"
-
-[lib]
-crate-type = [\"cdylib\"]
-
-[dependencies]
-candid.workspace = true
-ic-cdk.workspace = true
-ic-cdk-macros.workspace = true
-ic-cdk-timers.workspace = true
-ic-stable-structures.workspace = true
-serde.workspace = true
-serde_bytes.workspace = true
-hex.workspace = true
-
-ic-web3-rs.workspace = true
-ic-solidity-bindgen.workspace = true
-chainsight-cdk-macros.workspace = true
-chainsight-cdk.workspace = true",
-        project_name
-    );
-
-    txt
-}
-
-fn dfx_json(project_labels: Vec<String>) -> String {
-    let canisters = project_labels
-        .iter()
-        .map(|label| {
-            format!(
-                "\t\t\t\"{}\": {{
-\t\t\t\t\"type\": \"custom\",
-\t\t\t\t\"candid\": \"artifacts/{}.did\",
-\t\t\t\t\"wasm\": \"artifacts/{}.wasm\",
-\t\t\t\t\"metadata\": [
-\t\t\t\t\t{{
-\t\t\t\t\t\t\"name\": \"candid:service\",
-\t\t\t\t\t\t\"visibility\": \"public\"
-\t\t\t\t\t}}
-\t\t\t\t]
-\t\t\t}}",
-                label, label, label
-            )
-        })
-        .collect::<Vec<String>>()
-        .join(",\n");
-
-    let result = format!(
-        r#"{{
-    "version": 1,
-    "canisters": {{
-{}
-    }},
-    "defaults": {{
-        "build": {{
-            "packtool": "",
-            "args": ""
-        }}
-    }},
-    "output_env_file": ".env"
-}}"#,
-        canisters
-    );
-
-    result
-}
-
-fn makefile_toml() -> String {
-    let txt = "[tasks.gen]
-description = \"generate .ts and .did\"
-workspace = false
-command = \"dfx\"
-args = [\"generate\"]
-dependencies = [\"did\"]
-
-[tasks.did]
-description = \"generate .did\"
-workspace = false
-command = \"cargo\"
-args= [\"test\"]";
-
-    txt.to_string()
 }
 
 fn builtin_interface(name: &str) -> Option<&'static str> {
@@ -612,4 +513,21 @@ fn add_metadata_to_wasm(
         put_meta(key, value)?;
     }
     anyhow::Ok(())
+}
+
+pub fn create_cargo_project(
+    path_str: &str,
+    manifest: Option<&str>,
+    src: Option<&str>,
+) -> anyhow::Result<()> {
+    fs::create_dir_all(Path::new(&format!("{}/src", path_str)))?;
+    fs::write(
+        Path::new(&format!("{}/Cargo.toml", path_str)),
+        manifest.unwrap_or_default(),
+    )?;
+    fs::write(
+        Path::new(&format!("{}/src/lib.rs", path_str)),
+        src.unwrap_or_default(),
+    )?;
+    Ok(())
 }

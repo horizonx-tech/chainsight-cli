@@ -1,8 +1,7 @@
 use std::{collections::HashMap, fs::OpenOptions, io::Read, path::Path};
 
-use candid::{pretty_check_file, Principal};
+use candid::Principal;
 use proc_macro2::TokenStream;
-use regex::Regex;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -109,43 +108,13 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
         HashMap::new()
     }
 
-    fn additional_files(&self, project_root: &Path) -> HashMap<String, String> {
+    fn dependencies(&self) -> Vec<String> {
         self.datasource
-            .clone()
             .methods
-            .into_iter()
-            .map(|e| {
-                let file_path = e.candid_file_path;
-                let file_name = candid_binding_file_name(file_path.as_str());
-                let binding = create_candid_rust_binding(project_root.join(file_path).as_path())
-                    .expect("generate candid binding failed");
-                (file_name, binding)
-            })
-            .fold(HashMap::new(), |mut acc, (k, v)| {
-                acc.insert(k, v);
-                acc
-            })
+            .iter()
+            .map(|e| e.label.clone())
+            .collect()
     }
-}
-
-pub fn candid_binding_file_name(file_path: &str) -> String {
-    Path::new(file_path)
-        .file_stem()
-        .unwrap()
-        .to_str()
-        .unwrap()
-        .to_string()
-}
-
-fn create_candid_rust_binding(path: &Path) -> anyhow::Result<String> {
-    let (env, _) = pretty_check_file(path)?;
-    let config = candid::bindings::rust::Config::new();
-    let result = candid::bindings::rust::compile(&config, &env, &None)
-        .replace("use ic_cdk::api::call::CallResult as Result;", "")
-        .replace("pub enum Result", "enum Result");
-    let re = Regex::new(r"[^{](\w+): ").unwrap();
-    let result = re.replace_all(&result, " pub ${1}: ");
-    Ok(result.to_string())
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -194,7 +163,7 @@ impl Default for AlgorithmLensDataSource {
     fn default() -> Self {
         Self {
             methods: vec![AlgorithmLensDataSourceMethod {
-                label: "last_snapshot_value".to_string(),
+                label: "sample_snapshot_icp".to_string(),
                 identifier: "get_last_snapshot_value : () -> (SnapshotValue)".to_string(),
                 candid_file_path: "interfaces/sample.did".to_string(),
             }],

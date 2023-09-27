@@ -14,6 +14,8 @@ pub fn generate_codes(
     let query_keys: Vec<&String> = manifest.datasource.queries.keys().collect();
     let query_values: Vec<&String> = manifest.datasource.queries.values().collect();
     let queries = generate_queries_without_timestamp(format_ident!("SnapshotValue"));
+
+    let label_ident = format_ident!("{}", label);
     let out = quote! {
         use chainsight_cdk::web2::{JsonRpcSnapshotParam, Web2JsonRpcSnapshotIndexer};
         use chainsight_cdk_macros::{
@@ -24,8 +26,7 @@ pub fn generate_codes(
 
         init_in!();
         chainsight_common!(60);
-        mod app;
-        use app::*;
+        use #label_ident::*;
         #[derive(Debug, Clone, candid::CandidType, candid::Deserialize, serde::Serialize, StableMemoryStorable)]
         #[stable_mem_storable_opts(max_size = 10000, is_fixed_size = false)] // temp: max_size
         pub struct Snapshot {
