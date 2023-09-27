@@ -125,6 +125,10 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
         info!(log, r#"Start processing for codegen..."#);
         exec_codegen(log, &project_path_str, &component_data)?;
 
+        info!(
+            log,
+            r#"Project '{}' codes/resources generated successfully"#, project_manifest.label
+        );
     }
 
     if opts.only_codegen {
@@ -134,15 +138,12 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
         info!(log, r#"Start processing for build..."#);
         execute_codebuild(log, &project_path_str, &component_data)?;
 
-    info!(
-        log,
-        r#"Project '{}' codes/resources generated successfully"#, project_manifest.label
-    );
+        info!(
+            log,
+            r#"Project '{}' built successfully"#, project_manifest.label
+        );
+    }
 
-    info!(
-        log,
-        r#"Project '{}' built successfully"#, project_manifest.label
-    );
     Ok(())
 }
 
@@ -204,10 +205,7 @@ fn exec_codegen(
                 ),
             )
             .map_err(|err| {
-                anyhow::Error::msg(format!(
-                    r#"[{}] Failed to create logic project by: {}"#,
-                    label, err
-                ))
+                anyhow::anyhow!(r#"[{}] Failed to create logic project by: {}"#, label, err)
             })?;
         }
 
@@ -265,16 +263,24 @@ fn exec_codegen(
 
         // canister
         let canister_pj_path_str = &paths::canisters_path_str(src_path_str, &label);
+        let canister_src = &data.generate_codes(interface_contract).map_err(|err| {
+            anyhow::anyhow!(
+                r#"[{}] Failed to generate canister code by: {}"#,
+                label,
+                err
+            )
+        })?;
         create_cargo_project(
             canister_pj_path_str,
             Option::Some(&canister_project_cargo_toml(&label)),
-            Option::Some(&data.generate_codes(interface_contract)?.to_string()),
+            Option::Some(&canister_src.to_string()),
         )
         .map_err(|err| {
-            anyhow::Error::msg(format!(
+            anyhow::anyhow!(
                 r#"[{}] Failed to create canister project by: {}"#,
-                label, err
-            ))
+                label,
+                err
+            )
         })?;
 
         // generate dummy bindings to be able to run cargo test
@@ -285,10 +291,11 @@ fn exec_codegen(
             Option::None,
         )
         .map_err(|err| {
-            anyhow::Error::msg(format!(
+            anyhow::anyhow!(
                 r#"[{}] Failed to create bindings project by: {}"#,
-                label, err
-            ))
+                label,
+                err
+            )
         })?;
     }
 

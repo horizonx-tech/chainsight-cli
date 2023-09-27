@@ -95,7 +95,11 @@ pub enum CanisterMethodValueType {
 }
 impl CanisterMethodIdentifier {
     pub fn parse_from_str(s: &str) -> anyhow::Result<Self> {
-        let captures = REGEX_CANDID_FUNC.captures(s).unwrap();
+        let captures = REGEX_CANDID_FUNC.captures(s).ok_or(anyhow::anyhow!(
+            "method.identifier does not satisfy the supported expression: {}, supplied={}",
+            REGEX_CANDID_FUNC.to_string(),
+            s
+        ))?;
 
         let identifier = captures.name("identifier").unwrap().as_str().to_string();
 

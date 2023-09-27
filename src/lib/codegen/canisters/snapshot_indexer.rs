@@ -59,7 +59,7 @@ fn custom_codes_for_contract(
     // for request values
     ensure!(
         method_identifier.params.len() == method.args.len(),
-        "The number of params and args must be the same"
+        "datatource.method is not valid: The number of params in 'identifier' and 'args' must be the same"
     );
     let method_args = method
         .args
@@ -74,7 +74,7 @@ fn custom_codes_for_contract(
     let mut response_val_idents: Vec<proc_macro2::TokenStream> = vec![];
     let response_types = method_identifier.return_value;
     match response_types.len() {
-        0 => bail!("The number of response types must be greater than 0"),
+        0 => bail!("datatource.method.identifier is not valid: Response required"),
         1 => {
             // If it's a single type, we process it like we did before
             let ty = syn::parse_str::<syn::Type>(&response_types[0])?;
