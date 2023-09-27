@@ -16,7 +16,7 @@ pub struct RemoveOpts {
     /// Specify the path of the project to be removed.
     /// If not specified, the current directory is targeted.
     #[arg(long)]
-    path: Option<String>,
+    pub path: Option<String>,
 }
 
 pub fn exec(env: &EnvironmentImpl, opts: RemoveOpts) -> anyhow::Result<()> {

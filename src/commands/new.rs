@@ -34,7 +34,7 @@ use crate::lib::{
 pub struct NewOpts {
     /// Specifies the name of the project to create.
     #[arg(required = true)]
-    project_name: String,
+    pub project_name: String,
 }
 
 pub fn exec(env: &EnvironmentImpl, opts: NewOpts) -> anyhow::Result<()> {

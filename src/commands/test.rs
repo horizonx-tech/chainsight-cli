@@ -7,6 +7,7 @@ pub struct TestOpts {}
 
 #[cfg(test)]
 pub mod tests {
+
     use crate::lib::environment::EnvironmentImpl;
     use crate::lib::logger::create_root_logger;
 
