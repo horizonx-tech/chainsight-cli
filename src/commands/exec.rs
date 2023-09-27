@@ -243,7 +243,7 @@ mod tests {
     }
     #[test]
     fn test_exec() {
-        let project_name = "test_exec";
+        let project_name = "exec_test_exec";
         run(
             || {
                 set_up(project_name);
@@ -267,7 +267,7 @@ mod tests {
     }
     #[test]
     fn test_execute_commands() {
-        let project_name = "test_execute_commands";
+        let project_name = "exec_test_execute_commands";
         let custom_setup = || {
             fs::create_dir_all(format!("{}/scripts", project_name)).unwrap();
             let entrypoint_filepath =

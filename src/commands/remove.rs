@@ -67,7 +67,7 @@ mod tests {
     #[test]
     fn test_remove_project() {
         let dummy_teardown = || {};
-        let project_name = "test_remove_project";
+        let project_name = "remove_test_remove_project";
         run(
             || {
                 setup(project_name);

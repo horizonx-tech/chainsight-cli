@@ -211,7 +211,7 @@ mod tests {
     }
     #[test]
     fn test_create_project() {
-        let project_name = "test_create_project";
+        let project_name = "new_test_create_project";
         run_with_teardown(
             || {
                 let created = create_project(project_name);
@@ -246,7 +246,7 @@ mod tests {
     }
     #[test]
     fn test_exec() {
-        let project_name = "test_exec";
+        let project_name = "new_test_exec";
         run_with_teardown(
             || {
                 let opts = NewOpts {
