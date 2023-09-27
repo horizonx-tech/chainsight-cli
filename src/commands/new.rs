@@ -88,7 +88,7 @@ fn create_project(project_name: &str, no_samples: bool) -> anyhow::Result<()> {
     fs::write(format!("{}/{}", project_name, CHAINSIGHT_FILENAME), "")?;
 
     if !no_samples {
-        return create_sample_components(project_name);
+        return create_sample_components(project_name, "sample");
     }
 
     fs::write(
@@ -99,16 +99,20 @@ fn create_project(project_name: &str, no_samples: bool) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn create_sample_components(project_name: &str) -> anyhow::Result<()> {
-    let relative_event_indexer_path = format!("components/{}_event_indexer.yaml", project_name);
+fn create_sample_components(project_name: &str, component_prefix: &str) -> anyhow::Result<()> {
+    let relative_event_indexer_path = format!("components/{}_event_indexer.yaml", component_prefix);
     let relative_algorithm_indexer_path =
-        format!("components/{}_algorithm_indexer.yaml", project_name);
-    let relative_snapshot_chain_path = format!("components/{}_snapshot_chain.yaml", project_name);
-    let relative_snapshot_icp_path = format!("components/{}_snapshot_icp.yaml", project_name);
-    let relative_relayer_path = format!("components/{}_relayer.yaml", project_name);
-    let relative_algorithmlens_path = format!("components/{}_algorithm_lens.yaml", project_name);
-    let relative_snapshot_indexer_https_path =
-        format!("components/{}_snapshot_indexer_https.yaml", project_name);
+        format!("components/{}_algorithm_indexer.yaml", component_prefix);
+    let relative_snapshot_chain_path =
+        format!("components/{}_snapshot_chain.yaml", component_prefix);
+    let relative_snapshot_icp_path = format!("components/{}_snapshot_icp.yaml", component_prefix);
+    let relative_relayer_path = format!("components/{}_relayer.yaml", component_prefix);
+    let relative_algorithmlens_path =
+        format!("components/{}_algorithm_lens.yaml", component_prefix);
+    let relative_snapshot_indexer_https_path = format!(
+        "components/{}_snapshot_indexer_https.yaml",
+        component_prefix
+    );
     fs::write(
         format!("{}/{}", project_name, PROJECT_MANIFEST_FILENAME),
         ProjectManifestData::new(
@@ -128,39 +132,39 @@ fn create_sample_components(project_name: &str) -> anyhow::Result<()> {
     )?;
     fs::write(
         format!("{}/{}", project_name, relative_event_indexer_path),
-        template_event_indexer_manifest(project_name).to_str_as_yaml()?,
+        template_event_indexer_manifest(component_prefix).to_str_as_yaml()?,
     )?;
     fs::write(
         format!("{}/{}", project_name, relative_algorithm_indexer_path),
-        template_algorithm_indexer_manifest(project_name).to_str_as_yaml()?,
+        template_algorithm_indexer_manifest(component_prefix).to_str_as_yaml()?,
     )?;
     fs::write(
         format!("{}/{}", project_name, relative_snapshot_chain_path),
-        template_snapshot_chain_manifest(project_name).to_str_as_yaml()?,
+        template_snapshot_chain_manifest(component_prefix).to_str_as_yaml()?,
     )?;
     fs::write(
         format!("{}/{}", project_name, relative_snapshot_icp_path),
-        template_snapshot_icp_manifest(project_name).to_str_as_yaml()?,
+        template_snapshot_icp_manifest(component_prefix).to_str_as_yaml()?,
     )?;
     fs::write(
         format!("{}/{}", project_name, relative_relayer_path),
-        template_relayer_manifest(project_name).to_str_as_yaml()?,
+        template_relayer_manifest(component_prefix).to_str_as_yaml()?,
     )?;
     fs::write(
         format!("{}/{}", project_name, relative_algorithmlens_path),
-        tempalte_algorithm_lens_manifest(project_name).to_str_as_yaml()?,
+        tempalte_algorithm_lens_manifest(component_prefix).to_str_as_yaml()?,
     )?;
     fs::write(
         format!("{}/{}", project_name, relative_snapshot_indexer_https_path),
-        template_snapshot_indexer_https_manifest(project_name).to_str_as_yaml()?,
+        template_snapshot_indexer_https_manifest(component_prefix).to_str_as_yaml()?,
     )?;
 
     Ok(())
 }
 
-fn template_event_indexer_manifest(project_name: &str) -> EventIndexerComponentManifest {
+fn template_event_indexer_manifest(prefix: &str) -> EventIndexerComponentManifest {
     EventIndexerComponentManifest::new(
-        &format!("{}_event_indexer", project_name),
+        &format!("{}_event_indexer", prefix),
         "",
         PROJECT_MANIFEST_VERSION,
         EventIndexerDatasource::default(),
@@ -168,9 +172,9 @@ fn template_event_indexer_manifest(project_name: &str) -> EventIndexerComponentM
     )
 }
 
-fn template_algorithm_indexer_manifest(project_name: &str) -> AlgorithmIndexerComponentManifest {
+fn template_algorithm_indexer_manifest(prefix: &str) -> AlgorithmIndexerComponentManifest {
     AlgorithmIndexerComponentManifest::new(
-        &format!("{}_algorithm_indexer", project_name),
+        &format!("{}_algorithm_indexer", prefix),
         "",
         PROJECT_MANIFEST_VERSION,
         AlgorithmIndexerDatasource::default(),
@@ -179,9 +183,9 @@ fn template_algorithm_indexer_manifest(project_name: &str) -> AlgorithmIndexerCo
     )
 }
 
-fn template_snapshot_chain_manifest(project_name: &str) -> SnapshotIndexerComponentManifest {
+fn template_snapshot_chain_manifest(prefix: &str) -> SnapshotIndexerComponentManifest {
     SnapshotIndexerComponentManifest::new(
-        &format!("{}_snapshot_chain", project_name),
+        &format!("{}_snapshot_chain", prefix),
         "",
         PROJECT_MANIFEST_VERSION,
         Datasource::default_contract(),
@@ -190,9 +194,9 @@ fn template_snapshot_chain_manifest(project_name: &str) -> SnapshotIndexerCompon
     )
 }
 
-fn template_snapshot_icp_manifest(project_name: &str) -> SnapshotIndexerComponentManifest {
+fn template_snapshot_icp_manifest(prefix: &str) -> SnapshotIndexerComponentManifest {
     SnapshotIndexerComponentManifest::new(
-        &format!("{}_snapshot_icp", project_name),
+        &format!("{}_snapshot_icp", prefix),
         "",
         PROJECT_MANIFEST_VERSION,
         Datasource::default_canister(true),
@@ -201,11 +205,9 @@ fn template_snapshot_icp_manifest(project_name: &str) -> SnapshotIndexerComponen
     )
 }
 
-fn template_snapshot_indexer_https_manifest(
-    project_name: &str,
-) -> SnapshotIndexerHTTPSComponentManifest {
+fn template_snapshot_indexer_https_manifest(prefix: &str) -> SnapshotIndexerHTTPSComponentManifest {
     SnapshotIndexerHTTPSComponentManifest::new(
-        &format!("{}_snapshot_indexer_https", project_name),
+        &format!("{}_snapshot_indexer_https", prefix),
         "",
         PROJECT_MANIFEST_VERSION,
         SnapshotIndexerHTTPSDataSource::default(),
@@ -214,9 +216,9 @@ fn template_snapshot_indexer_https_manifest(
     )
 }
 
-fn template_relayer_manifest(project_name: &str) -> RelayerComponentManifest {
+fn template_relayer_manifest(prefix: &str) -> RelayerComponentManifest {
     RelayerComponentManifest::new(
-        &format!("{}_relayer", project_name),
+        &format!("{}_relayer", prefix),
         "",
         PROJECT_MANIFEST_VERSION,
         Datasource::default_canister(false),
@@ -224,9 +226,9 @@ fn template_relayer_manifest(project_name: &str) -> RelayerComponentManifest {
         3600,
     )
 }
-fn tempalte_algorithm_lens_manifest(project_name: &str) -> AlgorithmLensComponentManifest {
+fn tempalte_algorithm_lens_manifest(prefix: &str) -> AlgorithmLensComponentManifest {
     AlgorithmLensComponentManifest::new(
-        &format!("{}_algorithm_lens", project_name),
+        &format!("{}_algorithm_lens", prefix),
         "",
         PROJECT_MANIFEST_VERSION,
         AlgorithmLensDataSource::default(),
@@ -245,6 +247,7 @@ mod tests {
     #[test]
     fn test_create_project() {
         let project_name = "new_test_create_project";
+        let component_prefix = "sample";
         run_with_teardown(
             || {
                 let created = create_project(project_name, false);
@@ -267,7 +270,7 @@ mod tests {
                 .for_each(|manifest| {
                     assert!(Path::new(&format!(
                         "{}/components/{}_{}.yaml",
-                        project_name, project_name, manifest
+                        project_name, component_prefix, manifest
                     ))
                     .exists());
                 });
@@ -282,11 +285,12 @@ mod tests {
         let project_name = "new_test_exec";
         run_with_teardown(
             || {
+                let env = &test_env();
                 let opts = NewOpts {
                     project_name: project_name.to_string(),
                     no_samples: false,
                 };
-                let res = exec(&test_env(), opts);
+                let res = exec(env, opts);
                 assert!(res.is_ok());
             },
             || teardown(project_name),
