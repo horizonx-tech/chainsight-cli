@@ -1,4 +1,7 @@
+[![Coverage Status](https://coveralls.io/repos/github/horizonx-tech/chainsight-cli/badge.svg?branch=main)](https://coveralls.io/github/horizonx-tech/chainsight-cli?branch=main)
+
 # Chainsight command-line execution envirionment
+
 
 Tool for users/developers to interact with the Chainsight Platform.
 
