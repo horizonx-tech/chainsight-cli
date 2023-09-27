@@ -16,7 +16,7 @@ pub struct RemoveOpts {
     /// Specify the path of the project to be removed.
     /// If not specified, the current directory is targeted.
     #[arg(long)]
-    path: Option<String>,
+    pub path: Option<String>,
 }
 
 pub fn exec(env: &EnvironmentImpl, opts: RemoveOpts) -> anyhow::Result<()> {
@@ -46,5 +46,40 @@ pub fn exec(env: &EnvironmentImpl, opts: RemoveOpts) -> anyhow::Result<()> {
         Err(err) => {
             bail!(format!(r#"Failed: Remove project: {}"#, err));
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::commands::test::tests::{run, test_env};
+
+    use super::*;
+    fn setup(project_name: &str) {
+        fs::create_dir_all(format!("{}/components", project_name)).unwrap();
+        fs::create_dir_all(format!("{}/interfaces", project_name)).unwrap();
+        fs::write(format!("{}/{}", project_name, CHAINSIGHT_FILENAME), "").unwrap();
+        fs::write(
+            format!("{}/{}", project_name, PROJECT_MANIFEST_FILENAME),
+            "",
+        )
+        .unwrap();
+    }
+    #[test]
+    fn test_remove_project() {
+        let dummy_teardown = || {};
+        let project_name = "remove_test_remove_project";
+        run(
+            || {
+                setup(project_name);
+            },
+            || {
+                let opts = RemoveOpts {
+                    path: Some(project_name.to_string()),
+                };
+                exec(&test_env(), opts).unwrap();
+                assert!(Path::new(project_name).exists() == false);
+            },
+            || dummy_teardown(),
+        );
     }
 }
