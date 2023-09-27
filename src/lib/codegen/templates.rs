@@ -1,8 +1,7 @@
 use crate::lib::utils::paths;
 
 pub fn root_cargo_toml() -> String {
-    format!(
-        r#"[workspace]
+    r#"[workspace]
 members = ["bindings/*", "canisters/*", "logics/*"]
 
 [workspace.dependencies]
@@ -15,12 +14,11 @@ serde = "1.0.163"
 serde_bytes = "0.11.12"
 hex = "0.4.3"
 
-ic-web3-rs = {{ version = "0.1.1" }}
-ic-solidity-bindgen = {{ version = "0.1.5" }}
-chainsight-cdk-macros = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "7fdf04d636c11ab7796fefc40d0e9ee92a3183fa" }}
-chainsight-cdk = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "7fdf04d636c11ab7796fefc40d0e9ee92a3183fa" }}
-"#
-    )
+ic-web3-rs = { version = "0.1.1" }
+ic-solidity-bindgen = { version = "0.1.5" }
+chainsight-cdk-macros = { git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "7fdf04d636c11ab7796fefc40d0e9ee92a3183fa" }
+chainsight-cdk = { git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "7fdf04d636c11ab7796fefc40d0e9ee92a3183fa" }
+"#.to_string()
 }
 
 pub fn logic_cargo_toml(project_name: &str, dependencies: Vec<String>) -> String {

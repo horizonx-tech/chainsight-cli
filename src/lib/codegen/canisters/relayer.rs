@@ -153,19 +153,13 @@ fn generate_ident_sync_to_oracle(
             let arg_ident = format_ident!("datum");
             match oracle_type {
                 DestinationType::Uint256Oracle => {
-                    let quote_to_convert_datum_to_u256 =
-                        generate_quote_to_convert_datum_to_u256(arg_ident, &ty)?;
-                    quote_to_convert_datum_to_u256
+                    generate_quote_to_convert_datum_to_u256(arg_ident, &ty)?
                 }
                 DestinationType::Uint128Oracle => {
-                    let quote_to_convert_datum =
-                        generate_quote_to_convert_datum_to_integer(arg_ident, &ty, "u128")?;
-                    quote_to_convert_datum
+                    generate_quote_to_convert_datum_to_integer(arg_ident, &ty, "u128")?
                 }
                 DestinationType::Uint64Oracle => {
-                    let quote_to_convert_datum =
-                        generate_quote_to_convert_datum_to_integer(arg_ident, &ty, "u64")?;
-                    quote_to_convert_datum
+                    generate_quote_to_convert_datum_to_integer(arg_ident, &ty, "u64")?
                 }
                 DestinationType::StringOracle => quote! { datum.clone().to_string() },
             }

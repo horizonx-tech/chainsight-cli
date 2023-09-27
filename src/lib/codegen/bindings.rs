@@ -14,7 +14,7 @@ use super::{
 
 pub fn generate_rs_bindings(
     root: &str,
-    component: &Box<dyn ComponentManifest>,
+    component: &dyn ComponentManifest,
 ) -> anyhow::Result<String> {
     let label = &component.metadata().label;
     let candid_path = &format!("{}/{}.did", &canisters_path_str(root, label), label);
@@ -37,13 +37,9 @@ fn create_candid_rust_binding(path: &Path) -> anyhow::Result<String> {
     Ok(result.to_string())
 }
 
-fn generate_default_query_call(component: &Box<dyn ComponentManifest>) -> Option<String> {
-    if component.default_query_identifier().is_none() {
-        return Option::None;
-    };
+fn generate_default_query_call(component: &dyn ComponentManifest) -> Option<String> {
     let method_identifier =
-        &CanisterMethodIdentifier::parse_from_str(component.default_query_identifier().unwrap())
-            .unwrap();
+        &CanisterMethodIdentifier::parse_from_str(component.default_query_identifier()?).unwrap();
     let func_to_call = &method_identifier.identifier.to_string();
     let proxy_func_to_call = "proxy_".to_string() + func_to_call;
     let method_label = &component.metadata().label;

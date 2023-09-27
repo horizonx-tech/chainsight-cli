@@ -131,7 +131,7 @@ fn exec_codegen(
 ) -> anyhow::Result<()> {
     // generate workspace
     let src_path_str = &paths::src_path_str(project_path_str);
-    fs::create_dir_all(&format!("{}", src_path_str)).expect("failed to create dir: src");
+    fs::create_dir_all(src_path_str).expect("failed to create dir: src");
     if !Path::new(&format!("{}/Cargo.toml", src_path_str)).is_file() {
         fs::write(format!("{}/Cargo.toml", src_path_str), root_cargo_toml())?;
     } else {
@@ -306,7 +306,7 @@ fn exec_codegen(
         }
 
         // TODO handle errors
-        let bindings = generate_rs_bindings(src_path_str, data)?;
+        let bindings = generate_rs_bindings(src_path_str, data.as_ref())?;
         fs::write(
             Path::new(&format!(
                 "{}/src/lib.rs",

@@ -107,7 +107,7 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
     if opts.only_build {
         info!(log, r#"Skip codegen"#);
     } else {
-        generate::exec(env, generate::GenerateOpts::new(opts.path.clone()))?;
+        generate::exec(env, generate::GenerateOpts::new(opts.path))?;
         info!(log, r#"Start building..."#);
     }
 
@@ -237,7 +237,7 @@ fn add_meta(
     let output = Command::new("ic-wasm")
         .current_dir(project_path_str)
         .args([
-            &wasm_path, "-o", &wasm_path, "metadata", key, "-d", value, "-v", "public",
+            wasm_path, "-o", wasm_path, "metadata", key, "-d", value, "-v", "public",
         ])
         .output()
         .unwrap_or_else(|_| panic!("failed to execute process: ic-wasm metadata {}", key));
@@ -268,7 +268,7 @@ fn add_metadata_to_wasm(
     let label = &component_datum.metadata().label.clone();
     let wasm_path = &format!("{}/{}.wasm", ARTIFACTS_DIR, label);
     let put_meta = |key: &str, value: &str| -> anyhow::Result<()> {
-        add_meta(label, key, value, wasm_path, &project_path_str, log)
+        add_meta(label, key, value, wasm_path, project_path_str, log)
     };
 
     put_meta("chainsight:label", label)?;
