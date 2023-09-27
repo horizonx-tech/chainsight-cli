@@ -203,7 +203,7 @@ fn tempalte_algorithm_lens_manifest(project_name: &str) -> AlgorithmLensComponen
 
 #[cfg(test)]
 mod tests {
-    use crate::{commands::test::tests::run_with_teardown, lib::logger::create_root_logger};
+    use crate::commands::test::tests::{run_with_teardown, test_env};
 
     use super::*;
     fn teardown(project_name: &str) {
@@ -249,11 +249,10 @@ mod tests {
         let project_name = "test_exec";
         run_with_teardown(
             || {
-                let env = EnvironmentImpl::new().with_logger(create_root_logger(1));
                 let opts = NewOpts {
                     project_name: project_name.to_string(),
                 };
-                let res = exec(&env, opts);
+                let res = exec(&test_env(), opts);
                 assert!(res.is_ok());
             },
             || teardown(project_name),

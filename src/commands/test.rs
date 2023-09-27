@@ -7,6 +7,9 @@ pub struct TestOpts {}
 
 #[cfg(test)]
 pub mod tests {
+    use crate::lib::environment::EnvironmentImpl;
+    use crate::lib::logger::create_root_logger;
+
     pub fn run(
         setup: impl FnOnce() -> (),
         test: impl FnOnce() -> () + std::panic::UnwindSafe,
@@ -25,5 +28,8 @@ pub mod tests {
     ) {
         let dumy_setup = || {};
         run(dumy_setup, test, teardown)
+    }
+    pub fn test_env() -> EnvironmentImpl {
+        EnvironmentImpl::new().with_logger(create_root_logger(1))
     }
 }
