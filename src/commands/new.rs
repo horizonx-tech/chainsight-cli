@@ -34,7 +34,7 @@ use crate::lib::{
 pub struct NewOpts {
     /// Specifies the name of the project to create.
     #[arg(required = true)]
-    project_name: String,
+    pub project_name: String,
 }
 
 pub fn exec(env: &EnvironmentImpl, opts: NewOpts) -> anyhow::Result<()> {
@@ -199,4 +199,63 @@ fn tempalte_algorithm_lens_manifest(project_name: &str) -> AlgorithmLensComponen
         AlgorithmLensDataSource::default(),
         AlgorithmLensOutput::default(),
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::commands::test::tests::{run_with_teardown, test_env};
+
+    use super::*;
+    fn teardown(project_name: &str) {
+        fs::remove_dir_all(project_name).unwrap();
+    }
+    #[test]
+    fn test_create_project() {
+        let project_name = "new_test_create_project";
+        run_with_teardown(
+            || {
+                let created = create_project(project_name);
+                assert!(created.is_ok());
+                assert!(Path::new(project_name).exists());
+                assert!(Path::new(&format!("{}/{}", project_name, CHAINSIGHT_FILENAME)).exists());
+                assert!(
+                    Path::new(&format!("{}/{}", project_name, PROJECT_MANIFEST_FILENAME)).exists()
+                );
+                vec![
+                    "event_indexer",
+                    "algorithm_indexer",
+                    "snapshot_chain",
+                    "snapshot_icp",
+                    "relayer",
+                    "algorithm_lens",
+                    "snapshot_indexer_https",
+                ]
+                .iter()
+                .for_each(|manifest| {
+                    assert!(Path::new(&format!(
+                        "{}/components/{}_{}.yaml",
+                        project_name, project_name, manifest
+                    ))
+                    .exists());
+                });
+            },
+            || {
+                teardown(project_name);
+            },
+        )
+    }
+    #[test]
+    fn test_exec() {
+        let project_name = "new_test_exec";
+        run_with_teardown(
+            || {
+                let opts = NewOpts {
+                    project_name: project_name.to_string(),
+                };
+                let res = exec(&test_env(), opts);
+                assert!(res.is_ok());
+            },
+            || teardown(project_name),
+        )
+    }
 }

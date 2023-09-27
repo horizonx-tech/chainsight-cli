@@ -217,3 +217,78 @@ fn execute_commands(log: &Logger, built_project_path_str: &str) -> anyhow::Resul
 
     anyhow::Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        commands::{
+            new,
+            test::tests::{run, test_env},
+        },
+        lib::logger::create_root_logger,
+    };
+
+    use super::*;
+
+    fn set_up(project_name: &str) {
+        let _ = new::exec(
+            &&test_env(),
+            new::NewOpts {
+                project_name: project_name.to_string(),
+            },
+        );
+    }
+    fn tear_down(project_name: &str) {
+        fs::remove_dir_all(project_name).unwrap();
+    }
+    #[test]
+    fn test_exec() {
+        let project_name = "exec_test_exec";
+        run(
+            || {
+                set_up(project_name);
+            },
+            || {
+                let _ = exec(
+                    &test_env(),
+                    ExecOpts {
+                        path: Some(project_name.to_string()),
+                        component: None,
+                        network: Network::Local,
+                        only_generate_cmds: true,
+                        only_execute_cmds: false,
+                    },
+                );
+            },
+            || {
+                tear_down(project_name);
+            },
+        );
+    }
+    #[test]
+    fn test_execute_commands() {
+        let project_name = "exec_test_execute_commands";
+        let custom_setup = || {
+            fs::create_dir_all(format!("{}/scripts", project_name)).unwrap();
+            let entrypoint_filepath =
+                format!("{}/scripts/{}", project_name, ENTRYPOINT_SHELL_FILENAME);
+            fs::write(
+                &entrypoint_filepath,
+                "#!/bin/bash
+            echo 'Dummy script\r'",
+            )
+            .unwrap();
+            fs::set_permissions(entrypoint_filepath, PermissionsExt::from_mode(0o755)).unwrap();
+        };
+        run(
+            || custom_setup(),
+            || {
+                let result = execute_commands(&create_root_logger(1), project_name);
+                assert!(result.is_ok());
+            },
+            || {
+                tear_down(project_name);
+            },
+        );
+    }
+}
