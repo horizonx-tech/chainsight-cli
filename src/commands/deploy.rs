@@ -18,7 +18,7 @@ use crate::{
 /// Deploy the components of your project.
 /// If you want to operate on a local network, you need to build a local dfx network in advance.
 pub struct DeployOpts {
-    /// Specify the path of the project to be deployed.
+    /// Specify the path of the project to deploy.
     /// If not specified, the current directory is targeted.
     #[arg(long)]
     path: Option<String>,

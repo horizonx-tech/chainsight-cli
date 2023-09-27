@@ -195,31 +195,44 @@ Create a new project for Chainsight Platform.
 This generated project contains several Manifests as templates.  
 Specify the name of the project to be created, and then generate the project.
 
-```bash
-csx new sample_project
+```txt
+csx new --help  
+Generates Chainsight project with built-in templates
+
+Usage: csx new [OPTIONS] <PROJECT_NAME>
+
+Arguments:
+  <PROJECT_NAME>  Specifies the name of the project to create
+
+Options:
+      --no-samples  Skip generation of sample component manifests [short aliases: n]
+  -v, --verbose...  Displays detailed information about operations. -vv will generate a very large number of messages and can
+                    affect performance
+  -q, --quiet...    Suppresses informational messages. -qq limits to errors only; -qqqq disables them all
+  -h, --help        Print help
 ```
 
-## csx create
+## csx add
 
-The 'create' command is used to add a new type of component to your project.
+The 'add' command is used to add a new type of component to your project.
 
 This command will add a Component Manifest of the specified Type and its management settings to the Project Manifest.
 
 If you are familiar with it, you can do manually what this command does.
 
 ```txt
-% csx create --help
+% csx add --help
 Generates component manifest of specified type and adds to your project
 
-Usage: csx create [OPTIONS] --type <TYPE> <COMPONENT_NAME>
+Usage: csx add [OPTIONS] --type <TYPE> <COMPONENT_NAME>
 
 Arguments:
   <COMPONENT_NAME>
-          Specifies the name of the component to create
+          Specifies the name of the component to add
 
 Options:
       --type <TYPE>
-          Specifies type of the component to create
+          Specifies type of the component to add
 
           Possible values:
           - event-indexer:          To synchronize event data
@@ -247,34 +260,35 @@ Options:
 - `--path`: Select the path of the project to which you want to add the Component.
   - The folder containing the `.chainsight` file will be recognized as the project.
 
-## csx build
+## csx generate
 
-Performs everything from code generation to compilation of the Module to deploy from Manifest to Canister.
+```txt
+% csx generate --help (or csx gen ...)
+Generate codes according to project/component manifests
 
-You must specify the project path to build and execute this command.
+Usage: csx generate [OPTIONS]
 
-```bash
-csx build --path sample_project
+Options:
+      --path <PATH>  Specify the path of the project. If not specified, the current directory is targeted
+  -v, --verbose...   Displays detailed information about operations. -vv will generate a very large number of messages and can affect performance
+  -q, --quiet...     Suppresses informational messages. -qq limits to errors only; -qqqq disables them all
+  -h, --help         Print help
 ```
 
-> **Note** For developers who want more control  
-> (The specifications are still under review and subject to change.) The command is divided into two phases: codegen and build. The developer can pass a flag to execute only one of them.  
-> `--only-codegen`: Perform code generation only  
-> `--only-build`: Perform build only (from already generated code)`
+## csx build
 
 ```txt
 % csx build --help 
-Builds your project to generate canisters' modules for Chainsight
+BBuilds your project to generate canisters' modules for Chainsight
 
 Usage: csx build [OPTIONS]
 
 Options:
-      --path <PATH>   Specify the path of the project to be built. If not specified, the current directory is targeted
-  -v, --verbose...    Displays detailed information about operations. -vv will generate a very large number of messages and can affect performance
-      --only-codegen  Only perform code generation
-  -q, --quiet...      Suppresses informational messages. -qq limits to errors only; -qqqq disables them all
-      --only-build    Only perform build. Perform this steps with code already generated
-  -h, --help          Print help
+      --path <PATH>  Specify the path of the project to build. If not specified, the current directory is targeted
+  -v, --verbose...   Displays detailed information about operations. -vv will generate a very large number of messages and can affect performance
+      --only-build   Only perform build. Perform this steps with code already generated
+  -q, --quiet...     Suppresses informational messages. -qq limits to errors only; -qqqq disables them all
+  -h, --help         Print help
 ```
 
 ## csx deploy
@@ -283,10 +297,7 @@ This command is used to deploy a built module of your own Project to a specified
 
 It is built by wrapping the operations performed by the dfx deploy command, plus Identity and Wallet checks.
 
-- `--path`: Specify the path where the built artifacts are located.
-  - Build artifacts are located in `/artifacts` under the project folder.
-  - ex: If the project folder is `./sample_project`, the build artifacts will be located in `./sample_project/artifacts`.
-    - In that case, the command is `dfx deploy -path sample_project/artifacts`.
+- `--path`: Specify the path of the project to deploy. If not specified, the current directory is targeted
 - `--network`: Specify the network to deploy to.
   - Currently, you can choose between the following options.
     - local ... localhost
@@ -299,7 +310,7 @@ Deploy the components of your project. If you want to operate on a local network
 Usage: csx deploy [OPTIONS]
 
 Options:
-      --path <PATH>        Specify the path of the project to be deployed. If not specified, the current directory is targeted
+      --path <PATH>        Specify the path of the project to deploy. If not specified, the current directory is targeted
   -v, --verbose...         Displays detailed information about operations. -vv will generate a very large number of messages and can affect performance
       --network <NETWORK>  Specify the network to execute on [default: local] [possible values: local, ic]
   -q, --quiet...           Suppresses informational messages. -qq limits to errors only; -qqqq disables them all

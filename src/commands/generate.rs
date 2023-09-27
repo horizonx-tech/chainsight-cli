@@ -36,9 +36,9 @@ fn dummy_candid_blob() -> String {
 #[derive(Debug, Parser)]
 #[command(name = "generate")]
 #[clap(visible_alias = "gen")]
-/// Builds your project to generate canisters' modules for Chainsight.
+/// Generate codes according to project/component manifests.
 pub struct GenerateOpts {
-    /// Specify the path of the project to be built.
+    /// Specify the path of the project.
     /// If not specified, the current directory is targeted.
     #[arg(long)]
     path: Option<String>,
