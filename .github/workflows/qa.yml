@@ -84,6 +84,9 @@ jobs:
         run: |
           rustup update ${{ env.RUST_VERSION }} --no-self-update
           rustup default ${{ env.RUST_VERSION }}
+      - uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
       - uses: actions-rs/cargo@v1
         with:
           toolchain: nightly
