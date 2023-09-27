@@ -373,14 +373,14 @@ example)
 
 ```yaml
 version: v1
-label: example_pj
+label: sample
 components:
-- component_path: components/example_algorithm_indexer.yaml
-- component_path: components/example_algorithm_lens.yaml
-- component_path: components/example_event_indexer.yaml
-- component_path: components/example_pj_relayer.yaml
-- component_path: components/example_pj_snapshot_chain.yaml
-- component_path: components/example_pj_snapshot_icp.yaml
+- component_path: components/sample_algorithm_indexer.yaml
+- component_path: components/sample_algorithm_lens.yaml
+- component_path: components/sample_event_indexer.yaml
+- component_path: components/sample_relayer.yaml
+- component_path: components/sample_snapshot_indexer_chain.yaml
+- component_path: components/sample_snapshot_indexer_icp.yaml
 ```
 
 ### Component Manifest
@@ -402,7 +402,7 @@ example)
 ```yaml
 version: v1
 metadata:
-  label: example_pj_snapshot_chain
+  label: sample_snapshot_indexer_chain
   type: snapshot_indexer
   description: ''
   tags: ...
@@ -452,7 +452,7 @@ example)
 ```yaml
 version: v1
 metadata:
-  label: example_pj_snapshot_chain
+  label: sample_snapshot_indexer_chain
   type: snapshot_indexer
   description: ''
   tags: ...
@@ -499,14 +499,14 @@ example)
 ```yaml
 version: v1
 metadata:
-  label: example_pj_snapshot_icp
+  label: sample_snapshot_indexer_icp
   type: snapshot_indexer
   description: ''
   tags: ...
 datasource:
   type: canister
   location:
-    id: sample_pj_snapshot_chain
+    id: sample_snapshot_indexer_chain
     args:
       id_type: canister_name
   method:
@@ -535,14 +535,14 @@ example)
 ```yaml
 version: v1
 metadata:
-  label: example_pj_relayer
+  label: sample_relayer
   type: relayer
   description: ''
   tags: ...
 datasource:
   type: canister
   location:
-    id: sample_pj_snapshot_chain
+    id: sample_snapshot_indexer_chain
     args:
       id_type: canister_name
   method:
@@ -599,7 +599,7 @@ Users can define arbitrary logic using Lens. All data sources on Chainsight can 
 ```yml
 version: v1
 metadata:
-  label: sample_pj_algorithm_lens
+  label: sample_algorithm_lens
   type: algorithm_lens
   description: ''
   tags:

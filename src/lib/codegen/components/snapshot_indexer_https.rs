@@ -164,7 +164,7 @@ mod tests {
         let yaml = r#"
 version: v1
 metadata:
-    label: sample_pj_snapshot_indexer_https
+    label: sample_snapshot_indexer_https
     type: snapshot_indexer_https
     description: Description
     tags:
@@ -191,7 +191,7 @@ interval: 3600
             SnapshotIndexerHTTPSComponentManifest {
                 version: "v1".to_owned(),
                 metadata: ComponentMetadata {
-                    label: "sample_pj_snapshot_indexer_https".to_owned(),
+                    label: "sample_snapshot_indexer_https".to_owned(),
                     type_: ComponentType::SnapshotIndexerHTTPS,
                     description: "Description".to_string(),
                     tags: Some(vec![

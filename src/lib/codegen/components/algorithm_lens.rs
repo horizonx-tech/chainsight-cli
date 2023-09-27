@@ -163,7 +163,7 @@ impl Default for AlgorithmLensDataSource {
     fn default() -> Self {
         Self {
             methods: vec![AlgorithmLensDataSourceMethod {
-                label: "sample_snapshot_icp".to_string(),
+                label: "sample_snapshot_indexer_icp".to_string(),
                 identifier: "get_last_snapshot_value : () -> (SnapshotValue)".to_string(),
                 candid_file_path: "interfaces/sample.did".to_string(),
             }],
@@ -182,7 +182,7 @@ mod tests {
         let yaml = r#"
 version: v1
 metadata:
-    label: sample_pj_algorithm_lens
+    label: sample_algorithm_lens
     type: algorithm_lens
     description: Description
     tags: 
@@ -212,7 +212,7 @@ output:
             AlgorithmLensComponentManifest {
                 version: "v1".to_string(),
                 metadata: ComponentMetadata {
-                    label: "sample_pj_algorithm_lens".to_string(),
+                    label: "sample_algorithm_lens".to_string(),
                     type_: ComponentType::AlgorithmLens,
                     description: "Description".to_string(),
                     tags: Some(vec!["Ethereum".to_string(), "Account".to_string()])

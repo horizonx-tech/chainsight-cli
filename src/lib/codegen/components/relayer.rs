@@ -264,7 +264,7 @@ mod tests {
         let yaml = r#"
 version: v1
 metadata:
-    label: sample_pj_relayer
+    label: sample_relayer
     type: relayer
     description: Description
     tags:
@@ -296,7 +296,7 @@ interval: 3600
             RelayerComponentManifest {
                 version: "v1".to_string(),
                 metadata: ComponentMetadata {
-                    label: "sample_pj_relayer".to_string(),
+                    label: "sample_relayer".to_string(),
                     type_: ComponentType::Relayer,
                     description: "Description".to_string(),
                     tags: Some(vec!["Oracle".to_string(), "snapshot".to_string()])

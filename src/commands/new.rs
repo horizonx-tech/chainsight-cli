@@ -103,9 +103,12 @@ fn create_sample_components(project_name: &str, component_prefix: &str) -> anyho
     let relative_event_indexer_path = format!("components/{}_event_indexer.yaml", component_prefix);
     let relative_algorithm_indexer_path =
         format!("components/{}_algorithm_indexer.yaml", component_prefix);
-    let relative_snapshot_chain_path =
-        format!("components/{}_snapshot_chain.yaml", component_prefix);
-    let relative_snapshot_icp_path = format!("components/{}_snapshot_icp.yaml", component_prefix);
+    let relative_snapshot_indexer_chain_path = format!(
+        "components/{}_snapshot_indexer_chain.yaml",
+        component_prefix
+    );
+    let relative_snapshot_indexer_icp_path =
+        format!("components/{}_snapshot_indexer_icp.yaml", component_prefix);
     let relative_relayer_path = format!("components/{}_relayer.yaml", component_prefix);
     let relative_algorithmlens_path =
         format!("components/{}_algorithm_lens.yaml", component_prefix);
@@ -121,8 +124,8 @@ fn create_sample_components(project_name: &str, component_prefix: &str) -> anyho
             &[
                 ProjectManifestComponentField::new(&relative_event_indexer_path, None),
                 ProjectManifestComponentField::new(&relative_algorithm_indexer_path, None),
-                ProjectManifestComponentField::new(&relative_snapshot_chain_path, None),
-                ProjectManifestComponentField::new(&relative_snapshot_icp_path, None),
+                ProjectManifestComponentField::new(&relative_snapshot_indexer_chain_path, None),
+                ProjectManifestComponentField::new(&relative_snapshot_indexer_icp_path, None),
                 ProjectManifestComponentField::new(&relative_relayer_path, None),
                 ProjectManifestComponentField::new(&relative_algorithmlens_path, None),
                 ProjectManifestComponentField::new(&relative_snapshot_indexer_https_path, None),
@@ -139,12 +142,12 @@ fn create_sample_components(project_name: &str, component_prefix: &str) -> anyho
         template_algorithm_indexer_manifest(component_prefix).to_str_as_yaml()?,
     )?;
     fs::write(
-        format!("{}/{}", project_name, relative_snapshot_chain_path),
-        template_snapshot_chain_manifest(component_prefix).to_str_as_yaml()?,
+        format!("{}/{}", project_name, relative_snapshot_indexer_chain_path),
+        template_snapshot_indexer_chain_manifest(component_prefix).to_str_as_yaml()?,
     )?;
     fs::write(
-        format!("{}/{}", project_name, relative_snapshot_icp_path),
-        template_snapshot_icp_manifest(component_prefix).to_str_as_yaml()?,
+        format!("{}/{}", project_name, relative_snapshot_indexer_icp_path),
+        template_snapshot_indexer_icp_manifest(component_prefix).to_str_as_yaml()?,
     )?;
     fs::write(
         format!("{}/{}", project_name, relative_relayer_path),
@@ -183,9 +186,9 @@ fn template_algorithm_indexer_manifest(prefix: &str) -> AlgorithmIndexerComponen
     )
 }
 
-fn template_snapshot_chain_manifest(prefix: &str) -> SnapshotIndexerComponentManifest {
+fn template_snapshot_indexer_chain_manifest(prefix: &str) -> SnapshotIndexerComponentManifest {
     SnapshotIndexerComponentManifest::new(
-        &format!("{}_snapshot_chain", prefix),
+        &format!("{}_snapshot_indexer_chain", prefix),
         "",
         PROJECT_MANIFEST_VERSION,
         Datasource::default_contract(),
@@ -194,9 +197,9 @@ fn template_snapshot_chain_manifest(prefix: &str) -> SnapshotIndexerComponentMan
     )
 }
 
-fn template_snapshot_icp_manifest(prefix: &str) -> SnapshotIndexerComponentManifest {
+fn template_snapshot_indexer_icp_manifest(prefix: &str) -> SnapshotIndexerComponentManifest {
     SnapshotIndexerComponentManifest::new(
-        &format!("{}_snapshot_icp", prefix),
+        &format!("{}_snapshot_indexer_icp", prefix),
         "",
         PROJECT_MANIFEST_VERSION,
         Datasource::default_canister(true),
@@ -261,8 +264,8 @@ mod tests {
                 vec![
                     "event_indexer",
                     "algorithm_indexer",
-                    "snapshot_chain",
-                    "snapshot_icp",
+                    "snapshot_indexer_chain",
+                    "snapshot_indexer_icp",
                     "relayer",
                     "algorithm_lens",
                     "snapshot_indexer_https",
