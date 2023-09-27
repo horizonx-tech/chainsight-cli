@@ -257,6 +257,7 @@ mod tests {
                 assert!(
                     Path::new(&format!("{}/{}", project_name, PROJECT_MANIFEST_FILENAME)).exists()
                 );
+                assert!(Path::new(&format!("{}/{}", project_name, GITIGNORE_FILENAME)).exists());
                 vec![
                     "event_indexer",
                     "algorithm_indexer",
@@ -274,6 +275,30 @@ mod tests {
                     ))
                     .exists());
                 });
+            },
+            || {
+                teardown(project_name);
+            },
+        )
+    }
+    #[test]
+    fn test_create_project_without_samples() {
+        let project_name = "new_test_create_project_without_samples";
+        run_with_teardown(
+            || {
+                let created = create_project(project_name, true);
+                assert!(created.is_ok());
+                assert!(Path::new(project_name).exists());
+                assert!(Path::new(&format!("{}/{}", project_name, CHAINSIGHT_FILENAME)).exists());
+                assert!(
+                    Path::new(&format!("{}/{}", project_name, PROJECT_MANIFEST_FILENAME)).exists()
+                );
+                assert!(Path::new(&format!("{}/{}", project_name, GITIGNORE_FILENAME)).exists());
+                assert!(Path::new(&format!("{}/components", project_name))
+                    .read_dir()
+                    .unwrap()
+                    .next()
+                    .is_none());
             },
             || {
                 teardown(project_name);
