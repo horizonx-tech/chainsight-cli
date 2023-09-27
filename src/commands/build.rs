@@ -16,7 +16,7 @@ use crate::lib::codegen::components::relayer::RelayerComponentManifest;
 use crate::lib::codegen::components::snapshot_indexer::SnapshotIndexerComponentManifest;
 use crate::lib::codegen::components::snapshot_indexer_https::SnapshotIndexerHTTPSComponentManifest;
 use crate::lib::codegen::oracle::get_oracle_attributes;
-use crate::lib::utils::{find_duplicates, ARTIFACTS_DIR};
+use crate::lib::utils::{find_duplicates, paths, ARTIFACTS_DIR};
 use crate::{
     lib::{
         codegen::project::ProjectManifestData,
@@ -58,7 +58,6 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
     }
 
     let project_path_str = project_path.unwrap_or(".".to_string());
-    let artifacts_path_str = format!("{}/{}", &project_path_str, ARTIFACTS_DIR);
 
     // load component definitions from manifests
     let project_manifest = ProjectManifestData::load(&format!(
@@ -120,7 +119,8 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
     } else {
         // generate codes
         info!(log, r#"Start processing for codegen..."#);
-        exec_codegen(log, &project_path_str, &artifacts_path_str, &component_data)?;
+        exec_codegen(log, &project_path_str, &component_data)?;
+
     }
 
     if opts.only_codegen {
@@ -128,8 +128,7 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
     } else {
         // build codes generated
         info!(log, r#"Start processing for build..."#);
-        execute_codebuild(log, &artifacts_path_str, &component_data)?;
-    }
+        execute_codebuild(log, &project_path_str, &component_data)?;
 
     info!(
         log,
@@ -146,50 +145,32 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
 fn exec_codegen(
     log: &Logger,
     project_path_str: &str,
-    artifacts_path_str: &str,
     component_data: &Vec<Box<dyn ComponentManifest>>,
 ) -> anyhow::Result<()> {
-    // generate /artifacts
-    let artifacts_path = Path::new(&artifacts_path_str);
-    if artifacts_path.exists() {
-        // renew artifacts/__interfaces, artifacts/dfx.json
-        let _ = fs::remove_dir_all(format!("{}/__interfaces", &artifacts_path_str));
-        let _ = fs::remove_file(format!("{}/dfx.json", &artifacts_path_str));
-    } else {
-        fs::create_dir(artifacts_path)?;
-    }
-
     // generate workspace
-    let projects = component_data
-        .iter()
-        .map(|data| data.metadata().label.to_string())
-        .collect::<Vec<String>>();
-    if !Path::new(&format!("{}/Cargo.toml", &artifacts_path_str)).is_file() {
-        fs::write(
-            format!("{}/Cargo.toml", &artifacts_path_str),
-            root_cargo_toml(projects.clone()),
-        )?;
+    let src_path_str = &paths::src_path_str(project_path_str);
+    fs::create_dir_all(&format!("{}", src_path_str)).expect("failed to create dir: src");
+    if !Path::new(&format!("{}/Cargo.toml", src_path_str)).is_file() {
+        fs::write(format!("{}/Cargo.toml", src_path_str), root_cargo_toml())?;
     } else {
-        info!(log, r#"Skip creating: 'Cargo.toml' already exists"#,)
+        info!(
+            log,
+            r#"Skip creating workspace: '{}/Cargo.toml' already exists"#, src_path_str
+        )
     }
-    fs::write(
-        format!("{}/dfx.json", &artifacts_path_str),
-        dfx_json(projects),
-    )?;
 
-    if !Path::new(&format!("{}/Makefile.toml", &artifacts_path_str)).is_file() {
-        fs::write(
-            format!("{}/Makefile.toml", &artifacts_path_str),
-            makefile_toml(),
-        )?;
-    } else {
-        info!(log, r#"Skip creating: 'Makefile.toml' already exists"#,)
-    }
+    // remove generated files
+    let _ = fs::remove_dir_all(format!("{}/__interfaces", src_path_str));
+    let _ = fs::remove_dir_all(format!("{}/bindings", src_path_str));
+    let _ = fs::remove_dir_all(format!("{}/canisters", src_path_str));
+    let _ = fs::remove_file(format!("{}/Makefile.toml", src_path_str));
+
+    fs::write(format!("{}/Makefile.toml", src_path_str), makefile_toml())?;
 
     // generate /artifacts/__interfaces
-    let interfaces_path_str = format!("{}/__interfaces", &artifacts_path_str);
+    let interfaces_path_str = format!("{}/__interfaces", src_path_str);
     fs::create_dir(&interfaces_path_str)?;
-    let dummy_candid_file_path = format!("{}/interfaces/{}", &project_path_str, "sample.did");
+    let dummy_candid_file_path = format!("{}/interfaces/{}", project_path_str, "sample.did");
     if !Path::new(&dummy_candid_file_path).is_file() {
         fs::write(&dummy_candid_file_path, dummy_candid_blob())?;
     }
@@ -212,7 +193,7 @@ fn exec_codegen(
             let dst_interface_path = Path::new(&dst_interface_path_str);
 
             let user_if_file_path_str =
-                format!("{}/interfaces/{}", &project_path_str, &interface_file);
+                format!("{}/interfaces/{}", project_path_str, &interface_file);
             let user_if_file_path = Path::new(&user_if_file_path_str);
             if user_if_file_path.exists() {
                 fs::copy(user_if_file_path, dst_interface_path)?;
@@ -465,30 +446,37 @@ fn builtin_interface(name: &str) -> Option<&'static str> {
 
 fn execute_codebuild(
     log: &Logger,
-    built_project_path_str: &str,
+    project_path_str: &str,
     component_data: &Vec<Box<dyn ComponentManifest>>,
 ) -> anyhow::Result<()> {
-    let built_project_path = Path::new(&built_project_path_str);
+    let src_path_str = &paths::src_path_str(project_path_str);
+    // Regenerate output dir
+    let output_path_str = &format!("{}/{}", project_path_str, ARTIFACTS_DIR);
+    let _ = fs::remove_dir_all(output_path_str);
+    fs::create_dir_all(output_path_str)?;
 
-    // Regenerate artifacts folder
-    let build_artifact_path_str = format!("{}/artifacts", built_project_path_str);
-    let build_artifact_path = Path::new(&build_artifact_path_str);
-    if build_artifact_path.exists() {
-        fs::remove_dir_all(build_artifact_path)?;
-    }
-    fs::create_dir(build_artifact_path)?;
-    // Copy .did to artifacts folder
+    let projects = component_data
+        .iter()
+        .map(|data| data.metadata().label.to_string())
+        .collect::<Vec<String>>();
+    fs::write(format!("{}/dfx.json", output_path_str), dfx_json(projects))?;
+
+    // Copy .did to output dir
     for component_datum in component_data {
-        let label = component_datum.metadata().label.clone();
-        let src_path = format!("{}/{}/{}.did", built_project_path_str, label, label);
-        let dst_path = format!("{}/{}.did", build_artifact_path_str, label);
-        fs::copy(src_path, dst_path)?;
+        let label = &component_datum.metadata().label.clone();
+        let did_src_path = format!(
+            "{}/{}.did",
+            paths::canisters_path_str(src_path_str, label),
+            label
+        );
+        let did_dst_path = format!("{}/{}.did", output_path_str, label);
+        fs::copy(did_src_path, did_dst_path)?;
     }
 
     let action = "Compile canisters";
     info!(log, "{}...", action);
     let output = Command::new("cargo")
-        .current_dir(built_project_path)
+        .current_dir(src_path_str)
         .args([
             "build",
             "--target",
@@ -518,11 +506,15 @@ fn execute_codebuild(
     let action = "Shrink/Optimize module";
     info!(log, "{}s...", action);
     for component_datum in component_data {
-        let label = component_datum.metadata().label.clone();
-        let wasm_path = format!("target/wasm32-unknown-unknown/release/{}.wasm", label);
-        let output_path = format!("artifacts/{}.wasm", label);
+        let label = &component_datum.metadata().label.clone();
+        let wasm_path = format!(
+            "{}/target/wasm32-unknown-unknown/release/{}.wasm",
+            src_path_str,
+            paths::canister_name(label)
+        );
+        let output_path = format!("{}/{}.wasm", output_path_str, label);
         let output = Command::new("ic-wasm")
-            .current_dir(built_project_path)
+            .current_dir(project_path_str)
             .args([&wasm_path, "-o", &output_path, "shrink"])
             .output()
             .expect("failed to execute process: ic_wasm shrink");
@@ -548,7 +540,7 @@ fn execute_codebuild(
     let action = "Add metadata to modules";
     info!(log, "{}...", action);
     for component_datum in component_data {
-        add_metadata_to_wasm(log, built_project_path_str, component_datum.as_ref())?;
+        add_metadata_to_wasm(log, project_path_str, component_datum.as_ref())?;
     }
     info!(log, "Succeeded: {}", action);
 
@@ -556,16 +548,16 @@ fn execute_codebuild(
 }
 
 fn add_meta(
+    label: &str,
     key: &str,
     value: &str,
-    target: &Path,
-    label: &str,
+    wasm_path: &str,
+    project_path_str: &str,
     log: &Logger,
 ) -> anyhow::Result<()> {
-    let wasm_path = format!("artifacts/{}.wasm", label);
     let action = format!("Add metadata {}", key);
     let output = Command::new("ic-wasm")
-        .current_dir(target)
+        .current_dir(project_path_str)
         .args([
             &wasm_path, "-o", &wasm_path, "metadata", key, "-d", value, "-v", "public",
         ])
@@ -592,17 +584,16 @@ fn add_meta(
 
 fn add_metadata_to_wasm(
     log: &Logger,
-    built_project_path_str: &str,
+    project_path_str: &str,
     component_datum: &dyn ComponentManifest,
 ) -> anyhow::Result<()> {
-    let built_project_path = Path::new(&built_project_path_str);
-
-    let wasm_name = component_datum.metadata().label.clone();
+    let label = &component_datum.metadata().label.clone();
+    let wasm_path = &format!("{}/{}.wasm", ARTIFACTS_DIR, label);
     let put_meta = |key: &str, value: &str| -> anyhow::Result<()> {
-        add_meta(key, value, built_project_path, &wasm_name, log)
+        add_meta(label, key, value, wasm_path, &project_path_str, log)
     };
 
-    put_meta("chainsight:label", &wasm_name)?;
+    put_meta("chainsight:label", label)?;
     put_meta(
         "chainsight:component_type",
         &component_datum.component_type().to_string(),

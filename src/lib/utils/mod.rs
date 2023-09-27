@@ -3,6 +3,7 @@ use std::path::Path;
 use inflector::cases::snakecase::to_snake_case;
 
 pub mod clap;
+pub mod paths;
 
 pub const CHAINSIGHT_FILENAME: &str = ".chainsight";
 pub const PROJECT_MANIFEST_FILENAME: &str = "project.yaml";
