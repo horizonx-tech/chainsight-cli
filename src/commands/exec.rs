@@ -235,6 +235,7 @@ mod tests {
             &&test_env(),
             new::NewOpts {
                 project_name: project_name.to_string(),
+                no_samples: false,
             },
         );
     }

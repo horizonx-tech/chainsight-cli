@@ -39,6 +39,10 @@ pub struct NewOpts {
     /// Specifies the name of the project to create.
     #[arg(required = true)]
     pub project_name: String,
+
+    /// Skip generation of sample component manifests.
+    #[arg(long, visible_short_alias = 'n')]
+    pub no_samples: bool,
 }
 
 pub fn exec(env: &EnvironmentImpl, opts: NewOpts) -> anyhow::Result<()> {
@@ -49,10 +53,17 @@ pub fn exec(env: &EnvironmentImpl, opts: NewOpts) -> anyhow::Result<()> {
         bail!(format!(r#"Project '{}' already exists"#, project_name));
     }
     info!(log, r#"Start creating new project '{}'..."#, project_name);
-    let res = create_project(&project_name);
+    let res = create_project(&project_name, opts.no_samples);
     match res {
         Ok(_) => {
             info!(log, r#"Project '{}' created successfully"#, project_name);
+
+            if opts.no_samples {
+                info!(
+                    log,
+                    "You can add components with:\n\n  cd {} && csx add\n", project_name
+                );
+            }
             Ok(())
         }
         Err(err) => {
@@ -64,7 +75,7 @@ pub fn exec(env: &EnvironmentImpl, opts: NewOpts) -> anyhow::Result<()> {
     }
 }
 
-fn create_project(project_name: &str) -> anyhow::Result<()> {
+fn create_project(project_name: &str, no_samples: bool) -> anyhow::Result<()> {
     // Create directories
     fs::create_dir_all(format!("{}/components", project_name))?;
     fs::create_dir_all(format!("{}/interfaces", project_name))?;
@@ -75,6 +86,20 @@ fn create_project(project_name: &str) -> anyhow::Result<()> {
         gitignore(),
     )?;
     fs::write(format!("{}/{}", project_name, CHAINSIGHT_FILENAME), "")?;
+
+    if !no_samples {
+        return create_sample_components(project_name);
+    }
+
+    fs::write(
+        format!("{}/{}", project_name, PROJECT_MANIFEST_FILENAME),
+        ProjectManifestData::new(project_name, PROJECT_MANIFEST_VERSION, &[]).to_str_as_yaml()?,
+    )?;
+
+    Ok(())
+}
+
+fn create_sample_components(project_name: &str) -> anyhow::Result<()> {
     let relative_event_indexer_path = format!("components/{}_event_indexer.yaml", project_name);
     let relative_algorithm_indexer_path =
         format!("components/{}_algorithm_indexer.yaml", project_name);
@@ -222,7 +247,7 @@ mod tests {
         let project_name = "new_test_create_project";
         run_with_teardown(
             || {
-                let created = create_project(project_name);
+                let created = create_project(project_name, false);
                 assert!(created.is_ok());
                 assert!(Path::new(project_name).exists());
                 assert!(Path::new(&format!("{}/{}", project_name, CHAINSIGHT_FILENAME)).exists());
@@ -259,6 +284,7 @@ mod tests {
             || {
                 let opts = NewOpts {
                     project_name: project_name.to_string(),
+                    no_samples: false,
                 };
                 let res = exec(&test_env(), opts);
                 assert!(res.is_ok());
