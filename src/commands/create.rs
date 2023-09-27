@@ -214,3 +214,70 @@ fn template_snapshot_web2_manifest(component_name: &str) -> SnapshotIndexerHTTPS
         3600,
     )
 }
+#[cfg(test)]
+mod tests {
+    use std::{collections::HashMap, path::Path};
+
+    use super::*;
+    use crate::{
+        commands::test::tests::{run, test_env},
+        lib::utils::CHAINSIGHT_FILENAME,
+    };
+    fn teardown(project_name: &str) {
+        fs::remove_dir_all(project_name).unwrap();
+    }
+    fn setup(project_name: &str) {
+        fs::create_dir(Path::new(project_name)).unwrap();
+        fs::create_dir(Path::new(&format!("{}/components", project_name))).unwrap();
+        fs::create_dir(Path::new(&format!("{}/interfaces", project_name))).unwrap();
+        fs::write(
+            format!("{}/{}", project_name, "project.yaml"),
+            serde_yaml::to_string(&ProjectManifestData::new(project_name, "1", &vec![])).unwrap(),
+        )
+        .unwrap();
+        fs::write(format!("{}/{}", project_name, CHAINSIGHT_FILENAME), "").unwrap();
+    }
+
+    #[test]
+    fn test_exec() {
+        let mut projects: HashMap<String, ComponentType> = HashMap::new();
+        projects.insert("event_inexer".to_string(), ComponentType::EventIndexer);
+        projects.insert(
+            "algorithm_indexer".to_string(),
+            ComponentType::AlgorithmIndexer,
+        );
+        projects.insert(
+            "snapshot_indexer".to_string(),
+            ComponentType::SnapshotIndexer,
+        );
+        projects.insert("relayer".to_string(), ComponentType::Relayer);
+        projects.insert("algorithm_lens".to_string(), ComponentType::AlgorithmLens);
+        projects.insert(
+            "snapshot_indexer_https".to_string(),
+            ComponentType::SnapshotIndexerHTTPS,
+        );
+        projects.iter().for_each(|(name, coponent)| {
+            let project_name = format!("create_test_exec_{}", name);
+            run(
+                || setup(&project_name),
+                || {
+                    let opts = CreateOpts {
+                        component_name: format!("test_{}", name),
+                        type_: coponent.clone(),
+                        path: Some(project_name.to_string()),
+                    };
+                    exec(&test_env(), opts).unwrap();
+                    assert!(Path::new(&format!(
+                        "{}/components/{}.yaml",
+                        project_name,
+                        format!("test_{}", name)
+                    ))
+                    .exists());
+                },
+                || {
+                    teardown(&project_name);
+                },
+            )
+        })
+    }
+}
