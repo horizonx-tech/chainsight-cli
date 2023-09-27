@@ -41,14 +41,15 @@ use crate::{
 };
 
 #[derive(Debug, Parser)]
-#[command(name = "create")]
+#[command(name = "add")]
+#[clap(alias = "create")]
 /// Generates component manifest of specified type and adds to your project.
-pub struct CreateOpts {
-    /// Specifies the name of the component to create.
+pub struct AddOpts {
+    /// Specifies the name of the component to add.
     #[arg(required = true)]
     component_name: String,
 
-    /// Specifies type of the component to create.
+    /// Specifies type of the component to add.
     #[arg(long)]
     type_: ComponentType,
 
@@ -58,7 +59,7 @@ pub struct CreateOpts {
     path: Option<String>,
 }
 
-pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> anyhow::Result<()> {
+pub fn exec(env: &EnvironmentImpl, opts: AddOpts) -> anyhow::Result<()> {
     let log = env.get_logger();
     let component_name = opts.component_name;
     let component_type = opts.type_;
@@ -137,7 +138,7 @@ pub fn exec(env: &EnvironmentImpl, opts: CreateOpts) -> anyhow::Result<()> {
 
     info!(
         log,
-        r#"{:?} component '{}' created successfully"#, component_type, component_name
+        r#"{:?} component '{}' added successfully"#, component_type, component_name
     );
 
     Ok(())
