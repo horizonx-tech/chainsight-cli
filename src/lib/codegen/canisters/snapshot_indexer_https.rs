@@ -17,10 +17,13 @@ pub fn generate_codes(
 
     let label_ident = format_ident!("{}", label);
     let out = quote! {
-        use chainsight_cdk::web2::{JsonRpcSnapshotParam, Web2JsonRpcSnapshotIndexer};
+        use std::collections::HashMap;
+
+        use chainsight_cdk::core::HttpsSnapshotIndexerSourceAttrs;
+        use chainsight_cdk::web2::{HttpsSnapshotParam, Web2HttpsSnapshotIndexer};
         use chainsight_cdk_macros::{
             chainsight_common, did_export, init_in, prepare_stable_structure, stable_memory_for_vec,
-            timer_task_func, StableMemoryStorable,
+            timer_task_func, snapshot_https_source, StableMemoryStorable,
         };
         use candid::{Decode, Encode};
 
@@ -36,12 +39,23 @@ pub fn generate_codes(
         prepare_stable_structure!();
         stable_memory_for_vec!("snapshot", Snapshot, 0, true);
         timer_task_func!("set_task", "index", true);
+
+        const URL : &str = #url;
+        fn get_attrs() -> HttpsSnapshotIndexerSourceAttrs {
+            HttpsSnapshotIndexerSourceAttrs {
+                queries: HashMap::from([
+                    #(
+                        (#query_keys.to_string(), #query_values.to_string()),
+                    )*
+                ]),
+            }
+        }
         async fn index() {
-            let indexer = Web2JsonRpcSnapshotIndexer::new(
-                #url.to_string(),
+            let indexer = Web2HttpsSnapshotIndexer::new(
+                URL.to_string(),
             );
             let res = indexer.get::<String, SnapshotValue>(
-                JsonRpcSnapshotParam {
+                HttpsSnapshotParam {
                     headers: vec![
                         #(
                             (#header_keys.to_string(), #header_values.to_string()),
@@ -60,6 +74,7 @@ pub fn generate_codes(
             };
             let _ = add_snapshot(snapshot.clone());
         }
+        snapshot_https_source!();
         #queries
         did_export!(#label);
     };
