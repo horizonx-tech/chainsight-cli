@@ -32,7 +32,7 @@ fn create_candid_rust_binding(path: &Path) -> anyhow::Result<String> {
     let result = candid::bindings::rust::compile(&config, &env, &None)
         .replace("use ic_cdk::api::call::CallResult as Result;", "")
         .replace("pub enum Result", "enum Result");
-    let re = Regex::new(r"[^{](\w+): ").unwrap();
+    let re = Regex::new(r"[^{](?:pub )*(\w+): ").unwrap();
     let result = re.replace_all(&result, " pub ${1}: ");
     Ok(result.to_string())
 }
