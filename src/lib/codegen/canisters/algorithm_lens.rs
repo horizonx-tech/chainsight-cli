@@ -3,13 +3,15 @@ use crate::{
         codegen::components::algorithm_lens::{
             AlgorithmLensComponentManifest, AlgorithmLensOutputType,
         },
-        utils::paths,
+        utils::paths::bindings_name,
     },
     types::ComponentType,
 };
 use anyhow::ensure;
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote};
+
+use super::common::{CanisterMethodIdentifier, CanisterMethodValueType};
 
 fn common_codes() -> TokenStream {
     quote! {
@@ -82,13 +84,18 @@ pub fn generate_codes(manifest: &AlgorithmLensComponentManifest) -> anyhow::Resu
 
 pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result<TokenStream> {
     let methods = manifest.datasource.methods.clone();
-    let call_func_imports = methods.iter().map(|m| {
-        let bindings_ident = format_ident!("{}", paths::bindings_name(&m.label));
-        let call_func_ident = format_ident!("get_{}", &m.label);
-        quote! {
-            use #bindings_ident::#call_func_ident;
+
+    let call_func_dependencies = quote! {
+        use chainsight_cdk::lens::LensFinder;
+        use chainsight_cdk_macros::{chainsight_common, did_export, init_in, algorithm_lens_finder, lens_method};
+        async fn _get_target_proxy(target: candid::Principal) -> candid::Principal {
+            let out: ic_cdk::api::call::CallResult<(candid::Principal,)> = ic_cdk::api::call::call(target, "get_proxy", ()).await;
+            out.unwrap().0
         }
-    });
+    };
+    let call_funcs = methods
+        .iter()
+        .map(|m| generate_query_call(&m.label, &m.identifier));
     let call_func_templates = methods.iter().map(|m| {
         let getter = format_ident!("get_{}", &m.label);
         quote! {
@@ -133,13 +140,9 @@ pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result
                 pub struct #output_type_ident {
                     #(pub #output_fields_idents: #output_types_idents),*
                 }
-
-                #(#call_func_imports)*
             }
         }
-        AlgorithmLensOutputType::Primitive => quote! {
-            #(#call_func_imports)*
-        },
+        AlgorithmLensOutputType::Primitive => quote! {},
     };
 
     let code = quote! {
@@ -149,6 +152,10 @@ pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result
             #(#call_func_templates)*
             todo!()
         }
+
+
+        #(#call_funcs)*
+        #call_func_dependencies
     };
 
     Ok(code)
@@ -161,4 +168,54 @@ pub fn validate_manifest(manifest: &AlgorithmLensComponentManifest) -> anyhow::R
     );
 
     Ok(())
+}
+
+fn generate_query_call(label: &str, method_identifier: &str) -> TokenStream {
+    let method_identifier = &CanisterMethodIdentifier::parse_from_str(method_identifier).unwrap();
+    let func_to_call = &method_identifier.identifier.to_string();
+    let proxy_func_to_call = "proxy_".to_string() + func_to_call;
+
+    let method_args_idents = method_identifier
+        .params
+        .iter()
+        .map(|arg| format_ident!("{}", arg))
+        .collect::<Vec<Ident>>();
+
+    let (method_return_type, method_return_type_import) = match &method_identifier.return_value {
+        CanisterMethodValueType::Scalar(ty, is_scalar) => match is_scalar {
+            true => (format_ident!("{}", ty.to_string()), quote!()),
+            false => {
+                let crate_ident = format_ident!("{}", bindings_name(label));
+                let ty_ident = format_ident!("{}_{}", ty.to_string(), label);
+                (
+                    ty_ident.clone(),
+                    quote! {
+                        use #crate_ident::SnapshotValue as #ty_ident;
+                    },
+                )
+            }
+        },
+        _ => (format_ident!("{}", "TODO".to_string()), quote!()), // TODO: support tuple & struct
+    };
+
+    if method_args_idents.is_empty() {
+        quote! {
+            #method_return_type_import
+            algorithm_lens_finder!(
+                #label,
+                #proxy_func_to_call,
+                #method_return_type
+            );
+        }
+    } else {
+        quote! {
+            #method_return_type_import
+            algorithm_lens_finder!(
+                #label,
+                #proxy_func_to_call,
+                #method_return_type,
+                #(#method_args_idents),*
+            );
+        }
+    }
 }
