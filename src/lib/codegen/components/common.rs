@@ -189,7 +189,15 @@ pub trait ComponentManifest: std::fmt::Debug {
     /// Note: assuming use of serde_yaml
     fn load(path: &str) -> anyhow::Result<Self>
     where
-        Self: Sized;
+        Self: Sized + serde::de::DeserializeOwned,
+    {
+        let mut file = OpenOptions::new().read(true).open(Path::new(path))?;
+        let mut contents = String::new();
+        file.read_to_string(&mut contents)?;
+        let contents = load_env(&contents)?;
+        let data: Self = serde_yaml::from_str(&contents)?;
+        Ok(data)
+    }
 
     /// Output Component Manifest as yaml format string
     /// Note: assuming use of serde_yaml
@@ -243,6 +251,19 @@ pub trait ComponentManifest: std::fmt::Debug {
     }
 }
 
+/// replace ${ENV_VAR} in manifest with actual value
+fn load_env(contents: &str) -> anyhow::Result<String> {
+    let mut envs = HashMap::new();
+    for (k, v) in dotenvy::vars() {
+        envs.insert(k, v);
+    }
+    let mut contents = contents.to_string();
+    for (k, v) in envs {
+        contents = contents.replace(&format!("${{{}}}", k), &v);
+    }
+    Ok(contents)
+}
+
 pub fn custom_tags_interval_sec(interval_sec: u32) -> (String, String) {
     (
         "chainsight:intervalSec".to_string(),
@@ -264,5 +285,52 @@ impl ComponentTypeInManifest {
         file.read_to_string(&mut contents)?;
         let data: Self = serde_yaml::from_str(&contents)?;
         Ok(data.metadata.type_)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_load_env() {
+        let dotenv_file = r#"
+        TEST_ENV=TEST
+        TEST_ENV2=TEST2
+        "#;
+        let contents = r#"
+        TEST_ENV: ${TEST_ENV}
+        TEST_ENV2: ${TEST_ENV2}
+        test3: ${TEST_ENV}
+        raw: raw
+        "#;
+        let expected = r#"
+        TEST_ENV: TEST
+        TEST_ENV2: TEST2
+        test3: TEST
+        raw: raw
+        "#;
+        // setup
+        let test_dotenv = "test_dotenv";
+        std::fs::write(test_dotenv, dotenv_file).unwrap();
+        dotenvy::from_filename(test_dotenv).ok();
+        // test
+        let actual = load_env(contents).unwrap();
+        assert_eq!(actual, expected);
+        // teardown
+        std::fs::remove_file(test_dotenv).unwrap();
+        dotenvy::dotenv().ok();
+    }
+    #[test]
+    fn test_load_env_without_env_file() {
+        let contents = r#"
+        TEST_ENV: ${TEST_ENV}
+        TEST_ENV2: ${TEST_ENV2}
+        test3: ${TEST_ENV}
+        raw: raw
+        "#;
+        let expected = contents;
+        dotenvy::dotenv().ok();
+        let actual = load_env(contents).unwrap();
+        assert_eq!(actual, expected);
     }
 }

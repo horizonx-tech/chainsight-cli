@@ -164,6 +164,7 @@ src/bindings
 src/canisters
 src/target
 artifacts
+.env
 "#
     .to_string()
 }

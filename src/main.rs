@@ -8,6 +8,7 @@ mod types;
 use clap::{ArgAction, Parser};
 use commands::{exec, Command};
 use config::cli_version_str;
+use dotenvy::dotenv;
 use lib::{environment::EnvironmentImpl, logger::create_root_logger, utils};
 use slog::error;
 
@@ -29,6 +30,7 @@ struct Cli {
 
 fn main() {
     let args = Cli::parse();
+    dotenv().ok();
     let verbose_level = args.verbose as i64 - args.quiet as i64;
     let logger = create_root_logger(verbose_level);
     let env = EnvironmentImpl::new().with_logger(logger.clone());

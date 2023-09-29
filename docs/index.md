@@ -409,6 +409,34 @@ metadata:
 ...
 ```
 
+#### Note: Working with .env
+
+If you want to use environment variables or secret values in the manifest, you can use the following syntax.
+
+```yaml
+version: v1
+metadata:
+  label: sample_snapshot_indexer_chain
+  type: snapshot_indexer
+  description: ''
+  tags: ...
+datasource:
+  type: contract
+  location:
+    id: "${CHAIN_CONTRACT_ID}"
+    args:
+      network_id: ${CHAIN_NETWORK_ID}
+      rpc_url: https://alchemy.com/v2/${CHAIN_ALCHEMY_KEY}
+...
+```
+
+And then, you can set the environment variables in the `.env` file on the project root.
+```
+CHAIN_CONTRACT_ID=0x1234567890
+CHAIN_NETWORK_ID=1
+CHAIN_ALCHEMY_KEY=abcde12345
+```
+
 #### Snapshot
 
 As mentioned earlier, there are multiple types of Snapshot, and each datasource has different logic and external connection methods, so there are differences in the way manifest is written.
