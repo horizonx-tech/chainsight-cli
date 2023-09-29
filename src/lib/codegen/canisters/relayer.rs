@@ -41,6 +41,7 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
 
     let label_ident = format_ident!("{}", &manifest.metadata.label);
     let method_ident = "proxy_".to_string() + &method_identifier.identifier;
+    let method_ident_origin = &method_identifier.identifier;
 
     // from destination: about oracle
     let destination = &manifest.destination;
@@ -99,10 +100,10 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
 
     let relayer_source_ident = match manifest.lens_targets.is_some() {
         true => quote! {
-            relayer_source!(true);
+            relayer_source!(#method_ident_origin, true);
         },
         false => quote! {
-            relayer_source!(false);
+            relayer_source!(#method_ident_origin, false);
         },
     };
 
