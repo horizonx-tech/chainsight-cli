@@ -185,13 +185,10 @@ fn exec_codegen(
                 anyhow::anyhow!(r#"[{}] Failed to create logic project by: {}"#, label, err)
             })?;
 
-            Command::new("cargo")
+            let _ = Command::new("cargo")
                 .current_dir(logic_path_str)
                 .args(["fmt"])
-                .output()
-                .map_err(|err| {
-                    anyhow::anyhow!(r#"[{}] Failed to fmt logic project by: {}"#, label, err)
-                })?;
+                .output();
         }
 
         // Processes about interface
