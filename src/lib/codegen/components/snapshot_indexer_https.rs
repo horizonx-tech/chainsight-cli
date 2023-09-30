@@ -133,9 +133,6 @@ impl ComponentManifest for SnapshotIndexerHTTPSComponentManifest {
             attributes: HashMap::new(),
         }
     }
-    fn default_query_identifier(&self) -> Option<&str> {
-        Option::Some("get_last_snapshot_value : () -> (SnapshotValue)")
-    }
     fn custom_tags(&self) -> HashMap<String, String> {
         let mut res = HashMap::new();
         let (interval_key, interval_val) = custom_tags_interval_sec(self.interval);
