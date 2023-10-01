@@ -1,7 +1,7 @@
 use crate::{
     lib::{
         codegen::components::algorithm_lens::AlgorithmLensComponentManifest,
-        utils::paths::bindings_name,
+        utils::paths::{self, bindings_name},
     },
     types::ComponentType,
 };
@@ -56,6 +56,37 @@ pub fn generate_codes(manifest: &AlgorithmLensComponentManifest) -> anyhow::Resu
 pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result<TokenStream> {
     let methods = manifest.datasource.methods.clone();
 
+    let call_func_templates = methods.iter().enumerate().map(|(i, m)| {
+        let getter = format_ident!("get_{}", &m.label);
+        quote! {
+            let _result = #getter(targets.get(#i).unwrap().clone()).await;
+        }
+    });
+    let output_type_ident = format_ident!("{}", "LensValue");
+    let accessors_ident = format_ident!("{}", paths::accessors_name(&manifest.metadata.label));
+
+    let code = quote! {
+        use #accessors_ident::*;
+
+        #[derive(Clone, Debug,  Default, candid::CandidType, serde::Deserialize, serde::Serialize)]
+        pub struct #output_type_ident {
+            pub dummy: u64
+        }
+
+        pub async fn calculate(targets: Vec<String>, ) -> #output_type_ident {
+            #(#call_func_templates)*
+            todo!()
+        }
+    };
+
+    Ok(code)
+}
+
+pub fn generate_dependencies_accessor(
+    manifest: &AlgorithmLensComponentManifest,
+) -> anyhow::Result<TokenStream> {
+    let methods = manifest.datasource.methods.clone();
+
     let call_func_dependencies = quote! {
         use chainsight_cdk::lens::LensFinder;
         use chainsight_cdk_macros::algorithm_lens_finder;
@@ -67,37 +98,14 @@ pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result
     let call_funcs = methods
         .iter()
         .map(|m| generate_query_call(&m.label, &m.identifier));
-    let call_func_templates = methods.iter().map(|m| {
-        let getter = format_ident!("get_{}", &m.label);
-        quote! {
-            let _result = #getter(targets.get(0).unwrap().clone()).await;
-        }
-    });
-
-    let output_type_ident = format_ident!("{}", "LensValue");
-    let imports = quote! {
-        #[derive(Clone, Debug,  Default, candid::CandidType, serde::Deserialize, serde::Serialize)]
-        pub struct #output_type_ident {
-            pub dummy: u64
-        }
-    };
 
     let code = quote! {
-        #imports
-
-        pub async fn calculate(targets: Vec<String>, ) -> #output_type_ident {
-            #(#call_func_templates)*
-            todo!()
-        }
-
-
         #(#call_funcs)*
         #call_func_dependencies
     };
 
     Ok(code)
 }
-
 pub fn validate_manifest(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result<()> {
     ensure!(
         manifest.metadata.type_ == ComponentType::AlgorithmLens,

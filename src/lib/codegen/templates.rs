@@ -2,7 +2,7 @@ use crate::lib::utils::paths;
 
 pub fn root_cargo_toml() -> String {
     r#"[workspace]
-members = ["bindings/*", "canisters/*", "logics/*"]
+members = ["canisters/*"]
 
 [workspace.dependencies]
 candid = "0.8"
@@ -49,6 +49,44 @@ chainsight-cdk.workspace = true
 {}
 "#,
         project_name,
+        if dependencies.is_empty() {
+            "".to_string()
+        } else {
+            paths::accessors_dependency(project_name)
+        }
+    );
+
+    txt
+}
+
+pub fn accessors_cargo_toml(project_name: &str, dependencies: Vec<String>) -> String {
+    let txt = format!(
+        r#"[package]
+name = "{}"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["rlib"]
+
+[dependencies]
+candid.workspace = true
+ic-cdk.workspace = true
+ic-cdk-macros.workspace = true
+ic-cdk-timers.workspace = true
+ic-stable-structures.workspace = true
+serde.workspace = true
+serde_bytes.workspace = true
+hex.workspace = true
+
+ic-web3-rs.workspace = true
+ic-solidity-bindgen.workspace = true
+chainsight-cdk-macros.workspace = true
+chainsight-cdk.workspace = true
+
+{}
+"#,
+        paths::accessors_name(project_name),
         dependencies
             .iter()
             .map(|x| paths::bindings_dependency(x))
@@ -160,6 +198,7 @@ pub fn dfx_json(project_labels: Vec<String>) -> String {
 
 pub fn gitignore() -> String {
     r#"src/__interfaces
+src/accessors
 src/bindings
 src/canisters
 src/target

@@ -1,5 +1,6 @@
 use std::{collections::HashMap, fs::OpenOptions, io::Read, path::Path};
 
+use anyhow::bail;
 use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -252,6 +253,9 @@ pub trait ComponentManifest: std::fmt::Debug {
     /// NOTE: only used by alhorithm_lens
     fn dependencies(&self) -> Vec<String> {
         vec![]
+    }
+    fn generate_dependency_accessors(&self) -> anyhow::Result<TokenStream> {
+        bail!("not implemented")
     }
 }
 
