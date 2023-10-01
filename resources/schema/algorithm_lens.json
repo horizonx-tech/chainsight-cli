@@ -5,7 +5,7 @@
   "$comment": "Chainsight Algorithm Lens specification",
   "description": "Chainsight Algorithm Lens specification",
   "type": "object",
-  "required": ["version", "metadata", "datasource", "output"],
+  "required": ["version", "metadata", "datasource"],
   "properties": {
     "version": {
       "$id": "#/properties/version",
@@ -105,84 +105,6 @@
                 "type": "string"
               }
             }
-          }
-        }
-      }
-    },
-    "output": {
-      "$id": "#/properties/output",
-      "title": "output",
-      "description": "output of the algorithm lens",
-      "type": "object",
-      "required": ["type"],
-      "dependencies": {
-        "type": {
-          "oneOf": [
-            {
-              "properties": {
-                "type": {
-                  "$id": "#/properties/output/properties/type",
-                  "enum": ["primitive"]
-                },
-                "type_name": {
-                  "$id": "#/properties/output/properties/type_name",
-                  "type": "string"
-                }
-              },
-              "required": ["type_name"]
-            },
-            {
-              "properties": {
-                "type": {
-                  "$id": "#/properties/output/properties/type",
-                  "enum": ["struct"]
-                },
-                "name": {
-                  "$id": "#/properties/output/properties/name",
-                  "type": "string"
-                },
-                "fields": {
-                  "$id": "#/properties/output/properties/fields",
-                  "type": "object"
-                }
-              },
-              "required": ["name", "fields"]
-            }
-          ]
-        }
-      },
-      "properties": {
-        "type": {
-          "$id": "#/properties/output/properties/type",
-          "title": "type",
-          "description": "type of the output. You can use primitive type of Rust or User defined struct",
-          "examples": ["primitive", "struct"],
-          "type": "string",
-          "pattern": "^(primitive|struct)$"
-        },
-        "type_name": {
-          "$id": "#/properties/output/properties/type_name",
-          "title": "type_name",
-          "description": "primitive type name. Required if 'output.type' is 'primitive'",
-          "examples": ["u128", "String", "bool"],
-          "type": "string"
-        },
-        "name": {
-          "$id": "#/properties/output/properties/name",
-          "title": "name",
-          "description": "name of the output struct. Required if 'output.type' is 'struct'",
-          "examples": ["ETHUSDPrice"],
-          "type": "string",
-          "pattern": "^[a-zA-Z0-9_]+$"
-        },
-        "fields": {
-          "$id": "#/properties/output/properties/fields",
-          "title": "fields",
-          "description": "set of field names and their Rust types. Required if 'output.type' is 'struct'",
-          "type": "object",
-          "additionalProperties": {
-            "type": "string",
-            "examples": ["u128", "String", "bool"]
           }
         }
       }
