@@ -1,8 +1,6 @@
 use crate::{
     lib::{
-        codegen::components::algorithm_lens::{
-            AlgorithmLensComponentManifest, AlgorithmLensOutputType,
-        },
+        codegen::components::algorithm_lens::AlgorithmLensComponentManifest,
         utils::paths::bindings_name,
     },
     types::ComponentType,
@@ -15,8 +13,7 @@ use super::common::{CanisterMethodIdentifier, CanisterMethodValueType};
 
 fn common_codes() -> TokenStream {
     quote! {
-        use chainsight_cdk::lens::LensFinder;
-        use chainsight_cdk_macros::{chainsight_common, did_export, init_in, algorithm_lens_finder, lens_method};
+        use chainsight_cdk_macros::{chainsight_common, did_export, init_in, lens_method};
         use candid::CandidType;
         use ic_web3_rs::futures::{future::BoxFuture, FutureExt};
         chainsight_common!(60);
@@ -30,39 +27,13 @@ fn custom_codes(
     let label = &manifest.metadata.label;
 
     let logic_ident: Ident = format_ident!("{}", label);
-    let output_ident = match &manifest.output.type_ {
-        AlgorithmLensOutputType::Primitive => {
-            let primitive_type = format_ident!(
-                "{}",
-                &manifest
-                    .clone()
-                    .output
-                    .type_name
-                    .expect("field type_name required")
-            );
-            let input_count = manifest.datasource.methods.len();
+    let input_count = manifest.datasource.methods.len();
 
-            quote! {
-                use #logic_ident::*;
-                lens_method!(#primitive_type, #input_count);
-                did_export!(#label);
-            }
-        }
-        AlgorithmLensOutputType::Struct => {
-            let output_struct_ident = format_ident!(
-                "{}",
-                &manifest.clone().output.name.expect("field name reuired")
-            );
-            let input_count = manifest.datasource.methods.len();
-            quote! {
-                use #logic_ident::*;
-                lens_method!(#output_struct_ident, #input_count);
-                did_export!(#label);
-            }
-        }
-    };
-
-    Ok(output_ident)
+    Ok(quote! {
+        use #logic_ident::*;
+        lens_method!(#input_count);
+        did_export!(#label);
+    })
 }
 
 pub fn generate_codes(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result<TokenStream> {
@@ -87,7 +58,7 @@ pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result
 
     let call_func_dependencies = quote! {
         use chainsight_cdk::lens::LensFinder;
-        use chainsight_cdk_macros::{chainsight_common, did_export, init_in, algorithm_lens_finder, lens_method};
+        use chainsight_cdk_macros::algorithm_lens_finder;
         async fn _get_target_proxy(target: candid::Principal) -> candid::Principal {
             let out: ic_cdk::api::call::CallResult<(candid::Principal,)> = ic_cdk::api::call::call(target, "get_proxy", ()).await;
             out.unwrap().0
@@ -103,46 +74,12 @@ pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result
         }
     });
 
-    let output_type_ident = match &manifest.output.type_ {
-        AlgorithmLensOutputType::Struct => format_ident!(
-            "{}",
-            &manifest.clone().output.name.expect("filed name reuired")
-        ),
-        AlgorithmLensOutputType::Primitive => format_ident!(
-            "{}",
-            &manifest
-                .clone()
-                .output
-                .type_name
-                .expect("filed type_name reuired")
-        ),
-    };
-    let imports = match &manifest.output.type_ {
-        AlgorithmLensOutputType::Struct => {
-            let output_fields_idents: Vec<Ident> = manifest
-                .clone()
-                .output
-                .fields
-                .expect("fields required")
-                .keys()
-                .map(|k| format_ident!("{}", k.clone()))
-                .collect();
-            let output_types_idents: Vec<Ident> = manifest
-                .clone()
-                .output
-                .fields
-                .expect("fields required")
-                .values()
-                .map(|v| format_ident!("{}", v.clone()))
-                .collect();
-            quote! {
-                #[derive(Clone, Debug,  Default, candid::CandidType, serde::Deserialize, serde::Serialize)]
-                pub struct #output_type_ident {
-                    #(pub #output_fields_idents: #output_types_idents),*
-                }
-            }
+    let output_type_ident = format_ident!("{}", "LensValue");
+    let imports = quote! {
+        #[derive(Clone, Debug,  Default, candid::CandidType, serde::Deserialize, serde::Serialize)]
+        pub struct #output_type_ident {
+            pub dummy: u64
         }
-        AlgorithmLensOutputType::Primitive => quote! {},
     };
 
     let code = quote! {
