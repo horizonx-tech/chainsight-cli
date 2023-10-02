@@ -92,6 +92,7 @@ pub enum CanisterMethodValueType {
     Scalar(String, bool),                // struct name, is_scalar
     Tuple(Vec<(String, bool)>),          // struct_name, is_scalar
     Struct(Vec<(String, String, bool)>), // temp: Only non-nested `record` are supported.
+    Vector(String, bool),                // struct_name, is_scalar
 }
 impl CanisterMethodIdentifier {
     pub fn parse_from_str(s: &str) -> anyhow::Result<Self> {
@@ -137,6 +138,11 @@ impl CanisterMethodIdentifier {
         if !s.starts_with("record") {
             let val = convert_type_from_candid_type(s);
             return Ok(CanisterMethodValueType::Scalar(val.0, val.1));
+        }
+
+        if !s.starts_with("vec") {
+            let val = convert_type_from_candid_type(s);
+            return Ok(CanisterMethodValueType::Vector(val.0, val.1));
         }
 
         // Tuple

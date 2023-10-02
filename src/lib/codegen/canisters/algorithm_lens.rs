@@ -132,6 +132,19 @@ fn generate_query_call(label: &str, method_identifier: &str) -> TokenStream {
                 )
             }
         },
+        CanisterMethodValueType::Vector(ty, is_scalar) => match is_scalar {
+            true => (format_ident!("Vec<{}>", ty.to_string()), quote!()),
+            false => {
+                let crate_ident = format_ident!("{}", bindings_name(label));
+                let ty_ident = format_ident!("{}_{}", ty.to_string(), label);
+                (
+                    format_ident!("Vec<{}>", ty_ident.clone()),
+                    quote! {
+                        use #crate_ident::SnapshotValue as #ty_ident;
+                    },
+                )
+            }
+        },
         _ => (format_ident!("{}", "TODO".to_string()), quote!()), // TODO: support tuple & struct
     };
 
