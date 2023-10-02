@@ -118,9 +118,10 @@ fn generate_query_call(label: &str, method_identifier: &str) -> TokenStream {
         .map(|arg| format_ident!("{}", arg))
         .collect::<Vec<Ident>>();
 
-    let (method_return_type, method_return_type_import) = match &method_identifier.return_value {
+    let (method_return_type, method_return_type_import, vec) = match &method_identifier.return_value
+    {
         CanisterMethodValueType::Scalar(ty, is_scalar) => match is_scalar {
-            true => (format_ident!("{}", ty.to_string()), quote!()),
+            true => (format_ident!("{}", ty.to_string()), quote!(), false),
             false => {
                 let crate_ident = format_ident!("{}", bindings_name(label));
                 let ty_ident = format_ident!("{}_{}", ty.to_string(), label);
@@ -129,36 +130,60 @@ fn generate_query_call(label: &str, method_identifier: &str) -> TokenStream {
                     quote! {
                         use #crate_ident::SnapshotValue as #ty_ident;
                     },
+                    false,
                 )
             }
         },
         CanisterMethodValueType::Vector(ty, is_scalar) => match is_scalar {
-            true => (format_ident!("Vec<{}>", ty.to_string()), quote!()),
+            true => {
+                let out_ident = format_ident!("{}", ty);
+                // out_ident to vec type
+                let ty_ident = format_ident!("{}", out_ident);
+                (ty_ident.clone(), quote! {}, true)
+            }
             false => {
                 let crate_ident = format_ident!("{}", bindings_name(label));
-                let ty_ident = format_ident!("{}_{}", ty.to_string(), label);
+                let ty_ident = format_ident!("{}_{}", ty, label);
                 (
-                    format_ident!("Vec<{}>", ty_ident.clone()),
+                    ty_ident.clone(),
                     quote! {
                         use #crate_ident::SnapshotValue as #ty_ident;
                     },
+                    true,
                 )
             }
         },
-        _ => (format_ident!("{}", "TODO".to_string()), quote!()), // TODO: support tuple & struct
+        _ => (format_ident!("{}", "TODO".to_string()), quote!(), false), // TODO: support tuple & struct
     };
-
-    if method_args_idents.is_empty() {
-        quote! {
+    match (method_args_idents.is_empty(), vec) {
+        (true, true) => quote! {
+            #method_return_type_import
+            algorithm_lens_finder!(
+                #label,
+                #proxy_func_to_call,
+                #method_return_type,
+                Vec<#method_return_type>
+            );
+        },
+        (true, false) => quote! {
             #method_return_type_import
             algorithm_lens_finder!(
                 #label,
                 #proxy_func_to_call,
                 #method_return_type
             );
-        }
-    } else {
-        quote! {
+        },
+        (false, true) => quote! {
+            #method_return_type_import
+            algorithm_lens_finder!(
+                #label,
+                #proxy_func_to_call,
+                #method_return_type,
+                #(#method_args_idents),*,
+                Vec<#method_return_type>
+            );
+        },
+        (false, false) => quote! {
             #method_return_type_import
             algorithm_lens_finder!(
                 #label,
@@ -166,6 +191,6 @@ fn generate_query_call(label: &str, method_identifier: &str) -> TokenStream {
                 #method_return_type,
                 #(#method_args_idents),*
             );
-        }
+        },
     }
 }

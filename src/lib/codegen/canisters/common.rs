@@ -29,7 +29,7 @@ lazy_static! {
     ].iter().cloned().collect();
 
     static ref REGEX_CANDID_FUNC: Regex = Regex::new(r"(?P<identifier>\w+)\s*:\s*\((?P<params>.*?)\)\s*(->\s*\((?P<return>.*?)\))?").unwrap();
-
+    static ref REGEX_VECTOR: Regex = Regex::new(r"vec\s(?P<type>\w+)").unwrap();
     static ref REGEX_TUPLE: Regex = Regex::new(r"record\s\{\s(?P<items>(\w+(;\s|))+)\s\}").unwrap();
     static ref REGEX_STRUCT: Regex = Regex::new(r"(?P<field>\w+)\s*:\s*(?P<type>\w+)").unwrap();
 
@@ -133,16 +133,21 @@ impl CanisterMethodIdentifier {
                 s
             ); // TODO: Support nested `record` types.
         }
+        // vector
+        if s.starts_with("vec") {
+            let captures = REGEX_VECTOR.captures(s);
+            if let Some(captures_value) = captures {
+                let ty = captures_value.name("type").unwrap().as_str();
+                let val = convert_type_from_candid_type(ty);
+                return Ok(CanisterMethodValueType::Vector(val.0, val.1));
+            }
+            bail!("Invalid candid's result types:{}", s);
+        }
 
         // Scalar
         if !s.starts_with("record") {
             let val = convert_type_from_candid_type(s);
             return Ok(CanisterMethodValueType::Scalar(val.0, val.1));
-        }
-
-        if !s.starts_with("vec") {
-            let val = convert_type_from_candid_type(s);
-            return Ok(CanisterMethodValueType::Vector(val.0, val.1));
         }
 
         // Tuple
