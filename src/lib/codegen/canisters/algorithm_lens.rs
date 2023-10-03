@@ -111,12 +111,14 @@ fn create_return_ident(ty: &String, is_scalar: &bool, label: &str) -> (Ident, To
     match is_scalar {
         true => (format_ident!("{}", ty), quote! {}),
         false => {
-            let crate_ident = format_ident!("{}", bindings_name(ty));
-            let ty_ident = format_ident!("{}_{}", ty, label);
+            let crate_ident = format_ident!("{}", bindings_name(label));
+            let ty_ident = format_ident!("{}", ty);
+            let return_ty_ident = format_ident!("{}_{}", ty, label);
+
             (
-                ty_ident.clone(),
+                return_ty_ident.clone(),
                 quote! {
-                    use #crate_ident::SnapshotValue as #ty_ident;
+                    use #crate_ident::#ty_ident as #return_ty_ident;
                 },
             )
         }
@@ -173,7 +175,6 @@ fn generate_query_call(label: &str, method_identifier: &str) -> TokenStream {
                 algorithm_lens_finder!(
                     #label,
                     #proxy_func_to_call,
-                    #method_return_type,
                     Vec<#method_return_type>,
                     #(#method_args_idents),*
                 );
