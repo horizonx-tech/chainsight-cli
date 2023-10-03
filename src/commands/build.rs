@@ -181,8 +181,8 @@ fn execute_codebuild(
         ));
     }
 
-    let action = "Shrink/Optimize module";
-    info!(log, "{}s...", action);
+    let action = "Shrink/Optimize modules";
+    info!(log, "{}...", action);
     for component_datum in component_data {
         let label = &component_datum.metadata().label.clone();
         let wasm_path = format!(
@@ -192,7 +192,6 @@ fn execute_codebuild(
         );
         let output_path = format!("{}/{}.wasm", output_path_str, label);
         let output = Command::new("ic-wasm")
-            .current_dir(project_path_str)
             .args([&wasm_path, "-o", &output_path, "shrink"])
             .output()
             .expect("failed to execute process: ic_wasm shrink");
@@ -213,7 +212,7 @@ fn execute_codebuild(
             ));
         }
     }
-    info!(log, "Succeeded: {}s", action);
+    info!(log, "Succeeded: {}", action);
 
     let action = "Add metadata to modules";
     info!(log, "{}...", action);
