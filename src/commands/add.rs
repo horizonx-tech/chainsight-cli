@@ -15,9 +15,7 @@ use crate::{
                     AlgorithmIndexerComponentManifest, AlgorithmIndexerDatasource,
                     AlgorithmIndexerOutput,
                 },
-                algorithm_lens::{
-                    AlgorithmLensComponentManifest, AlgorithmLensDataSource, AlgorithmLensOutput,
-                },
+                algorithm_lens::{AlgorithmLensComponentManifest, AlgorithmLensDataSource},
                 common::{ComponentManifest, Datasource},
                 event_indexer::{
                     EventIndexerComponentManifest, EventIndexerDatasource,
@@ -202,7 +200,6 @@ fn template_algorithm_lens_manifest(component_name: &str) -> AlgorithmLensCompon
         "",
         PROJECT_MANIFEST_VERSION,
         AlgorithmLensDataSource::default(),
-        AlgorithmLensOutput::default(),
     )
 }
 fn template_snapshot_web2_manifest(component_name: &str) -> SnapshotIndexerHTTPSComponentManifest {
