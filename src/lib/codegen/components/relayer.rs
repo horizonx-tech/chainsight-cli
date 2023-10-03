@@ -156,6 +156,7 @@ impl ComponentManifest for RelayerComponentManifest {
                 }
                 _ => bail!("not support struct type for oracle"),
             },
+            _ => bail!("not support vector type for oracle"),
         };
 
         let args_quote = match self.lens_targets.is_some() {

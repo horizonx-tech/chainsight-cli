@@ -181,6 +181,14 @@ fn generate_ident_sync_to_oracle(
                 _ => bail!("not support struct type for oracle"),
             }
         }
+        CanisterMethodValueType::Vector(_, _) => {
+            match oracle_type {
+                DestinationType::StringOracle => {
+                    quote! { format!("{:?}", &datum) } // temp
+                }
+                _ => bail!("not support vec type for oracle"),
+            }
+        }
     };
     anyhow::Ok(res)
 }

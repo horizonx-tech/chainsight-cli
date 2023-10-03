@@ -278,6 +278,7 @@ fn custom_codes_for_canister(
                 },
             )
         }
+        _ => bail!("Unsupported type"),
     };
 
     // consider whether to add timestamp information to the snapshot

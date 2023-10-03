@@ -29,7 +29,7 @@ lazy_static! {
     ].iter().cloned().collect();
 
     static ref REGEX_CANDID_FUNC: Regex = Regex::new(r"(?P<identifier>\w+)\s*:\s*\((?P<params>.*?)\)\s*(->\s*\((?P<return>.*?)\))?").unwrap();
-
+    static ref REGEX_VECTOR: Regex = Regex::new(r"vec\s(?P<type>\w+)").unwrap();
     static ref REGEX_TUPLE: Regex = Regex::new(r"record\s\{\s(?P<items>(\w+(;\s|))+)\s\}").unwrap();
     static ref REGEX_STRUCT: Regex = Regex::new(r"(?P<field>\w+)\s*:\s*(?P<type>\w+)").unwrap();
 
@@ -92,6 +92,7 @@ pub enum CanisterMethodValueType {
     Scalar(String, bool),                // struct name, is_scalar
     Tuple(Vec<(String, bool)>),          // struct_name, is_scalar
     Struct(Vec<(String, String, bool)>), // temp: Only non-nested `record` are supported.
+    Vector(String, bool),                // struct_name, is_scalar
 }
 impl CanisterMethodIdentifier {
     pub fn parse_from_str(s: &str) -> anyhow::Result<Self> {
@@ -131,6 +132,16 @@ impl CanisterMethodIdentifier {
                 "Sorry, Currently nested `record` types are not supported. This will be supported in the future.\nTarget literal = {}",
                 s
             ); // TODO: Support nested `record` types.
+        }
+        // vector
+        if s.starts_with("vec") {
+            let captures = REGEX_VECTOR.captures(s);
+            if let Some(captures_value) = captures {
+                let ty = captures_value.name("type").unwrap().as_str();
+                let val = convert_type_from_candid_type(ty);
+                return Ok(CanisterMethodValueType::Vector(val.0, val.1));
+            }
+            bail!("Invalid candid's result types:{}", s);
         }
 
         // Scalar

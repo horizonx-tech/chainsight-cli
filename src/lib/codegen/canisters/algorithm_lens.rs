@@ -107,6 +107,24 @@ pub fn validate_manifest(manifest: &AlgorithmLensComponentManifest) -> anyhow::R
     Ok(())
 }
 
+fn create_return_ident(ty: &String, is_scalar: &bool, label: &str) -> (Ident, TokenStream) {
+    match is_scalar {
+        true => (format_ident!("{}", ty), quote! {}),
+        false => {
+            let crate_ident = format_ident!("{}", bindings_name(label));
+            let ty_ident = format_ident!("{}", ty);
+            let return_ty_ident = format_ident!("{}_{}", ty, label);
+
+            (
+                return_ty_ident.clone(),
+                quote! {
+                    use #crate_ident::#ty_ident as #return_ty_ident;
+                },
+            )
+        }
+    }
+}
+
 fn generate_query_call(label: &str, method_identifier: &str) -> TokenStream {
     let method_identifier = &CanisterMethodIdentifier::parse_from_str(method_identifier).unwrap();
     let func_to_call = &method_identifier.identifier.to_string();
@@ -119,40 +137,49 @@ fn generate_query_call(label: &str, method_identifier: &str) -> TokenStream {
         .collect::<Vec<Ident>>();
 
     let (method_return_type, method_return_type_import) = match &method_identifier.return_value {
-        CanisterMethodValueType::Scalar(ty, is_scalar) => match is_scalar {
-            true => (format_ident!("{}", ty.to_string()), quote!()),
-            false => {
-                let crate_ident = format_ident!("{}", bindings_name(label));
-                let ty_ident = format_ident!("{}_{}", ty.to_string(), label);
-                (
-                    ty_ident.clone(),
-                    quote! {
-                        use #crate_ident::SnapshotValue as #ty_ident;
-                    },
-                )
-            }
-        },
+        CanisterMethodValueType::Scalar(ty, is_scalar) => create_return_ident(ty, is_scalar, label),
+        CanisterMethodValueType::Vector(ty, is_scalar) => create_return_ident(ty, is_scalar, label),
         _ => (format_ident!("{}", "TODO".to_string()), quote!()), // TODO: support tuple & struct
     };
-
-    if method_args_idents.is_empty() {
-        quote! {
-            #method_return_type_import
-            algorithm_lens_finder!(
-                #label,
-                #proxy_func_to_call,
-                #method_return_type
-            );
-        }
-    } else {
-        quote! {
-            #method_return_type_import
-            algorithm_lens_finder!(
-                #label,
-                #proxy_func_to_call,
-                #method_return_type,
-                #(#method_args_idents),*
-            );
-        }
+    match method_identifier.return_value {
+        CanisterMethodValueType::Scalar(_, _) => match method_args_idents.is_empty() {
+            true => quote! {
+                #method_return_type_import
+                algorithm_lens_finder!(
+                    #label,
+                    #proxy_func_to_call,
+                    #method_return_type
+                );
+            },
+            false => quote! {
+                #method_return_type_import
+                algorithm_lens_finder!(
+                    #label,
+                    #proxy_func_to_call,
+                    #method_return_type,
+                    #(#method_args_idents),*
+                );
+            },
+        },
+        CanisterMethodValueType::Vector(_, _) => match method_args_idents.is_empty() {
+            true => quote! {
+                #method_return_type_import
+                algorithm_lens_finder!(
+                    #label,
+                    #proxy_func_to_call,
+                    Vec<#method_return_type>
+                );
+            },
+            false => quote! {
+                #method_return_type_import
+                algorithm_lens_finder!(
+                    #label,
+                    #proxy_func_to_call,
+                    Vec<#method_return_type>,
+                    #(#method_args_idents),*
+                );
+            },
+        },
+        _ => quote! {}, // TODO: support tuple & struct,
     }
 }
