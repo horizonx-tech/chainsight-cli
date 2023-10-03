@@ -17,7 +17,6 @@ pub struct AlgorithmLensComponentManifest {
     pub version: String,
     pub metadata: ComponentMetadata,
     pub datasource: AlgorithmLensDataSource,
-    pub output: AlgorithmLensOutput,
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -30,7 +29,6 @@ impl AlgorithmLensComponentManifest {
         description: &str,
         version: &str,
         datasource: AlgorithmLensDataSource,
-        output: AlgorithmLensOutput,
     ) -> Self {
         Self {
             version: version.to_owned(),
@@ -41,7 +39,6 @@ impl AlgorithmLensComponentManifest {
                 tags: Some(vec!["Ethereum".to_string(), "Account".to_string()]),
             },
             datasource,
-            output,
         }
     }
 }
@@ -110,33 +107,11 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-pub struct AlgorithmLensOutput {
-    pub name: Option<String>,
-    pub fields: Option<HashMap<String, String>>,
-    #[serde(rename = "type")]
-    pub type_: AlgorithmLensOutputType,
-    pub type_name: Option<String>,
-}
-
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub enum AlgorithmLensOutputType {
     #[serde(rename = "struct")]
     Struct,
     #[serde(rename = "primitive")]
     Primitive,
-}
-
-impl Default for AlgorithmLensOutput {
-    fn default() -> Self {
-        let mut sample_fields = HashMap::new();
-        sample_fields.insert("address".to_string(), "String".to_string());
-        Self {
-            name: Some("Account".to_string()),
-            fields: Some(sample_fields),
-            type_: AlgorithmLensOutputType::Struct,
-            type_name: None,
-        }
-    }
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -213,14 +188,8 @@ output:
                     methods: vec![AlgorithmLensDataSourceMethod {
                         label: "last_snapshot_value".to_string(),
                         identifier: "get_last_snapshot_value : () -> (SnapshotValue)".to_string(),
-                        candid_file_path: "interfaces/sample.did".to_string()
+                        candid_file_path: "interfaces/sample.did".to_string(),
                     }],
-                },
-                output: AlgorithmLensOutput {
-                    name: Some("SampleOutput".to_string()),
-                    fields: Some(output_types),
-                    type_: AlgorithmLensOutputType::Struct,
-                    type_name: None,
                 },
             }
         );

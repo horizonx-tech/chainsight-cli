@@ -11,9 +11,7 @@ use crate::lib::{
                 AlgorithmIndexerComponentManifest, AlgorithmIndexerDatasource,
                 AlgorithmIndexerOutput,
             },
-            algorithm_lens::{
-                AlgorithmLensComponentManifest, AlgorithmLensDataSource, AlgorithmLensOutput,
-            },
+            algorithm_lens::{AlgorithmLensComponentManifest, AlgorithmLensDataSource},
             common::{ComponentManifest, Datasource},
             event_indexer::{EventIndexerComponentManifest, EventIndexerDatasource},
             relayer::{DestinationField, RelayerComponentManifest},
@@ -235,7 +233,6 @@ fn tempalte_algorithm_lens_manifest(prefix: &str) -> AlgorithmLensComponentManif
         "",
         PROJECT_MANIFEST_VERSION,
         AlgorithmLensDataSource::default(),
-        AlgorithmLensOutput::default(),
     )
 }
 
