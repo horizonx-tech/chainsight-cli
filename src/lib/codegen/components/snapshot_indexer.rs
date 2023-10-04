@@ -13,7 +13,7 @@ use crate::{
 use super::{
     algorithm_lens::LensTargets,
     common::{
-        custom_tags_interval_sec, ComponentManifest, ComponentMetadata, Datasource,
+        custom_tags_interval_sec, ComponentManifest, ComponentMetadata, Datasource, DatasourceType,
         DestinationType, Sources,
     },
 };
@@ -102,14 +102,15 @@ impl ComponentManifest for SnapshotIndexerComponentManifest {
         true
     }
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
-        let args_quote = match self.lens_targets.is_some() {
-            true => quote! {},
-            false => quote! {
+        let args_quote = match (self.lens_targets.is_some(), self.datasource.type_) {
+            // TODO: Consider the type of the specified arguments (by datasource.method.identifier)
+            (false, DatasourceType::Canister) => quote! {
                 pub type CallCanisterArgs = ();
                 pub fn call_args() -> CallCanisterArgs {
                     todo!()
                 }
             },
+            (_, _) => quote! {},
         };
         Ok(args_quote)
     }
