@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use proc_macro2::TokenStream;
-use quote::quote;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -116,15 +115,7 @@ impl ComponentManifest for SnapshotIndexerHTTPSComponentManifest {
         true
     }
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
-        let v = quote! {
-            use candid::{Decode, Encode};
-            use chainsight_cdk_macros::StableMemoryStorable;
-            #[derive(Debug, Clone, candid::CandidType, candid::Deserialize, serde::Serialize, StableMemoryStorable)]
-            pub struct SnapshotValue {
-               pub dummy: u64
-            }
-        };
-        Ok(v)
+        canisters::snapshot_indexer_https::generate_app(self)
     }
     fn get_sources(&self) -> Sources {
         Sources {

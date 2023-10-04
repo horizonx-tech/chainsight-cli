@@ -249,6 +249,73 @@ pub fn generate_codes(
     Ok(code)
 }
 
+pub fn generate_app(
+    manifest: &RelayerComponentManifest,
+) -> anyhow::Result<proc_macro2::TokenStream> {
+    let response_type =
+        CanisterMethodIdentifier::parse_from_str(&manifest.datasource.method.identifier)?
+            .return_value;
+    let oracle_type = &manifest.destination.type_;
+
+    let response_type_ident = match response_type {
+        CanisterMethodValueType::Scalar(ty, _) => {
+            let ty_ident = format_ident!("{}", ty);
+            quote! { pub type CallCanisterResponse = #ty_ident }
+        }
+        CanisterMethodValueType::Tuple(tys) => match oracle_type {
+            DestinationType::StringOracle => {
+                let type_idents = tys
+                    .iter()
+                    .map(|(ty, _)| format_ident!("{}", ty))
+                    .collect::<Vec<proc_macro2::Ident>>();
+                quote! { pub type CallCanisterResponse = (#(#type_idents),*) }
+            }
+            _ => bail!("not support tuple type for oracle"),
+        },
+        CanisterMethodValueType::Struct(values) => match oracle_type {
+            DestinationType::StringOracle => {
+                let response_type_def_ident = format_ident!("{}", "CustomResponseStruct");
+                let struct_tokens = values
+                    .into_iter()
+                    .map(|(key, ty, _)| {
+                        let key_ident = format_ident!("{}", key);
+                        let ty_ident = format_ident!("{}", ty);
+                        quote! {
+                            pub #key_ident: #ty_ident
+                        }
+                    })
+                    .collect::<Vec<_>>();
+                quote! {
+                pub type CallCanisterResponse = #response_type_def_ident;
+                   #[derive(Clone, Debug, candid::CandidType, candid::Deserialize)]
+                   pub struct #response_type_def_ident {
+                       #(#struct_tokens),*
+                   }
+                }
+            }
+            _ => bail!("not support struct type for oracle"),
+        },
+        _ => bail!("not support vector type for oracle"),
+    };
+
+    let args_quote = match &manifest.lens_targets.is_some() {
+        true => quote! {},
+        false => quote! {
+            pub type CallCanisterArgs = ();
+            pub fn call_args() -> CallCanisterArgs {
+                todo!()
+            }
+        },
+    };
+    Ok(quote! {
+        #response_type_ident;
+        #args_quote
+        pub fn filter(_: &CallCanisterResponse) -> bool {
+            true
+        }
+    })
+}
+
 pub fn validate_manifest(manifest: &RelayerComponentManifest) -> anyhow::Result<()> {
     ensure!(
         manifest.metadata.type_ == ComponentType::Relayer,

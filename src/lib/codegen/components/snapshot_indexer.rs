@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use proc_macro2::TokenStream;
-use quote::quote;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -13,7 +12,7 @@ use crate::{
 use super::{
     algorithm_lens::LensTargets,
     common::{
-        custom_tags_interval_sec, ComponentManifest, ComponentMetadata, Datasource, DatasourceType,
+        custom_tags_interval_sec, ComponentManifest, ComponentMetadata, Datasource,
         DestinationType, Sources,
     },
 };
@@ -102,17 +101,7 @@ impl ComponentManifest for SnapshotIndexerComponentManifest {
         true
     }
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
-        let args_quote = match (self.lens_targets.is_some(), self.datasource.type_) {
-            // TODO: Consider the type of the specified arguments (by datasource.method.identifier)
-            (false, DatasourceType::Canister) => quote! {
-                pub type CallCanisterArgs = ();
-                pub fn call_args() -> CallCanisterArgs {
-                    todo!()
-                }
-            },
-            (_, _) => quote! {},
-        };
-        Ok(args_quote)
+        canisters::snapshot_indexer::generate_app(self)
     }
     fn get_sources(&self) -> Sources {
         let mut attr = HashMap::new();
