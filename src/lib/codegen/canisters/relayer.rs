@@ -49,16 +49,6 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
     let oracle_ident = format_ident!("{}", oracle_name_str);
     let abi_path = format!("./__interfaces/{}.json", oracle_name_str);
 
-    // for request values
-    // todo: validate length of method.args and method_identifier.params
-    let method_args = method
-        .args
-        .iter()
-        .enumerate()
-        .map(|(idx, arg)| (method_identifier.params[idx].clone(), arg.clone()))
-        .collect();
-    let (_request_val_idents, _request_ty_idents) = generate_request_arg_idents(&method_args);
-
     // for response type
     let response_type: CanisterMethodValueType = method_identifier.return_value;
     let sync_data_ident = generate_ident_sync_to_oracle(response_type, destination.type_)?;
@@ -252,12 +242,11 @@ pub fn generate_codes(
 pub fn generate_app(
     manifest: &RelayerComponentManifest,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    let response_type =
-        CanisterMethodIdentifier::parse_from_str(&manifest.datasource.method.identifier)?
-            .return_value;
+    let method = &manifest.datasource.method;
+    let method_identifier = CanisterMethodIdentifier::parse_from_str(&method.identifier)?;
     let oracle_type = &manifest.destination.type_;
 
-    let response_type_ident = match response_type {
+    let response_type_ident = match method_identifier.return_value {
         CanisterMethodValueType::Scalar(ty, _) => {
             let ty_ident = format_ident!("{}", ty);
             quote! { pub type CallCanisterResponse = #ty_ident }
@@ -300,13 +289,25 @@ pub fn generate_app(
 
     let args_quote = match &manifest.lens_targets.is_some() {
         true => quote! {},
-        false => quote! {
-            pub type CallCanisterArgs = ();
-            pub fn call_args() -> CallCanisterArgs {
-                todo!()
+        false => {
+            let method_args = method
+                .args
+                .iter()
+                .enumerate()
+                .map(|(idx, arg)| (method_identifier.params[idx].clone(), arg.clone()))
+                .collect();
+            let (request_val_idents, request_type_idents) =
+                generate_request_arg_idents(&method_args);
+
+            quote! {
+                pub type CallCanisterArgs = (#(#request_type_idents),*);
+                pub fn call_args() -> CallCanisterArgs {
+                    (#(#request_val_idents),*)
+                }
             }
-        },
+        }
     };
+
     Ok(quote! {
         #response_type_ident;
         #args_quote
