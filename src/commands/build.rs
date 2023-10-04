@@ -128,11 +128,10 @@ fn execute_codebuild(
     component_data: &Vec<Box<dyn ComponentManifest>>,
 ) -> anyhow::Result<()> {
     let src_path_str = &paths::src_path_str(project_path_str);
-    // Regenerate output dir
     let output_path_str = &format!("{}/{}", project_path_str, ARTIFACTS_DIR);
-    let _ = fs::remove_dir_all(output_path_str);
-    fs::create_dir_all(output_path_str)?;
-
+    if !fs::metadata(output_path_str).is_ok() {
+        fs::create_dir_all(output_path_str)?;
+    }
     let projects = component_data
         .iter()
         .map(|data| data.metadata().label.to_string())
