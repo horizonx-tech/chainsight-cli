@@ -131,7 +131,7 @@ impl Default for AlgorithmLensDataSource {
         Self {
             methods: vec![AlgorithmLensDataSourceMethod {
                 label: "sample_snapshot_indexer_icp".to_string(),
-                identifier: "get_last_snapshot_value : () -> (SnapshotValue)".to_string(),
+                identifier: "get_last_snapshot : () -> (Snapshot)".to_string(),
                 candid_file_path: "interfaces/sample.did".to_string(),
             }],
         }
@@ -158,7 +158,7 @@ metadata:
 datasource:
     methods:
     - label: last_snapshot_value
-      identifier: 'get_last_snapshot_value : () -> (SnapshotValue)'
+      identifier: 'get_last_snapshot : () -> (Snapshot)'
       candid_file_path: "interfaces/sample.did"
 output:
     name: SampleOutput
@@ -187,7 +187,7 @@ output:
                 datasource: AlgorithmLensDataSource {
                     methods: vec![AlgorithmLensDataSourceMethod {
                         label: "last_snapshot_value".to_string(),
-                        identifier: "get_last_snapshot_value : () -> (SnapshotValue)".to_string(),
+                        identifier: "get_last_snapshot : () -> (Snapshot)".to_string(),
                         candid_file_path: "interfaces/sample.did".to_string(),
                     }],
                 },
