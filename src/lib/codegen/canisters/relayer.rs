@@ -49,16 +49,6 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
     let oracle_ident = format_ident!("{}", oracle_name_str);
     let abi_path = format!("./__interfaces/{}.json", oracle_name_str);
 
-    // for request values
-    // todo: validate length of method.args and method_identifier.params
-    let method_args = method
-        .args
-        .iter()
-        .enumerate()
-        .map(|(idx, arg)| (method_identifier.params[idx].clone(), arg.clone()))
-        .collect();
-    let (_request_val_idents, _request_ty_idents) = generate_request_arg_idents(&method_args);
-
     // for response type
     let response_type: CanisterMethodValueType = method_identifier.return_value;
     let sync_data_ident = generate_ident_sync_to_oracle(response_type, destination.type_)?;
