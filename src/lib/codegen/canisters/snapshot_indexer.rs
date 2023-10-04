@@ -431,6 +431,22 @@ pub fn generate_codes(
     Ok(code)
 }
 
+pub fn generate_app(
+    manifest: &SnapshotIndexerComponentManifest,
+) -> anyhow::Result<proc_macro2::TokenStream> {
+    let code = match (&manifest.lens_targets.is_some(), &manifest.datasource.type_) {
+        // TODO: Consider the type of the specified arguments (by datasource.method.identifier)
+        (false, DatasourceType::Canister) => quote! {
+            pub type CallCanisterArgs = ();
+            pub fn call_args() -> CallCanisterArgs {
+                todo!()
+            }
+        },
+        (_, _) => quote! {},
+    };
+    Ok(code)
+}
+
 pub fn validate_manifest(manifest: &SnapshotIndexerComponentManifest) -> anyhow::Result<()> {
     ensure!(
         manifest.metadata.type_ == ComponentType::SnapshotIndexer,
