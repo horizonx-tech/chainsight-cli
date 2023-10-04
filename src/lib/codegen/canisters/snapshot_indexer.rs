@@ -229,16 +229,6 @@ fn custom_codes_for_canister(
     let label_ident = format_ident!("{}", label);
     let method_ident = "proxy_".to_string() + &method_identifier.identifier; // NOTE: to call through proxy
 
-    // for request values
-    // todo: validate length of method.args and method_identifier.params
-    let method_args = method
-        .args
-        .iter()
-        .enumerate()
-        .map(|(idx, arg)| (method_identifier.params[idx].clone(), arg.clone()))
-        .collect();
-    let (_request_val_idents, _request_ty_idents) = generate_request_arg_idents(&method_args);
-
     // for response type
     let response_type = method_identifier.return_value;
     let (response_type_ident, response_type_def_ident) = match response_type {
