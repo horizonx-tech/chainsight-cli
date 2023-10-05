@@ -1,17 +1,13 @@
 use std::collections::HashMap;
 
-use anyhow::{bail, Ok};
+use anyhow::Ok;
 use proc_macro2::TokenStream;
-use quote::{format_ident, quote};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::{
     lib::codegen::{
-        canisters::{
-            self,
-            common::{CanisterMethodIdentifier, CanisterMethodValueType},
-        },
+        canisters::{self},
         components::common::custom_tags_interval_sec,
         oracle::get_oracle_address,
         scripts,
@@ -97,9 +93,7 @@ impl ComponentManifest for RelayerComponentManifest {
     fn required_interface(&self) -> Option<String> {
         self.datasource.method.interface.clone()
     }
-    fn user_impl_required(&self) -> bool {
-        true
-    }
+
     fn get_sources(&self) -> Sources {
         let mut attributes = HashMap::new();
         if self.lens_targets.is_some() {
@@ -113,68 +107,7 @@ impl ComponentManifest for RelayerComponentManifest {
         }
     }
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
-        let response_type =
-            CanisterMethodIdentifier::parse_from_str(&self.datasource.method.identifier)?
-                .return_value;
-        let oracle_type = &self.destination.type_;
-
-        let response_type_ident = match response_type {
-            CanisterMethodValueType::Scalar(ty, _) => {
-                let ty_ident = format_ident!("{}", ty);
-                quote! { pub type CallCanisterResponse = #ty_ident }
-            }
-            CanisterMethodValueType::Tuple(tys) => match oracle_type {
-                DestinationType::StringOracle => {
-                    let type_idents = tys
-                        .iter()
-                        .map(|(ty, _)| format_ident!("{}", ty))
-                        .collect::<Vec<proc_macro2::Ident>>();
-                    quote! { pub type CallCanisterResponse = (#(#type_idents),*) }
-                }
-                _ => bail!("not support tuple type for oracle"),
-            },
-            CanisterMethodValueType::Struct(values) => match oracle_type {
-                DestinationType::StringOracle => {
-                    let response_type_def_ident = format_ident!("{}", "CustomResponseStruct");
-                    let struct_tokens = values
-                        .into_iter()
-                        .map(|(key, ty, _)| {
-                            let key_ident = format_ident!("{}", key);
-                            let ty_ident = format_ident!("{}", ty);
-                            quote! {
-                                pub #key_ident: #ty_ident
-                            }
-                        })
-                        .collect::<Vec<_>>();
-                    quote! {
-                    pub type CallCanisterResponse = #response_type_def_ident;
-                       #[derive(Clone, Debug, candid::CandidType, candid::Deserialize)]
-                       pub struct #response_type_def_ident {
-                           #(#struct_tokens),*
-                       }
-                    }
-                }
-                _ => bail!("not support struct type for oracle"),
-            },
-            _ => bail!("not support vector type for oracle"),
-        };
-
-        let args_quote = match self.lens_targets.is_some() {
-            true => quote! {},
-            false => quote! {
-                pub type CallCanisterArgs = ();
-                pub fn call_args() -> CallCanisterArgs {
-                    todo!()
-                }
-            },
-        };
-        Ok(quote! {
-            #response_type_ident;
-            #args_quote
-            pub fn filter(_: &CallCanisterResponse) -> bool {
-                true
-            }
-        })
+        canisters::relayer::generate_app(self)
     }
     fn custom_tags(&self) -> HashMap<String, String> {
         #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]

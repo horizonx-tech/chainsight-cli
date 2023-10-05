@@ -80,3 +80,18 @@ pub fn generate_codes(
     };
     Ok(out)
 }
+
+pub fn generate_app(
+    _manifest: &SnapshotIndexerHTTPSComponentManifest,
+) -> anyhow::Result<proc_macro2::TokenStream> {
+    let v = quote! {
+        use candid::{Decode, Encode};
+        use chainsight_cdk_macros::StableMemoryStorable;
+        // todo!("Implement a structure that matches the response type")
+        #[derive(Debug, Clone, candid::CandidType, candid::Deserialize, serde::Serialize, StableMemoryStorable)]
+        pub struct SnapshotValue {
+           pub dummy: u64
+        }
+    };
+    Ok(v)
+}

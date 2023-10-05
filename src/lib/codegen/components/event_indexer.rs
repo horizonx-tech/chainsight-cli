@@ -119,9 +119,7 @@ impl ComponentManifest for EventIndexerComponentManifest {
     fn required_interface(&self) -> Option<String> {
         self.datasource.event.interface.clone()
     }
-    fn user_impl_required(&self) -> bool {
-        false
-    }
+
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
         bail!("not implemented")
     }

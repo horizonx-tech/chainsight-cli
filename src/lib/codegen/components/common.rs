@@ -233,6 +233,7 @@ pub trait ComponentManifest: std::fmt::Debug {
     /// Get DestinationType if Destination is defined
     fn destination_type(&self) -> Option<DestinationType>;
 
+    /// Get custom tags to add to wasm metadata
     fn custom_tags(&self) -> HashMap<String, String> {
         HashMap::new()
     }
@@ -240,9 +241,15 @@ pub trait ComponentManifest: std::fmt::Debug {
     /// Get the required interface for this component
     /// ex: abi (.json), candid (.candid)
     fn required_interface(&self) -> Option<String>;
-    fn user_impl_required(&self) -> bool;
+
+    /// Template code to be added/modified by user
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream>;
+
+    /// Sources of data provided by this component
     fn get_sources(&self) -> Sources;
+
+    /// Label of this component on which the component depends
+    /// NOTE: only used by alhorithm_lens
     fn dependencies(&self) -> Vec<String> {
         vec![]
     }

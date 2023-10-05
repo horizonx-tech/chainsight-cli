@@ -229,16 +229,6 @@ fn custom_codes_for_canister(
     let label_ident = format_ident!("{}", label);
     let method_ident = "proxy_".to_string() + &method_identifier.identifier; // NOTE: to call through proxy
 
-    // for request values
-    // todo: validate length of method.args and method_identifier.params
-    let method_args = method
-        .args
-        .iter()
-        .enumerate()
-        .map(|(idx, arg)| (method_identifier.params[idx].clone(), arg.clone()))
-        .collect();
-    let (_request_val_idents, _request_ty_idents) = generate_request_arg_idents(&method_args);
-
     // for response type
     let response_type = method_identifier.return_value;
     let (response_type_ident, response_type_def_ident) = match response_type {
@@ -428,6 +418,33 @@ pub fn generate_codes(
         #custom_code_token
     };
 
+    Ok(code)
+}
+
+pub fn generate_app(
+    manifest: &SnapshotIndexerComponentManifest,
+) -> anyhow::Result<proc_macro2::TokenStream> {
+    if (manifest.datasource.type_ == DatasourceType::Contract) || (manifest.lens_targets.is_some())
+    {
+        return Ok(quote! {});
+    }
+
+    let method = &manifest.datasource.method;
+    let method_identifier = CanisterMethodIdentifier::parse_from_str(&method.identifier)?;
+    let method_args = method
+        .args
+        .iter()
+        .enumerate()
+        .map(|(idx, arg)| (method_identifier.params[idx].clone(), arg.clone()))
+        .collect();
+    let (request_val_idents, request_type_idents) = generate_request_arg_idents(&method_args);
+
+    let code = quote! {
+        pub type CallCanisterArgs = (#(#request_type_idents),*);
+        pub fn call_args() -> CallCanisterArgs {
+            (#(#request_val_idents),*)
+        }
+    };
     Ok(code)
 }
 
