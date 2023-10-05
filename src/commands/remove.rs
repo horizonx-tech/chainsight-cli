@@ -1,16 +1,17 @@
-use std::{fs, path::Path};
+use std::{fs, io::Write, path::Path};
 
-use anyhow::bail;
+use anyhow::{bail, Ok};
 use clap::Parser;
-use dialoguer::{theme::ColorfulTheme, Confirm};
+use dialoguer::{theme::ColorfulTheme, Confirm, MultiSelect};
 use slog::{info, warn, Logger};
 
 use crate::lib::{
-    codegen::{components::common::ComponentTypeInManifest, project::ProjectManifestData},
-    environment::EnvironmentImpl,
-    utils::{
-        find_duplicates, is_chainsight_project, CHAINSIGHT_FILENAME, PROJECT_MANIFEST_FILENAME,
+    codegen::{
+        components::common::ComponentTypeInManifest,
+        project::{ProjectManifestComponentField, ProjectManifestData},
     },
+    environment::EnvironmentImpl,
+    utils::{find_duplicates, is_chainsight_project, PROJECT_MANIFEST_FILENAME},
 };
 
 #[derive(Debug, Parser)]
@@ -31,37 +32,13 @@ pub fn exec(env: &EnvironmentImpl, opts: RemoveOpts) -> anyhow::Result<()> {
         bail!(format!(r#"{}"#, msg));
     }
 
-    let project_path_str = project_path_opt.clone().unwrap_or(".".to_string());
     if confirm_to_user(
         "Do you want to select components to delete? (If no, delete the entire project.)",
     ) {
-        // per component
-        let _component_names = get_components_in_project(&project_path_str)?;
-        todo!();
+        remove_components(&log, project_path_opt.clone())?;
     } else {
         remove_project(&log, project_path_opt.clone())?;
     }
-
-    // let res = if let Some(project_name) = project_path {
-    //     info!(log, r#"Remove project: {}..."#, project_name);
-    //     fs::remove_dir_all(Path::new(&project_name))
-    // } else {
-    //     // TODO: check existence of folders/files before removing
-    //     let _ = fs::remove_dir_all(Path::new(&"artifacts"));
-    //     let _ = fs::remove_dir_all(Path::new(&"interfaces"));
-    //     let _ = fs::remove_dir_all(Path::new(&"components"));
-    //     let _ = fs::remove_file(CHAINSIGHT_FILENAME);
-    //     fs::remove_file(PROJECT_MANIFEST_FILENAME)
-    // };
-    // match res {
-    //     Ok(_) => {
-    //         info!(log, r#"Project removed successfully"#);
-    //         Ok(())
-    //     }
-    //     Err(err) => {
-    //         bail!(format!(r#"Failed: Remove project: {}"#, err));
-    //     }
-    // }
 
     Ok(())
 }
@@ -107,6 +84,92 @@ fn remove_project(log: &Logger, project_path_opt: Option<String>) -> anyhow::Res
     Ok(())
 }
 
+fn remove_components(log: &Logger, project_path_opt: Option<String>) -> anyhow::Result<()> {
+    let project_path_str = project_path_opt.clone().unwrap_or(".".to_string());
+    let project_file_path = format!("{}/{}", project_path_str, PROJECT_MANIFEST_FILENAME);
+    let mut project_manifest = ProjectManifestData::load(&project_file_path)?;
+
+    let components = get_components_in_project(&project_path_str, &project_manifest)?;
+    let selected_idxs = multi_select_to_user(
+        "Which component is to be removed?",
+        &components
+            .iter()
+            .map(|c| c.label.to_string())
+            .collect::<Vec<String>>(),
+    );
+    let selected_components = selected_idxs
+        .iter()
+        .map(|idx| components[*idx].clone())
+        .collect::<Vec<ProjectComponent>>();
+    let target_paths = selected_components
+        .iter()
+        .map(|c| {
+            vec![
+                format!("{}/src/bindings/{}_bindings", &project_path_str, c.label),
+                format!("{}/src/canisters/{}", &project_path_str, c.label),
+                format!("{}/src/logics/{}", &project_path_str, c.label),
+                format!("{}/{}", &project_path_str, c.manifest_path),
+            ]
+        })
+        .collect::<Vec<Vec<String>>>();
+    println!("> Subjects for deletion include the above files and folders.");
+    for (i, paths) in target_paths.iter().enumerate() {
+        println!(">> Component: {}", selected_components[i].label);
+        for path in paths {
+            println!("{}", path);
+        }
+    }
+    println!(
+        "> Note: Delete also the manifests' paths in the project.yaml of the selected components."
+    );
+
+    if confirm_to_user("Are you sure you want to delete these? (This operation cannot be undone.)")
+    {
+        for (i, paths) in target_paths.iter().enumerate() {
+            println!(">> Component: {}", selected_components[i].label);
+            for path in paths {
+                println!("> Deleting: {}", path);
+                let path_buf = Path::new(path);
+                if path_buf.is_file() {
+                    fs::remove_file(path)?;
+                    continue;
+                }
+                if path_buf.is_dir() {
+                    fs::remove_dir_all(path)?;
+                    continue;
+                }
+                continue;
+            }
+        }
+
+        println!(">> Overwrite project.yaml for the deleted component.");
+        println!("> Updating: {}", &project_file_path);
+        project_manifest.components = project_manifest
+            .components
+            .iter()
+            .filter(|c| {
+                !selected_components
+                    .iter()
+                    .any(|sc| sc.manifest_path == c.component_path)
+            })
+            .map(|c| c.clone())
+            .collect::<Vec<ProjectManifestComponentField>>();
+        let mut project_yml = fs::OpenOptions::new()
+            .write(true)
+            .truncate(true)
+            .open(&project_file_path)?;
+        let contents = project_manifest.to_str_as_yaml()?;
+        project_yml.write_all(&contents.as_bytes())?;
+        project_yml.flush()?;
+
+        info!(log, r#"Project removed successfully"#);
+    } else {
+        warn!(log, r#"Remove operation has been stopped."#);
+    }
+
+    Ok(())
+}
+
 fn confirm_to_user(msg: &str) -> bool {
     Confirm::with_theme(&ColorfulTheme::default())
         .with_prompt(msg)
@@ -115,14 +178,23 @@ fn confirm_to_user(msg: &str) -> bool {
         .unwrap()
 }
 
-#[derive(Debug)]
+fn multi_select_to_user(msg: &str, items: &Vec<String>) -> Vec<usize> {
+    MultiSelect::with_theme(&ColorfulTheme::default())
+        .with_prompt(msg)
+        .items(items)
+        .interact()
+        .unwrap()
+}
+
+#[derive(Debug, Clone)]
 struct ProjectComponent {
     label: String,
     manifest_path: String,
 }
-fn get_components_in_project(project_path: &str) -> anyhow::Result<Vec<ProjectComponent>> {
-    let project_file_path = format!("{}/{}", project_path, PROJECT_MANIFEST_FILENAME);
-    let project_manifest = ProjectManifestData::load(&project_file_path)?;
+fn get_components_in_project(
+    project_path: &str,
+    project_manifest: &ProjectManifestData,
+) -> anyhow::Result<Vec<ProjectComponent>> {
     let component_paths = project_manifest
         .components
         .iter()
@@ -157,7 +229,10 @@ fn get_components_in_project(project_path: &str) -> anyhow::Result<Vec<ProjectCo
 
 #[cfg(test)]
 mod tests {
-    use crate::commands::test::tests::{run, test_env};
+    use crate::{
+        commands::test::tests::{run, test_env},
+        lib::utils::CHAINSIGHT_FILENAME,
+    };
 
     use super::*;
     fn setup(project_name: &str) {
