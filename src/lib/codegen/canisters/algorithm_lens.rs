@@ -58,8 +58,20 @@ pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result
 
     let call_func_templates = methods.iter().enumerate().map(|(i, m)| {
         let getter = format_ident!("get_{}", &m.label);
-        quote! {
-            let _result = #getter(targets.get(#i).unwrap().clone()).await;
+        let method_identifier = &CanisterMethodIdentifier::parse_from_str(&m.identifier).unwrap();
+        let method_args_idents = method_identifier
+            .params
+            .iter()
+            .map(|arg| format_ident!("{}", arg))
+            .collect::<Vec<Ident>>();
+        if method_args_idents.is_empty() {
+            quote! {
+                let _result = #getter(targets.get(#i).unwrap().clone()).await;
+            }
+        } else {
+            quote! {
+                let _result = #getter(targets.get(#i).unwrap().clone(), #(#method_args_idents::default()),*).await;
+            }
         }
     });
     let output_type_ident = format_ident!("{}", "LensValue");
