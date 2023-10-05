@@ -280,14 +280,19 @@ pub struct ComponentTypeInManifest {
     pub metadata: ComponentMetadata,
 }
 impl ComponentTypeInManifest {
-    /// Determine Component Type from Component Manifest
-    pub fn determine_type(component_manifest_path: &str) -> anyhow::Result<ComponentType> {
+    pub fn load(component_manifest_path: &str) -> anyhow::Result<ComponentTypeInManifest> {
         let mut file = OpenOptions::new()
             .read(true)
             .open(Path::new(component_manifest_path))?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
         let data: Self = serde_yaml::from_str(&contents)?;
+        Ok(data)
+    }
+
+    /// Determine Component Type from Component Manifest
+    pub fn determine_type(component_manifest_path: &str) -> anyhow::Result<ComponentType> {
+        let data = Self::load(component_manifest_path)?;
         Ok(data.metadata.type_)
     }
 }
