@@ -230,7 +230,7 @@ mod tests {
         fs::create_dir(Path::new(&format!("{}/interfaces", project_name))).unwrap();
         fs::write(
             format!("{}/{}", project_name, "project.yaml"),
-            serde_yaml::to_string(&ProjectManifestData::new(project_name, "1", &vec![])).unwrap(),
+            serde_yaml::to_string(&ProjectManifestData::new(project_name, "1", &[])).unwrap(),
         )
         .unwrap();
         fs::write(format!("{}/{}", project_name, CHAINSIGHT_FILENAME), "").unwrap();
@@ -261,7 +261,7 @@ mod tests {
                 || {
                     let opts = AddOpts {
                         component_name: format!("test_{}", name),
-                        type_: coponent.clone(),
+                        type_: *coponent,
                         path: Some(project_name.to_string()),
                     };
                     exec(&test_env(), opts).unwrap();

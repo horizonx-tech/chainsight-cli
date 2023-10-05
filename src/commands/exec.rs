@@ -232,7 +232,7 @@ mod tests {
 
     fn set_up(project_name: &str) {
         let _ = new::exec(
-            &&test_env(),
+            &test_env(),
             new::NewOpts {
                 project_name: project_name.to_string(),
                 no_samples: false,
@@ -282,7 +282,7 @@ mod tests {
             fs::set_permissions(entrypoint_filepath, PermissionsExt::from_mode(0o755)).unwrap();
         };
         run(
-            || custom_setup(),
+            custom_setup,
             || {
                 let result = execute_commands(&create_root_logger(1), project_name);
                 assert!(result.is_ok());

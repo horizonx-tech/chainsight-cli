@@ -258,15 +258,13 @@ mod tests {
                     Path::new(&format!("{}/{}", project_name, PROJECT_MANIFEST_FILENAME)).exists()
                 );
                 assert!(Path::new(&format!("{}/{}", project_name, GITIGNORE_FILENAME)).exists());
-                vec![
-                    "event_indexer",
+                ["event_indexer",
                     "algorithm_indexer",
                     "snapshot_indexer_chain",
                     "snapshot_indexer_icp",
                     "relayer",
                     "algorithm_lens",
-                    "snapshot_indexer_https",
-                ]
+                    "snapshot_indexer_https"]
                 .iter()
                 .for_each(|manifest| {
                     assert!(Path::new(&format!(

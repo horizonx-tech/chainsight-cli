@@ -129,7 +129,7 @@ fn execute_codebuild(
 ) -> anyhow::Result<()> {
     let src_path_str = &paths::src_path_str(project_path_str);
     let output_path_str = &format!("{}/{}", project_path_str, ARTIFACTS_DIR);
-    if !fs::metadata(output_path_str).is_ok() {
+    if fs::metadata(output_path_str).is_err() {
         fs::create_dir_all(output_path_str)?;
     }
     let projects = component_data
