@@ -93,9 +93,7 @@ impl ComponentManifest for RelayerComponentManifest {
     fn required_interface(&self) -> Option<String> {
         self.datasource.method.interface.clone()
     }
-    fn user_impl_required(&self) -> bool {
-        true
-    }
+
     fn get_sources(&self) -> Sources {
         let mut attributes = HashMap::new();
         if self.lens_targets.is_some() {

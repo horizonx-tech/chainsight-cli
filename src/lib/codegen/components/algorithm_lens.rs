@@ -79,9 +79,6 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
         None
     }
 
-    fn user_impl_required(&self) -> bool {
-        true
-    }
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
         canisters::algorithm_lens::generate_app(self)
     }

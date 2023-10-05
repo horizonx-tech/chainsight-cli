@@ -111,9 +111,7 @@ impl ComponentManifest for SnapshotIndexerHTTPSComponentManifest {
     fn required_interface(&self) -> Option<String> {
         None
     }
-    fn user_impl_required(&self) -> bool {
-        true
-    }
+
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
         canisters::snapshot_indexer_https::generate_app(self)
     }

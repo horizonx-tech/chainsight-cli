@@ -97,9 +97,7 @@ impl ComponentManifest for SnapshotIndexerComponentManifest {
     fn required_interface(&self) -> Option<String> {
         self.datasource.method.interface.clone()
     }
-    fn user_impl_required(&self) -> bool {
-        true
-    }
+
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
         canisters::snapshot_indexer::generate_app(self)
     }

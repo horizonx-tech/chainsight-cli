@@ -242,9 +242,6 @@ pub trait ComponentManifest: std::fmt::Debug {
     /// ex: abi (.json), candid (.candid)
     fn required_interface(&self) -> Option<String>;
 
-    /// Whether this component requires individual implementation at the user
-    fn user_impl_required(&self) -> bool;
-
     /// Template code to be added/modified by user
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream>;
 
