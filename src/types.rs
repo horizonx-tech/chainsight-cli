@@ -33,6 +33,19 @@ pub enum ComponentType {
     AlgorithmLens,
 }
 
+impl ComponentType {
+    pub fn all() -> &'static [ComponentType] {
+        &[
+            ComponentType::EventIndexer,
+            ComponentType::AlgorithmIndexer,
+            ComponentType::SnapshotIndexer,
+            ComponentType::Relayer,
+            ComponentType::AlgorithmLens,
+            ComponentType::SnapshotIndexerHTTPS,
+        ]
+    }
+}
+
 impl fmt::Display for ComponentType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {

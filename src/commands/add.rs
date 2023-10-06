@@ -31,8 +31,9 @@ use crate::{
         },
         environment::EnvironmentImpl,
         utils::{
-            find_duplicates, is_chainsight_project, PROJECT_MANIFEST_FILENAME,
-            PROJECT_MANIFEST_VERSION,
+            find_duplicates,
+            interaction::{UserInteraction, ValidatorResult},
+            is_chainsight_project, PROJECT_MANIFEST_FILENAME, PROJECT_MANIFEST_VERSION,
         },
     },
     types::ComponentType,
@@ -44,12 +45,11 @@ use crate::{
 /// Generates component manifest of specified type and adds to your project.
 pub struct AddOpts {
     /// Specifies the name of the component to add.
-    #[arg(required = true)]
-    component_name: String,
+    component_name: Option<String>,
 
     /// Specifies type of the component to add.
     #[arg(long)]
-    type_: ComponentType,
+    type_: Option<ComponentType>,
 
     /// Specify the path of the project to which the component is to be added.
     /// If not specified, the current directory is targeted.
@@ -57,15 +57,29 @@ pub struct AddOpts {
     path: Option<String>,
 }
 
-pub fn exec(env: &EnvironmentImpl, opts: AddOpts) -> anyhow::Result<()> {
+pub fn exec<U: UserInteraction>(
+    env: &EnvironmentImpl,
+    opts: AddOpts,
+    interaction: &mut U,
+) -> anyhow::Result<()> {
     let log = env.get_logger();
-    let component_name = opts.component_name;
-    let component_type = opts.type_;
     let project_path = opts.path;
 
     if let Err(msg) = is_chainsight_project(project_path.clone()) {
         bail!(format!(r#"{}"#, msg));
     }
+
+    let component_name = if let Some(name) = opts.component_name {
+        name
+    } else {
+        input_component_name(interaction)
+    };
+
+    let component_type = if let Some(type_) = opts.type_ {
+        type_
+    } else {
+        select_component_type(interaction)
+    };
 
     info!(
         log,
@@ -212,6 +226,39 @@ fn template_snapshot_web2_manifest(component_name: &str) -> SnapshotIndexerHTTPS
         3600,
     )
 }
+
+fn input_component_name(interaction: &mut impl UserInteraction) -> String {
+    interaction.input("Please input Component Name to add", |input| {
+        let chars = input.chars().collect::<Vec<char>>();
+
+        if chars.is_empty() {
+            return ValidatorResult::Err("Component Name cannot be empty".to_string());
+        }
+        for &c in &chars {
+            if !c.is_ascii_alphanumeric() && c != '_' {
+                return ValidatorResult::Err("Component Name is only single-byte alphanumeric characters or underscores are allowed.".to_string());
+            }
+        }
+        if !chars[0].is_ascii_alphanumeric() || !chars[chars.len() - 1].is_ascii_alphanumeric() {
+            return ValidatorResult::Err("Component Name must begin or end with a single-byte alphanumeric character.".to_string());
+        }
+
+        ValidatorResult::Ok(())
+    })
+}
+
+fn select_component_type(interaction: &mut impl UserInteraction) -> ComponentType {
+    let all = ComponentType::all();
+    let ans = interaction.select(
+        "Please select Component Type to add",
+        all.iter()
+            .map(|comp| format!("{}", comp))
+            .collect::<Vec<String>>()
+            .as_slice(),
+    );
+    all[ans]
+}
+
 #[cfg(test)]
 mod tests {
     use std::{collections::HashMap, path::Path};
@@ -219,7 +266,7 @@ mod tests {
     use super::*;
     use crate::{
         commands::test::tests::{run, test_env},
-        lib::utils::CHAINSIGHT_FILENAME,
+        lib::utils::{interaction::MockUserInteraction, CHAINSIGHT_FILENAME},
     };
     fn teardown(project_name: &str) {
         fs::remove_dir_all(project_name).unwrap();
@@ -236,10 +283,9 @@ mod tests {
         fs::write(format!("{}/{}", project_name, CHAINSIGHT_FILENAME), "").unwrap();
     }
 
-    #[test]
-    fn test_exec() {
+    fn added_projects() -> HashMap<String, ComponentType> {
         let mut projects: HashMap<String, ComponentType> = HashMap::new();
-        projects.insert("event_inexer".to_string(), ComponentType::EventIndexer);
+        projects.insert("event_indexer".to_string(), ComponentType::EventIndexer);
         projects.insert(
             "algorithm_indexer".to_string(),
             ComponentType::AlgorithmIndexer,
@@ -254,17 +300,62 @@ mod tests {
             "snapshot_indexer_https".to_string(),
             ComponentType::SnapshotIndexerHTTPS,
         );
-        projects.iter().for_each(|(name, coponent)| {
-            let project_name = format!("create_test_exec_{}", name);
+        projects
+    }
+
+    #[test]
+    fn test_add() {
+        let projects = added_projects();
+        projects.iter().for_each(|(name, component)| {
+            let project_name = format!("create_test__add_{}", name);
             run(
                 || setup(&project_name),
                 || {
                     let opts = AddOpts {
-                        component_name: format!("test_{}", name),
-                        type_: *coponent,
+                        component_name: Some(format!("test_{}", name)),
+                        type_: Some(*component),
                         path: Some(project_name.to_string()),
                     };
-                    exec(&test_env(), opts).unwrap();
+                    let mut interaction = MockUserInteraction::default();
+                    exec(&test_env(), opts, &mut interaction).unwrap();
+                    assert!(Path::new(&format!(
+                        "{}/components/{}.yaml",
+                        project_name,
+                        format!("test_{}", name)
+                    ))
+                    .exists());
+                },
+                || {
+                    teardown(&project_name);
+                },
+            )
+        })
+    }
+
+    #[test]
+    fn test_add_without_args() {
+        let projects = added_projects();
+        let all_component_types = ComponentType::all();
+        projects.iter().for_each(|(name, component)| {
+            let project_name = format!("create_test__add_without_args_{}", name);
+            run(
+                || setup(&project_name),
+                || {
+                    let opts = AddOpts {
+                        component_name: None,
+                        type_: None,
+                        path: Some(project_name.to_string()),
+                    };
+                    let component_idx = all_component_types
+                        .iter()
+                        .position(|c| c == component)
+                        .unwrap();
+                    let mut interaction = MockUserInteraction {
+                        input_answers: vec![format!("test_{}", name)],
+                        select_answers: vec![component_idx],
+                        ..Default::default()
+                    };
+                    exec(&test_env(), opts, &mut interaction).unwrap();
                     assert!(Path::new(&format!(
                         "{}/components/{}.yaml",
                         project_name,
