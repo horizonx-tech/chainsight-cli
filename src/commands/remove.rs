@@ -77,9 +77,9 @@ mod tests {
                     path: Some(project_name.to_string()),
                 };
                 exec(&test_env(), opts).unwrap();
-                assert!(Path::new(project_name).exists() == false);
+                assert!(!Path::new(project_name).exists());
             },
-            || dummy_teardown(),
+            dummy_teardown,
         );
     }
 }
