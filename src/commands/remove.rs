@@ -38,9 +38,9 @@ pub fn exec<U: UserInteraction>(
         bail!(format!(r#"{}"#, msg));
     }
 
-    if interaction.confirm_to_user(
-        "Do you want to select components to delete? (If no, delete the entire project.)",
-    ) {
+    if interaction
+        .confirm("Do you want to select components to delete? (If no, delete the entire project.)")
+    {
         remove_components(log, project_path_opt.clone(), interaction)?;
     } else {
         remove_project(log, project_path_opt.clone(), interaction)?;
@@ -68,11 +68,11 @@ fn remove_project<U: UserInteraction>(
         println!("{}", path.to_string_lossy());
     }
 
-    if interaction.confirm_to_user(
-        "Are you sure you want to delete these? (This operation cannot be undone.)",
-    ) {
+    if interaction
+        .confirm("Are you sure you want to delete these? (This operation cannot be undone.)")
+    {
         let is_delete_with_root = with_path_parameter
-            && interaction.confirm_to_user("Do you want to delete the project root folder?");
+            && interaction.confirm("Do you want to delete the project root folder?");
         for path in &target_paths {
             println!("> Deleting: {}", path.to_string_lossy());
             if path.is_file() {
@@ -105,7 +105,7 @@ fn remove_components<U: UserInteraction>(
     let mut project_manifest = ProjectManifestData::load(&project_file_path)?;
 
     let components = get_components_in_project(&project_path_str, &project_manifest)?;
-    let selected_idxs = interaction.multi_select_to_user(
+    let selected_idxs = interaction.multi_select(
         "Which component is to be removed?",
         &components
             .iter()
@@ -138,9 +138,9 @@ fn remove_components<U: UserInteraction>(
         "> Note: Delete also the manifests' paths in the project.yaml of the selected components."
     );
 
-    if interaction.confirm_to_user(
-        "Are you sure you want to delete these? (This operation cannot be undone.)",
-    ) {
+    if interaction
+        .confirm("Are you sure you want to delete these? (This operation cannot be undone.)")
+    {
         for (i, paths) in target_paths.iter().enumerate() {
             println!(">> Component: {}", selected_components[i].label);
             for path in paths {
@@ -301,7 +301,7 @@ mod tests {
                         true,  // confirm to delete
                         false, // with project root folder
                     ],
-                    multi_select_answers: vec![],
+                    ..Default::default()
                 };
 
                 exec(&test_env(), opts, &mut interaction).unwrap();
@@ -331,7 +331,7 @@ mod tests {
                         true,  // confirm to delete
                         true,  // with project root folder
                     ],
-                    multi_select_answers: vec![],
+                    ..Default::default()
                 };
 
                 exec(&test_env(), opts, &mut interaction).unwrap();
@@ -374,6 +374,7 @@ mod tests {
                     multi_select_answers: vec![
                         vec![0, 2, 4], // components to delete
                     ],
+                    ..Default::default()
                 };
 
                 exec(&test_env(), opts, &mut interaction).unwrap();
