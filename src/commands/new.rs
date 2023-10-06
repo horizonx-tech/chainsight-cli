@@ -258,7 +258,7 @@ mod tests {
                     Path::new(&format!("{}/{}", project_name, PROJECT_MANIFEST_FILENAME)).exists()
                 );
                 assert!(Path::new(&format!("{}/{}", project_name, GITIGNORE_FILENAME)).exists());
-                vec![
+                [
                     "event_indexer",
                     "algorithm_indexer",
                     "snapshot_indexer_chain",

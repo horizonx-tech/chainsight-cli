@@ -335,10 +335,9 @@ mod tests {
                 };
 
                 exec(&test_env(), opts, &mut interaction).unwrap();
-
                 assert!(!Path::new(project_name).exists());
             },
-            || dummy_teardown(),
+            dummy_teardown,
         );
     }
 

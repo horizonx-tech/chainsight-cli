@@ -338,8 +338,8 @@ mod tests {
         raw: raw
         "#;
         let expected = contents;
-        dotenvy::dotenv().ok();
         let actual = load_env(contents).unwrap();
         assert_eq!(actual, expected);
+        dotenvy::dotenv().ok();
     }
 }
