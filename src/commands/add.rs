@@ -72,7 +72,7 @@ pub fn exec<U: UserInteraction>(
     let component_name = if let Some(name) = opts.component_name {
         name
     } else {
-        interaction.input_to_user(&"Please input Component Name to add", |input| {
+        interaction.input("Please input Component Name to add", |input| {
             let chars = input.chars().collect::<Vec<char>>();
 
             if chars.is_empty() {
@@ -95,8 +95,8 @@ pub fn exec<U: UserInteraction>(
         type_
     } else {
         let all = ComponentType::all();
-        let ans = interaction.select_to_user(
-            &"Please select Component Type to add",
+        let ans = interaction.select(
+            "Please select Component Type to add",
             all.iter()
                 .map(|comp| format!("{}", comp))
                 .collect::<Vec<String>>()
