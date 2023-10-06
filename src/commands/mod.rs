@@ -30,6 +30,7 @@ pub enum Command {
 }
 
 pub fn exec(env: &EnvironmentImpl, cmd: Command) -> anyhow::Result<()> {
+    let interaction = &mut RealUserInteraction {};
     match cmd {
         // Command::Config(_) => {
         //     println!("Not implemented yet...");
@@ -40,7 +41,7 @@ pub fn exec(env: &EnvironmentImpl, cmd: Command) -> anyhow::Result<()> {
         //     Ok(())
         // }
         Command::New(opts) => new::exec(env, opts),
-        Command::Add(opts) => add::exec(env, opts, &mut RealUserInteraction {}),
+        Command::Add(opts) => add::exec(env, opts, interaction),
         Command::Generate(opts) => generate::exec(env, opts),
         Command::Build(opts) => build::exec(env, opts),
         // Command::Test(_) => {
@@ -49,7 +50,7 @@ pub fn exec(env: &EnvironmentImpl, cmd: Command) -> anyhow::Result<()> {
         // }
         Command::Deploy(opts) => deploy::exec(env, opts),
         Command::Exec(opts) => exec::exec(env, opts),
-        Command::Remove(opts) => remove::exec(env, opts, &mut RealUserInteraction {}),
+        Command::Remove(opts) => remove::exec(env, opts, interaction),
         // Command::Upgrade(_) => {
         //     println!("Not implemented yet...");
         //     Ok(())

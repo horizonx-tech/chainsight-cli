@@ -72,37 +72,13 @@ pub fn exec<U: UserInteraction>(
     let component_name = if let Some(name) = opts.component_name {
         name
     } else {
-        interaction.input("Please input Component Name to add", |input| {
-            let chars = input.chars().collect::<Vec<char>>();
-
-            if chars.is_empty() {
-                return ValidatorResult::Err("Component Name cannot be empty".to_string());
-            }
-            for &c in &chars {
-                if !c.is_ascii_alphanumeric() && c != '_' {
-                    return ValidatorResult::Err("Component Name is only single-byte alphanumeric characters or underscores are allowed.".to_string());
-                }
-            }
-            if !chars[0].is_ascii_alphanumeric() || !chars[chars.len() - 1].is_ascii_alphanumeric() {
-                return ValidatorResult::Err("Component Name must begin or end with a single-byte alphanumeric character.".to_string());
-            }
-
-            ValidatorResult::Ok(())
-        })
+        input_component_name(interaction)
     };
 
     let component_type = if let Some(type_) = opts.type_ {
         type_
     } else {
-        let all = ComponentType::all();
-        let ans = interaction.select(
-            "Please select Component Type to add",
-            all.iter()
-                .map(|comp| format!("{}", comp))
-                .collect::<Vec<String>>()
-                .as_slice(),
-        );
-        all[ans]
+        select_component_type(interaction)
     };
 
     info!(
@@ -250,6 +226,39 @@ fn template_snapshot_web2_manifest(component_name: &str) -> SnapshotIndexerHTTPS
         3600,
     )
 }
+
+fn input_component_name(interaction: &mut impl UserInteraction) -> String {
+    interaction.input("Please input Component Name to add", |input| {
+        let chars = input.chars().collect::<Vec<char>>();
+
+        if chars.is_empty() {
+            return ValidatorResult::Err("Component Name cannot be empty".to_string());
+        }
+        for &c in &chars {
+            if !c.is_ascii_alphanumeric() && c != '_' {
+                return ValidatorResult::Err("Component Name is only single-byte alphanumeric characters or underscores are allowed.".to_string());
+            }
+        }
+        if !chars[0].is_ascii_alphanumeric() || !chars[chars.len() - 1].is_ascii_alphanumeric() {
+            return ValidatorResult::Err("Component Name must begin or end with a single-byte alphanumeric character.".to_string());
+        }
+
+        ValidatorResult::Ok(())
+    })
+}
+
+fn select_component_type(interaction: &mut impl UserInteraction) -> ComponentType {
+    let all = ComponentType::all();
+    let ans = interaction.select(
+        "Please select Component Type to add",
+        all.iter()
+            .map(|comp| format!("{}", comp))
+            .collect::<Vec<String>>()
+            .as_slice(),
+    );
+    all[ans]
+}
+
 #[cfg(test)]
 mod tests {
     use std::{collections::HashMap, path::Path};
