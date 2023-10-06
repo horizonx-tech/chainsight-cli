@@ -1,11 +1,14 @@
 use crate::{
     lib::{
         codegen::components::algorithm_lens::AlgorithmLensComponentManifest,
-        utils::paths::{self, bindings_name},
+        utils::{
+            catch_unwind_silent,
+            paths::{self, bindings_name},
+        },
     },
     types::ComponentType,
 };
-use anyhow::ensure;
+use anyhow::{ensure, Result};
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote};
 
@@ -59,18 +62,22 @@ pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result
     let call_func_templates = methods.iter().enumerate().map(|(i, m)| {
         let getter = format_ident!("get_{}", &m.label);
         let method_identifier = &CanisterMethodIdentifier::parse_from_str(&m.identifier).unwrap();
-        let method_args_idents = method_identifier
-            .params
-            .iter()
-            .map(|arg| format_ident!("{}", arg))
-            .collect::<Vec<Ident>>();
-        if method_args_idents.is_empty() {
-            quote! {
-                let _result = #getter(targets.get(#i).unwrap().clone()).await;
-            }
-        } else {
-            quote! {
-                let _result = #getter(targets.get(#i).unwrap().clone(), #(#method_args_idents::default()),*).await;
+        let result= parse_method_args_idents(method_identifier);
+        match result {
+            Ok(method_args_idents) => {
+                if method_args_idents.is_empty() {
+                    quote! {
+                        let _result = #getter(targets.get(#i).unwrap().clone()).await;
+                    }
+                } else {
+                    quote! {
+                        let _result = #getter(targets.get(#i).unwrap().clone(), #(#method_args_idents::default()),*).await;
+                    }
+                }
+            },
+            Err(error) => {
+                let message = error.to_string();
+                return quote! { todo!(#message); };
             }
         }
     });
@@ -150,56 +157,85 @@ fn generate_query_call(label: &str, method_identifier: &str) -> TokenStream {
     let func_to_call = &method_identifier.identifier.to_string();
     let proxy_func_to_call = "proxy_".to_string() + func_to_call;
 
-    let method_args_idents = method_identifier
-        .params
-        .iter()
-        .map(|arg| format_ident!("{}", arg))
-        .collect::<Vec<Ident>>();
-
-    let (method_return_type, method_return_type_import) = match &method_identifier.return_value {
-        CanisterMethodValueType::Scalar(ty, is_scalar) => create_return_ident(ty, is_scalar, label),
-        CanisterMethodValueType::Vector(ty, is_scalar) => create_return_ident(ty, is_scalar, label),
-        _ => (format_ident!("{}", "TODO".to_string()), quote!()), // TODO: support tuple & struct
-    };
-    match method_identifier.return_value {
-        CanisterMethodValueType::Scalar(_, _) => match method_args_idents.is_empty() {
-            true => quote! {
-                #method_return_type_import
-                algorithm_lens_finder!(
-                    #label,
-                    #proxy_func_to_call,
-                    #method_return_type
-                );
-            },
-            false => quote! {
-                #method_return_type_import
-                algorithm_lens_finder!(
-                    #label,
-                    #proxy_func_to_call,
-                    #method_return_type,
-                    #(#method_args_idents),*
-                );
-            },
-        },
-        CanisterMethodValueType::Vector(_, _) => match method_args_idents.is_empty() {
-            true => quote! {
-                #method_return_type_import
-                algorithm_lens_finder!(
-                    #label,
-                    #proxy_func_to_call,
-                    Vec<#method_return_type>
-                );
-            },
-            false => quote! {
-                #method_return_type_import
-                algorithm_lens_finder!(
-                    #label,
-                    #proxy_func_to_call,
-                    Vec<#method_return_type>,
-                    #(#method_args_idents),*
-                );
-            },
-        },
-        _ => quote! {}, // TODO: support tuple & struct,
+    let result = parse_method_args_idents(method_identifier);
+    match result {
+        Ok(method_args_idents) => {
+            let (method_return_type, method_return_type_import) =
+                match &method_identifier.return_value {
+                    CanisterMethodValueType::Scalar(ty, is_scalar) => {
+                        create_return_ident(ty, is_scalar, label)
+                    }
+                    CanisterMethodValueType::Vector(ty, is_scalar) => {
+                        create_return_ident(ty, is_scalar, label)
+                    }
+                    _ => (format_ident!("{}", "TODO".to_string()), quote!()), // TODO: support tuple & struct
+                };
+            match method_identifier.return_value {
+                CanisterMethodValueType::Scalar(_, _) => match method_args_idents.is_empty() {
+                    true => quote! {
+                        #method_return_type_import
+                        algorithm_lens_finder!(
+                            #label,
+                            #proxy_func_to_call,
+                            #method_return_type
+                        );
+                    },
+                    false => quote! {
+                        #method_return_type_import
+                        algorithm_lens_finder!(
+                            #label,
+                            #proxy_func_to_call,
+                            #method_return_type,
+                            #(#method_args_idents),*
+                        );
+                    },
+                },
+                CanisterMethodValueType::Vector(_, _) => match method_args_idents.is_empty() {
+                    true => quote! {
+                        #method_return_type_import
+                        algorithm_lens_finder!(
+                            #label,
+                            #proxy_func_to_call,
+                            Vec<#method_return_type>
+                        );
+                    },
+                    false => quote! {
+                        #method_return_type_import
+                        algorithm_lens_finder!(
+                            #label,
+                            #proxy_func_to_call,
+                            Vec<#method_return_type>,
+                            #(#method_args_idents),*
+                        );
+                    },
+                },
+                _ => quote! {}, // TODO: support tuple & struct,
+            }
+        }
+        _ => quote! {},
     }
+}
+
+fn parse_method_args_idents(
+    method_identifier: &CanisterMethodIdentifier,
+) -> anyhow::Result<Vec<Ident>> {
+    let (method_args_idents_results, errors): (Vec<_>, Vec<_>) = {
+        method_identifier
+            .params
+            .iter()
+            .map(|arg| catch_unwind_silent(|| format_ident!("{}", arg)))
+            .partition(Result::is_ok)
+    };
+
+    if !errors.is_empty() {
+        return Err(anyhow::anyhow!(
+            "Unsupported type found in arguments. Please implement manually: {}",
+            method_identifier.identifier
+        ));
+    }
+
+    Ok(method_args_idents_results
+        .into_iter()
+        .map(Result::unwrap)
+        .collect::<Vec<Ident>>())
 }
