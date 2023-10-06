@@ -40,7 +40,7 @@ pub fn exec(env: &EnvironmentImpl, cmd: Command) -> anyhow::Result<()> {
         //     Ok(())
         // }
         Command::New(opts) => new::exec(env, opts),
-        Command::Add(opts) => add::exec(env, opts),
+        Command::Add(opts) => add::exec(env, opts, &mut RealUserInteraction {}),
         Command::Generate(opts) => generate::exec(env, opts),
         Command::Build(opts) => build::exec(env, opts),
         // Command::Test(_) => {

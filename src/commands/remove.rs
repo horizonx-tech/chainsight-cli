@@ -301,7 +301,7 @@ mod tests {
                         true,  // confirm to delete
                         false, // with project root folder
                     ],
-                    multi_select_answers: vec![],
+                    ..Default::default()
                 };
 
                 exec(&test_env(), opts, &mut interaction).unwrap();
@@ -331,7 +331,7 @@ mod tests {
                         true,  // confirm to delete
                         true,  // with project root folder
                     ],
-                    multi_select_answers: vec![],
+                    ..Default::default()
                 };
 
                 exec(&test_env(), opts, &mut interaction).unwrap();
@@ -374,6 +374,7 @@ mod tests {
                     multi_select_answers: vec![
                         vec![0, 2, 4], // components to delete
                     ],
+                    ..Default::default()
                 };
 
                 exec(&test_env(), opts, &mut interaction).unwrap();
