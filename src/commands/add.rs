@@ -31,8 +31,9 @@ use crate::{
         },
         environment::EnvironmentImpl,
         utils::{
-            find_duplicates, interaction::UserInteraction, is_chainsight_project,
-            PROJECT_MANIFEST_FILENAME, PROJECT_MANIFEST_VERSION,
+            find_duplicates,
+            interaction::{UserInteraction, ValidatorResult},
+            is_chainsight_project, PROJECT_MANIFEST_FILENAME, PROJECT_MANIFEST_VERSION,
         },
     },
     types::ComponentType,
@@ -71,7 +72,23 @@ pub fn exec<U: UserInteraction>(
     let component_name = if let Some(name) = opts.component_name {
         name
     } else {
-        interaction.input_to_user(&"Please input Component Name to add")
+        interaction.input_to_user(&"Please input Component Name to add", |input| {
+            let chars = input.chars().collect::<Vec<char>>();
+
+            if chars.is_empty() {
+                return ValidatorResult::Err("Component Name cannot be empty".to_string());
+            }
+            for &c in &chars {
+                if !c.is_ascii_alphanumeric() && c != '_' {
+                    return ValidatorResult::Err("Component Name is only single-byte alphanumeric characters or underscores are allowed.".to_string());
+                }
+            }
+            if !chars[0].is_ascii_alphanumeric() || !chars[chars.len() - 1].is_ascii_alphanumeric() {
+                return ValidatorResult::Err("Component Name must begin or end with a single-byte alphanumeric character.".to_string());
+            }
+
+            ValidatorResult::Ok(())
+        })
     };
 
     let component_type = if let Some(type_) = opts.type_ {

@@ -1,8 +1,11 @@
 use dialoguer::{theme::ColorfulTheme, Confirm, Input, MultiSelect, Select};
 
+pub type ValidatorResult = Result<(), String>;
 pub trait UserInteraction {
     fn confirm_to_user(&mut self, msg: &str) -> bool;
-    fn input_to_user(&mut self, msg: &str) -> String;
+    fn input_to_user<F>(&mut self, msg: &str, validator: F) -> String
+    where
+        F: Fn(&String) -> ValidatorResult;
     fn select_to_user(&mut self, msg: &str, items: &[String]) -> usize;
     fn multi_select_to_user(&mut self, msg: &str, items: &[String]) -> Vec<usize>;
 }
@@ -18,16 +21,21 @@ impl UserInteraction for RealUserInteraction {
             .unwrap()
     }
 
-    fn input_to_user(&mut self, msg: &str) -> String {
+    fn input_to_user<F>(&mut self, msg: &str, validator: F) -> String
+    where
+        F: Fn(&String) -> ValidatorResult,
+    {
         Input::with_theme(&ColorfulTheme::default())
             .with_prompt(msg)
-            .interact()
+            .validate_with(validator)
+            .interact_text()
             .unwrap()
     }
 
     fn select_to_user(&mut self, msg: &str, items: &[String]) -> usize {
         Select::with_theme(&ColorfulTheme::default())
             .with_prompt(msg)
+            .default(0)
             .items(items)
             .interact()
             .unwrap()
@@ -57,7 +65,10 @@ impl UserInteraction for MockUserInteraction {
         self.confirm_answers.remove(0)
     }
 
-    fn input_to_user(&mut self, _msg: &str) -> String {
+    fn input_to_user<F>(&mut self, _msg: &str, _validator: F) -> String
+    where
+        F: Fn(&String) -> Result<(), String>,
+    {
         self.input_answers.remove(0)
     }
 
@@ -76,6 +87,7 @@ mod tests {
 
     use crate::lib::utils::interaction::MockUserInteraction;
     use crate::lib::utils::interaction::UserInteraction;
+    use crate::lib::utils::interaction::ValidatorResult;
 
     #[test]
     fn test_mock_user_interaction() {
@@ -91,8 +103,15 @@ mod tests {
         assert_eq!(mock.confirm_to_user(&dummy_msg), false);
         assert_eq!(mock.confirm_answers.len(), 0);
 
-        assert_eq!(mock.input_to_user(&dummy_msg), "input1".to_string());
-        assert_eq!(mock.input_to_user(&dummy_msg), "input2".to_string());
+        let dummy_validator = |_: &String| -> ValidatorResult { ValidatorResult::Ok(()) };
+        assert_eq!(
+            mock.input_to_user(&dummy_msg, dummy_validator),
+            "input1".to_string()
+        );
+        assert_eq!(
+            mock.input_to_user(&dummy_msg, dummy_validator),
+            "input2".to_string()
+        );
         assert_eq!(mock.input_answers.len(), 0);
 
         let dummy_choices = vec![];
