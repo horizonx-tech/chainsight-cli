@@ -2,7 +2,7 @@ use dialoguer::{theme::ColorfulTheme, Confirm, MultiSelect};
 
 pub trait UserInteraction {
     fn confirm_to_user(&mut self, msg: &str) -> bool;
-    fn multi_select_to_user(&mut self, msg: &str, items: &Vec<String>) -> Vec<usize>;
+    fn multi_select_to_user(&mut self, msg: &str, items: &[String]) -> Vec<usize>;
 }
 
 pub struct RealUserInteraction;
@@ -16,7 +16,7 @@ impl UserInteraction for RealUserInteraction {
             .unwrap()
     }
 
-    fn multi_select_to_user(&mut self, msg: &str, items: &Vec<String>) -> Vec<usize> {
+    fn multi_select_to_user(&mut self, msg: &str, items: &[String]) -> Vec<usize> {
         MultiSelect::with_theme(&ColorfulTheme::default())
             .with_prompt(msg)
             .items(items)
@@ -37,7 +37,7 @@ impl UserInteraction for MockUserInteraction {
         self.confirm_answers.remove(0)
     }
 
-    fn multi_select_to_user(&mut self, _msg: &str, _items: &Vec<String>) -> Vec<usize> {
+    fn multi_select_to_user(&mut self, _msg: &str, _items: &[String]) -> Vec<usize> {
         self.multi_select_answers.remove(0)
     }
 }

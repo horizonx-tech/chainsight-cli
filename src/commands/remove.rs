@@ -41,9 +41,9 @@ pub fn exec<U: UserInteraction>(
     if interaction.confirm_to_user(
         "Do you want to select components to delete? (If no, delete the entire project.)",
     ) {
-        remove_components(&log, project_path_opt.clone(), interaction)?;
+        remove_components(log, project_path_opt.clone(), interaction)?;
     } else {
-        remove_project(&log, project_path_opt.clone(), interaction)?;
+        remove_project(log, project_path_opt.clone(), interaction)?;
     }
 
     Ok(())
@@ -168,14 +168,14 @@ fn remove_components<U: UserInteraction>(
                     .iter()
                     .any(|sc| sc.manifest_path == c.component_path)
             })
-            .map(|c| c.clone())
+            .cloned()
             .collect::<Vec<ProjectManifestComponentField>>();
         let mut project_yml = fs::OpenOptions::new()
             .write(true)
             .truncate(true)
             .open(&project_file_path)?;
         let contents = project_manifest.to_str_as_yaml()?;
-        project_yml.write_all(&contents.as_bytes())?;
+        project_yml.write_all(contents.as_bytes())?;
         project_yml.flush()?;
 
         info!(log, r#"Project removed successfully"#);
