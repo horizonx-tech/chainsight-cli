@@ -1,6 +1,6 @@
 use clap::Subcommand;
 
-use crate::lib::environment::EnvironmentImpl;
+use crate::lib::{environment::EnvironmentImpl, utils::interaction::RealUserInteraction};
 
 mod add;
 mod auth;
@@ -49,7 +49,7 @@ pub fn exec(env: &EnvironmentImpl, cmd: Command) -> anyhow::Result<()> {
         // }
         Command::Deploy(opts) => deploy::exec(env, opts),
         Command::Exec(opts) => exec::exec(env, opts),
-        Command::Remove(opts) => remove::exec(env, opts),
+        Command::Remove(opts) => remove::exec(env, opts, &mut RealUserInteraction {}),
         // Command::Upgrade(_) => {
         //     println!("Not implemented yet...");
         //     Ok(())

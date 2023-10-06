@@ -2,7 +2,6 @@ use std::{fs, io::Write, path::Path};
 
 use anyhow::{bail, Ok};
 use clap::Parser;
-use dialoguer::{theme::ColorfulTheme, Confirm, MultiSelect};
 use slog::{info, warn, Logger};
 
 use crate::lib::{
@@ -12,9 +11,8 @@ use crate::lib::{
     },
     environment::EnvironmentImpl,
     utils::{
-        find_duplicates,
-        interaction::{RealUserInteraction, UserInteraction},
-        is_chainsight_project, PROJECT_MANIFEST_FILENAME,
+        find_duplicates, interaction::UserInteraction, is_chainsight_project,
+        PROJECT_MANIFEST_FILENAME,
     },
 };
 
@@ -28,7 +26,11 @@ pub struct RemoveOpts {
     pub path: Option<String>,
 }
 
-pub fn exec(env: &EnvironmentImpl, opts: RemoveOpts) -> anyhow::Result<()> {
+pub fn exec<U: UserInteraction>(
+    env: &EnvironmentImpl,
+    opts: RemoveOpts,
+    interaction: &mut U,
+) -> anyhow::Result<()> {
     let log = env.get_logger();
     let project_path_opt = opts.path;
 
@@ -36,19 +38,22 @@ pub fn exec(env: &EnvironmentImpl, opts: RemoveOpts) -> anyhow::Result<()> {
         bail!(format!(r#"{}"#, msg));
     }
 
-    let mut interaction = RealUserInteraction {};
     if interaction.confirm_to_user(
         "Do you want to select components to delete? (If no, delete the entire project.)",
     ) {
-        remove_components(&log, project_path_opt.clone())?;
+        remove_components(&log, project_path_opt.clone(), interaction)?;
     } else {
-        remove_project(&log, project_path_opt.clone())?;
+        remove_project(&log, project_path_opt.clone(), interaction)?;
     }
 
     Ok(())
 }
 
-fn remove_project(log: &Logger, project_path_opt: Option<String>) -> anyhow::Result<()> {
+fn remove_project<U: UserInteraction>(
+    log: &Logger,
+    project_path_opt: Option<String>,
+    interaction: &mut U,
+) -> anyhow::Result<()> {
     let (project_path, with_path_parameter) = if let Some(path) = project_path_opt {
         (path, true)
     } else {
@@ -63,7 +68,6 @@ fn remove_project(log: &Logger, project_path_opt: Option<String>) -> anyhow::Res
         println!("{}", path.to_string_lossy());
     }
 
-    let mut interaction = RealUserInteraction {};
     if interaction.confirm_to_user(
         "Are you sure you want to delete these? (This operation cannot be undone.)",
     ) {
@@ -91,13 +95,16 @@ fn remove_project(log: &Logger, project_path_opt: Option<String>) -> anyhow::Res
     Ok(())
 }
 
-fn remove_components(log: &Logger, project_path_opt: Option<String>) -> anyhow::Result<()> {
+fn remove_components<U: UserInteraction>(
+    log: &Logger,
+    project_path_opt: Option<String>,
+    interaction: &mut U,
+) -> anyhow::Result<()> {
     let project_path_str = project_path_opt.clone().unwrap_or(".".to_string());
     let project_file_path = format!("{}/{}", project_path_str, PROJECT_MANIFEST_FILENAME);
     let mut project_manifest = ProjectManifestData::load(&project_file_path)?;
 
     let components = get_components_in_project(&project_path_str, &project_manifest)?;
-    let mut interaction = RealUserInteraction {};
     let selected_idxs = interaction.multi_select_to_user(
         "Which component is to be removed?",
         &components
@@ -224,38 +231,162 @@ fn get_components_in_project(
 mod tests {
     use crate::{
         commands::test::tests::{run, test_env},
-        lib::utils::CHAINSIGHT_FILENAME,
+        lib::{
+            codegen::components::{
+                algorithm_lens::{AlgorithmLensComponentManifest, AlgorithmLensDataSource},
+                common::ComponentManifest,
+            },
+            utils::{interaction::MockUserInteraction, CHAINSIGHT_FILENAME},
+        },
     };
 
     use super::*;
-    fn setup(project_name: &str) {
+    fn setup(project_name: &str, component_names: &[&str]) {
         fs::create_dir_all(format!("{}/components", project_name)).unwrap();
+        let component_manifest_paths = component_names
+            .iter()
+            .map(|component_name| format!("components/{}.yaml", component_name))
+            .collect::<Vec<String>>();
+        for (idx, component_manifest_path) in component_manifest_paths.iter().enumerate() {
+            // TODO: clean - make component manifest for test
+            fs::write(
+                &format!("{}/{}", project_name, component_manifest_path),
+                AlgorithmLensComponentManifest::new(
+                    &format!("{}", component_names[idx]),
+                    "",
+                    "",
+                    AlgorithmLensDataSource::default(),
+                )
+                .to_str_as_yaml()
+                .unwrap(),
+            )
+            .unwrap();
+        }
+
         fs::create_dir_all(format!("{}/interfaces", project_name)).unwrap();
         fs::write(format!("{}/{}", project_name, CHAINSIGHT_FILENAME), "").unwrap();
+
+        let component_data = component_manifest_paths
+            .iter()
+            .map(|path| ProjectManifestComponentField::new(&path, None))
+            .collect::<Vec<ProjectManifestComponentField>>();
         fs::write(
             format!("{}/{}", project_name, PROJECT_MANIFEST_FILENAME),
-            "",
+            ProjectManifestData::new(project_name, &"", &component_data)
+                .to_str_as_yaml()
+                .unwrap(),
         )
         .unwrap();
     }
-    // #[test]
-    // fn test_remove_project() {
-    //     let dummy_teardown = || {};
-    //     let project_name = "remove_test__remove_project";
-    //     run(
-    //         || {
-    //             setup(project_name);
-    //         },
-    //         || {
-    //             let opts = RemoveOpts {
-    //                 path: Some(project_name.to_string()),
-    //             };
 
-    //             exec(&test_env(), opts).unwrap();
+    fn is_empty_folder(path: &str) -> std::io::Result<bool> {
+        let entries = fs::read_dir(path)?;
+        std::result::Result::Ok(entries.count() == 0)
+    }
 
-    //             assert!(Path::new(project_name).exists() == false);
-    //         },
-    //         || dummy_teardown(),
-    //     );
-    // }
+    #[test]
+    fn test_remove_project() {
+        let project_name = "remove_test__remove_project";
+        run(
+            || {
+                setup(project_name, &[]);
+            },
+            || {
+                let opts = RemoveOpts {
+                    path: Some(project_name.to_string()),
+                };
+                let mut interaction = MockUserInteraction {
+                    confirm_answers: vec![
+                        false, // target is project
+                        true,  // confirm to delete
+                        false, // with project root folder
+                    ],
+                    multi_select_answers: vec![],
+                };
+
+                exec(&test_env(), opts, &mut interaction).unwrap();
+
+                assert!(Path::new(project_name).exists());
+                assert!(is_empty_folder(project_name).unwrap());
+            },
+            || fs::remove_dir(project_name).unwrap(),
+        );
+    }
+
+    #[test]
+    fn test_remove_project_with_root() {
+        let dummy_teardown = || {};
+        let project_name = "remove_test__remove_project_with_root";
+        run(
+            || {
+                setup(project_name, &[]);
+            },
+            || {
+                let opts = RemoveOpts {
+                    path: Some(project_name.to_string()),
+                };
+                let mut interaction = MockUserInteraction {
+                    confirm_answers: vec![
+                        false, // target is project
+                        true,  // confirm to delete
+                        true,  // with project root folder
+                    ],
+                    multi_select_answers: vec![],
+                };
+
+                exec(&test_env(), opts, &mut interaction).unwrap();
+
+                assert!(!Path::new(project_name).exists());
+            },
+            || dummy_teardown(),
+        );
+    }
+
+    #[test]
+    fn test_remove_components() {
+        let project_name = "remove_test__remove_components";
+        let component_names_to_remove = &[
+            ("sample0", true),
+            ("sample1", false),
+            ("sample2", true),
+            ("sample3", false),
+            ("sample4", true),
+        ];
+
+        run(
+            || {
+                setup(
+                    project_name,
+                    &component_names_to_remove
+                        .iter()
+                        .map(|(name, _)| *name)
+                        .collect::<Vec<&str>>(),
+                )
+            },
+            || {
+                let opts = RemoveOpts {
+                    path: Some(project_name.to_string()),
+                };
+                let mut interaction = MockUserInteraction {
+                    confirm_answers: vec![
+                        true, // target is project
+                        true, // confirm to delete
+                    ],
+                    multi_select_answers: vec![
+                        vec![0, 2, 4], // components to delete
+                    ],
+                };
+
+                exec(&test_env(), opts, &mut interaction).unwrap();
+
+                assert!(Path::new(project_name).exists());
+                for (name, is_delete) in component_names_to_remove {
+                    let path = format!("{}/components/{}.yaml", project_name, name);
+                    println!("{}", &path);
+                    assert_eq!(Path::new(&path).exists(), !is_delete);
+                }
+            },
+            || fs::remove_dir_all(project_name).unwrap(),
+        )
+    }
 }
