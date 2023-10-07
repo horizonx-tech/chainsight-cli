@@ -41,9 +41,9 @@ pub fn exec<U: UserInteraction>(
     if interaction
         .confirm("Do you want to select components to delete? (If no, delete the entire project.)")
     {
-        remove_components(log, project_path_opt.clone(), interaction)?;
+        remove_components(log, project_path_opt, interaction)?;
     } else {
-        remove_project(log, project_path_opt.clone(), interaction)?;
+        remove_project(log, project_path_opt, interaction)?;
     }
 
     Ok(())
@@ -100,7 +100,7 @@ fn remove_components<U: UserInteraction>(
     project_path_opt: Option<String>,
     interaction: &mut U,
 ) -> anyhow::Result<()> {
-    let project_path_str = project_path_opt.clone().unwrap_or(".".to_string());
+    let project_path_str = project_path_opt.unwrap_or(".".to_string());
     let project_file_path = format!("{}/{}", project_path_str, PROJECT_MANIFEST_FILENAME);
     let mut project_manifest = ProjectManifestData::load(&project_file_path)?;
 

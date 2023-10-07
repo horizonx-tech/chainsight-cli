@@ -77,7 +77,7 @@ pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result
             },
             Err(error) => {
                 let message = error.to_string();
-                return quote! { todo!(#message); };
+                quote! { todo!(#message); }
             }
         }
     });
