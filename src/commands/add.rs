@@ -16,16 +16,17 @@ use crate::{
                     AlgorithmIndexerOutput,
                 },
                 algorithm_lens::{AlgorithmLensComponentManifest, AlgorithmLensDataSource},
-                common::{ComponentManifest, Datasource},
+                common::{ComponentManifest, Datasource, SnapshotStorage},
                 event_indexer::{
                     EventIndexerComponentManifest, EventIndexerDatasource,
                     EventIndexerEventDefinition, SourceNetwork,
                 },
                 relayer::{DestinationField, RelayerComponentManifest},
-                snapshot_indexer::{SnapshotIndexerComponentManifest, SnapshotStorage},
+                snapshot_indexer_evm::SnapshotIndexerEVMComponentManifest,
                 snapshot_indexer_https::{
                     SnapshotIndexerHTTPSComponentManifest, SnapshotIndexerHTTPSDataSource,
                 },
+                snapshot_indexer_icp::SnapshotIndexerICPComponentManifest,
             },
             project::{ProjectManifestComponentField, ProjectManifestData},
         },
@@ -93,8 +94,11 @@ pub fn exec<U: UserInteraction>(
         ComponentType::AlgorithmIndexer => {
             template_algorithm_indexer_manifest(&component_name).to_str_as_yaml()
         }
-        ComponentType::SnapshotIndexer => {
-            template_snapshot_indexer_manifest(&component_name).to_str_as_yaml()
+        ComponentType::SnapshotIndexerICP => {
+            template_snapshot_indexer_icp_manifest(&component_name).to_str_as_yaml()
+        }
+        ComponentType::SnapshotIndexerEVM => {
+            template_snapshot_indexer_evm_manifest(&component_name).to_str_as_yaml()
         }
         ComponentType::Relayer => template_relayer_manifest(&component_name).to_str_as_yaml(),
         ComponentType::AlgorithmLens => {
@@ -186,8 +190,23 @@ fn template_algorithm_indexer_manifest(component_name: &str) -> AlgorithmIndexer
     )
 }
 
-fn template_snapshot_indexer_manifest(component_name: &str) -> SnapshotIndexerComponentManifest {
-    SnapshotIndexerComponentManifest::new(
+fn template_snapshot_indexer_icp_manifest(
+    component_name: &str,
+) -> SnapshotIndexerICPComponentManifest {
+    SnapshotIndexerICPComponentManifest::new(
+        component_name,
+        "",
+        PROJECT_MANIFEST_VERSION,
+        Datasource::new_canister("function_identifier()".to_string(), None, None),
+        SnapshotStorage::default(),
+        3600,
+    )
+}
+
+fn template_snapshot_indexer_evm_manifest(
+    component_name: &str,
+) -> SnapshotIndexerEVMComponentManifest {
+    SnapshotIndexerEVMComponentManifest::new(
         component_name,
         "",
         PROJECT_MANIFEST_VERSION,
@@ -295,8 +314,12 @@ mod tests {
             ComponentType::AlgorithmIndexer,
         );
         projects.insert(
-            "snapshot_indexer".to_string(),
-            ComponentType::SnapshotIndexer,
+            "snapshot_indexer_icp".to_string(),
+            ComponentType::SnapshotIndexerICP,
+        );
+        projects.insert(
+            "snapshot_indexer_evm".to_string(),
+            ComponentType::SnapshotIndexerEVM,
         );
         projects.insert("relayer".to_string(), ComponentType::Relayer);
         projects.insert("algorithm_lens".to_string(), ComponentType::AlgorithmLens);

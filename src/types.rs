@@ -16,9 +16,13 @@ pub enum ComponentType {
     #[serde(rename = "algorithm_indexer")]
     AlgorithmIndexer,
 
-    /// To periodically take and store snapshots from Contract and other Canisters
-    #[serde(rename = "snapshot_indexer")]
-    SnapshotIndexer,
+    /// To periodically take and store snapshots from other Canisters
+    #[serde(rename = "snapshot_indexer_icp")]
+    SnapshotIndexerICP,
+
+    /// To periodically take and store snapshots from Contract
+    #[serde(rename = "snapshot_indexer_evm")]
+    SnapshotIndexerEVM,
 
     /// To periodically take and store snapshots using HTTPS Outcall
     #[serde(rename = "snapshot_indexer_https")]
@@ -38,7 +42,8 @@ impl ComponentType {
         &[
             ComponentType::EventIndexer,
             ComponentType::AlgorithmIndexer,
-            ComponentType::SnapshotIndexer,
+            ComponentType::SnapshotIndexerICP,
+            ComponentType::SnapshotIndexerEVM,
             ComponentType::Relayer,
             ComponentType::AlgorithmLens,
             ComponentType::SnapshotIndexerHTTPS,
@@ -51,7 +56,8 @@ impl fmt::Display for ComponentType {
         match self {
             ComponentType::EventIndexer => write!(f, "event_indexer"),
             ComponentType::AlgorithmIndexer => write!(f, "algorithm_indexer"),
-            ComponentType::SnapshotIndexer => write!(f, "snapshot_indexer"),
+            ComponentType::SnapshotIndexerICP => write!(f, "snapshot_indexer_icp"),
+            ComponentType::SnapshotIndexerEVM => write!(f, "snapshot_indexer_evm"),
             ComponentType::Relayer => write!(f, "relayer"),
             ComponentType::AlgorithmLens => write!(f, "algorithm_lens"),
             ComponentType::SnapshotIndexerHTTPS => write!(f, "snapshot_indexer_https"),

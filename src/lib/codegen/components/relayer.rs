@@ -181,9 +181,7 @@ mod tests {
     use jsonschema::JSONSchema;
 
     use crate::lib::{
-        codegen::components::common::{
-            CanisterIdType, DatasourceLocation, DatasourceMethod, DatasourceType,
-        },
+        codegen::components::common::{CanisterIdType, DatasourceLocation, DatasourceMethod},
         test_utils::SrcString,
     };
 
@@ -232,7 +230,6 @@ interval: 3600
                     tags: Some(vec!["Oracle".to_string(), "snapshot".to_string()])
                 },
                 datasource: Datasource {
-                    type_: DatasourceType::Canister,
                     location: DatasourceLocation::new_canister(
                         "datasource_canister_id".to_string(),
                         CanisterIdType::CanisterName
@@ -275,7 +272,6 @@ interval: 3600
                 tags: Some(vec!["Oracle".to_string(), "snapshot".to_string()]),
             },
             datasource: Datasource {
-                type_: DatasourceType::Canister,
                 location: DatasourceLocation::new_canister(
                     "datasource_canister_id".to_string(),
                     CanisterIdType::CanisterName,

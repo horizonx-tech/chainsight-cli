@@ -9,11 +9,9 @@ use crate::{
     utils::serializer::ordered_map,
 };
 
-use super::{
-    common::{
-        custom_tags_interval_sec, ComponentManifest, ComponentMetadata, DestinationType, Sources,
-    },
-    snapshot_indexer::SnapshotStorage,
+use super::common::{
+    custom_tags_interval_sec, ComponentManifest, ComponentMetadata, DestinationType,
+    SnapshotStorage, Sources,
 };
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 

@@ -13,8 +13,9 @@ use crate::{
                 common::{ComponentManifest, ComponentTypeInManifest},
                 event_indexer::EventIndexerComponentManifest,
                 relayer::RelayerComponentManifest,
-                snapshot_indexer::SnapshotIndexerComponentManifest,
+                snapshot_indexer_evm::SnapshotIndexerEVMComponentManifest,
                 snapshot_indexer_https::SnapshotIndexerHTTPSComponentManifest,
+                snapshot_indexer_icp::SnapshotIndexerICPComponentManifest,
             },
             project::ProjectManifestData,
         },
@@ -87,8 +88,11 @@ pub fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
             ComponentType::AlgorithmIndexer => {
                 Box::new(AlgorithmIndexerComponentManifest::load(&component_path)?)
             }
-            ComponentType::SnapshotIndexer => {
-                Box::new(SnapshotIndexerComponentManifest::load(&component_path)?)
+            ComponentType::SnapshotIndexerICP => {
+                Box::new(SnapshotIndexerICPComponentManifest::load(&component_path)?)
+            }
+            ComponentType::SnapshotIndexerEVM => {
+                Box::new(SnapshotIndexerEVMComponentManifest::load(&component_path)?)
             }
             ComponentType::Relayer => Box::new(RelayerComponentManifest::load(&component_path)?),
             ComponentType::AlgorithmLens => {

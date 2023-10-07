@@ -12,13 +12,14 @@ use crate::lib::{
                 AlgorithmIndexerOutput,
             },
             algorithm_lens::{AlgorithmLensComponentManifest, AlgorithmLensDataSource},
-            common::{ComponentManifest, Datasource},
+            common::{ComponentManifest, Datasource, SnapshotStorage},
             event_indexer::{EventIndexerComponentManifest, EventIndexerDatasource},
             relayer::{DestinationField, RelayerComponentManifest},
-            snapshot_indexer::{SnapshotIndexerComponentManifest, SnapshotStorage},
+            snapshot_indexer_evm::SnapshotIndexerEVMComponentManifest,
             snapshot_indexer_https::{
                 SnapshotIndexerHTTPSComponentManifest, SnapshotIndexerHTTPSDataSource,
             },
+            snapshot_indexer_icp::SnapshotIndexerICPComponentManifest,
         },
         project::{ProjectManifestComponentField, ProjectManifestData},
         templates::gitignore,
@@ -101,10 +102,8 @@ fn create_sample_components(project_name: &str, component_prefix: &str) -> anyho
     let relative_event_indexer_path = format!("components/{}_event_indexer.yaml", component_prefix);
     let relative_algorithm_indexer_path =
         format!("components/{}_algorithm_indexer.yaml", component_prefix);
-    let relative_snapshot_indexer_chain_path = format!(
-        "components/{}_snapshot_indexer_chain.yaml",
-        component_prefix
-    );
+    let relative_snapshot_indexer_evm_path =
+        format!("components/{}_snapshot_indexer_evm.yaml", component_prefix);
     let relative_snapshot_indexer_icp_path =
         format!("components/{}_snapshot_indexer_icp.yaml", component_prefix);
     let relative_relayer_path = format!("components/{}_relayer.yaml", component_prefix);
@@ -122,7 +121,7 @@ fn create_sample_components(project_name: &str, component_prefix: &str) -> anyho
             &[
                 ProjectManifestComponentField::new(&relative_event_indexer_path, None),
                 ProjectManifestComponentField::new(&relative_algorithm_indexer_path, None),
-                ProjectManifestComponentField::new(&relative_snapshot_indexer_chain_path, None),
+                ProjectManifestComponentField::new(&relative_snapshot_indexer_evm_path, None),
                 ProjectManifestComponentField::new(&relative_snapshot_indexer_icp_path, None),
                 ProjectManifestComponentField::new(&relative_relayer_path, None),
                 ProjectManifestComponentField::new(&relative_algorithmlens_path, None),
@@ -140,8 +139,8 @@ fn create_sample_components(project_name: &str, component_prefix: &str) -> anyho
         template_algorithm_indexer_manifest(component_prefix).to_str_as_yaml()?,
     )?;
     fs::write(
-        format!("{}/{}", project_name, relative_snapshot_indexer_chain_path),
-        template_snapshot_indexer_chain_manifest(component_prefix).to_str_as_yaml()?,
+        format!("{}/{}", project_name, relative_snapshot_indexer_evm_path),
+        template_snapshot_indexer_evm_manifest(component_prefix).to_str_as_yaml()?,
     )?;
     fs::write(
         format!("{}/{}", project_name, relative_snapshot_indexer_icp_path),
@@ -184,9 +183,9 @@ fn template_algorithm_indexer_manifest(prefix: &str) -> AlgorithmIndexerComponen
     )
 }
 
-fn template_snapshot_indexer_chain_manifest(prefix: &str) -> SnapshotIndexerComponentManifest {
-    SnapshotIndexerComponentManifest::new(
-        &format!("{}_snapshot_indexer_chain", prefix),
+fn template_snapshot_indexer_evm_manifest(prefix: &str) -> SnapshotIndexerEVMComponentManifest {
+    SnapshotIndexerEVMComponentManifest::new(
+        &format!("{}_snapshot_indexer_evm", prefix),
         "",
         PROJECT_MANIFEST_VERSION,
         Datasource::default_contract(),
@@ -195,8 +194,8 @@ fn template_snapshot_indexer_chain_manifest(prefix: &str) -> SnapshotIndexerComp
     )
 }
 
-fn template_snapshot_indexer_icp_manifest(prefix: &str) -> SnapshotIndexerComponentManifest {
-    SnapshotIndexerComponentManifest::new(
+fn template_snapshot_indexer_icp_manifest(prefix: &str) -> SnapshotIndexerICPComponentManifest {
+    SnapshotIndexerICPComponentManifest::new(
         &format!("{}_snapshot_indexer_icp", prefix),
         "",
         PROJECT_MANIFEST_VERSION,
@@ -265,7 +264,7 @@ mod tests {
                 [
                     "event_indexer",
                     "algorithm_indexer",
-                    "snapshot_indexer_chain",
+                    "snapshot_indexer_evm",
                     "snapshot_indexer_icp",
                     "relayer",
                     "algorithm_lens",
