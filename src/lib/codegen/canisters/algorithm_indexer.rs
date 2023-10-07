@@ -75,11 +75,7 @@ fn custom_codes(
         let mut output_fields_idents: Vec<Ident> = Vec::new();
         let mut output_field_types: Vec<Ident> = Vec::new();
 
-        let mut keys = manifest.output[i]
-            .fields
-            .keys()
-            .into_iter()
-            .collect::<Vec<_>>();
+        let mut keys = manifest.output[i].fields.keys().collect::<Vec<_>>();
         keys.sort();
         for key in keys {
             let value = manifest.output[i].fields.get(key).unwrap();
