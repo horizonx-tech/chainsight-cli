@@ -1,0 +1,22 @@
+---
+source: src/lib/codegen/components/event_indexer.rs
+expression: "&manifest.generate_scripts(Network::Local).unwrap()"
+---
+#!/bin/bash
+# init
+dfx canister  call sample_event_indexer init_in '(variant { "LocalDevelopment" })'
+# setup
+dfx canister  call sample_event_indexer setup "(
+    \"0x6B175474E89094C44Da98b954EedeAC495271d0F\",
+    record{
+        env=variant{\"LocalDevelopment\"};
+        url=\"https://mainnet.infura.io/v3/<YOUR_KEY>\";
+        chain_id=1        
+    },
+    record{
+        start_from=17660942
+    }
+    )"
+# set_task
+dfx canister  call sample_event_indexer set_task '(3600, 10)'
+
