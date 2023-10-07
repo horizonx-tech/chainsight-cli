@@ -72,16 +72,21 @@ fn custom_codes(
     for i in 0..manifest.output.len() {
         let output_struct = format_ident!("{}", &manifest.output[i].name.clone());
 
-        let output_fields_idents: Vec<Ident> = manifest.output[i]
+        let mut output_fields_idents: Vec<Ident> = Vec::new();
+        let mut output_field_types: Vec<Ident> = Vec::new();
+
+        let mut keys = manifest.output[i]
             .fields
             .keys()
-            .map(|k| format_ident!("{}", k.clone()))
-            .collect();
-        let output_field_types: Vec<Ident> = manifest.output[i]
-            .fields
-            .values()
-            .map(|v| format_ident!("{}", v.clone()))
-            .collect();
+            .into_iter()
+            .collect::<Vec<_>>();
+        keys.sort();
+        for j in 0..keys.len() {
+            let key = keys[j];
+            let value = manifest.output[i].fields.get(key).unwrap();
+            output_fields_idents.push(format_ident!("{}", key));
+            output_field_types.push(format_ident!("{}", value));
+        }
         let storage_type = &manifest.output[i].output_type;
         let (storage_ident, idx) = match storage_type {
             AlgorithmOutputType::KeyValue => {
@@ -141,14 +146,16 @@ pub fn generate_app(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Res
     let event_struct = format_ident!("{}", &manifest.datasource.input.name);
 
     let event_interfaces = &manifest.datasource.input.fields;
-    let input_field_idents: Vec<Ident> = event_interfaces
+    let mut input_field_idents: Vec<Ident> = event_interfaces
         .iter()
         .map(|(k, _)| format_ident!("{}", k.clone()))
         .collect();
-    let input_field_types: Vec<Ident> = event_interfaces
+    input_field_idents.sort();
+    let mut input_field_types: Vec<Ident> = event_interfaces
         .iter()
         .map(|(_, v)| format_ident!("{}", v.clone()))
         .collect();
+    input_field_types.sort();
 
     let code = quote! {
         use std::collections::HashMap;
