@@ -177,10 +177,14 @@ impl Default for DestinationField {
 
 #[cfg(test)]
 mod tests {
+    use insta::assert_display_snapshot;
     use jsonschema::JSONSchema;
 
-    use crate::lib::codegen::components::common::{
-        CanisterIdType, DatasourceLocation, DatasourceMethod, DatasourceType,
+    use crate::lib::{
+        codegen::components::common::{
+            CanisterIdType, DatasourceLocation, DatasourceMethod, DatasourceType,
+        },
+        test_utils::SrcString,
     };
 
     use super::*;
@@ -258,5 +262,49 @@ interval: 3600
         let compiled = JSONSchema::compile(&schema).expect("Invalid schema");
         let result = compiled.validate(&instance);
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_snapshot_outputs() {
+        let manifest = RelayerComponentManifest {
+            version: "v1".to_string(),
+            metadata: ComponentMetadata {
+                label: "sample_relayer".to_string(),
+                type_: ComponentType::Relayer,
+                description: "Description".to_string(),
+                tags: Some(vec!["Oracle".to_string(), "snapshot".to_string()]),
+            },
+            datasource: Datasource {
+                type_: DatasourceType::Canister,
+                location: DatasourceLocation::new_canister(
+                    "datasource_canister_id".to_string(),
+                    CanisterIdType::CanisterName,
+                ),
+                method: DatasourceMethod {
+                    identifier:
+                        "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"
+                            .to_string(),
+                    interface: None,
+                    args: vec![],
+                },
+            },
+            destination: DestinationField {
+                network_id: 80001,
+                type_: DestinationType::StringOracle,
+                oracle_address: "0x0539a0EF8e5E60891fFf0958A059E049e43020d9".to_string(),
+                rpc_url: "https://polygon-mumbai.g.alchemy.com/v2/<YOUR_KEY>".to_string(),
+            },
+            lens_targets: None,
+            interval: 3600,
+        };
+
+        // FIXME failed to load oracle abi at ./__interfaces/{}.json
+        // assert_display_snapshot!(SrcString::from(
+        //     &manifest.generate_codes(Option::None).unwrap()
+        // ));
+        assert_display_snapshot!(SrcString::from(
+            &manifest.generate_user_impl_template().unwrap()
+        ));
+        assert_display_snapshot!(&manifest.generate_scripts(Network::Local).unwrap());
     }
 }
