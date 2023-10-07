@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     lib::codegen::{canisters, components::common::SourceType, scripts},
     types::{ComponentType, Network},
+    utils::serializer::ordered_map,
 };
 
 use super::{
@@ -18,7 +19,9 @@ use super::{
 
 pub struct SnapshotIndexerHTTPSDataSource {
     pub url: String,
+    #[serde(serialize_with = "ordered_map")]
     pub headers: HashMap<String, String>,
+    #[serde(serialize_with = "ordered_map")]
     pub queries: HashMap<String, String>,
 }
 impl Default for SnapshotIndexerHTTPSDataSource {

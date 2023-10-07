@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     lib::codegen::{canisters, scripts},
     types::{ComponentType, Network},
+    utils::serializer::ordered_map,
 };
 
 use super::common::{
@@ -113,12 +114,14 @@ pub enum InputType {
 
 pub struct InputStruct {
     pub name: String,
+    #[serde(serialize_with = "ordered_map")]
     pub fields: HashMap<String, String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct AlgorithmIndexerOutput {
     pub name: String,
+    #[serde(serialize_with = "ordered_map")]
     pub fields: HashMap<String, String>,
     pub output_type: AlgorithmOutputType,
 }

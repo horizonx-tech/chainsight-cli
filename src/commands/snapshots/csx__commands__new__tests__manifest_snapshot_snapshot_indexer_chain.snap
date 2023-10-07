@@ -1,0 +1,30 @@
+---
+source: src/commands/new.rs
+expression: template_snapshot_indexer_chain_manifest(COMPONENT_PREFIX).to_str_as_yaml().unwrap()
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/snapshot_indexer.json
+version: v1
+metadata:
+  label: sample_snapshot_indexer_chain
+  type: snapshot_indexer
+  description: ''
+  tags:
+  - ERC-20
+  - Ethereum
+  - DAI
+datasource:
+  type: contract
+  location:
+    id: 6b175474e89094c44da98b954eedeac495271d0f
+    args:
+      network_id: 1
+      rpc_url: https://eth-mainnet.g.alchemy.com/v2/<YOUR_KEY>
+  method:
+    identifier: totalSupply():(uint256)
+    interface: ERC20.json
+    args: []
+storage:
+  with_timestamp: true
+interval: 3600
+lens_targets: null
+

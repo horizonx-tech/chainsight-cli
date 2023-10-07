@@ -153,7 +153,7 @@ fn create_sample_components(project_name: &str, component_prefix: &str) -> anyho
     )?;
     fs::write(
         format!("{}/{}", project_name, relative_algorithmlens_path),
-        tempalte_algorithm_lens_manifest(component_prefix).to_str_as_yaml()?,
+        template_algorithm_lens_manifest(component_prefix).to_str_as_yaml()?,
     )?;
     fs::write(
         format!("{}/{}", project_name, relative_snapshot_indexer_https_path),
@@ -227,7 +227,7 @@ fn template_relayer_manifest(prefix: &str) -> RelayerComponentManifest {
         3600,
     )
 }
-fn tempalte_algorithm_lens_manifest(prefix: &str) -> AlgorithmLensComponentManifest {
+fn template_algorithm_lens_manifest(prefix: &str) -> AlgorithmLensComponentManifest {
     AlgorithmLensComponentManifest::new(
         &format!("{}_algorithm_lens", prefix),
         "",
@@ -238,16 +238,20 @@ fn tempalte_algorithm_lens_manifest(prefix: &str) -> AlgorithmLensComponentManif
 
 #[cfg(test)]
 mod tests {
+    use insta::assert_display_snapshot;
+
     use crate::commands::test::tests::{run_with_teardown, test_env};
 
     use super::*;
     fn teardown(project_name: &str) {
         fs::remove_dir_all(project_name).unwrap();
     }
+
+    const COMPONENT_PREFIX: &str = "sample";
+
     #[test]
     fn test_create_project() {
         let project_name = "new_test_create_project";
-        let component_prefix = "sample";
         run_with_teardown(
             || {
                 let created = create_project(project_name, false);
@@ -271,7 +275,7 @@ mod tests {
                 .for_each(|manifest| {
                     assert!(Path::new(&format!(
                         "{}/components/{}_{}.yaml",
-                        project_name, component_prefix, manifest
+                        project_name, COMPONENT_PREFIX, manifest
                     ))
                     .exists());
                 });
@@ -320,5 +324,54 @@ mod tests {
             },
             || teardown(project_name),
         )
+    }
+
+    #[test]
+    fn test_manifest_snapshot_event_indexer() {
+        assert_display_snapshot!(template_event_indexer_manifest(COMPONENT_PREFIX)
+            .to_str_as_yaml()
+            .unwrap());
+    }
+
+    #[test]
+    fn test_manifest_snapshot_snapshot_indexer_chain() {
+        assert_display_snapshot!(template_snapshot_indexer_chain_manifest(COMPONENT_PREFIX)
+            .to_str_as_yaml()
+            .unwrap());
+    }
+
+    #[test]
+    fn test_manifest_snapshot_snapshot_indexer_icp() {
+        assert_display_snapshot!(template_snapshot_indexer_icp_manifest(COMPONENT_PREFIX)
+            .to_str_as_yaml()
+            .unwrap());
+    }
+
+    #[test]
+    fn test_manifest_snapshot_snapshot_indexer_https() {
+        assert_display_snapshot!(template_snapshot_indexer_https_manifest(COMPONENT_PREFIX)
+            .to_str_as_yaml()
+            .unwrap());
+    }
+
+    #[test]
+    fn test_manifest_snapshot_algorithm_indexer() {
+        assert_display_snapshot!(template_algorithm_indexer_manifest(COMPONENT_PREFIX)
+            .to_str_as_yaml()
+            .unwrap());
+    }
+
+    #[test]
+    fn test_manifest_snapshot_algorithm_lens() {
+        assert_display_snapshot!(template_algorithm_lens_manifest(COMPONENT_PREFIX)
+            .to_str_as_yaml()
+            .unwrap());
+    }
+
+    #[test]
+    fn test_manifest_snapshot_relayer() {
+        assert_display_snapshot!(template_relayer_manifest(COMPONENT_PREFIX)
+            .to_str_as_yaml()
+            .unwrap());
     }
 }

@@ -94,14 +94,14 @@ pub fn exec<U: UserInteraction>(
             template_algorithm_indexer_manifest(&component_name).to_str_as_yaml()
         }
         ComponentType::SnapshotIndexer => {
-            template_snapshot_manifest(&component_name).to_str_as_yaml()
+            template_snapshot_indexer_manifest(&component_name).to_str_as_yaml()
         }
         ComponentType::Relayer => template_relayer_manifest(&component_name).to_str_as_yaml(),
         ComponentType::AlgorithmLens => {
             template_algorithm_lens_manifest(&component_name).to_str_as_yaml()
         }
         ComponentType::SnapshotIndexerHTTPS => {
-            template_snapshot_web2_manifest(&component_name).to_str_as_yaml()
+            template_snapshot_indexer_https_manifest(&component_name).to_str_as_yaml()
         }
     }?;
     let relative_component_path = format!("components/{}.yaml", component_name);
@@ -186,7 +186,7 @@ fn template_algorithm_indexer_manifest(component_name: &str) -> AlgorithmIndexer
     )
 }
 
-fn template_snapshot_manifest(component_name: &str) -> SnapshotIndexerComponentManifest {
+fn template_snapshot_indexer_manifest(component_name: &str) -> SnapshotIndexerComponentManifest {
     SnapshotIndexerComponentManifest::new(
         component_name,
         "",
@@ -216,7 +216,9 @@ fn template_algorithm_lens_manifest(component_name: &str) -> AlgorithmLensCompon
         AlgorithmLensDataSource::default(),
     )
 }
-fn template_snapshot_web2_manifest(component_name: &str) -> SnapshotIndexerHTTPSComponentManifest {
+fn template_snapshot_indexer_https_manifest(
+    component_name: &str,
+) -> SnapshotIndexerHTTPSComponentManifest {
     SnapshotIndexerHTTPSComponentManifest::new(
         component_name,
         "",
@@ -263,6 +265,8 @@ fn select_component_type(interaction: &mut impl UserInteraction) -> ComponentTyp
 mod tests {
     use std::{collections::HashMap, path::Path};
 
+    use insta::assert_display_snapshot;
+
     use super::*;
     use crate::{
         commands::test::tests::{run, test_env},
@@ -302,6 +306,8 @@ mod tests {
         );
         projects
     }
+
+    const COMPONENT_NAME: &str = "additional";
 
     #[test]
     fn test_add() {
@@ -368,5 +374,47 @@ mod tests {
                 },
             )
         })
+    }
+
+    #[test]
+    fn test_manifest_snapshot_event_indexer() {
+        assert_display_snapshot!(template_event_indexer_manifest(COMPONENT_NAME)
+            .to_str_as_yaml()
+            .unwrap());
+    }
+
+    #[test]
+    fn test_manifest_snapshot_snapshot_indexer() {
+        assert_display_snapshot!(template_snapshot_indexer_manifest(COMPONENT_NAME)
+            .to_str_as_yaml()
+            .unwrap());
+    }
+
+    #[test]
+    fn test_manifest_snapshot_snapshot_indexer_https() {
+        assert_display_snapshot!(template_snapshot_indexer_https_manifest(COMPONENT_NAME)
+            .to_str_as_yaml()
+            .unwrap());
+    }
+
+    #[test]
+    fn test_manifest_snapshot_algorithm_indexer() {
+        assert_display_snapshot!(template_algorithm_indexer_manifest(COMPONENT_NAME)
+            .to_str_as_yaml()
+            .unwrap());
+    }
+
+    #[test]
+    fn test_manifest_snapshot_algorithm_lens() {
+        assert_display_snapshot!(template_algorithm_lens_manifest(COMPONENT_NAME)
+            .to_str_as_yaml()
+            .unwrap());
+    }
+
+    #[test]
+    fn test_manifest_snapshot_relayer() {
+        assert_display_snapshot!(template_relayer_manifest(COMPONENT_NAME)
+            .to_str_as_yaml()
+            .unwrap());
     }
 }

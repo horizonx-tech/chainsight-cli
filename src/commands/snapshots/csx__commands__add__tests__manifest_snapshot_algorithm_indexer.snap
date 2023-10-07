@@ -1,0 +1,31 @@
+---
+source: src/commands/add.rs
+expression: template_algorithm_indexer_manifest(COMPONENT_NAME).to_str_as_yaml().unwrap()
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/algorithm_indexer.json
+version: v1
+metadata:
+  label: additional
+  type: algorithm_indexer
+  description: ''
+  tags:
+  - Ethereum
+  - Account
+datasource:
+  principal: be2us-64aaa-aaaaa-qaabq-cai
+  input:
+    name: Transfer
+    fields:
+      from: String
+      to: String
+      value: String
+  from: 17660942
+  method: proxy_call
+  source_type: event_indexer
+output:
+- name: Account
+  fields:
+    address: String
+  output_type: key_value
+interval: 3600
+
