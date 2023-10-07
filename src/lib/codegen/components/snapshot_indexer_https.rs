@@ -136,7 +136,10 @@ impl ComponentManifest for SnapshotIndexerHTTPSComponentManifest {
 #[cfg(test)]
 mod tests {
 
+    use insta::assert_display_snapshot;
     use jsonschema::JSONSchema;
+
+    use crate::lib::test_utils::SrcString;
 
     use super::*;
 
@@ -207,5 +210,46 @@ interval: 3600
         let compiled = JSONSchema::compile(&schema).expect("Invalid schema");
         let result = compiled.validate(&instance);
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_snapshot_outputs() {
+        let manifest = SnapshotIndexerHTTPSComponentManifest {
+            version: "v1".to_owned(),
+            metadata: ComponentMetadata {
+                label: "sample_snapshot_indexer_https".to_owned(),
+                type_: ComponentType::SnapshotIndexerHTTPS,
+                description: "Description".to_string(),
+                tags: Some(vec![
+                    "coingecko".to_string(),
+                    "DAI".to_string(),
+                    "USD".to_string(),
+                ]),
+            },
+            datasource: SnapshotIndexerHTTPSDataSource {
+                url: "https://api.coingecko.com/api/v3/simple/price".to_string(),
+                headers: vec![("content-type".to_string(), "application/json".to_string())]
+                    .into_iter()
+                    .collect(),
+                queries: vec![
+                    ("ids".to_string(), "dai".to_string()),
+                    ("vs_currencies".to_string(), "usd".to_string()),
+                ]
+                .into_iter()
+                .collect(),
+            },
+            storage: SnapshotStorage {
+                with_timestamp: true,
+            },
+            interval: 3600,
+        };
+
+        assert_display_snapshot!(SrcString::from(
+            &manifest.generate_codes(Option::None).unwrap()
+        ));
+        assert_display_snapshot!(SrcString::from(
+            &manifest.generate_user_impl_template().unwrap()
+        ));
+        assert_display_snapshot!(&manifest.generate_scripts(Network::Local).unwrap());
     }
 }

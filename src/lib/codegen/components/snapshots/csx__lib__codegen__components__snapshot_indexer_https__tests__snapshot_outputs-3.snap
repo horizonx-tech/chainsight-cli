@@ -1,0 +1,10 @@
+---
+source: src/lib/codegen/components/snapshot_indexer_https.rs
+expression: "&manifest.generate_scripts(Network::Local).unwrap()"
+---
+#!/bin/bash
+# init
+dfx canister  call sample_snapshot_indexer_https init_in '(variant { "LocalDevelopment" })'
+# set_task
+dfx canister  call sample_snapshot_indexer_https set_task '(3600, 10)'
+
