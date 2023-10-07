@@ -14,12 +14,19 @@ pub fn bindings_path_str(src: &str, component: &str) -> String {
     format!("{}/bindings/{}", src, bindings_name(component))
 }
 
+pub fn accessors_path_str(src: &str, component: &str) -> String {
+    format!("{}/accessors/{}", src, accessors_name(component))
+}
+
 pub fn canister_name(component: &str) -> String {
     format!("{}_canister", component)
 }
 
 pub fn bindings_name(component: &str) -> String {
     format!("{}_bindings", component)
+}
+pub fn accessors_name(component: &str) -> String {
+    format!("{}_accessors", component)
 }
 
 pub fn logic_dependency(component: &str) -> String {
@@ -34,5 +41,13 @@ pub fn bindings_dependency(component: &str) -> String {
         r#"{} = {{ path = "../../bindings/{}" }}"#,
         bindings_name(component),
         bindings_name(component)
+    )
+}
+
+pub fn accessors_dependency(component: &str) -> String {
+    format!(
+        r#"{} = {{ path = "../../accessors/{}" }}"#,
+        accessors_name(component),
+        accessors_name(component)
     )
 }
