@@ -1,0 +1,21 @@
+---
+source: src/lib/codegen/templates.rs
+expression: bindings_cargo_toml(PROJECT_NAME)
+---
+[package]
+name = "sample_bindings"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["rlib"]
+
+[dependencies]
+candid.workspace = true
+ic-cdk.workspace = true
+serde.workspace = true
+serde_bytes.workspace = true
+
+chainsight-cdk-macros.workspace = true
+chainsight-cdk.workspace = true
+

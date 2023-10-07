@@ -1,0 +1,12 @@
+---
+source: src/lib/codegen/templates.rs
+expression: gitignore()
+---
+src/__interfaces
+src/accessors
+src/bindings
+src/canisters
+src/target
+artifacts
+.env
+
