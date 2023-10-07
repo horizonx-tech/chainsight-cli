@@ -46,7 +46,7 @@ impl SnapshotIndexerComponentManifest {
             version: version.to_owned(),
             metadata: ComponentMetadata {
                 label: label.to_owned(),
-                type_: ComponentType::SnapshotIndexer,
+                type_: ComponentType::SnapshotIndexerICP, // temp
                 description: description.to_owned(),
                 tags: Some(vec![
                     "ERC-20".to_string(),
@@ -83,7 +83,7 @@ impl ComponentManifest for SnapshotIndexerComponentManifest {
     }
 
     fn component_type(&self) -> ComponentType {
-        ComponentType::SnapshotIndexer
+        ComponentType::SnapshotIndexerICP
     }
 
     fn metadata(&self) -> &ComponentMetadata {
@@ -150,7 +150,7 @@ mod tests {
     use jsonschema::JSONSchema;
 
     use crate::lib::codegen::components::common::{
-        CanisterIdType, DatasourceLocation, DatasourceMethod, DatasourceType,
+        CanisterIdType, DatasourceLocation, DatasourceMethod,
     };
 
     use super::*;
@@ -161,13 +161,12 @@ mod tests {
 version: v1
 metadata:
     label: sample_snapshot_indexer_chain
-    type: snapshot_indexer
+    type: snapshot_indexer_chain
     description: Description
     tags:
     - ERC-20
     - Ethereum
 datasource:
-    type: contract
     location:
         id: 6b175474e89094c44da98b954eedeac495271d0f
         args:
@@ -191,12 +190,11 @@ interval: 3600
                 version: "v1".to_owned(),
                 metadata: ComponentMetadata {
                     label: "sample_snapshot_indexer_chain".to_owned(),
-                    type_: ComponentType::SnapshotIndexer,
+                    type_: ComponentType::SnapshotIndexerChain,
                     description: "Description".to_string(),
                     tags: Some(vec!["ERC-20".to_string(), "Ethereum".to_string()])
                 },
                 datasource: Datasource {
-                    type_: DatasourceType::Contract,
                     location: DatasourceLocation::new_contract(
                         "6b175474e89094c44da98b954eedeac495271d0f".to_string(),
                         1,
@@ -215,6 +213,15 @@ interval: 3600
                 interval: 3600
             }
         );
+
+        let schema = serde_json::from_str(include_str!(
+            "../../../../resources/schema/snapshot_indexer_chain.json"
+        ))
+        .expect("Invalid json");
+        let instance = serde_yaml::from_str(yaml).expect("Invalid yaml");
+        let compiled = JSONSchema::compile(&schema).expect("Invalid schema");
+        let result = compiled.validate(&instance);
+        assert!(result.is_ok());
     }
 
     #[test]
@@ -223,13 +230,12 @@ interval: 3600
 version: v1
 metadata:
     label: sample_snapshot_indexer_icp
-    type: snapshot_indexer
+    type: snapshot_indexer_icp
     description: Description
     tags:
     - ERC-20
     - Ethereum
 datasource:
-    type: canister
     location:
         id: datasource_canister_id
         args:
@@ -251,12 +257,11 @@ interval: 3600
                 version: "v1".to_owned(),
                 metadata: ComponentMetadata {
                     label: "sample_snapshot_indexer_icp".to_owned(),
-                    type_: ComponentType::SnapshotIndexer,
+                    type_: ComponentType::SnapshotIndexerICP,
                     description: "Description".to_string(),
                     tags: Some(vec!["ERC-20".to_string(), "Ethereum".to_string()])
                 },
                 datasource: Datasource {
-                    type_: DatasourceType::Canister,
                     location: DatasourceLocation::new_canister(
                         "datasource_canister_id".to_string(),
                         CanisterIdType::CanisterName
@@ -277,7 +282,7 @@ interval: 3600
             }
         );
         let schema = serde_json::from_str(include_str!(
-            "../../../../resources/schema/snapshot_indexer.json"
+            "../../../../resources/schema/snapshot_indexer_icp.json"
         ))
         .expect("Invalid json");
         let instance = serde_yaml::from_str(yaml).expect("Invalid yaml");

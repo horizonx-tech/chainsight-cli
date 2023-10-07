@@ -2,10 +2,7 @@ use anyhow::ensure;
 
 use crate::{
     lib::codegen::{
-        components::{
-            common::{CanisterIdType, DatasourceType},
-            snapshot_indexer::SnapshotIndexerComponentManifest,
-        },
+        components::{common::CanisterIdType, snapshot_indexer::SnapshotIndexerComponentManifest},
         scripts::common::{generate_command_to_set_task, init_in_env_task, network_param},
     },
     types::{ComponentType, Network},
@@ -38,7 +35,7 @@ fn script_contents_for_canister(
     let setup_contents = generate_command_to_setup_for_canister(
         &manifest.metadata.label,
         &manifest.datasource.location.id,
-        manifest.datasource.location.args.id_type.unwrap(), // todo: check validation
+        manifest.datasource.location.args.id_type.unwrap(), // todo: check validation // todo: fail commands::exec::tests::test_exec for here
         &network,
     );
 
@@ -130,14 +127,14 @@ pub fn generate_scripts(
     network: Network,
 ) -> anyhow::Result<String> {
     ensure!(
-        manifest.metadata.type_ == ComponentType::SnapshotIndexer,
-        "type is not SnapshotIndexer"
+        manifest.metadata.type_ == ComponentType::SnapshotIndexerICP,
+        "type is not SnapshotIndexerICP"
     );
 
-    let contents = match manifest.datasource.type_ {
-        DatasourceType::Canister => script_contents_for_canister(manifest, network),
-        DatasourceType::Contract => script_contents_for_contract(manifest, network),
-    };
+    // let contents = match manifest.datasource.type_ {
+    //     DatasourceType::Canister => script_contents_for_canister(manifest, network),
+    //     DatasourceType::Contract => script_contents_for_contract(manifest, network),
+    // };
 
-    Ok(contents)
+    Ok(script_contents_for_canister(manifest, network))
 }

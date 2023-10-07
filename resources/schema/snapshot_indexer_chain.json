@@ -1,9 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/snapshot_indexer.json",
-  "title": "Chainsight Snapshot Indexer specification",
-  "$comment": "Chainsight Snapshot Indexer specification",
-  "description": "Chainsight Snapshot Indexer specification",
+  "title": "Chainsight Other Chain Snapshot Indexer specification",
+  "$comment": "Chainsight Other Chain Snapshot Indexer specification",
+  "description": "Chainsight Other Chain Snapshot Indexer specification",
   "type": "object",
   "required": ["version", "metadata", "datasource", "storage", "interval"],
   "properties": {
@@ -35,12 +35,13 @@
           "examples": [
             "event_indexer",
             "algorithm_indexer",
-            "snapshot_indexer",
+            "snapshot_indexer_icp",
+            "snapshot_indexer_chain",
             "snapshot_indexer_https",
             "relayer",
             "algorithm_lens"
           ],
-          "pattern": "^(event_indexer|algorithm_indexer|snapshot_indexer|snapshot_indexer_https|relayer|algorithm_lens)$"
+          "pattern": "^(event_indexer|algorithm_indexer|snapshot_indexer_icp|snapshot_indexer_chain|snapshot_indexer_https|relayer|algorithm_lens)$"
         },
         "description": {
           "$id": "#/properties/metadata/properties/description",
@@ -66,17 +67,8 @@
     "datasource": {
       "type": "object",
       "$id": "#/properties/datasource",
-      "required": ["type", "location", "method"],
+      "required": ["location", "method"],
       "properties": {
-        "type": {
-          "$id": "#/properties/datasource/properties/type",
-          "type": "string",
-          "title": "type of the datasource",
-          "description": "type of the datasource.If you want to get data from HTTP outcall, you can use HTTP Snapshot Indexer",
-          "examples": ["contract", "canister"],
-          "pattern": "^(contract|canister)$",
-          "enum": ["contract", "canister"]
-        },
         "location": {
           "$id": "#/properties/datasource/properties/location",
           "type": "object",

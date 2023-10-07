@@ -93,7 +93,10 @@ pub fn exec<U: UserInteraction>(
         ComponentType::AlgorithmIndexer => {
             template_algorithm_indexer_manifest(&component_name).to_str_as_yaml()
         }
-        ComponentType::SnapshotIndexer => {
+        ComponentType::SnapshotIndexerICP => {
+            template_snapshot_manifest(&component_name).to_str_as_yaml()
+        }
+        ComponentType::SnapshotIndexerChain => {
             template_snapshot_manifest(&component_name).to_str_as_yaml()
         }
         ComponentType::Relayer => template_relayer_manifest(&component_name).to_str_as_yaml(),
@@ -291,8 +294,12 @@ mod tests {
             ComponentType::AlgorithmIndexer,
         );
         projects.insert(
-            "snapshot_indexer".to_string(),
-            ComponentType::SnapshotIndexer,
+            "snapshot_indexer_icp".to_string(),
+            ComponentType::SnapshotIndexerICP,
+        );
+        projects.insert(
+            "snapshot_indexer_chain".to_string(),
+            ComponentType::SnapshotIndexerChain,
         );
         projects.insert("relayer".to_string(), ComponentType::Relayer);
         projects.insert("algorithm_lens".to_string(), ComponentType::AlgorithmLens);

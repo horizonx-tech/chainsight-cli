@@ -1,0 +1,186 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/snapshot_indexer.json",
+  "title": "Chainsight ICP Snapshot Indexer specification",
+  "$comment": "Chainsight ICP Snapshot Indexer specification",
+  "description": "Chainsight ICP Snapshot Indexer specification",
+  "type": "object",
+  "required": ["version", "metadata", "datasource", "storage", "interval"],
+  "properties": {
+    "version": {
+      "$id": "#/properties/version",
+      "type": "string",
+      "title": "specification version of the canister",
+      "examples": ["v1"],
+      "pattern": "^(v1)$"
+    },
+    "metadata": {
+      "$id": "#/properties/metadata",
+      "title": "metadata",
+      "$comment": "metadata for the canister",
+      "type": "object",
+      "required": ["label", "type"],
+      "properties": {
+        "label": {
+          "$id": "#/properties/metadata/properties/label",
+          "type": "string",
+          "title": "label for the canister",
+          "examples": ["relayer_ethusd"],
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "type": {
+          "$id": "#/properties/metadata/properties/type",
+          "type": "string",
+          "title": "type of the canister",
+          "examples": [
+            "event_indexer",
+            "algorithm_indexer",
+            "snapshot_indexer_icp",
+            "snapshot_indexer_chain",
+            "snapshot_indexer_https",
+            "relayer",
+            "algorithm_lens"
+          ],
+          "pattern": "^(event_indexer|algorithm_indexer|snapshot_indexer_icp|snapshot_indexer_chain|snapshot_indexer_https|relayer|algorithm_lens)$"
+        },
+        "description": {
+          "$id": "#/properties/metadata/properties/description",
+          "type": "string",
+          "title": "description of the canister",
+          "description": "Can be used to filter canisters in the UI",
+          "examples": ["Relayer for ETHUSD"]
+        },
+        "tags": {
+          "$id": "#/properties/metadata/properties/tags",
+          "type": "array",
+          "title": "tags for the canister",
+          "description": "Can be used to filter canisters in the UI",
+          "items": {
+            "$id": "#/properties/metadata/properties/tags/items",
+            "type": "string",
+            "examples": ["Ethereum", "Relayer", "Account"],
+            "pattern": "^[a-zA-Z0-9_-]+$"
+          }
+        }
+      }
+    },
+    "datasource": {
+      "type": "object",
+      "$id": "#/properties/datasource",
+      "required": ["location", "method"],
+      "properties": {
+        "location": {
+          "$id": "#/properties/datasource/properties/location",
+          "type": "object",
+          "title": "location of the datasource",
+          "description": "location of the datasource. For contract, it is the contract address. For canister, it is the canister id or canister name defined in dfx.json.",
+          "required": ["id", "args"],
+          "properties": {
+            "id": {
+              "$id": "#/properties/datasource/properties/location/properties/id",
+              "type": "string",
+              "title": "id of the datasource",
+              "description": "id of the datasource. For contract, it is the contract address. For canister, it is the canister id or canister name defined in dfx.json.",
+              "examples": [
+                "9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+                "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+                "pj_snapshot_indexer_chain",
+                "rrkah-fqaaa-aaaaa-aaaaq-cai"
+              ]
+            },
+            "args": {
+              "$id": "#/properties/datasource/properties/location/properties/args",
+              "title": "args",
+              "description": "args for the datasource.",
+              "type": "object",
+              "properties": {
+                "network_id": {
+                  "$id": "#/properties/datasource/properties/location/properties/args/properties/network_id",
+                  "type": "integer",
+                  "title": "network id",
+                  "description": "chain id. It is required if type is contract.",
+                  "examples": [1, 31337],
+                  "pattern": "^[0-9]+$"
+                },
+                "rpc_url": {
+                  "$id": "#/properties/datasource/properties/location/properties/args/properties/rpc_url",
+                  "type": "string",
+                  "title": "rpc url",
+                  "description": "rpc url of the datasource. It is required if type is contract.",
+                  "examples": ["https://mainnet.infura.io/v3/YOUR_API_KEY"],
+                  "pattern": "^(http|https)://"
+                },
+                "id_type": {
+                  "$id": "#/properties/datasource/properties/location/properties/args/properties/id_type",
+                  "type": "string",
+                  "title": "id type",
+                  "description": "type of the id. It is required if type is canister.",
+                  "examples": ["canister_id", "canister_name"],
+                  "pattern": "^(canister_id|canister_name)$",
+                  "enum": ["canister_id", "canister_name"]
+                }
+              }
+            }
+          }
+        },
+        "method": {
+          "$id": "#/properties/datasource/properties/method",
+          "title": "method",
+          "description": "method of the datasource. The canister will call this method to get data.",
+          "type": "object",
+          "required": ["identifier"],
+          "properties": {
+            "identifier": {
+              "$id": "#/properties/datasource/properties/method/properties/identifier",
+              "type": "string",
+              "title": "identifier of the method",
+              "description": "contract of candid function and its return values to call.",
+              "examples": [
+                "latestAnswer():(uint256)",
+                "balanceOf(address):(uint256)",
+                "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"
+              ]
+            },
+            "interface": {
+              "$id": "#/properties/datasource/properties/method/properties/interface",
+              "type": "string",
+              "title": "interface",
+              "description": "abi json file to use. This file must be in ./interfaces folder. It is required if type is contract.",
+              "examples": ["AggregatorV3Interface.json", "IERC20.json"]
+            },
+            "args": {
+              "$id": "#/properties/datasource/properties/method/properties/args",
+              "type": "array",
+              "title": "args",
+              "description": "args for the method",
+              "examples": [1, "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"]
+            }
+          }
+        }
+      }
+    },
+    "storage": {
+      "$id": "#/properties/storage",
+      "title": "storage",
+      "description": "storage properties for the canister",
+      "type": "object",
+      "required": ["with_timestamp"],
+      "properties": {
+        "with_timestamp": {
+          "$id": "#/properties/storage/properties/with_timestamp",
+          "type": "boolean",
+          "title": "with_timestamptamp",
+          "description": "whether to store the data with timestamp",
+          "examples": [true]
+        }
+      }
+    },
+    "interval": {
+      "$id": "#/properties/interval",
+      "title": "interval",
+      "description": "interval of the canister invocation in seconds",
+      "type": "number",
+      "examples": [60]
+    }
+  }
+}

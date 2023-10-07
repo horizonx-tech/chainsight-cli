@@ -101,7 +101,10 @@ pub fn exec(env: &EnvironmentImpl, opts: GenerateOpts) -> anyhow::Result<()> {
             ComponentType::AlgorithmIndexer => {
                 Box::new(AlgorithmIndexerComponentManifest::load(&component_path)?)
             }
-            ComponentType::SnapshotIndexer => {
+            ComponentType::SnapshotIndexerICP => {
+                Box::new(SnapshotIndexerComponentManifest::load(&component_path)?)
+            }
+            ComponentType::SnapshotIndexerChain => {
                 Box::new(SnapshotIndexerComponentManifest::load(&component_path)?)
             }
             ComponentType::Relayer => Box::new(RelayerComponentManifest::load(&component_path)?),

@@ -10,9 +10,7 @@ use crate::{
                 CanisterMethodIdentifier, CanisterMethodValueType, ContractMethodIdentifier,
                 OutsideCallIdentsType,
             },
-            components::{
-                common::DatasourceType, snapshot_indexer::SnapshotIndexerComponentManifest,
-            },
+            components::snapshot_indexer::SnapshotIndexerComponentManifest,
         },
         utils::{convert_camel_to_snake, ADDRESS_TYPE, U256_TYPE},
     },
@@ -398,20 +396,22 @@ pub fn generate_codes(
     manifest: &SnapshotIndexerComponentManifest,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     ensure!(
-        manifest.metadata.type_ == ComponentType::SnapshotIndexer,
-        "type is not SnapshotIndexer"
+        manifest.metadata.type_ == ComponentType::SnapshotIndexerICP,
+        "type is not SnapshotIndexerICP"
     );
 
-    let (common_code_token, custom_code_token) = match manifest.datasource.type_ {
-        DatasourceType::Canister => (
-            common_codes_for_canister(),
-            custom_codes_for_canister(manifest)?,
-        ),
-        DatasourceType::Contract => (
-            common_codes_for_contract(),
-            custom_codes_for_contract(manifest)?,
-        ),
-    };
+    // let (common_code_token, custom_code_token) = match manifest.datasource.type_ {
+    //     DatasourceType::Canister => (
+    //         common_codes_for_canister(),
+    //         custom_codes_for_canister(manifest)?,
+    //     ),
+    //     DatasourceType::Contract => (
+    //         common_codes_for_contract(),
+    //         custom_codes_for_contract(manifest)?,
+    //     ),
+    // };
+    let common_code_token = common_codes_for_canister();
+    let custom_code_token = custom_codes_for_canister(manifest)?;
 
     let code = quote! {
         #common_code_token
@@ -424,8 +424,8 @@ pub fn generate_codes(
 pub fn generate_app(
     manifest: &SnapshotIndexerComponentManifest,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    if (manifest.datasource.type_ == DatasourceType::Contract) || (manifest.lens_targets.is_some())
-    {
+    // if (manifest.datasource.type_ == DatasourceType::Contract) || (manifest.lens_targets.is_some())
+    if manifest.lens_targets.is_some() {
         return Ok(quote! {});
     }
 
@@ -450,17 +450,17 @@ pub fn generate_app(
 
 pub fn validate_manifest(manifest: &SnapshotIndexerComponentManifest) -> anyhow::Result<()> {
     ensure!(
-        manifest.metadata.type_ == ComponentType::SnapshotIndexer,
-        "type is not SnapshotIndexer"
+        manifest.metadata.type_ == ComponentType::SnapshotIndexerICP,
+        "type is not SnapshotIndexerICP"
     );
 
     let datasource = &manifest.datasource;
-    if datasource.type_ == DatasourceType::Contract {
-        ensure!(
-            datasource.method.interface.is_some(),
-            "datasource.method.interface is required for contract"
-        );
-    }
+    // if datasource.type_ == DatasourceType::Contract {
+    //     ensure!(
+    //         datasource.method.interface.is_some(),
+    //         "datasource.method.interface is required for contract"
+    //     );
+    // }
 
     // TODO
     // - check datasource.method.identifier format

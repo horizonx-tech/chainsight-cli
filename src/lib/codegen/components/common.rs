@@ -7,13 +7,6 @@ use serde_json::Value;
 use crate::types::{ComponentType, Network};
 
 #[derive(Deserialize, Serialize, Clone, Copy, Debug, PartialEq, clap::ValueEnum)]
-pub enum DatasourceType {
-    #[serde(rename = "canister")]
-    Canister,
-    #[serde(rename = "contract")]
-    Contract,
-}
-#[derive(Deserialize, Serialize, Clone, Copy, Debug, PartialEq, clap::ValueEnum)]
 pub enum CanisterIdType {
     #[serde(rename = "canister_name")]
     CanisterName,
@@ -61,8 +54,6 @@ pub struct ComponentMetadata {
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct Datasource {
-    #[serde(rename = "type")]
-    pub type_: DatasourceType,
     pub location: DatasourceLocation,
     pub method: DatasourceMethod,
 }
@@ -105,7 +96,6 @@ impl Datasource {
     ) -> Self {
         let location = location.unwrap_or_else(DatasourceLocation::default_contract);
         Self {
-            type_: DatasourceType::Contract,
             location,
             method: DatasourceMethod {
                 identifier,
@@ -133,7 +123,6 @@ impl Datasource {
     ) -> Self {
         let location = location.unwrap_or_else(DatasourceLocation::default_canister);
         Self {
-            type_: DatasourceType::Canister,
             location,
             method: DatasourceMethod {
                 identifier,
