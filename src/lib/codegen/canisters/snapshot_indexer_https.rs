@@ -2,7 +2,7 @@ use quote::{format_ident, quote};
 
 use crate::lib::codegen::components::snapshot_indexer_https::SnapshotIndexerHTTPSComponentManifest;
 
-use super::snapshot_indexer::generate_queries_without_timestamp;
+use super::snapshot_indexer_icp::generate_queries_without_timestamp;
 
 pub fn generate_codes(
     manifest: &SnapshotIndexerHTTPSComponentManifest,

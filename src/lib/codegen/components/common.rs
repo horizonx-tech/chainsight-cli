@@ -8,13 +8,6 @@ use serde_json::Value;
 use crate::types::{ComponentType, Network};
 
 #[derive(Deserialize, Serialize, Clone, Copy, Debug, PartialEq, clap::ValueEnum)]
-pub enum DatasourceType {
-    #[serde(rename = "canister")]
-    Canister,
-    #[serde(rename = "contract")]
-    Contract,
-}
-#[derive(Deserialize, Serialize, Clone, Copy, Debug, PartialEq, clap::ValueEnum)]
 pub enum CanisterIdType {
     #[serde(rename = "canister_name")]
     CanisterName,
@@ -62,8 +55,6 @@ pub struct ComponentMetadata {
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct Datasource {
-    #[serde(rename = "type")]
-    pub type_: DatasourceType,
     pub location: DatasourceLocation,
     pub method: DatasourceMethod,
 }
@@ -91,6 +82,11 @@ pub struct DatasourceMethod {
     pub args: Vec<serde_yaml::Value>,
 }
 
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+pub struct SnapshotStorage {
+    pub with_timestamp: bool,
+}
+
 impl Datasource {
     pub fn default_contract() -> Self {
         Self::new_contract(
@@ -106,7 +102,6 @@ impl Datasource {
     ) -> Self {
         let location = location.unwrap_or_else(DatasourceLocation::default_contract);
         Self {
-            type_: DatasourceType::Contract,
             location,
             method: DatasourceMethod {
                 identifier,
@@ -134,7 +129,6 @@ impl Datasource {
     ) -> Self {
         let location = location.unwrap_or_else(DatasourceLocation::default_canister);
         Self {
-            type_: DatasourceType::Canister,
             location,
             method: DatasourceMethod {
                 identifier,
@@ -167,7 +161,7 @@ impl DatasourceLocation {
 
     pub fn default_canister() -> Self {
         Self::new_canister(
-            "sample_snapshot_indexer_chain".to_string(),
+            "sample_snapshot_indexer_evm".to_string(),
             CanisterIdType::CanisterName,
         )
     }
@@ -181,6 +175,17 @@ impl DatasourceLocation {
                 id_type: Some(id_type),
             },
         }
+    }
+}
+
+impl SnapshotStorage {
+    pub fn new(with_timestamp: bool) -> Self {
+        Self { with_timestamp }
+    }
+}
+impl Default for SnapshotStorage {
+    fn default() -> Self {
+        Self::new(true)
     }
 }
 

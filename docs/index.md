@@ -379,7 +379,7 @@ components:
 - component_path: components/sample_algorithm_lens.yaml
 - component_path: components/sample_event_indexer.yaml
 - component_path: components/sample_relayer.yaml
-- component_path: components/sample_snapshot_indexer_chain.yaml
+- component_path: components/sample_snapshot_indexer_evm.yaml
 - component_path: components/sample_snapshot_indexer_icp.yaml
 ```
 
@@ -402,7 +402,7 @@ example)
 ```yaml
 version: v1
 metadata:
-  label: sample_snapshot_indexer_chain
+  label: sample_snapshot_indexer_evm
   type: snapshot_indexer
   description: ''
   tags: ...
@@ -416,7 +416,7 @@ If you want to use environment variables or secret values in the manifest, you c
 ```yaml
 version: v1
 metadata:
-  label: sample_snapshot_indexer_chain
+  label: sample_snapshot_indexer_evm
   type: snapshot_indexer
   description: ''
   tags: ...
@@ -480,7 +480,7 @@ example)
 ```yaml
 version: v1
 metadata:
-  label: sample_snapshot_indexer_chain
+  label: sample_snapshot_indexer_evm
   type: snapshot_indexer
   description: ''
   tags: ...
@@ -534,7 +534,7 @@ metadata:
 datasource:
   type: canister
   location:
-    id: sample_snapshot_indexer_chain
+    id: sample_snapshot_indexer_evm
     args:
       id_type: canister_name
   method:
@@ -570,7 +570,7 @@ metadata:
 datasource:
   type: canister
   location:
-    id: sample_snapshot_indexer_chain
+    id: sample_snapshot_indexer_evm
     args:
       id_type: canister_name
   method:
