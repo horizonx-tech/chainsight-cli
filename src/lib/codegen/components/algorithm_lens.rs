@@ -140,7 +140,10 @@ impl Default for AlgorithmLensDataSource {
 
 #[cfg(test)]
 mod tests {
+    use insta::assert_display_snapshot;
     use jsonschema::JSONSchema;
+
+    use crate::lib::test_utils::SrcString;
 
     use super::*;
 
@@ -201,5 +204,36 @@ output:
         let compiled = JSONSchema::compile(&schema).expect("Invalid schema");
         let result = compiled.validate(&instance);
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_snapshot_outputs() {
+        let manifest = AlgorithmLensComponentManifest {
+            version: "v1".to_string(),
+            metadata: ComponentMetadata {
+                label: "sample_algorithm_lens".to_string(),
+                type_: ComponentType::AlgorithmLens,
+                description: "Description".to_string(),
+                tags: Some(vec!["Ethereum".to_string(), "Account".to_string()]),
+            },
+            datasource: AlgorithmLensDataSource {
+                methods: vec![AlgorithmLensDataSourceMethod {
+                    label: "last_snapshot_value".to_string(),
+                    identifier: "get_last_snapshot : () -> (Snapshot)".to_string(),
+                    candid_file_path: "interfaces/sample.did".to_string(),
+                }],
+            },
+        };
+
+        assert_display_snapshot!(SrcString::from(
+            &manifest.generate_codes(Option::None).unwrap()
+        ));
+        assert_display_snapshot!(SrcString::from(
+            &manifest.generate_user_impl_template().unwrap()
+        ));
+        assert_display_snapshot!(SrcString::from(
+            &manifest.generate_dependency_accessors().unwrap()
+        ));
+        assert_display_snapshot!(&manifest.generate_scripts(Network::Local).unwrap());
     }
 }
