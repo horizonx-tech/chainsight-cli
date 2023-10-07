@@ -119,7 +119,7 @@ impl ComponentManifest for SnapshotIndexerEVMComponentManifest {
         attr.insert("function_name".to_string(), json!(method_identifier));
         Sources {
             source: self.datasource.location.id.clone(),
-            source_type: SourceType::Chainsight,
+            source_type: SourceType::Evm,
             attributes: attr,
         }
     }
