@@ -1,0 +1,7 @@
+---
+source: src/lib/codegen/components/snapshot_indexer.rs
+expression: "SrcString::from(&manifest.generate_user_impl_template().unwrap())"
+---
+pub type CallCanisterArgs =();
+pub fn call_args() -> CallCanisterArgs {
+() }

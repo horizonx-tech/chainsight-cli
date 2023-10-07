@@ -147,10 +147,16 @@ impl Default for SnapshotStorage {
 
 #[cfg(test)]
 mod tests {
+    use std::fs::File;
+
+    use insta::assert_display_snapshot;
     use jsonschema::JSONSchema;
 
-    use crate::lib::codegen::components::common::{
-        CanisterIdType, DatasourceLocation, DatasourceMethod, DatasourceType,
+    use crate::lib::{
+        codegen::components::common::{
+            CanisterIdType, DatasourceLocation, DatasourceMethod, DatasourceType,
+        },
+        test_utils::SrcString,
     };
 
     use super::*;
@@ -284,5 +290,87 @@ interval: 3600
         let compiled = JSONSchema::compile(&schema).expect("Invalid schema");
         let result = compiled.validate(&instance);
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_snapshot_outputs_chain() {
+        let manifest = SnapshotIndexerComponentManifest {
+            version: "v1".to_owned(),
+            metadata: ComponentMetadata {
+                label: "sample_snapshot_indexer_chain".to_owned(),
+                type_: ComponentType::SnapshotIndexer,
+                description: "Description".to_string(),
+                tags: Some(vec!["ERC-20".to_string(), "Ethereum".to_string()]),
+            },
+            datasource: Datasource {
+                type_: DatasourceType::Contract,
+                location: DatasourceLocation::new_contract(
+                    "6b175474e89094c44da98b954eedeac495271d0f".to_string(),
+                    1,
+                    "https://mainnet.infura.io/v3/<YOUR_KEY>".to_string(),
+                ),
+                method: DatasourceMethod {
+                    identifier: "totalSupply():(uint256)".to_owned(),
+                    interface: Some("ERC20.json".to_string()),
+                    args: vec![],
+                },
+            },
+            storage: SnapshotStorage {
+                with_timestamp: true,
+            },
+            lens_targets: None,
+            interval: 3600,
+        };
+
+        let abi = File::open("resources/ERC20.json").unwrap();
+        assert_display_snapshot!(SrcString::from(
+            &manifest
+                .generate_codes(Option::Some(ethabi::Contract::load(abi).unwrap()))
+                .unwrap()
+        ));
+        assert_display_snapshot!(SrcString::from(
+            &manifest.generate_user_impl_template().unwrap()
+        ));
+        assert_display_snapshot!(&manifest.generate_scripts(Network::Local).unwrap());
+    }
+
+    #[test]
+    fn test_snapshot_outputs_icp() {
+        let manifest = SnapshotIndexerComponentManifest {
+            version: "v1".to_owned(),
+            metadata: ComponentMetadata {
+                label: "sample_snapshot_indexer_icp".to_owned(),
+                type_: ComponentType::SnapshotIndexer,
+                description: "Description".to_string(),
+                tags: Some(vec!["ERC-20".to_string(), "Ethereum".to_string()]),
+            },
+            datasource: Datasource {
+                type_: DatasourceType::Canister,
+                location: DatasourceLocation::new_canister(
+                    "datasource_canister_id".to_string(),
+                    CanisterIdType::CanisterName,
+                ),
+                method: DatasourceMethod {
+                    identifier:
+                        "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"
+                            .to_owned(),
+                    interface: None,
+                    args: vec![],
+                },
+            },
+            storage: SnapshotStorage {
+                with_timestamp: true,
+            },
+            lens_targets: None,
+            interval: 3600,
+        };
+
+        assert_display_snapshot!(SrcString::from(
+            &manifest.generate_codes(Option::None).unwrap()
+        ));
+        assert_display_snapshot!(SrcString::from(
+            &manifest.generate_user_impl_template().unwrap()
+        ));
+        assert_display_snapshot!(&manifest.generate_scripts(Network::Local).unwrap());
     }
 }

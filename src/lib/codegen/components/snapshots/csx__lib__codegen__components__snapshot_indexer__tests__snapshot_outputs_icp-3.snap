@@ -1,0 +1,14 @@
+---
+source: src/lib/codegen/components/snapshot_indexer.rs
+expression: "&manifest.generate_scripts(Network::Local).unwrap()"
+---
+#!/bin/bash
+# init
+dfx canister  call sample_snapshot_indexer_icp init_in '(variant { "LocalDevelopment" })'
+# setup
+dfx canister  call sample_snapshot_indexer_icp setup "(
+    \"$(dfx canister id datasource_canister_id)\"
+)"
+# set_task
+dfx canister  call sample_snapshot_indexer_icp set_task '(3600, 5)'
+
