@@ -13,13 +13,13 @@ use super::{
     algorithm_lens::LensTargets,
     common::{
         custom_tags_interval_sec, ComponentManifest, ComponentMetadata, Datasource,
-        DestinationType, Sources,
+        DestinationType, SnapshotStorage, Sources,
     },
 };
 
 /// Component Manifest: Snapshot
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-pub struct SnapshotIndexerComponentManifest {
+pub struct SnapshotIndexerICPComponentManifest {
     pub version: String,
     pub metadata: ComponentMetadata,
     pub datasource: Datasource,
@@ -33,7 +33,7 @@ pub struct LensTarget {
     pub identifiers: Vec<String>,
 }
 
-impl SnapshotIndexerComponentManifest {
+impl SnapshotIndexerICPComponentManifest {
     pub fn new(
         label: &str,
         description: &str,
@@ -61,25 +61,25 @@ impl SnapshotIndexerComponentManifest {
         }
     }
 }
-impl ComponentManifest for SnapshotIndexerComponentManifest {
+impl ComponentManifest for SnapshotIndexerICPComponentManifest {
     fn to_str_as_yaml(&self) -> anyhow::Result<String> {
         let yaml = serde_yaml::to_string(&self)?;
         Ok(self.yaml_str_with_configs(yaml, "snapshot_indexer".to_string()))
     }
 
     fn validate_manifest(&self) -> anyhow::Result<()> {
-        canisters::snapshot_indexer::validate_manifest(self)
+        canisters::snapshot_indexer_icp::validate_manifest(self)
     }
 
     fn generate_codes(
         &self,
         _interface_contract: Option<ethabi::Contract>,
     ) -> anyhow::Result<TokenStream> {
-        canisters::snapshot_indexer::generate_codes(self)
+        canisters::snapshot_indexer_icp::generate_codes(self)
     }
 
     fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
-        scripts::snapshot_indexer::generate_scripts(self, network)
+        scripts::snapshot_indexer_icp::generate_scripts(self, network)
     }
 
     fn component_type(&self) -> ComponentType {
@@ -99,7 +99,7 @@ impl ComponentManifest for SnapshotIndexerComponentManifest {
     }
 
     fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
-        canisters::snapshot_indexer::generate_app(self)
+        canisters::snapshot_indexer_icp::generate_app(self)
     }
     fn get_sources(&self) -> Sources {
         let mut attr = HashMap::new();
@@ -130,21 +130,6 @@ impl ComponentManifest for SnapshotIndexerComponentManifest {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-pub struct SnapshotStorage {
-    pub with_timestamp: bool,
-}
-impl SnapshotStorage {
-    pub fn new(with_timestamp: bool) -> Self {
-        Self { with_timestamp }
-    }
-}
-impl Default for SnapshotStorage {
-    fn default() -> Self {
-        Self::new(true)
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use jsonschema::JSONSchema;
@@ -156,76 +141,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_to_manifest_struct_for_evm() {
-        let yaml = r#"
-version: v1
-metadata:
-    label: sample_snapshot_indexer_evm
-    type: snapshot_indexer_evm
-    description: Description
-    tags:
-    - ERC-20
-    - Ethereum
-datasource:
-    location:
-        id: 6b175474e89094c44da98b954eedeac495271d0f
-        args:
-            network_id: 1
-            rpc_url: https://mainnet.infura.io/v3/<YOUR_KEY>
-    method:
-        identifier: totalSupply():(uint256)
-        interface: ERC20.json
-        args: []
-storage:
-    with_timestamp: true
-interval: 3600
-        "#;
-
-        let result = serde_yaml::from_str::<SnapshotIndexerComponentManifest>(yaml);
-        assert!(result.is_ok());
-        let component = result.unwrap();
-        assert_eq!(
-            component,
-            SnapshotIndexerComponentManifest {
-                version: "v1".to_owned(),
-                metadata: ComponentMetadata {
-                    label: "sample_snapshot_indexer_evm".to_owned(),
-                    type_: ComponentType::SnapshotIndexerEVM,
-                    description: "Description".to_string(),
-                    tags: Some(vec!["ERC-20".to_string(), "Ethereum".to_string()])
-                },
-                datasource: Datasource {
-                    location: DatasourceLocation::new_contract(
-                        "6b175474e89094c44da98b954eedeac495271d0f".to_string(),
-                        1,
-                        "https://mainnet.infura.io/v3/<YOUR_KEY>".to_string(),
-                    ),
-                    method: DatasourceMethod {
-                        identifier: "totalSupply():(uint256)".to_owned(),
-                        interface: Some("ERC20.json".to_string()),
-                        args: vec![]
-                    }
-                },
-                storage: SnapshotStorage {
-                    with_timestamp: true,
-                },
-                lens_targets: None,
-                interval: 3600
-            }
-        );
-
-        let schema = serde_json::from_str(include_str!(
-            "../../../../resources/schema/snapshot_indexer_evm.json"
-        ))
-        .expect("Invalid json");
-        let instance = serde_yaml::from_str(yaml).expect("Invalid yaml");
-        let compiled = JSONSchema::compile(&schema).expect("Invalid schema");
-        let result = compiled.validate(&instance);
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn test_to_manifest_struct_for_icp() {
+    fn test_to_manifest_struct() {
         let yaml = r#"
 version: v1
 metadata:
@@ -248,12 +164,12 @@ storage:
 interval: 3600
         "#;
 
-        let result = serde_yaml::from_str::<SnapshotIndexerComponentManifest>(yaml);
+        let result = serde_yaml::from_str::<SnapshotIndexerICPComponentManifest>(yaml);
         assert!(result.is_ok());
         let component = result.unwrap();
         assert_eq!(
             component,
-            SnapshotIndexerComponentManifest {
+            SnapshotIndexerICPComponentManifest {
                 version: "v1".to_owned(),
                 metadata: ComponentMetadata {
                     label: "sample_snapshot_indexer_icp".to_owned(),

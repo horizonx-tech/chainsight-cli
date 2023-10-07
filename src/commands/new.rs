@@ -12,13 +12,14 @@ use crate::lib::{
                 AlgorithmIndexerOutput,
             },
             algorithm_lens::{AlgorithmLensComponentManifest, AlgorithmLensDataSource},
-            common::{ComponentManifest, Datasource},
+            common::{ComponentManifest, Datasource, SnapshotStorage},
             event_indexer::{EventIndexerComponentManifest, EventIndexerDatasource},
             relayer::{DestinationField, RelayerComponentManifest},
-            snapshot_indexer::{SnapshotIndexerComponentManifest, SnapshotStorage},
+            snapshot_indexer_evm::SnapshotIndexerEVMComponentManifest,
             snapshot_indexer_https::{
                 SnapshotIndexerHTTPSComponentManifest, SnapshotIndexerHTTPSDataSource,
             },
+            snapshot_indexer_icp::SnapshotIndexerICPComponentManifest,
         },
         project::{ProjectManifestComponentField, ProjectManifestData},
         templates::gitignore,
@@ -182,8 +183,8 @@ fn template_algorithm_indexer_manifest(prefix: &str) -> AlgorithmIndexerComponen
     )
 }
 
-fn template_snapshot_indexer_evm_manifest(prefix: &str) -> SnapshotIndexerComponentManifest {
-    SnapshotIndexerComponentManifest::new(
+fn template_snapshot_indexer_evm_manifest(prefix: &str) -> SnapshotIndexerEVMComponentManifest {
+    SnapshotIndexerEVMComponentManifest::new(
         &format!("{}_snapshot_indexer_evm", prefix),
         "",
         PROJECT_MANIFEST_VERSION,
@@ -193,8 +194,8 @@ fn template_snapshot_indexer_evm_manifest(prefix: &str) -> SnapshotIndexerCompon
     )
 }
 
-fn template_snapshot_indexer_icp_manifest(prefix: &str) -> SnapshotIndexerComponentManifest {
-    SnapshotIndexerComponentManifest::new(
+fn template_snapshot_indexer_icp_manifest(prefix: &str) -> SnapshotIndexerICPComponentManifest {
+    SnapshotIndexerICPComponentManifest::new(
         &format!("{}_snapshot_indexer_icp", prefix),
         "",
         PROJECT_MANIFEST_VERSION,

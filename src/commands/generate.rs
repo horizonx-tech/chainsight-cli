@@ -13,8 +13,9 @@ use crate::lib::codegen::components::algorithm_lens::AlgorithmLensComponentManif
 use crate::lib::codegen::components::common::{ComponentManifest, ComponentTypeInManifest};
 use crate::lib::codegen::components::event_indexer::EventIndexerComponentManifest;
 use crate::lib::codegen::components::relayer::RelayerComponentManifest;
-use crate::lib::codegen::components::snapshot_indexer::SnapshotIndexerComponentManifest;
+use crate::lib::codegen::components::snapshot_indexer_evm::SnapshotIndexerEVMComponentManifest;
 use crate::lib::codegen::components::snapshot_indexer_https::SnapshotIndexerHTTPSComponentManifest;
+use crate::lib::codegen::components::snapshot_indexer_icp::SnapshotIndexerICPComponentManifest;
 use crate::lib::codegen::oracle::get_oracle_attributes;
 use crate::lib::codegen::templates::{
     accessors_cargo_toml, bindings_cargo_toml, canister_project_cargo_toml, logic_cargo_toml,
@@ -103,10 +104,10 @@ pub fn exec(env: &EnvironmentImpl, opts: GenerateOpts) -> anyhow::Result<()> {
                 Box::new(AlgorithmIndexerComponentManifest::load(&component_path)?)
             }
             ComponentType::SnapshotIndexerICP => {
-                Box::new(SnapshotIndexerComponentManifest::load(&component_path)?)
+                Box::new(SnapshotIndexerICPComponentManifest::load(&component_path)?)
             }
             ComponentType::SnapshotIndexerEVM => {
-                Box::new(SnapshotIndexerComponentManifest::load(&component_path)?)
+                Box::new(SnapshotIndexerEVMComponentManifest::load(&component_path)?)
             }
             ComponentType::Relayer => Box::new(RelayerComponentManifest::load(&component_path)?),
             ComponentType::AlgorithmLens => {

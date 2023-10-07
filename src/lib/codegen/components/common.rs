@@ -82,6 +82,11 @@ pub struct DatasourceMethod {
     pub args: Vec<serde_yaml::Value>,
 }
 
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+pub struct SnapshotStorage {
+    pub with_timestamp: bool,
+}
+
 impl Datasource {
     pub fn default_contract() -> Self {
         Self::new_contract(
@@ -170,6 +175,17 @@ impl DatasourceLocation {
                 id_type: Some(id_type),
             },
         }
+    }
+}
+
+impl SnapshotStorage {
+    pub fn new(with_timestamp: bool) -> Self {
+        Self { with_timestamp }
+    }
+}
+impl Default for SnapshotStorage {
+    fn default() -> Self {
+        Self::new(true)
     }
 }
 

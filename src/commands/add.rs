@@ -16,16 +16,17 @@ use crate::{
                     AlgorithmIndexerOutput,
                 },
                 algorithm_lens::{AlgorithmLensComponentManifest, AlgorithmLensDataSource},
-                common::{ComponentManifest, Datasource},
+                common::{ComponentManifest, Datasource, SnapshotStorage},
                 event_indexer::{
                     EventIndexerComponentManifest, EventIndexerDatasource,
                     EventIndexerEventDefinition, SourceNetwork,
                 },
                 relayer::{DestinationField, RelayerComponentManifest},
-                snapshot_indexer::{SnapshotIndexerComponentManifest, SnapshotStorage},
+                snapshot_indexer_evm::SnapshotIndexerEVMComponentManifest,
                 snapshot_indexer_https::{
                     SnapshotIndexerHTTPSComponentManifest, SnapshotIndexerHTTPSDataSource,
                 },
+                snapshot_indexer_icp::SnapshotIndexerICPComponentManifest,
             },
             project::{ProjectManifestComponentField, ProjectManifestData},
         },
@@ -94,17 +95,17 @@ pub fn exec<U: UserInteraction>(
             template_algorithm_indexer_manifest(&component_name).to_str_as_yaml()
         }
         ComponentType::SnapshotIndexerICP => {
-            template_snapshot_manifest(&component_name).to_str_as_yaml()
+            template_snapshot_indexer_icp_manifest(&component_name).to_str_as_yaml()
         }
         ComponentType::SnapshotIndexerEVM => {
-            template_snapshot_manifest(&component_name).to_str_as_yaml()
+            template_snapshot_indexer_evm_manifest(&component_name).to_str_as_yaml()
         }
         ComponentType::Relayer => template_relayer_manifest(&component_name).to_str_as_yaml(),
         ComponentType::AlgorithmLens => {
             template_algorithm_lens_manifest(&component_name).to_str_as_yaml()
         }
         ComponentType::SnapshotIndexerHTTPS => {
-            template_snapshot_web2_manifest(&component_name).to_str_as_yaml()
+            template_snapshot_indexer_https_manifest(&component_name).to_str_as_yaml()
         }
     }?;
     let relative_component_path = format!("components/{}.yaml", component_name);
@@ -189,8 +190,23 @@ fn template_algorithm_indexer_manifest(component_name: &str) -> AlgorithmIndexer
     )
 }
 
-fn template_snapshot_manifest(component_name: &str) -> SnapshotIndexerComponentManifest {
-    SnapshotIndexerComponentManifest::new(
+fn template_snapshot_indexer_icp_manifest(
+    component_name: &str,
+) -> SnapshotIndexerICPComponentManifest {
+    SnapshotIndexerICPComponentManifest::new(
+        component_name,
+        "",
+        PROJECT_MANIFEST_VERSION,
+        Datasource::new_canister("function_identifier()".to_string(), None, None),
+        SnapshotStorage::default(),
+        3600,
+    )
+}
+
+fn template_snapshot_indexer_evm_manifest(
+    component_name: &str,
+) -> SnapshotIndexerEVMComponentManifest {
+    SnapshotIndexerEVMComponentManifest::new(
         component_name,
         "",
         PROJECT_MANIFEST_VERSION,
@@ -219,7 +235,9 @@ fn template_algorithm_lens_manifest(component_name: &str) -> AlgorithmLensCompon
         AlgorithmLensDataSource::default(),
     )
 }
-fn template_snapshot_web2_manifest(component_name: &str) -> SnapshotIndexerHTTPSComponentManifest {
+fn template_snapshot_indexer_https_manifest(
+    component_name: &str,
+) -> SnapshotIndexerHTTPSComponentManifest {
     SnapshotIndexerHTTPSComponentManifest::new(
         component_name,
         "",
