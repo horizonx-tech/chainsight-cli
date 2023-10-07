@@ -90,7 +90,7 @@ pub fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
             ComponentType::SnapshotIndexerICP => {
                 Box::new(SnapshotIndexerComponentManifest::load(&component_path)?)
             }
-            ComponentType::SnapshotIndexerChain => {
+            ComponentType::SnapshotIndexerEVM => {
                 Box::new(SnapshotIndexerComponentManifest::load(&component_path)?)
             }
             ComponentType::Relayer => Box::new(RelayerComponentManifest::load(&component_path)?),

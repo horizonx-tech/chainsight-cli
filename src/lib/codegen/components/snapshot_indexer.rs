@@ -156,12 +156,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_to_manifest_struct_for_chain() {
+    fn test_to_manifest_struct_for_evm() {
         let yaml = r#"
 version: v1
 metadata:
-    label: sample_snapshot_indexer_chain
-    type: snapshot_indexer_chain
+    label: sample_snapshot_indexer_evm
+    type: snapshot_indexer_evm
     description: Description
     tags:
     - ERC-20
@@ -189,8 +189,8 @@ interval: 3600
             SnapshotIndexerComponentManifest {
                 version: "v1".to_owned(),
                 metadata: ComponentMetadata {
-                    label: "sample_snapshot_indexer_chain".to_owned(),
-                    type_: ComponentType::SnapshotIndexerChain,
+                    label: "sample_snapshot_indexer_evm".to_owned(),
+                    type_: ComponentType::SnapshotIndexerEVM,
                     description: "Description".to_string(),
                     tags: Some(vec!["ERC-20".to_string(), "Ethereum".to_string()])
                 },
@@ -215,7 +215,7 @@ interval: 3600
         );
 
         let schema = serde_json::from_str(include_str!(
-            "../../../../resources/schema/snapshot_indexer_chain.json"
+            "../../../../resources/schema/snapshot_indexer_evm.json"
         ))
         .expect("Invalid json");
         let instance = serde_yaml::from_str(yaml).expect("Invalid yaml");

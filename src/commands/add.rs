@@ -96,7 +96,7 @@ pub fn exec<U: UserInteraction>(
         ComponentType::SnapshotIndexerICP => {
             template_snapshot_manifest(&component_name).to_str_as_yaml()
         }
-        ComponentType::SnapshotIndexerChain => {
+        ComponentType::SnapshotIndexerEVM => {
             template_snapshot_manifest(&component_name).to_str_as_yaml()
         }
         ComponentType::Relayer => template_relayer_manifest(&component_name).to_str_as_yaml(),
@@ -298,8 +298,8 @@ mod tests {
             ComponentType::SnapshotIndexerICP,
         );
         projects.insert(
-            "snapshot_indexer_chain".to_string(),
-            ComponentType::SnapshotIndexerChain,
+            "snapshot_indexer_evm".to_string(),
+            ComponentType::SnapshotIndexerEVM,
         );
         projects.insert("relayer".to_string(), ComponentType::Relayer);
         projects.insert("algorithm_lens".to_string(), ComponentType::AlgorithmLens);

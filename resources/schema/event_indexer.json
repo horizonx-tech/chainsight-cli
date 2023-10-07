@@ -36,12 +36,12 @@
             "event_indexer",
             "algorithm_indexer",
             "snapshot_indexer_icp",
-            "snapshot_indexer_chain",
+            "snapshot_indexer_evm",
             "snapshot_indexer_https",
             "relayer",
             "algorithm_lens"
           ],
-          "pattern": "^(event_indexer|algorithm_indexer|snapshot_indexer_icp|snapshot_indexer_chain|snapshot_indexer_https|relayer|algorithm_lens)$"
+          "pattern": "^(event_indexer|algorithm_indexer|snapshot_indexer_icp|snapshot_indexer_evm|snapshot_indexer_https|relayer|algorithm_lens)$"
         },
         "description": {
           "$id": "#/properties/metadata/properties/description",

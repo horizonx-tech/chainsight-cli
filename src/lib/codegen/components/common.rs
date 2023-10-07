@@ -156,7 +156,7 @@ impl DatasourceLocation {
 
     pub fn default_canister() -> Self {
         Self::new_canister(
-            "sample_snapshot_indexer_chain".to_string(),
+            "sample_snapshot_indexer_evm".to_string(),
             CanisterIdType::CanisterName,
         )
     }
