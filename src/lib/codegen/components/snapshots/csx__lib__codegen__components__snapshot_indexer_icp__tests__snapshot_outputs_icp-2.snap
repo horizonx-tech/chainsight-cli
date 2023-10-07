@@ -1,5 +1,5 @@
 ---
-source: src/lib/codegen/components/snapshot_indexer.rs
+source: src/lib/codegen/components/snapshot_indexer_icp.rs
 expression: "SrcString::from(&manifest.generate_user_impl_template().unwrap())"
 ---
 pub type CallCanisterArgs =();

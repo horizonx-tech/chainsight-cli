@@ -1,12 +1,12 @@
 ---
-source: src/lib/codegen/components/snapshot_indexer.rs
+source: src/lib/codegen/components/snapshot_indexer_evm.rs
 expression: "&manifest.generate_scripts(Network::Local).unwrap()"
 ---
 #!/bin/bash
 # init
-dfx canister  call sample_snapshot_indexer_chain init_in '(variant { "LocalDevelopment" })'
+dfx canister  call sample_snapshot_indexer_evm init_in '(variant { "LocalDevelopment" })'
 # setup
-dfx canister  call sample_snapshot_indexer_chain setup "(
+dfx canister  call sample_snapshot_indexer_evm setup "(
     \"6b175474e89094c44da98b954eedeac495271d0f\",
     record {
         url = \"https://mainnet.infura.io/v3/<YOUR_KEY>\";
@@ -16,5 +16,5 @@ dfx canister  call sample_snapshot_indexer_chain setup "(
     }
 )"
 # set_task
-dfx canister  call sample_snapshot_indexer_chain set_task '(3600, 0)'
+dfx canister  call sample_snapshot_indexer_evm set_task '(3600, 0)'
 

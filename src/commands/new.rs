@@ -333,8 +333,8 @@ mod tests {
     }
 
     #[test]
-    fn test_manifest_snapshot_snapshot_indexer_chain() {
-        assert_display_snapshot!(template_snapshot_indexer_chain_manifest(COMPONENT_PREFIX)
+    fn test_manifest_snapshot_snapshot_indexer_evm() {
+        assert_display_snapshot!(template_snapshot_indexer_evm_manifest(COMPONENT_PREFIX)
             .to_str_as_yaml()
             .unwrap());
     }

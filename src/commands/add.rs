@@ -407,8 +407,15 @@ mod tests {
     }
 
     #[test]
-    fn test_manifest_snapshot_snapshot_indexer() {
-        assert_display_snapshot!(template_snapshot_indexer_manifest(COMPONENT_NAME)
+    fn test_manifest_snapshot_snapshot_indexer_evm() {
+        assert_display_snapshot!(template_snapshot_indexer_evm_manifest(COMPONENT_NAME)
+            .to_str_as_yaml()
+            .unwrap());
+    }
+
+    #[test]
+    fn test_manifest_snapshot_snapshot_indexer_icp() {
+        assert_display_snapshot!(template_snapshot_indexer_icp_manifest(COMPONENT_NAME)
             .to_str_as_yaml()
             .unwrap());
     }

@@ -1,12 +1,12 @@
 ---
-source: src/commands/new.rs
-expression: template_snapshot_indexer_icp_manifest(COMPONENT_PREFIX).to_str_as_yaml().unwrap()
+source: src/commands/add.rs
+expression: template_snapshot_indexer_evm_manifest(COMPONENT_NAME).to_str_as_yaml().unwrap()
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/snapshot_indexer.json
 version: v1
 metadata:
-  label: sample_snapshot_indexer_icp
-  type: snapshot_indexer_icp
+  label: additional
+  type: snapshot_indexer_evm
   description: ''
   tags:
   - ERC-20
@@ -14,11 +14,12 @@ metadata:
   - DAI
 datasource:
   location:
-    id: sample_snapshot_indexer_evm
+    id: 6b175474e89094c44da98b954eedeac495271d0f
     args:
-      id_type: canister_name
+      network_id: 1
+      rpc_url: https://eth-mainnet.g.alchemy.com/v2/<YOUR_KEY>
   method:
-    identifier: 'get_last_snapshot : () -> (record { value : text; timestamp : nat64 })'
+    identifier: functionIdentifier()
     interface: null
     args: []
 storage:

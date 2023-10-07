@@ -12,9 +12,8 @@ metadata:
   - Oracle
   - snapshot
 datasource:
-  type: canister
   location:
-    id: sample_snapshot_indexer_chain
+    id: sample_snapshot_indexer_evm
     args:
       id_type: canister_name
   method:

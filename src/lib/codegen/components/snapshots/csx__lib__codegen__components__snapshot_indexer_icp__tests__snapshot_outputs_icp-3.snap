@@ -1,5 +1,5 @@
 ---
-source: src/lib/codegen/components/snapshot_indexer.rs
+source: src/lib/codegen/components/snapshot_indexer_icp.rs
 expression: "&manifest.generate_scripts(Network::Local).unwrap()"
 ---
 #!/bin/bash
