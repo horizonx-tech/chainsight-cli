@@ -81,8 +81,7 @@ fn custom_codes(
             .into_iter()
             .collect::<Vec<_>>();
         keys.sort();
-        for j in 0..keys.len() {
-            let key = keys[j];
+        for key in keys {
             let value = manifest.output[i].fields.get(key).unwrap();
             output_fields_idents.push(format_ident!("{}", key));
             output_field_types.push(format_ident!("{}", value));
