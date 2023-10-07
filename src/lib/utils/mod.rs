@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::{panic, path::Path};
 
 use inflector::cases::snakecase::to_snake_case;
 
@@ -49,4 +49,14 @@ pub fn find_duplicates<T: Eq + std::hash::Hash>(values: &[T]) -> Vec<&T> {
         }
     }
     duplicates
+}
+
+pub fn catch_unwind_silent<F: FnOnce() -> R + panic::UnwindSafe, R>(
+    f: F,
+) -> std::thread::Result<R> {
+    let prev_hook = panic::take_hook();
+    panic::set_hook(Box::new(|_| {}));
+    let result = panic::catch_unwind(f);
+    panic::set_hook(prev_hook);
+    result
 }

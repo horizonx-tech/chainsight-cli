@@ -101,6 +101,9 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
             .map(|e| e.label.clone())
             .collect()
     }
+    fn generate_dependency_accessors(&self) -> anyhow::Result<TokenStream> {
+        canisters::algorithm_lens::generate_dependencies_accessor(self)
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]

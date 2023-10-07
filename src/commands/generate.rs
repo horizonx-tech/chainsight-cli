@@ -17,7 +17,8 @@ use crate::lib::codegen::components::snapshot_indexer::SnapshotIndexerComponentM
 use crate::lib::codegen::components::snapshot_indexer_https::SnapshotIndexerHTTPSComponentManifest;
 use crate::lib::codegen::oracle::get_oracle_attributes;
 use crate::lib::codegen::templates::{
-    bindings_cargo_toml, canister_project_cargo_toml, logic_cargo_toml, root_cargo_toml,
+    accessors_cargo_toml, bindings_cargo_toml, canister_project_cargo_toml, logic_cargo_toml,
+    root_cargo_toml,
 };
 use crate::lib::utils::{find_duplicates, paths};
 use crate::{
@@ -189,6 +190,26 @@ fn exec_codegen(
                 .current_dir(logic_path_str)
                 .args(["fmt"])
                 .output();
+        }
+        if !data.dependencies().is_empty() {
+            let accessors_path_str = &paths::accessors_path_str(src_path_str, &label);
+            create_cargo_project(
+                accessors_path_str,
+                Option::Some(&accessors_cargo_toml(&label, data.dependencies())),
+                Option::Some(
+                    &data
+                        .generate_dependency_accessors()
+                        .unwrap_or_default()
+                        .to_string(),
+                ),
+            )
+            .map_err(|err| {
+                anyhow::anyhow!(
+                    r#"[{}] Failed to create logic dependency accessors by: {}"#,
+                    label,
+                    err
+                )
+            })?;
         }
 
         // Processes about interface
