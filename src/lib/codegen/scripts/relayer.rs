@@ -23,7 +23,7 @@ fn generate_command_to_setup(
     };
 
     let ecdsa_key_env = match network {
-        Network::IC => "Test", // temp: use for test
+        Network::IC => "Production",
         Network::Local => "LocalDevelopment",
     };
 
