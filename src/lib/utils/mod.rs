@@ -5,6 +5,7 @@ use inflector::cases::snakecase::to_snake_case;
 pub mod clap;
 pub mod interaction;
 pub mod paths;
+pub mod serializer;
 
 pub const CHAINSIGHT_FILENAME: &str = ".chainsight";
 pub const PROJECT_MANIFEST_FILENAME: &str = "project.yaml";

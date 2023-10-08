@@ -1,0 +1,28 @@
+---
+source: src/commands/add.rs
+expression: template_snapshot_indexer_icp_manifest(COMPONENT_NAME).to_str_as_yaml().unwrap()
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/snapshot_indexer.json
+version: v1
+metadata:
+  label: additional
+  type: snapshot_indexer_icp
+  description: ''
+  tags:
+  - ERC-20
+  - Ethereum
+  - DAI
+datasource:
+  location:
+    id: sample_snapshot_indexer_evm
+    args:
+      id_type: canister_name
+  method:
+    identifier: function_identifier()
+    interface: null
+    args: []
+storage:
+  with_timestamp: true
+interval: 3600
+lens_targets: null
+

@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     lib::codegen::{canisters, scripts},
     types::{ComponentType, Network},
+    utils::serializer::ordered_map,
 };
 
 use super::common::{
@@ -113,12 +114,14 @@ pub enum InputType {
 
 pub struct InputStruct {
     pub name: String,
+    #[serde(serialize_with = "ordered_map")]
     pub fields: HashMap<String, String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct AlgorithmIndexerOutput {
     pub name: String,
+    #[serde(serialize_with = "ordered_map")]
     pub fields: HashMap<String, String>,
     pub output_type: AlgorithmOutputType,
 }
@@ -185,7 +188,10 @@ impl Default for AlgorithmIndexerDatasource {
 #[cfg(test)]
 mod tests {
 
+    use insta::assert_display_snapshot;
     use jsonschema::JSONSchema;
+
+    use crate::lib::test_utils::SrcString;
 
     use super::*;
 
@@ -222,13 +228,6 @@ interval: 3600
 
         let result = serde_yaml::from_str::<AlgorithmIndexerComponentManifest>(yaml);
         let component = result.unwrap();
-        let mut input_types = HashMap::new();
-        let mut output_types = HashMap::new();
-        input_types.insert("from".to_string(), "String".to_string());
-        input_types.insert("to".to_string(), "String".to_string());
-        input_types.insert("value".to_string(), "String".to_string());
-        output_types.insert("result".to_string(), "String".to_string());
-        output_types.insert("value".to_string(), "String".to_string());
 
         assert_eq!(
             component,
@@ -243,7 +242,11 @@ interval: 3600
                 datasource: AlgorithmIndexerDatasource {
                     input: InputStruct {
                         name: "Transfer".to_string(),
-                        fields: input_types
+                        fields: HashMap::from([
+                            ("from".to_string(), "String".to_string()),
+                            ("to".to_string(), "String".to_string()),
+                            ("value".to_string(), "String".to_string()),
+                        ])
                     },
                     principal: "ahw5u-keaaa-aaaaa-qaaha-cai".to_string(),
                     from: 17660942,
@@ -252,7 +255,10 @@ interval: 3600
                 },
                 output: vec!(AlgorithmIndexerOutput {
                     name: "SampleOutput".to_string(),
-                    fields: output_types,
+                    fields: HashMap::from([
+                        ("result".to_string(), "String".to_string()),
+                        ("value".to_string(), "String".to_string()),
+                    ]),
                     output_type: AlgorithmOutputType::KeyValue
                 }),
                 interval: 3600
@@ -266,5 +272,49 @@ interval: 3600
         let compiled = JSONSchema::compile(&schema).expect("Invalid schema");
         let result = compiled.validate(&instance);
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_snapshot_outputs() {
+        let manifest = AlgorithmIndexerComponentManifest {
+            version: "v1".to_string(),
+            metadata: ComponentMetadata {
+                label: "sample_algorithm_indexer".to_string(),
+                type_: ComponentType::AlgorithmIndexer,
+                description: "Description".to_string(),
+                tags: Some(vec!["Ethereum".to_string(), "Account".to_string()]),
+            },
+            datasource: AlgorithmIndexerDatasource {
+                input: InputStruct {
+                    name: "Transfer".to_string(),
+                    fields: HashMap::from([
+                        ("from".to_string(), "String".to_string()),
+                        ("to".to_string(), "String".to_string()),
+                        ("value".to_string(), "String".to_string()),
+                    ]),
+                },
+                principal: "ahw5u-keaaa-aaaaa-qaaha-cai".to_string(),
+                from: 17660942,
+                method: "proxy_call".to_string(),
+                source_type: AlgorithmInputType::EventIndexer,
+            },
+            output: vec![AlgorithmIndexerOutput {
+                name: "SampleOutput".to_string(),
+                fields: HashMap::from([
+                    ("result".to_string(), "String".to_string()),
+                    ("value".to_string(), "String".to_string()),
+                ]),
+                output_type: AlgorithmOutputType::KeyValue,
+            }],
+            interval: 3600,
+        };
+
+        assert_display_snapshot!(SrcString::from(
+            &manifest.generate_codes(Option::None).unwrap()
+        ));
+        assert_display_snapshot!(SrcString::from(
+            &manifest.generate_user_impl_template().unwrap()
+        ));
+        assert_display_snapshot!(&manifest.generate_scripts(Network::Local).unwrap());
     }
 }

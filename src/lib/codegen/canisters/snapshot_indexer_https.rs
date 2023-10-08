@@ -9,10 +9,14 @@ pub fn generate_codes(
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     let url = &manifest.datasource.url;
     let label = &manifest.metadata.label;
-    let header_keys: Vec<&String> = manifest.datasource.headers.keys().collect();
-    let header_values: Vec<&String> = manifest.datasource.headers.values().collect();
-    let query_keys: Vec<&String> = manifest.datasource.queries.keys().collect();
-    let query_values: Vec<&String> = manifest.datasource.queries.values().collect();
+    let mut header_keys: Vec<&String> = manifest.datasource.headers.keys().collect();
+    header_keys.sort();
+    let mut header_values: Vec<&String> = manifest.datasource.headers.values().collect();
+    header_values.sort();
+    let mut query_keys: Vec<&String> = manifest.datasource.queries.keys().collect();
+    query_keys.sort();
+    let mut query_values: Vec<&String> = manifest.datasource.queries.values().collect();
+    query_values.sort();
     let queries = generate_queries_without_timestamp(format_ident!("SnapshotValue"));
 
     let label_ident = format_ident!("{}", label);

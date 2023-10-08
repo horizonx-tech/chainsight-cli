@@ -194,7 +194,12 @@ impl EventIndexerEventDefinition {
 
 #[cfg(test)]
 mod tests {
+    use std::fs::File;
+
+    use insta::assert_display_snapshot;
     use jsonschema::JSONSchema;
+
+    use crate::lib::test_utils::SrcString;
 
     use super::*;
 
@@ -264,5 +269,44 @@ interval: 3600
         let compiled = JSONSchema::compile(&schema).expect("Invalid schema");
         let result = compiled.validate(&instance);
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_snapshot_outputs() {
+        let manifest = EventIndexerComponentManifest {
+            version: "v1".to_string(),
+            metadata: ComponentMetadata {
+                label: "sample_event_indexer".to_string(),
+                type_: ComponentType::EventIndexer,
+                description: "Description".to_string(),
+                tags: Some(vec![
+                    "Ethereum".to_string(),
+                    "ERC-20".to_string(),
+                    "Transfer".to_string(),
+                ]),
+            },
+            datasource: EventIndexerDatasource {
+                id: "0x6B175474E89094C44Da98b954EedeAC495271d0F".to_string(),
+                event: EventIndexerEventDefinition {
+                    identifier: "Transfer".to_string(),
+                    interface: Some("ERC20.json".to_string()),
+                },
+                network: SourceNetwork {
+                    rpc_url: "https://mainnet.infura.io/v3/<YOUR_KEY>".to_string(),
+                    chain_id: 1,
+                },
+                from: 17660942,
+                contract_type: Some("ERC20".to_string()),
+            },
+            interval: 3600,
+        };
+
+        let abi = File::open("resources/ERC20.json").unwrap();
+        assert_display_snapshot!(SrcString::from(
+            &manifest
+                .generate_codes(Option::Some(ethabi::Contract::load(abi).unwrap()))
+                .unwrap()
+        ));
+        assert_display_snapshot!(&manifest.generate_scripts(Network::Local).unwrap());
     }
 }

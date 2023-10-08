@@ -1,0 +1,8 @@
+---
+source: src/lib/codegen/components/algorithm_lens.rs
+expression: "&manifest.generate_scripts(Network::Local).unwrap()"
+---
+#!/bin/bash
+# init
+dfx canister  call sample_algorithm_lens init_in '(variant { "LocalDevelopment" })'
+

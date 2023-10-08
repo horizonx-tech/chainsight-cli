@@ -1,0 +1,17 @@
+---
+source: src/lib/codegen/components/algorithm_indexer.rs
+expression: "&manifest.generate_scripts(Network::Local).unwrap()"
+---
+#!/bin/bash
+# init
+dfx canister  call sample_algorithm_indexer init_in '(variant { "LocalDevelopment" })'
+# setup
+dfx canister  call sample_algorithm_indexer setup "(
+    \"ahw5u-keaaa-aaaaa-qaaha-cai\",
+    record{
+        start_from=17660942
+    }
+    )"
+# set_task
+dfx canister  call sample_algorithm_indexer set_task '(3600, 10)'
+

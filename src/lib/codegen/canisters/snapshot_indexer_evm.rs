@@ -203,8 +203,8 @@ pub fn generate_codes(
     manifest: &SnapshotIndexerEVMComponentManifest,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     ensure!(
-        manifest.metadata.type_ == ComponentType::SnapshotIndexerICP,
-        "type is not SnapshotIndexerICP"
+        manifest.metadata.type_ == ComponentType::SnapshotIndexerEVM,
+        "type is not SnapshotIndexerEVM"
     );
 
     // let (common_code_token, custom_code_token) = match manifest.datasource.type_ {

@@ -1,0 +1,5 @@
+---
+source: src/lib/codegen/components/snapshot_indexer_evm.rs
+expression: "SrcString::from(&manifest.generate_user_impl_template().unwrap())"
+---
+

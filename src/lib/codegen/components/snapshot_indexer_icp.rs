@@ -132,10 +132,12 @@ impl ComponentManifest for SnapshotIndexerICPComponentManifest {
 
 #[cfg(test)]
 mod tests {
+    use insta::assert_display_snapshot;
     use jsonschema::JSONSchema;
 
-    use crate::lib::codegen::components::common::{
-        CanisterIdType, DatasourceLocation, DatasourceMethod,
+    use crate::lib::{
+        codegen::components::common::{CanisterIdType, DatasourceLocation, DatasourceMethod},
+        test_utils::SrcString,
     };
 
     use super::*;
@@ -205,5 +207,44 @@ interval: 3600
         let compiled = JSONSchema::compile(&schema).expect("Invalid schema");
         let result = compiled.validate(&instance);
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_snapshot_outputs_icp() {
+        let manifest = SnapshotIndexerICPComponentManifest {
+            version: "v1".to_owned(),
+            metadata: ComponentMetadata {
+                label: "sample_snapshot_indexer_icp".to_owned(),
+                type_: ComponentType::SnapshotIndexerICP,
+                description: "Description".to_string(),
+                tags: Some(vec!["ERC-20".to_string(), "Ethereum".to_string()]),
+            },
+            datasource: Datasource {
+                location: DatasourceLocation::new_canister(
+                    "datasource_canister_id".to_string(),
+                    CanisterIdType::CanisterName,
+                ),
+                method: DatasourceMethod {
+                    identifier:
+                        "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"
+                            .to_owned(),
+                    interface: None,
+                    args: vec![],
+                },
+            },
+            storage: SnapshotStorage {
+                with_timestamp: true,
+            },
+            lens_targets: None,
+            interval: 3600,
+        };
+
+        assert_display_snapshot!(SrcString::from(
+            &manifest.generate_codes(Option::None).unwrap()
+        ));
+        assert_display_snapshot!(SrcString::from(
+            &manifest.generate_user_impl_template().unwrap()
+        ));
+        assert_display_snapshot!(&manifest.generate_scripts(Network::Local).unwrap());
     }
 }

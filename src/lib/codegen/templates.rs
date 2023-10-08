@@ -207,3 +207,54 @@ artifacts
 "#
     .to_string()
 }
+
+#[cfg(test)]
+mod tests {
+    use insta::assert_display_snapshot;
+
+    use super::*;
+
+    const PROJECT_NAME: &str = "sample";
+
+    #[test]
+    fn test_snapshot_root_cargo_toml() {
+        assert_display_snapshot!(root_cargo_toml())
+    }
+
+    #[test]
+    fn test_snapshot_logic_cargo_toml() {
+        let dependencies = vec!["sample_snapshot".to_string(), "sample_lens".to_string()];
+        assert_display_snapshot!(logic_cargo_toml(PROJECT_NAME, dependencies))
+    }
+
+    #[test]
+    fn test_snapshot_accessors_cargo_toml() {
+        let dependencies = vec!["sample_snapshot".to_string(), "sample_lens".to_string()];
+        assert_display_snapshot!(accessors_cargo_toml(PROJECT_NAME, dependencies))
+    }
+
+    #[test]
+    fn test_snapshot_canister_cargo_toml() {
+        assert_display_snapshot!(canister_project_cargo_toml(PROJECT_NAME))
+    }
+
+    #[test]
+    fn test_snapshot_bindings_cargo_toml() {
+        assert_display_snapshot!(bindings_cargo_toml(PROJECT_NAME))
+    }
+
+    #[test]
+    fn test_snapshot_dfx_json() {
+        let project_labels = vec![
+            "sample_snapshot".to_string(),
+            "sample_lens".to_string(),
+            "sample_relayer".to_string(),
+        ];
+        assert_display_snapshot!(dfx_json(project_labels))
+    }
+
+    #[test]
+    fn test_snapshot_gitignore() {
+        assert_display_snapshot!(gitignore())
+    }
+}

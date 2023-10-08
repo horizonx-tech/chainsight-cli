@@ -284,6 +284,8 @@ fn select_component_type(interaction: &mut impl UserInteraction) -> ComponentTyp
 mod tests {
     use std::{collections::HashMap, path::Path};
 
+    use insta::assert_display_snapshot;
+
     use super::*;
     use crate::{
         commands::test::tests::{run, test_env},
@@ -327,6 +329,8 @@ mod tests {
         );
         projects
     }
+
+    const COMPONENT_NAME: &str = "additional";
 
     #[test]
     fn test_add() {
@@ -393,5 +397,54 @@ mod tests {
                 },
             )
         })
+    }
+
+    #[test]
+    fn test_manifest_snapshot_event_indexer() {
+        assert_display_snapshot!(template_event_indexer_manifest(COMPONENT_NAME)
+            .to_str_as_yaml()
+            .unwrap());
+    }
+
+    #[test]
+    fn test_manifest_snapshot_snapshot_indexer_evm() {
+        assert_display_snapshot!(template_snapshot_indexer_evm_manifest(COMPONENT_NAME)
+            .to_str_as_yaml()
+            .unwrap());
+    }
+
+    #[test]
+    fn test_manifest_snapshot_snapshot_indexer_icp() {
+        assert_display_snapshot!(template_snapshot_indexer_icp_manifest(COMPONENT_NAME)
+            .to_str_as_yaml()
+            .unwrap());
+    }
+
+    #[test]
+    fn test_manifest_snapshot_snapshot_indexer_https() {
+        assert_display_snapshot!(template_snapshot_indexer_https_manifest(COMPONENT_NAME)
+            .to_str_as_yaml()
+            .unwrap());
+    }
+
+    #[test]
+    fn test_manifest_snapshot_algorithm_indexer() {
+        assert_display_snapshot!(template_algorithm_indexer_manifest(COMPONENT_NAME)
+            .to_str_as_yaml()
+            .unwrap());
+    }
+
+    #[test]
+    fn test_manifest_snapshot_algorithm_lens() {
+        assert_display_snapshot!(template_algorithm_lens_manifest(COMPONENT_NAME)
+            .to_str_as_yaml()
+            .unwrap());
+    }
+
+    #[test]
+    fn test_manifest_snapshot_relayer() {
+        assert_display_snapshot!(template_relayer_manifest(COMPONENT_NAME)
+            .to_str_as_yaml()
+            .unwrap());
     }
 }
