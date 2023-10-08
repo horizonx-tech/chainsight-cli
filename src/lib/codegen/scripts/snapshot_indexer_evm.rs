@@ -15,7 +15,10 @@ fn generate_command_to_setup(
     datasrc_rpc_url: &str,
     network: &Network,
 ) -> String {
-    let ecdsa_key_id = "LocalDevelopment"; // temp: because not to use (do not sign)
+    let ecdsa_key_id = match network {
+        Network::IC => "Production",
+        Network::Local => "LocalDevelopment",
+    };
 
     format!(
         r#"dfx canister {} call {} setup "(
