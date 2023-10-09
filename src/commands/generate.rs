@@ -104,26 +104,25 @@ pub fn exec(env: &EnvironmentImpl, opts: GenerateOpts) -> anyhow::Result<()> {
         let data: Box<dyn ComponentManifest> =
             match component_type {
                 ComponentType::EventIndexer => Box::new(
-                    EventIndexerComponentManifest::load_with_id(&component_path, &id)?,
+                    EventIndexerComponentManifest::load_with_id(&component_path, id)?,
                 ),
                 ComponentType::AlgorithmIndexer => Box::new(
-                    AlgorithmIndexerComponentManifest::load_with_id(&component_path, &id)?,
+                    AlgorithmIndexerComponentManifest::load_with_id(&component_path, id)?,
                 ),
                 ComponentType::SnapshotIndexerICP => Box::new(
-                    SnapshotIndexerICPComponentManifest::load_with_id(&component_path, &id)?,
+                    SnapshotIndexerICPComponentManifest::load_with_id(&component_path, id)?,
                 ),
                 ComponentType::SnapshotIndexerEVM => Box::new(
-                    SnapshotIndexerEVMComponentManifest::load_with_id(&component_path, &id)?,
+                    SnapshotIndexerEVMComponentManifest::load_with_id(&component_path, id)?,
                 ),
-                ComponentType::Relayer => Box::new(RelayerComponentManifest::load_with_id(
-                    &component_path,
-                    &id,
-                )?),
+                ComponentType::Relayer => {
+                    Box::new(RelayerComponentManifest::load_with_id(&component_path, id)?)
+                }
                 ComponentType::AlgorithmLens => Box::new(
-                    AlgorithmLensComponentManifest::load_with_id(&component_path, &id)?,
+                    AlgorithmLensComponentManifest::load_with_id(&component_path, id)?,
                 ),
                 ComponentType::SnapshotIndexerHTTPS => Box::new(
-                    SnapshotIndexerHTTPSComponentManifest::load_with_id(&component_path, &id)?,
+                    SnapshotIndexerHTTPSComponentManifest::load_with_id(&component_path, id)?,
                 ),
             };
 
