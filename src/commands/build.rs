@@ -148,7 +148,7 @@ fn execute_codebuild(
     }
     let projects = component_data
         .iter()
-        .map(|data| data.metadata().label.to_string())
+        .map(|data| data.id().unwrap())
         .collect::<Vec<String>>();
     fs::write(format!("{}/dfx.json", output_path_str), dfx_json(projects))?;
 

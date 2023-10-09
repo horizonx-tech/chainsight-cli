@@ -8,7 +8,7 @@ pub fn network_param(network: &Network) -> &str {
 }
 
 pub fn generate_command_to_set_task(
-    label: &str,
+    id: &str,
     network: &Network,
     interval: u32,
     delay: u32,
@@ -16,17 +16,17 @@ pub fn generate_command_to_set_task(
     format!(
         r#"dfx canister {} call {} set_task '({}, {})'"#,
         network_param(network),
-        label,
+        id,
         interval,
         delay
     )
 }
 
-pub fn init_in_env_task(network: &Network, label: &str) -> String {
+pub fn init_in_env_task(network: &Network, id: &str) -> String {
     format!(
         r#"dfx canister {} call {} init_in '(variant {{ "{}" }})'"#,
         network_param(network),
-        label,
+        id,
         match network {
             Network::Local => "LocalDevelopment",
             Network::IC => "Production",

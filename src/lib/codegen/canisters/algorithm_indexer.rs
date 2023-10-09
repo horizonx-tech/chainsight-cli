@@ -3,8 +3,11 @@ use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote};
 
 use crate::{
-    lib::codegen::components::algorithm_indexer::{
-        AlgorithmIndexerComponentManifest, AlgorithmInputType, AlgorithmOutputType,
+    lib::codegen::components::{
+        algorithm_indexer::{
+            AlgorithmIndexerComponentManifest, AlgorithmInputType, AlgorithmOutputType,
+        },
+        common::ComponentManifest,
     },
     types::ComponentType,
 };
@@ -61,9 +64,9 @@ fn input_type_ident(manifest: &AlgorithmIndexerComponentManifest) -> TokenStream
 fn custom_codes(
     manifest: &AlgorithmIndexerComponentManifest,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    let label = &manifest.metadata.label;
+    let id = &manifest.id().ok_or(anyhow::anyhow!("id is required"))?;
 
-    let logic_ident = format_ident!("{}", label);
+    let logic_ident = format_ident!("{}", id);
     let source_ident = input_type_ident(manifest);
     let method = &manifest.datasource.method;
 
@@ -115,7 +118,7 @@ fn custom_codes(
     // temp
     Ok(quote! {
         #out
-        did_export!(#label);
+        did_export!(#id);
     })
 }
 

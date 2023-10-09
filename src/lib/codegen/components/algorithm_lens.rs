@@ -226,10 +226,10 @@ output:
     #[test]
     fn test_snapshot_outputs() {
         let manifest = AlgorithmLensComponentManifest {
-            id: None,
+            id: Some("sample_algorithm_lens".to_string()),
             version: "v1".to_string(),
             metadata: ComponentMetadata {
-                label: "sample_algorithm_lens".to_string(),
+                label: "Sample Algorithm Lens".to_string(),
                 type_: ComponentType::AlgorithmLens,
                 description: "Description".to_string(),
                 tags: Some(vec!["Ethereum".to_string(), "Account".to_string()]),

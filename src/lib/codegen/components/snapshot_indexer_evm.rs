@@ -235,10 +235,10 @@ interval: 3600
     #[test]
     fn test_snapshot_outputs_evm() {
         let manifest = SnapshotIndexerEVMComponentManifest {
-            id: None,
+            id: Some("sample_snapshot_indexer_evm".to_owned()),
             version: "v1".to_owned(),
             metadata: ComponentMetadata {
-                label: "sample_snapshot_indexer_evm".to_owned(),
+                label: "Sample Snapshot Indexer Evm".to_owned(),
                 type_: ComponentType::SnapshotIndexerEVM,
                 description: "Description".to_string(),
                 tags: Some(vec!["ERC-20".to_string(), "Ethereum".to_string()]),

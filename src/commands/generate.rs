@@ -306,8 +306,8 @@ fn exec_codegen(
     let action = "Generate interfaces (.did files)";
     info!(log, "{}...", action);
     for data in component_data {
-        let label = data.metadata().label.to_string();
-        let canisters_path_str = paths::canisters_path_str(src_path_str, &label);
+        let id = data.id().unwrap();
+        let canisters_path_str = paths::canisters_path_str(src_path_str, &id);
 
         let output = Command::new("cargo")
             .current_dir(canisters_path_str)
@@ -321,11 +321,11 @@ fn exec_codegen(
                 "{}",
                 std::str::from_utf8(&output.stdout).unwrap_or("failed to parse stdout")
             );
-            info!(log, r#"[{}] Succeeded: {}"#, label, action);
+            info!(log, r#"[{}] Succeeded: {}"#, id, action);
         } else {
             bail!(format!(
                 r#"[{}] Failed: {} by: {}"#,
-                label,
+                id,
                 action,
                 std::str::from_utf8(&output.stderr).unwrap_or("failed to parse stdout")
             ));
@@ -336,7 +336,7 @@ fn exec_codegen(
         fs::write(
             Path::new(&format!(
                 "{}/src/lib.rs",
-                paths::bindings_path_str(src_path_str, &label)
+                paths::bindings_path_str(src_path_str, &id)
             )),
             bindings,
         )

@@ -230,10 +230,10 @@ interval: 3600
     #[test]
     fn test_snapshot_outputs() {
         let manifest = SnapshotIndexerHTTPSComponentManifest {
-            id: None,
+            id: Some("sample_snapshot_indexer_https".to_owned()),
             version: "v1".to_owned(),
             metadata: ComponentMetadata {
-                label: "sample_snapshot_indexer_https".to_owned(),
+                label: "Sample Snapshot Indexer Https".to_owned(),
                 type_: ComponentType::SnapshotIndexerHTTPS,
                 description: "Description".to_string(),
                 tags: Some(vec![

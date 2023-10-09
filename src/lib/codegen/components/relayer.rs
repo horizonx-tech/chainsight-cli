@@ -281,10 +281,10 @@ interval: 3600
     #[test]
     fn test_snapshot_outputs() {
         let manifest = RelayerComponentManifest {
-            id: None,
+            id: Some("sample_relayer".to_string()),
             version: "v1".to_string(),
             metadata: ComponentMetadata {
-                label: "sample_relayer".to_string(),
+                label: "Sample Relayer".to_string(),
                 type_: ComponentType::Relayer,
                 description: "Description".to_string(),
                 tags: Some(vec!["Oracle".to_string(), "snapshot".to_string()]),

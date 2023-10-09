@@ -8,7 +8,9 @@ use crate::{
             generate_outside_call_idents, generate_request_arg_idents, CanisterMethodIdentifier,
             CanisterMethodValueType, OutsideCallIdentsType,
         },
-        components::snapshot_indexer_icp::SnapshotIndexerICPComponentManifest,
+        components::{
+            common::ComponentManifest, snapshot_indexer_icp::SnapshotIndexerICPComponentManifest,
+        },
     },
     types::ComponentType,
 };
@@ -35,11 +37,11 @@ fn common_codes() -> proc_macro2::TokenStream {
 fn custom_codes(
     manifest: &SnapshotIndexerICPComponentManifest,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    let label = &manifest.metadata.label;
+    let id = &manifest.id().ok_or(anyhow::anyhow!("id is required"))?;
     let method = &manifest.datasource.method;
     let method_identifier = CanisterMethodIdentifier::parse_from_str(&method.identifier)?;
 
-    let label_ident = format_ident!("{}", label);
+    let id_ident = format_ident!("{}", id);
     let method_ident = "proxy_".to_string() + &method_identifier.identifier; // NOTE: to call through proxy
 
     // for response type
@@ -133,7 +135,7 @@ fn custom_codes(
             type CallCanisterArgs = Vec<String>;
         },
         false => quote! {
-            type CallCanisterArgs = #label_ident::CallCanisterArgs;
+            type CallCanisterArgs = #id_ident::CallCanisterArgs;
         },
     };
     let lens_targets: Vec<Principal> = manifest
@@ -159,7 +161,7 @@ fn custom_codes(
         },
         false => quote! {
             pub fn call_args() -> CallCanisterArgs {
-                #label_ident::call_args()
+                #id_ident::call_args()
             }
         },
     };
@@ -203,7 +205,7 @@ fn custom_codes(
             #expr_to_log_datum
         }
 
-        did_export!(#label);
+        did_export!(#id);
     })
 }
 

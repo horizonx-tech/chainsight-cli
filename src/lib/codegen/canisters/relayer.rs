@@ -7,7 +7,10 @@ use crate::{
         canisters::common::{
             generate_outside_call_idents, generate_request_arg_idents, OutsideCallIdentsType,
         },
-        components::{common::DestinationType, relayer::RelayerComponentManifest},
+        components::{
+            common::{ComponentManifest, DestinationType},
+            relayer::RelayerComponentManifest,
+        },
         oracle::get_oracle_attributes,
     },
     types::ComponentType,
@@ -35,11 +38,11 @@ fn common_codes() -> proc_macro2::TokenStream {
 }
 
 fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macro2::TokenStream> {
-    let label = &manifest.metadata.label;
+    let id = &manifest.id().ok_or(anyhow::anyhow!("id is required"))?;
     let method = &manifest.datasource.method;
     let method_identifier = CanisterMethodIdentifier::parse_from_str(&method.identifier)?;
 
-    let label_ident = format_ident!("{}", &manifest.metadata.label);
+    let id_ident = format_ident!("{}", &id);
     let method_ident = "proxy_".to_string() + &method_identifier.identifier;
     let method_ident_origin = &method_identifier.identifier;
 
@@ -57,7 +60,7 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
             type CallCanisterArgs = Vec<String>;
         },
         false => quote! {
-            type CallCanisterArgs = #label_ident::CallCanisterArgs;
+            type CallCanisterArgs = #id_ident::CallCanisterArgs;
         },
     };
     let lens_targets: Vec<Principal> = manifest
@@ -83,7 +86,7 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
         },
         false => quote! {
             pub fn call_args() -> CallCanisterArgs {
-                #label_ident::call_args()
+                #id_ident::call_args()
             }
         },
     };
@@ -99,7 +102,7 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
 
     Ok(quote! {
         ic_solidity_bindgen::contract_abi!(#abi_path);
-        use #label_ident::*;
+        use #id_ident::*;
         #relayer_source_ident
         #args_type_ident
         #get_args_ident
@@ -131,7 +134,7 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
             ic_cdk::println!("value_to_sync={:?}", datum);
         }
 
-        did_export!(#label);
+        did_export!(#id);
     })
 }
 

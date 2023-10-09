@@ -1,6 +1,8 @@
 use crate::{
     lib::{
-        codegen::components::algorithm_lens::AlgorithmLensComponentManifest,
+        codegen::components::{
+            algorithm_lens::AlgorithmLensComponentManifest, common::ComponentManifest,
+        },
         utils::{
             catch_unwind_silent,
             paths::{self, bindings_name},
@@ -27,15 +29,15 @@ fn common_codes() -> TokenStream {
 fn custom_codes(
     manifest: &AlgorithmLensComponentManifest,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    let label = &manifest.metadata.label;
+    let id = &manifest.id().ok_or(anyhow::anyhow!("id is required"))?;
 
-    let logic_ident: Ident = format_ident!("{}", label);
+    let logic_ident: Ident = format_ident!("{}", id);
     let input_count = manifest.datasource.methods.len();
 
     Ok(quote! {
         use #logic_ident::*;
         lens_method!(#input_count);
-        did_export!(#label);
+        did_export!(#id);
     })
 }
 
@@ -57,6 +59,7 @@ pub fn generate_codes(manifest: &AlgorithmLensComponentManifest) -> anyhow::Resu
 }
 
 pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result<TokenStream> {
+    let id = manifest.id().ok_or(anyhow::anyhow!("id is required"))?;
     let methods = manifest.datasource.methods.clone();
 
     let call_func_templates = methods.iter().enumerate().map(|(i, m)| {
@@ -82,7 +85,7 @@ pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result
         }
     });
     let output_type_ident = format_ident!("{}", "LensValue");
-    let accessors_ident = format_ident!("{}", paths::accessors_name(&manifest.metadata.label));
+    let accessors_ident = format_ident!("{}", paths::accessors_name(&id));
 
     let code = quote! {
         use #accessors_ident::*;

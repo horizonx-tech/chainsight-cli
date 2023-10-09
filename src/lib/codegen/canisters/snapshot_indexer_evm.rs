@@ -11,7 +11,10 @@ use crate::{
                 },
                 snapshot_indexer_icp::generate_queries_without_timestamp,
             },
-            components::snapshot_indexer_evm::SnapshotIndexerEVMComponentManifest,
+            components::{
+                common::ComponentManifest,
+                snapshot_indexer_evm::SnapshotIndexerEVMComponentManifest,
+            },
         },
         utils::{convert_camel_to_snake, ADDRESS_TYPE, U256_TYPE},
     },
@@ -43,7 +46,7 @@ fn common_codes() -> proc_macro2::TokenStream {
 fn custom_codes(
     manifest: &SnapshotIndexerEVMComponentManifest,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    let label = &manifest.metadata.label;
+    let id = &manifest.id().ok_or(anyhow::anyhow!("id is required"))?;
     let method = &manifest.datasource.method;
     let method_identifier = ContractMethodIdentifier::parse_from_str(&method.identifier)?;
     let method_ident_str = convert_camel_to_snake(&method_identifier.identifier);
@@ -157,7 +160,7 @@ fn custom_codes(
             #expr_to_log_datum
         }
 
-        did_export!(#label);
+        did_export!(#id);
     })
 }
 

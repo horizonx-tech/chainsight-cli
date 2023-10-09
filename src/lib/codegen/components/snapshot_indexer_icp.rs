@@ -229,7 +229,7 @@ interval: 3600
     #[test]
     fn test_snapshot_outputs_icp() {
         let manifest = SnapshotIndexerICPComponentManifest {
-            id: None,
+            id: Some("sample_snapshot_indexer_icp".to_owned()),
             version: "v1".to_owned(),
             metadata: ComponentMetadata {
                 label: "sample_snapshot_indexer_icp".to_owned(),

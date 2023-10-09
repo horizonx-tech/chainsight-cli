@@ -11,8 +11,8 @@ pub fn generate_rs_bindings(
     root: &str,
     component: &dyn ComponentManifest,
 ) -> anyhow::Result<String> {
-    let label = &component.metadata().label;
-    let candid_path = &format!("{}/{}.did", &canisters_path_str(root, label), label);
+    let id = &component.id().unwrap();
+    let candid_path = &format!("{}/{}.did", &canisters_path_str(root, id), id);
     let bindings = create_candid_rust_binding(Path::new(candid_path))?;
     Ok(bindings)
 }

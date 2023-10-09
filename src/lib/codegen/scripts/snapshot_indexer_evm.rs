@@ -2,14 +2,16 @@ use anyhow::ensure;
 
 use crate::{
     lib::codegen::{
-        components::snapshot_indexer_evm::SnapshotIndexerEVMComponentManifest,
+        components::{
+            common::ComponentManifest, snapshot_indexer_evm::SnapshotIndexerEVMComponentManifest,
+        },
         scripts::common::{generate_command_to_set_task, init_in_env_task, network_param},
     },
     types::{ComponentType, Network},
 };
 
 fn generate_command_to_setup(
-    label: &str,
+    id: &str,
     datasrc_id: &str,
     datasrc_network_id: u32,
     datasrc_rpc_url: &str,
@@ -31,7 +33,7 @@ fn generate_command_to_setup(
     }}
 )""#,
         network_param(network),
-        label,
+        id,
         datasrc_id,
         datasrc_rpc_url,
         datasrc_network_id,
@@ -39,10 +41,11 @@ fn generate_command_to_setup(
     )
 }
 fn script_contents(manifest: &SnapshotIndexerEVMComponentManifest, network: Network) -> String {
+    let id = manifest.id().unwrap();
     let datasrc_location_args = manifest.datasource.location.args.clone();
 
     let setup_contents = generate_command_to_setup(
-        &manifest.metadata.label,
+        &id,
         &manifest.datasource.location.id,
         datasrc_location_args.network_id.unwrap(), // todo: check validation
         &datasrc_location_args.rpc_url.unwrap(),   // todo: check validation
@@ -50,12 +53,12 @@ fn script_contents(manifest: &SnapshotIndexerEVMComponentManifest, network: Netw
     );
 
     let start_timer_contents = generate_command_to_set_task(
-        &manifest.metadata.label,
+        &id,
         &network,
         manifest.interval,
         0, // temp: fixed value, todo: make it configurable
     );
-    let init_in_env_task = init_in_env_task(&network, &manifest.metadata.label);
+    let init_in_env_task = init_in_env_task(&network, &id);
 
     format!(
         r#"#!/bin/bash

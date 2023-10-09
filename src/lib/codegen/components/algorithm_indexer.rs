@@ -294,10 +294,10 @@ interval: 3600
     #[test]
     fn test_snapshot_outputs() {
         let manifest = AlgorithmIndexerComponentManifest {
-            id: None,
+            id: Some("sample_algorithm_indexer".to_string()),
             version: "v1".to_string(),
             metadata: ComponentMetadata {
-                label: "sample_algorithm_indexer".to_string(),
+                label: "Sample Algorithm Indexer".to_string(),
                 type_: ComponentType::AlgorithmIndexer,
                 description: "Description".to_string(),
                 tags: Some(vec!["Ethereum".to_string(), "Account".to_string()]),

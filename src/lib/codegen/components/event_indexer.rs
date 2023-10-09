@@ -291,10 +291,10 @@ interval: 3600
     #[test]
     fn test_snapshot_outputs() {
         let manifest = EventIndexerComponentManifest {
-            id: None,
+            id: Some("sample_event_indexer".to_string()),
             version: "v1".to_string(),
             metadata: ComponentMetadata {
-                label: "sample_event_indexer".to_string(),
+                label: "Sample Event Indexer".to_string(),
                 type_: ComponentType::EventIndexer,
                 description: "Description".to_string(),
                 tags: Some(vec![
