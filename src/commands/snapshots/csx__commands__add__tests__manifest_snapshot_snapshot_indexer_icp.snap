@@ -5,7 +5,7 @@ expression: template_snapshot_indexer_icp_manifest(COMPONENT_NAME).to_str_as_yam
 # yaml-language-server: $schema=https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/snapshot_indexer.json
 version: v1
 metadata:
-  label: additional
+  label: Additional
   type: snapshot_indexer_icp
   description: ''
   tags:

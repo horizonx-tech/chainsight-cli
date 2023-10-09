@@ -5,7 +5,7 @@ expression: template_algorithm_lens_manifest(COMPONENT_NAME).to_str_as_yaml().un
 # yaml-language-server: $schema=https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/algorithm_lens.json
 version: v1
 metadata:
-  label: additional
+  label: Additional
   type: algorithm_lens
   description: ''
   tags:

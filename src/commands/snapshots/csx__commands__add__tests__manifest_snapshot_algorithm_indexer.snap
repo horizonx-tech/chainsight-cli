@@ -5,7 +5,7 @@ expression: template_algorithm_indexer_manifest(COMPONENT_NAME).to_str_as_yaml()
 # yaml-language-server: $schema=https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/algorithm_indexer.json
 version: v1
 metadata:
-  label: additional
+  label: Additional
   type: algorithm_indexer
   description: ''
   tags:
