@@ -55,7 +55,7 @@ pub fn exec(env: &EnvironmentImpl, opts: NewOpts) -> anyhow::Result<()> {
     info!(log, r#"Start creating new project '{}'..."#, project_name);
     let res = create_project(
         &project_path.to_string_lossy(),
-        &project_name,
+        project_name,
         opts.no_samples,
     );
     match res {
