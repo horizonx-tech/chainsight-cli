@@ -128,6 +128,10 @@ The following Components are currently available on the CLI.
   - In addition, depending on the data source, you can choose from
     - chain: For EVM-based Other chains
     - canister: Other canisters on Internet Computer
+    - https: using HTTPS Outcall
+- Event Indexer
+- Algorithm Indexer
+- Algorithm Lens
 - Relayer
 
 > **Note**  
@@ -237,7 +241,8 @@ Options:
           Possible values:
           - event-indexer:          To synchronize event data
           - algorithm-indexer:      To get events from other indexer and convert it into another format
-          - snapshot-indexer:       To periodically take and store snapshots from Contract and other Canisters
+          - snapshot-indexer-icp:   To periodically take and store snapshots from other Canisters
+          - snapshot-indexer-evm:   To periodically take and store snapshots from Contract
           - snapshot-indexer-https: To periodically take and store snapshots using HTTPS Outcall
           - relayer:                To relay data to other blockchains
           - algorithm-lens:         To calculate using data obtained from the specified Source and process into an arbitrary format
@@ -381,6 +386,7 @@ components:
 - component_path: components/sample_relayer.yaml
 - component_path: components/sample_snapshot_indexer_evm.yaml
 - component_path: components/sample_snapshot_indexer_icp.yaml
+- component_path: components/sample_snapshot_indexer_https.yaml
 ```
 
 ### Component Manifest
@@ -394,7 +400,7 @@ The description of each component type is different, but the following is a desc
 Of particular importance is the type, which determines the Component Type, so be sure to check and set it.
 
 - `label`: String / Component name
-- `type`: Enum / Component Type (ex: snapshot_indexer)
+- `type`: Enum / Component Type (ex: snapshot_indexer_icp)
 - `description`: String / Component description field
 
 example)
@@ -403,7 +409,7 @@ example)
 version: v1
 metadata:
   label: sample_snapshot_indexer_evm
-  type: snapshot_indexer
+  type: snapshot_indexer_evm
   description: ''
   tags: ...
 ...
@@ -417,7 +423,7 @@ If you want to use environment variables or secret values in the manifest, you c
 version: v1
 metadata:
   label: sample_snapshot_indexer_evm
-  type: snapshot_indexer
+  type: snapshot_indexer_evm
   description: ''
   tags: ...
 datasource:
@@ -481,7 +487,7 @@ example)
 version: v1
 metadata:
   label: sample_snapshot_indexer_evm
-  type: snapshot_indexer
+  type: snapshot_indexer_evm
   description: ''
   tags: ...
 datasource:
@@ -528,7 +534,7 @@ example)
 version: v1
 metadata:
   label: sample_snapshot_indexer_icp
-  type: snapshot_indexer
+  type: snapshot_indexer_icp
   description: ''
   tags: ...
 datasource:
