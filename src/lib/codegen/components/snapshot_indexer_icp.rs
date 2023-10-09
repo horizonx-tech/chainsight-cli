@@ -66,9 +66,17 @@ impl SnapshotIndexerICPComponentManifest {
     }
 }
 impl ComponentManifest for SnapshotIndexerICPComponentManifest {
+    fn load_with_id(path: &str, id: &str) -> anyhow::Result<Self> {
+        let manifest = Self::load(path)?;
+        Ok(Self {
+            id: Some(id.to_owned()),
+            ..manifest
+        })
+    }
+
     fn to_str_as_yaml(&self) -> anyhow::Result<String> {
         let yaml = serde_yaml::to_string(&self)?;
-        Ok(self.yaml_str_with_configs(yaml, "snapshot_indexer".to_string()))
+        Ok(self.yaml_str_with_configs(yaml, "snapshot_indexer_icp".to_string()))
     }
 
     fn validate_manifest(&self) -> anyhow::Result<()> {
@@ -88,6 +96,10 @@ impl ComponentManifest for SnapshotIndexerICPComponentManifest {
 
     fn component_type(&self) -> ComponentType {
         ComponentType::SnapshotIndexerICP
+    }
+
+    fn id(&self) -> Option<String> {
+        self.id.clone()
     }
 
     fn metadata(&self) -> &ComponentMetadata {

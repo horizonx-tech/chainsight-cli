@@ -81,6 +81,14 @@ impl SnapshotIndexerHTTPSComponentManifest {
     }
 }
 impl ComponentManifest for SnapshotIndexerHTTPSComponentManifest {
+    fn load_with_id(path: &str, id: &str) -> anyhow::Result<Self> {
+        let manifest = Self::load(path)?;
+        Ok(Self {
+            id: Some(id.to_owned()),
+            ..manifest
+        })
+    }
+
     fn to_str_as_yaml(&self) -> anyhow::Result<String> {
         let yaml = serde_yaml::to_string(&self)?;
         Ok(self.yaml_str_with_configs(yaml, "snapshot_indexer_https".to_string()))
@@ -103,6 +111,10 @@ impl ComponentManifest for SnapshotIndexerHTTPSComponentManifest {
 
     fn component_type(&self) -> ComponentType {
         ComponentType::SnapshotIndexerHTTPS
+    }
+
+    fn id(&self) -> Option<String> {
+        self.id.clone()
     }
 
     fn metadata(&self) -> &ComponentMetadata {
