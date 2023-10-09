@@ -16,6 +16,8 @@ use super::common::{
 /// Component Manifest: Algorithm Indexer
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct AlgorithmIndexerComponentManifest {
+    #[serde(skip_serializing)]
+    pub id: Option<String>,
     pub version: String,
     pub metadata: ComponentMetadata,
     pub datasource: AlgorithmIndexerDatasource,
@@ -25,6 +27,7 @@ pub struct AlgorithmIndexerComponentManifest {
 
 impl AlgorithmIndexerComponentManifest {
     pub fn new(
+        id: &str,
         label: &str,
         description: &str,
         version: &str,
@@ -33,6 +36,7 @@ impl AlgorithmIndexerComponentManifest {
         interval: u32,
     ) -> Self {
         Self {
+            id: Some(id.to_owned()),
             version: version.to_owned(),
             metadata: ComponentMetadata {
                 label: label.to_owned(),
@@ -232,6 +236,7 @@ interval: 3600
         assert_eq!(
             component,
             AlgorithmIndexerComponentManifest {
+                id: None,
                 version: "v1".to_string(),
                 metadata: ComponentMetadata {
                     label: "sample_algorithm_indexer".to_string(),
@@ -277,6 +282,7 @@ interval: 3600
     #[test]
     fn test_snapshot_outputs() {
         let manifest = AlgorithmIndexerComponentManifest {
+            id: None,
             version: "v1".to_string(),
             metadata: ComponentMetadata {
                 label: "sample_algorithm_indexer".to_string(),

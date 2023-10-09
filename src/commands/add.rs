@@ -162,6 +162,7 @@ pub fn exec<U: UserInteraction>(
 
 fn template_event_indexer_manifest(component_name: &str) -> EventIndexerComponentManifest {
     EventIndexerComponentManifest::new(
+        &"", // TODO
         component_name,
         "",
         PROJECT_MANIFEST_VERSION,
@@ -181,6 +182,7 @@ fn template_event_indexer_manifest(component_name: &str) -> EventIndexerComponen
 
 fn template_algorithm_indexer_manifest(component_name: &str) -> AlgorithmIndexerComponentManifest {
     AlgorithmIndexerComponentManifest::new(
+        &"", // TODO
         component_name,
         "",
         PROJECT_MANIFEST_VERSION,
@@ -194,6 +196,7 @@ fn template_snapshot_indexer_icp_manifest(
     component_name: &str,
 ) -> SnapshotIndexerICPComponentManifest {
     SnapshotIndexerICPComponentManifest::new(
+        &"", // TODO
         component_name,
         "",
         PROJECT_MANIFEST_VERSION,
@@ -207,6 +210,7 @@ fn template_snapshot_indexer_evm_manifest(
     component_name: &str,
 ) -> SnapshotIndexerEVMComponentManifest {
     SnapshotIndexerEVMComponentManifest::new(
+        &"", // TODO
         component_name,
         "",
         PROJECT_MANIFEST_VERSION,
@@ -218,6 +222,7 @@ fn template_snapshot_indexer_evm_manifest(
 
 fn template_relayer_manifest(component_name: &str) -> RelayerComponentManifest {
     RelayerComponentManifest::new(
+        &"", // TODO
         component_name,
         "",
         PROJECT_MANIFEST_VERSION,
@@ -229,6 +234,7 @@ fn template_relayer_manifest(component_name: &str) -> RelayerComponentManifest {
 
 fn template_algorithm_lens_manifest(component_name: &str) -> AlgorithmLensComponentManifest {
     AlgorithmLensComponentManifest::new(
+        &"", // TODO
         component_name,
         "",
         PROJECT_MANIFEST_VERSION,
@@ -239,6 +245,7 @@ fn template_snapshot_indexer_https_manifest(
     component_name: &str,
 ) -> SnapshotIndexerHTTPSComponentManifest {
     SnapshotIndexerHTTPSComponentManifest::new(
+        &"", // TODO
         component_name,
         "",
         PROJECT_MANIFEST_VERSION,

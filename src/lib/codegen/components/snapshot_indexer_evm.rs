@@ -20,6 +20,8 @@ use super::{
 /// Component Manifest: Snapshot Indexer EVM
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct SnapshotIndexerEVMComponentManifest {
+    #[serde(skip_serializing)]
+    pub id: Option<String>,
     pub version: String,
     pub metadata: ComponentMetadata,
     pub datasource: Datasource,
@@ -35,6 +37,7 @@ pub struct LensTarget {
 
 impl SnapshotIndexerEVMComponentManifest {
     pub fn new(
+        id: &str,
         label: &str,
         description: &str,
         version: &str,
@@ -43,6 +46,7 @@ impl SnapshotIndexerEVMComponentManifest {
         interval: u32,
     ) -> Self {
         Self {
+            id: Some(id.to_owned()),
             version: version.to_owned(),
             metadata: ComponentMetadata {
                 label: label.to_owned(),
@@ -178,6 +182,7 @@ interval: 3600
         assert_eq!(
             component,
             SnapshotIndexerEVMComponentManifest {
+                id: None,
                 version: "v1".to_owned(),
                 metadata: ComponentMetadata {
                     label: "sample_snapshot_indexer_evm".to_owned(),
@@ -218,6 +223,7 @@ interval: 3600
     #[test]
     fn test_snapshot_outputs_evm() {
         let manifest = SnapshotIndexerEVMComponentManifest {
+            id: None,
             version: "v1".to_owned(),
             metadata: ComponentMetadata {
                 label: "sample_snapshot_indexer_evm".to_owned(),

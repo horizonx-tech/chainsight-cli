@@ -14,6 +14,8 @@ use super::common::{ComponentManifest, ComponentMetadata, SourceType, Sources};
 /// Component Manifest: Algorithm Lens
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct AlgorithmLensComponentManifest {
+    #[serde(skip_serializing)]
+    pub id: Option<String>,
     pub version: String,
     pub metadata: ComponentMetadata,
     pub datasource: AlgorithmLensDataSource,
@@ -25,12 +27,14 @@ pub struct LensTargets {
 }
 impl AlgorithmLensComponentManifest {
     pub fn new(
+        id: &str,
         label: &str,
         description: &str,
         version: &str,
         datasource: AlgorithmLensDataSource,
     ) -> Self {
         Self {
+            id: Some(id.to_owned()),
             version: version.to_owned(),
             metadata: ComponentMetadata {
                 label: label.to_owned(),
@@ -180,6 +184,7 @@ output:
         assert_eq!(
             component,
             AlgorithmLensComponentManifest {
+                id: None,
                 version: "v1".to_string(),
                 metadata: ComponentMetadata {
                     label: "sample_algorithm_lens".to_string(),
@@ -209,6 +214,7 @@ output:
     #[test]
     fn test_snapshot_outputs() {
         let manifest = AlgorithmLensComponentManifest {
+            id: None,
             version: "v1".to_string(),
             metadata: ComponentMetadata {
                 label: "sample_algorithm_lens".to_string(),

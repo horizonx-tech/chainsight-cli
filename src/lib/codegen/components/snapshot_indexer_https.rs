@@ -42,6 +42,8 @@ impl Default for SnapshotIndexerHTTPSDataSource {
 /// Component Manifest: Snapshot
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct SnapshotIndexerHTTPSComponentManifest {
+    #[serde(skip_serializing)]
+    pub id: Option<String>,
     pub version: String,
     pub metadata: ComponentMetadata,
     pub datasource: SnapshotIndexerHTTPSDataSource,
@@ -51,6 +53,7 @@ pub struct SnapshotIndexerHTTPSComponentManifest {
 
 impl SnapshotIndexerHTTPSComponentManifest {
     pub fn new(
+        id: &str,
         label: &str,
         description: &str,
         version: &str,
@@ -59,6 +62,7 @@ impl SnapshotIndexerHTTPSComponentManifest {
         interval: u32,
     ) -> Self {
         Self {
+            id: Some(id.to_owned()),
             version: version.to_owned(),
             metadata: ComponentMetadata {
                 label: label.to_owned(),
@@ -171,6 +175,7 @@ interval: 3600
         assert_eq!(
             component,
             SnapshotIndexerHTTPSComponentManifest {
+                id: None,
                 version: "v1".to_owned(),
                 metadata: ComponentMetadata {
                     label: "sample_snapshot_indexer_https".to_owned(),
@@ -213,6 +218,7 @@ interval: 3600
     #[test]
     fn test_snapshot_outputs() {
         let manifest = SnapshotIndexerHTTPSComponentManifest {
+            id: None,
             version: "v1".to_owned(),
             metadata: ComponentMetadata {
                 label: "sample_snapshot_indexer_https".to_owned(),

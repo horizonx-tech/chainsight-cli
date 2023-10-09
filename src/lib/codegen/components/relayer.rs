@@ -25,6 +25,8 @@ use super::{
 /// Component Manifest: Relayer
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct RelayerComponentManifest {
+    #[serde(skip_serializing)]
+    pub id: Option<String>,
     pub version: String,
     pub metadata: ComponentMetadata,
     pub datasource: Datasource,
@@ -35,6 +37,7 @@ pub struct RelayerComponentManifest {
 
 impl RelayerComponentManifest {
     pub fn new(
+        id: &str,
         label: &str,
         description: &str,
         version: &str,
@@ -43,6 +46,7 @@ impl RelayerComponentManifest {
         interval: u32,
     ) -> Self {
         Self {
+            id: Some(id.to_owned()),
             version: version.to_owned(),
             metadata: ComponentMetadata {
                 label: label.to_owned(),
@@ -222,6 +226,7 @@ interval: 3600
         assert_eq!(
             component,
             RelayerComponentManifest {
+                id: None,
                 version: "v1".to_string(),
                 metadata: ComponentMetadata {
                     label: "sample_relayer".to_string(),
@@ -264,6 +269,7 @@ interval: 3600
     #[test]
     fn test_snapshot_outputs() {
         let manifest = RelayerComponentManifest {
+            id: None,
             version: "v1".to_string(),
             metadata: ComponentMetadata {
                 label: "sample_relayer".to_string(),

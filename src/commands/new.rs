@@ -164,6 +164,7 @@ fn create_sample_components(project_name: &str, component_prefix: &str) -> anyho
 
 fn template_event_indexer_manifest(prefix: &str) -> EventIndexerComponentManifest {
     EventIndexerComponentManifest::new(
+        &"", // TODO
         &format!("{}_event_indexer", prefix),
         "",
         PROJECT_MANIFEST_VERSION,
@@ -174,6 +175,7 @@ fn template_event_indexer_manifest(prefix: &str) -> EventIndexerComponentManifes
 
 fn template_algorithm_indexer_manifest(prefix: &str) -> AlgorithmIndexerComponentManifest {
     AlgorithmIndexerComponentManifest::new(
+        &"", // TODO
         &format!("{}_algorithm_indexer", prefix),
         "",
         PROJECT_MANIFEST_VERSION,
@@ -185,6 +187,7 @@ fn template_algorithm_indexer_manifest(prefix: &str) -> AlgorithmIndexerComponen
 
 fn template_snapshot_indexer_evm_manifest(prefix: &str) -> SnapshotIndexerEVMComponentManifest {
     SnapshotIndexerEVMComponentManifest::new(
+        &"", // TODO
         &format!("{}_snapshot_indexer_evm", prefix),
         "",
         PROJECT_MANIFEST_VERSION,
@@ -196,6 +199,7 @@ fn template_snapshot_indexer_evm_manifest(prefix: &str) -> SnapshotIndexerEVMCom
 
 fn template_snapshot_indexer_icp_manifest(prefix: &str) -> SnapshotIndexerICPComponentManifest {
     SnapshotIndexerICPComponentManifest::new(
+        &"", // TODO
         &format!("{}_snapshot_indexer_icp", prefix),
         "",
         PROJECT_MANIFEST_VERSION,
@@ -207,6 +211,7 @@ fn template_snapshot_indexer_icp_manifest(prefix: &str) -> SnapshotIndexerICPCom
 
 fn template_snapshot_indexer_https_manifest(prefix: &str) -> SnapshotIndexerHTTPSComponentManifest {
     SnapshotIndexerHTTPSComponentManifest::new(
+        &"", // TODO
         &format!("{}_snapshot_indexer_https", prefix),
         "",
         PROJECT_MANIFEST_VERSION,
@@ -218,6 +223,7 @@ fn template_snapshot_indexer_https_manifest(prefix: &str) -> SnapshotIndexerHTTP
 
 fn template_relayer_manifest(prefix: &str) -> RelayerComponentManifest {
     RelayerComponentManifest::new(
+        &"", // TODO
         &format!("{}_relayer", prefix),
         "",
         PROJECT_MANIFEST_VERSION,
@@ -228,6 +234,7 @@ fn template_relayer_manifest(prefix: &str) -> RelayerComponentManifest {
 }
 fn template_algorithm_lens_manifest(prefix: &str) -> AlgorithmLensComponentManifest {
     AlgorithmLensComponentManifest::new(
+        &"", // TODO
         &format!("{}_algorithm_lens", prefix),
         "",
         PROJECT_MANIFEST_VERSION,

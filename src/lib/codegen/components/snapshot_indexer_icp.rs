@@ -17,9 +17,11 @@ use super::{
     },
 };
 
-/// Component Manifest: Snapshot
+/// Component Manifest: Snapshot Indexer ICP
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct SnapshotIndexerICPComponentManifest {
+    #[serde(skip_serializing)]
+    pub id: Option<String>,
     pub version: String,
     pub metadata: ComponentMetadata,
     pub datasource: Datasource,
@@ -35,6 +37,7 @@ pub struct LensTarget {
 
 impl SnapshotIndexerICPComponentManifest {
     pub fn new(
+        id: &str,
         label: &str,
         description: &str,
         version: &str,
@@ -43,6 +46,7 @@ impl SnapshotIndexerICPComponentManifest {
         interval: u32,
     ) -> Self {
         Self {
+            id: Some(id.to_owned()),
             version: version.to_owned(),
             metadata: ComponentMetadata {
                 label: label.to_owned(),
@@ -172,6 +176,7 @@ interval: 3600
         assert_eq!(
             component,
             SnapshotIndexerICPComponentManifest {
+                id: None,
                 version: "v1".to_owned(),
                 metadata: ComponentMetadata {
                     label: "sample_snapshot_indexer_icp".to_owned(),
@@ -212,6 +217,7 @@ interval: 3600
     #[test]
     fn test_snapshot_outputs_icp() {
         let manifest = SnapshotIndexerICPComponentManifest {
+            id: None,
             version: "v1".to_owned(),
             metadata: ComponentMetadata {
                 label: "sample_snapshot_indexer_icp".to_owned(),
