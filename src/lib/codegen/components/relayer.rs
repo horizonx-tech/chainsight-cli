@@ -25,6 +25,8 @@ use super::{
 /// Component Manifest: Relayer
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct RelayerComponentManifest {
+    #[serde(skip_serializing)]
+    pub id: Option<String>,
     pub version: String,
     pub metadata: ComponentMetadata,
     pub datasource: Datasource,
@@ -35,6 +37,7 @@ pub struct RelayerComponentManifest {
 
 impl RelayerComponentManifest {
     pub fn new(
+        id: &str,
         label: &str,
         description: &str,
         version: &str,
@@ -43,6 +46,7 @@ impl RelayerComponentManifest {
         interval: u32,
     ) -> Self {
         Self {
+            id: Some(id.to_owned()),
             version: version.to_owned(),
             metadata: ComponentMetadata {
                 label: label.to_owned(),
@@ -58,6 +62,14 @@ impl RelayerComponentManifest {
     }
 }
 impl ComponentManifest for RelayerComponentManifest {
+    fn load_with_id(path: &str, id: &str) -> anyhow::Result<Self> {
+        let manifest = Self::load(path)?;
+        Ok(Self {
+            id: Some(id.to_owned()),
+            ..manifest
+        })
+    }
+
     fn to_str_as_yaml(&self) -> anyhow::Result<String> {
         let yaml = serde_yaml::to_string(&self)?;
         Ok(self.yaml_str_with_configs(yaml, "relayer".to_string()))
@@ -80,6 +92,10 @@ impl ComponentManifest for RelayerComponentManifest {
 
     fn component_type(&self) -> ComponentType {
         ComponentType::Relayer
+    }
+
+    fn id(&self) -> Option<String> {
+        self.id.clone()
     }
 
     fn metadata(&self) -> &ComponentMetadata {
@@ -222,6 +238,7 @@ interval: 3600
         assert_eq!(
             component,
             RelayerComponentManifest {
+                id: None,
                 version: "v1".to_string(),
                 metadata: ComponentMetadata {
                     label: "sample_relayer".to_string(),
@@ -264,9 +281,10 @@ interval: 3600
     #[test]
     fn test_snapshot_outputs() {
         let manifest = RelayerComponentManifest {
+            id: Some("sample_relayer".to_string()),
             version: "v1".to_string(),
             metadata: ComponentMetadata {
-                label: "sample_relayer".to_string(),
+                label: "Sample Relayer".to_string(),
                 type_: ComponentType::Relayer,
                 description: "Description".to_string(),
                 tags: Some(vec!["Oracle".to_string(), "snapshot".to_string()]),

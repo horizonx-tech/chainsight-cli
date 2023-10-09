@@ -6,7 +6,7 @@ use crate::{
     lib::{
         codegen::{
             canisters::common::convert_type_from_ethabi_param_type,
-            components::event_indexer::EventIndexerComponentManifest,
+            components::{common::ComponentManifest, event_indexer::EventIndexerComponentManifest},
         },
         utils::{convert_camel_to_snake, ADDRESS_TYPE, U256_TYPE},
     },
@@ -55,7 +55,7 @@ fn custom_codes(
     manifest: &EventIndexerComponentManifest,
     interface_contract: ethabi::Contract,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    let label = &manifest.metadata.label;
+    let id = &manifest.id().ok_or(anyhow::anyhow!("id is required"))?;
     let datasource_event_def = &manifest.datasource.event;
 
     let event_interface = &manifest
@@ -139,7 +139,7 @@ fn custom_codes(
             }.boxed()
         }
 
-        did_export!(#label);
+        did_export!(#id);
     })
 }
 

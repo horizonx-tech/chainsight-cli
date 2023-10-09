@@ -96,27 +96,36 @@ pub fn exec(env: &EnvironmentImpl, opts: GenerateOpts) -> anyhow::Result<()> {
         let component_path = format!("{}/{}", &project_path_str, relative_component_path);
         let component_type = ComponentTypeInManifest::determine_type(&component_path)?;
 
-        let data: Box<dyn ComponentManifest> = match component_type {
-            ComponentType::EventIndexer => {
-                Box::new(EventIndexerComponentManifest::load(&component_path)?)
-            }
-            ComponentType::AlgorithmIndexer => {
-                Box::new(AlgorithmIndexerComponentManifest::load(&component_path)?)
-            }
-            ComponentType::SnapshotIndexerICP => {
-                Box::new(SnapshotIndexerICPComponentManifest::load(&component_path)?)
-            }
-            ComponentType::SnapshotIndexerEVM => {
-                Box::new(SnapshotIndexerEVMComponentManifest::load(&component_path)?)
-            }
-            ComponentType::Relayer => Box::new(RelayerComponentManifest::load(&component_path)?),
-            ComponentType::AlgorithmLens => {
-                Box::new(AlgorithmLensComponentManifest::load(&component_path)?)
-            }
-            ComponentType::SnapshotIndexerHTTPS => Box::new(
-                SnapshotIndexerHTTPSComponentManifest::load(&component_path)?,
-            ),
-        };
+        let id = Path::new(&component_path)
+            .file_stem()
+            .unwrap()
+            .to_str()
+            .unwrap();
+        let data: Box<dyn ComponentManifest> =
+            match component_type {
+                ComponentType::EventIndexer => Box::new(
+                    EventIndexerComponentManifest::load_with_id(&component_path, id)?,
+                ),
+                ComponentType::AlgorithmIndexer => Box::new(
+                    AlgorithmIndexerComponentManifest::load_with_id(&component_path, id)?,
+                ),
+                ComponentType::SnapshotIndexerICP => Box::new(
+                    SnapshotIndexerICPComponentManifest::load_with_id(&component_path, id)?,
+                ),
+                ComponentType::SnapshotIndexerEVM => Box::new(
+                    SnapshotIndexerEVMComponentManifest::load_with_id(&component_path, id)?,
+                ),
+                ComponentType::Relayer => {
+                    Box::new(RelayerComponentManifest::load_with_id(&component_path, id)?)
+                }
+                ComponentType::AlgorithmLens => Box::new(
+                    AlgorithmLensComponentManifest::load_with_id(&component_path, id)?,
+                ),
+                ComponentType::SnapshotIndexerHTTPS => Box::new(
+                    SnapshotIndexerHTTPSComponentManifest::load_with_id(&component_path, id)?,
+                ),
+            };
+
         component_data.push(data);
     }
 
@@ -161,24 +170,24 @@ fn exec_codegen(
 
     // generate canister projects
     for data in component_data {
-        let label = data.metadata().label.to_string();
+        let id = data.id().unwrap();
 
         if let Err(msg) = data.validate_manifest() {
-            bail!(format!(r#"[{}] Invalid manifest: {}"#, label, msg));
+            bail!(format!(r#"[{}] Invalid manifest: {}"#, id, msg));
         }
-        info!(log, r#"[{}] Start processing..."#, label);
+        info!(log, r#"[{}] Start processing..."#, id);
 
         // logic template
-        let logic_path_str = &paths::logics_path_str(src_path_str, &label);
+        let logic_path_str = &paths::logics_path_str(src_path_str, &id);
         if Path::new(logic_path_str).is_dir() {
             info!(
                 log,
-                r#"[{}] Skip creating logic project: '{}' already exists"#, label, logic_path_str,
+                r#"[{}] Skip creating logic project: '{}' already exists"#, id, logic_path_str,
             );
         } else {
             create_cargo_project(
                 logic_path_str,
-                Option::Some(&logic_cargo_toml(&label, data.dependencies())),
+                Option::Some(&logic_cargo_toml(&id, data.dependencies())),
                 Option::Some(
                     &data
                         .generate_user_impl_template()
@@ -187,7 +196,7 @@ fn exec_codegen(
                 ),
             )
             .map_err(|err| {
-                anyhow::anyhow!(r#"[{}] Failed to create logic project by: {}"#, label, err)
+                anyhow::anyhow!(r#"[{}] Failed to create logic project by: {}"#, id, err)
             })?;
 
             let _ = Command::new("cargo")
@@ -196,10 +205,10 @@ fn exec_codegen(
                 .output();
         }
         if !data.dependencies().is_empty() {
-            let accessors_path_str = &paths::accessors_path_str(src_path_str, &label);
+            let accessors_path_str = &paths::accessors_path_str(src_path_str, &id);
             create_cargo_project(
                 accessors_path_str,
-                Option::Some(&accessors_cargo_toml(&label, data.dependencies())),
+                Option::Some(&accessors_cargo_toml(&id, data.dependencies())),
                 Option::Some(
                     &data
                         .generate_dependency_accessors()
@@ -210,7 +219,7 @@ fn exec_codegen(
             .map_err(|err| {
                 anyhow::anyhow!(
                     r#"[{}] Failed to create logic dependency accessors by: {}"#,
-                    label,
+                    id,
                     err
                 )
             })?;
@@ -231,9 +240,7 @@ fn exec_codegen(
                 fs::copy(user_if_file_path, dst_interface_path)?;
                 info!(
                     log,
-                    r#"[{}] Interface file '{}' copied from user's interface"#,
-                    label,
-                    &interface_file
+                    r#"[{}] Interface file '{}' copied from user's interface"#, id, &interface_file
                 );
                 let abi_file = File::open(user_if_file_path)?;
                 interface_contract = Some(ethabi::Contract::load(abi_file)?);
@@ -242,7 +249,7 @@ fn exec_codegen(
                 info!(
                     log,
                     r#"[{}] Interface file '{}' copied from builtin interface"#,
-                    label,
+                    id,
                     &interface_file
                 );
                 let contract: ethabi::Contract = serde_json::from_str(contents)?;
@@ -250,7 +257,7 @@ fn exec_codegen(
             } else {
                 bail!(format!(
                     r#"[{}] Interface file "{}" not found"#,
-                    label, &interface_file
+                    id, &interface_file
                 ));
             }
         }
@@ -264,45 +271,33 @@ fn exec_codegen(
             )?;
             info!(
                 log,
-                r#"[{}] Interface file '{}' copied from builtin interface"#, label, &json_name
+                r#"[{}] Interface file '{}' copied from builtin interface"#, id, &json_name
             );
         }
 
         // canister
-        let canister_pj_path_str = &paths::canisters_path_str(src_path_str, &label);
+        let canister_pj_path_str = &paths::canisters_path_str(src_path_str, &id);
         let canister_src = &data.generate_codes(interface_contract).map_err(|err| {
-            anyhow::anyhow!(
-                r#"[{}] Failed to generate canister code by: {}"#,
-                label,
-                err
-            )
+            anyhow::anyhow!(r#"[{}] Failed to generate canister code by: {}"#, id, err)
         })?;
         create_cargo_project(
             canister_pj_path_str,
-            Option::Some(&canister_project_cargo_toml(&label)),
+            Option::Some(&canister_project_cargo_toml(&id)),
             Option::Some(&canister_src.to_string()),
         )
         .map_err(|err| {
-            anyhow::anyhow!(
-                r#"[{}] Failed to create canister project by: {}"#,
-                label,
-                err
-            )
+            anyhow::anyhow!(r#"[{}] Failed to create canister project by: {}"#, id, err)
         })?;
 
         // generate dummy bindings to be able to run cargo test
-        let bindings_path_str = &paths::bindings_path_str(src_path_str, &label);
+        let bindings_path_str = &paths::bindings_path_str(src_path_str, &id);
         create_cargo_project(
             bindings_path_str,
-            Option::Some(&bindings_cargo_toml(&label)),
+            Option::Some(&bindings_cargo_toml(&id)),
             Option::None,
         )
         .map_err(|err| {
-            anyhow::anyhow!(
-                r#"[{}] Failed to create bindings project by: {}"#,
-                label,
-                err
-            )
+            anyhow::anyhow!(r#"[{}] Failed to create bindings project by: {}"#, id, err)
         })?;
     }
 
@@ -310,8 +305,8 @@ fn exec_codegen(
     let action = "Generate interfaces (.did files)";
     info!(log, "{}...", action);
     for data in component_data {
-        let label = data.metadata().label.to_string();
-        let canisters_path_str = paths::canisters_path_str(src_path_str, &label);
+        let id = data.id().unwrap();
+        let canisters_path_str = paths::canisters_path_str(src_path_str, &id);
 
         let output = Command::new("cargo")
             .current_dir(canisters_path_str)
@@ -325,11 +320,11 @@ fn exec_codegen(
                 "{}",
                 std::str::from_utf8(&output.stdout).unwrap_or("failed to parse stdout")
             );
-            info!(log, r#"[{}] Succeeded: {}"#, label, action);
+            info!(log, r#"[{}] Succeeded: {}"#, id, action);
         } else {
             bail!(format!(
                 r#"[{}] Failed: {} by: {}"#,
-                label,
+                id,
                 action,
                 std::str::from_utf8(&output.stderr).unwrap_or("failed to parse stdout")
             ));
@@ -340,7 +335,7 @@ fn exec_codegen(
         fs::write(
             Path::new(&format!(
                 "{}/src/lib.rs",
-                paths::bindings_path_str(src_path_str, &label)
+                paths::bindings_path_str(src_path_str, &id)
             )),
             bindings,
         )

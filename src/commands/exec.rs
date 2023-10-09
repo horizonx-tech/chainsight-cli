@@ -80,28 +80,36 @@ pub fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
         let relative_component_path = component.component_path;
         let component_path = format!("{}/{}", &project_path_str, relative_component_path);
         let component_type = ComponentTypeInManifest::determine_type(&component_path)?;
+        let id = Path::new(&component_path)
+            .file_stem()
+            .unwrap()
+            .to_str()
+            .unwrap();
 
-        let data: Box<dyn ComponentManifest> = match component_type {
-            ComponentType::EventIndexer => {
-                Box::new(EventIndexerComponentManifest::load(&component_path)?)
-            }
-            ComponentType::AlgorithmIndexer => {
-                Box::new(AlgorithmIndexerComponentManifest::load(&component_path)?)
-            }
-            ComponentType::SnapshotIndexerICP => {
-                Box::new(SnapshotIndexerICPComponentManifest::load(&component_path)?)
-            }
-            ComponentType::SnapshotIndexerEVM => {
-                Box::new(SnapshotIndexerEVMComponentManifest::load(&component_path)?)
-            }
-            ComponentType::Relayer => Box::new(RelayerComponentManifest::load(&component_path)?),
-            ComponentType::AlgorithmLens => {
-                Box::new(AlgorithmLensComponentManifest::load(&component_path)?)
-            }
-            ComponentType::SnapshotIndexerHTTPS => Box::new(
-                SnapshotIndexerHTTPSComponentManifest::load(&component_path)?,
-            ),
-        };
+        let data: Box<dyn ComponentManifest> =
+            match component_type {
+                ComponentType::EventIndexer => Box::new(
+                    EventIndexerComponentManifest::load_with_id(&component_path, id)?,
+                ),
+                ComponentType::AlgorithmIndexer => Box::new(
+                    AlgorithmIndexerComponentManifest::load_with_id(&component_path, id)?,
+                ),
+                ComponentType::SnapshotIndexerICP => Box::new(
+                    SnapshotIndexerICPComponentManifest::load_with_id(&component_path, id)?,
+                ),
+                ComponentType::SnapshotIndexerEVM => Box::new(
+                    SnapshotIndexerEVMComponentManifest::load_with_id(&component_path, id)?,
+                ),
+                ComponentType::Relayer => {
+                    Box::new(RelayerComponentManifest::load_with_id(&component_path, id)?)
+                }
+                ComponentType::AlgorithmLens => Box::new(
+                    AlgorithmLensComponentManifest::load_with_id(&component_path, id)?,
+                ),
+                ComponentType::SnapshotIndexerHTTPS => Box::new(
+                    SnapshotIndexerHTTPSComponentManifest::load_with_id(&component_path, id)?,
+                ),
+            };
         component_data.push(data);
     }
 
@@ -144,7 +152,8 @@ fn execute_to_generate_commands(
     fs::create_dir_all(Path::new(&scripts_path_str))?;
 
     for data in component_data {
-        let filepath = format!("{}/{}.sh", &scripts_path_str, data.metadata().label);
+        let id = data.id().unwrap();
+        let filepath = format!("{}/{}.sh", &scripts_path_str, &id);
         fs::write(&filepath, data.generate_scripts(network.clone())?)?;
 
         let mut perms = fs::metadata(&filepath)?.permissions();
@@ -153,31 +162,30 @@ fn execute_to_generate_commands(
 
         info!(
             log,
-            r#"Script for Component "{}" generated successfully"#,
-            data.metadata().label
+            r#"Script for Component "{}" generated successfully"#, &id
         );
     }
 
     // temp
     // - automatic relative path setting
     let entrypoint_filepath = format!("{}/{}", &script_root_path_str, ENTRYPOINT_SHELL_FILENAME);
-    let component_names = component_data
+    let component_ids = component_data
         .iter()
-        .map(|c| c.metadata().label.to_string())
+        .map(|c| c.id().unwrap())
         .collect::<Vec<String>>();
     let entrypoint_contents = format!(
         r#"#!/bin/bash
 script_dir=$(dirname "$(readlink -f "$0")")
 {}
 "#,
-        component_names
+        component_ids
             .iter()
-            .map(|label| format!(
+            .map(|id| format!(
                 r#"
 echo "Run script for '{}'"
 . "$script_dir/components/{}.sh"
 "#,
-                &label, &label
+                &id, &id
             ))
             .collect::<Vec<String>>()
             .join("\n")

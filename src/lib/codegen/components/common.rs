@@ -205,11 +205,17 @@ pub trait ComponentManifest: std::fmt::Debug {
         Ok(data)
     }
 
+    /// Get a structure representing the Component with id from the manifest
+    fn load_with_id(path: &str, id: &str) -> anyhow::Result<Self>
+    where
+        Self: Sized + serde::de::DeserializeOwned;
+
     /// Output Component Manifest as yaml format string
     /// Note: assuming use of serde_yaml
     fn to_str_as_yaml(&self) -> anyhow::Result<String>
     where
         Self: Sized;
+
     fn yaml_str_with_configs(&self, yaml: String, schema_file_name: String) -> String {
         let url_prefix =
             "https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/"
@@ -232,6 +238,9 @@ pub trait ComponentManifest: std::fmt::Debug {
 
     /// Get the Component's Type
     fn component_type(&self) -> ComponentType;
+
+    /// Get the Component's Metadata
+    fn id(&self) -> Option<String>;
 
     /// Get the Component's Metadata
     fn metadata(&self) -> &ComponentMetadata;

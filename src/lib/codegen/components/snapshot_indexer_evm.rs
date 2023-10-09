@@ -20,6 +20,8 @@ use super::{
 /// Component Manifest: Snapshot Indexer EVM
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct SnapshotIndexerEVMComponentManifest {
+    #[serde(skip_serializing)]
+    pub id: Option<String>,
     pub version: String,
     pub metadata: ComponentMetadata,
     pub datasource: Datasource,
@@ -35,6 +37,7 @@ pub struct LensTarget {
 
 impl SnapshotIndexerEVMComponentManifest {
     pub fn new(
+        id: &str,
         label: &str,
         description: &str,
         version: &str,
@@ -43,6 +46,7 @@ impl SnapshotIndexerEVMComponentManifest {
         interval: u32,
     ) -> Self {
         Self {
+            id: Some(id.to_owned()),
             version: version.to_owned(),
             metadata: ComponentMetadata {
                 label: label.to_owned(),
@@ -62,9 +66,17 @@ impl SnapshotIndexerEVMComponentManifest {
     }
 }
 impl ComponentManifest for SnapshotIndexerEVMComponentManifest {
+    fn load_with_id(path: &str, id: &str) -> anyhow::Result<Self> {
+        let manifest = Self::load(path)?;
+        Ok(Self {
+            id: Some(id.to_owned()),
+            ..manifest
+        })
+    }
+
     fn to_str_as_yaml(&self) -> anyhow::Result<String> {
         let yaml = serde_yaml::to_string(&self)?;
-        Ok(self.yaml_str_with_configs(yaml, "snapshot_indexer".to_string()))
+        Ok(self.yaml_str_with_configs(yaml, "snapshot_indexer_evm".to_string()))
     }
 
     fn validate_manifest(&self) -> anyhow::Result<()> {
@@ -84,6 +96,10 @@ impl ComponentManifest for SnapshotIndexerEVMComponentManifest {
 
     fn component_type(&self) -> ComponentType {
         ComponentType::SnapshotIndexerEVM
+    }
+
+    fn id(&self) -> Option<String> {
+        self.id.clone()
     }
 
     fn metadata(&self) -> &ComponentMetadata {
@@ -178,6 +194,7 @@ interval: 3600
         assert_eq!(
             component,
             SnapshotIndexerEVMComponentManifest {
+                id: None,
                 version: "v1".to_owned(),
                 metadata: ComponentMetadata {
                     label: "sample_snapshot_indexer_evm".to_owned(),
@@ -218,9 +235,10 @@ interval: 3600
     #[test]
     fn test_snapshot_outputs_evm() {
         let manifest = SnapshotIndexerEVMComponentManifest {
+            id: Some("sample_snapshot_indexer_evm".to_owned()),
             version: "v1".to_owned(),
             metadata: ComponentMetadata {
-                label: "sample_snapshot_indexer_evm".to_owned(),
+                label: "Sample Snapshot Indexer Evm".to_owned(),
                 type_: ComponentType::SnapshotIndexerEVM,
                 description: "Description".to_string(),
                 tags: Some(vec!["ERC-20".to_string(), "Ethereum".to_string()]),

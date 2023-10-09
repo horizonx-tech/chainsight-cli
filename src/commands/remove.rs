@@ -252,6 +252,7 @@ mod tests {
             fs::write(
                 &format!("{}/{}", project_name, component_manifest_path),
                 AlgorithmLensComponentManifest::new(
+                    &"", // TODO
                     &format!("{}", component_names[idx]),
                     "",
                     "",

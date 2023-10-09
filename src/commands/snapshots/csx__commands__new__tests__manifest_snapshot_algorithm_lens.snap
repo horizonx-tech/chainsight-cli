@@ -1,11 +1,11 @@
 ---
 source: src/commands/new.rs
-expression: template_algorithm_lens_manifest(COMPONENT_PREFIX).to_str_as_yaml().unwrap()
+expression: template_algorithm_lens_manifest(&id).to_str_as_yaml().unwrap()
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/algorithm_lens.json
 version: v1
 metadata:
-  label: sample_algorithm_lens
+  label: Sample Algorithm Lens
   type: algorithm_lens
   description: ''
   tags:

@@ -17,6 +17,8 @@ use super::common::{
 /// Component Manifest: Event Indexer
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct EventIndexerComponentManifest {
+    #[serde(skip_serializing)]
+    pub id: Option<String>,
     pub version: String,
     pub metadata: ComponentMetadata,
     pub datasource: EventIndexerDatasource,
@@ -25,6 +27,7 @@ pub struct EventIndexerComponentManifest {
 
 impl EventIndexerComponentManifest {
     pub fn new(
+        id: &str,
         label: &str,
         description: &str,
         version: &str,
@@ -32,6 +35,7 @@ impl EventIndexerComponentManifest {
         interval: u32,
     ) -> Self {
         Self {
+            id: Some(id.to_owned()),
             version: version.to_owned(),
             metadata: ComponentMetadata {
                 label: label.to_owned(),
@@ -49,6 +53,14 @@ impl EventIndexerComponentManifest {
     }
 }
 impl ComponentManifest for EventIndexerComponentManifest {
+    fn load_with_id(path: &str, id: &str) -> anyhow::Result<Self> {
+        let manifest = Self::load(path)?;
+        Ok(Self {
+            id: Some(id.to_owned()),
+            ..manifest
+        })
+    }
+
     fn to_str_as_yaml(&self) -> anyhow::Result<String> {
         let yaml = serde_yaml::to_string(&self)?;
         Ok(self.yaml_str_with_configs(yaml, "event_indexer".to_string()))
@@ -73,6 +85,10 @@ impl ComponentManifest for EventIndexerComponentManifest {
 
     fn component_type(&self) -> ComponentType {
         ComponentType::EventIndexer
+    }
+
+    fn id(&self) -> Option<String> {
+        self.id.clone()
     }
 
     fn metadata(&self) -> &ComponentMetadata {
@@ -234,6 +250,7 @@ interval: 3600
         assert_eq!(
             component,
             EventIndexerComponentManifest {
+                id: None,
                 version: "v1".to_string(),
                 metadata: ComponentMetadata {
                     label: "sample_event_indexer".to_string(),
@@ -274,9 +291,10 @@ interval: 3600
     #[test]
     fn test_snapshot_outputs() {
         let manifest = EventIndexerComponentManifest {
+            id: Some("sample_event_indexer".to_string()),
             version: "v1".to_string(),
             metadata: ComponentMetadata {
-                label: "sample_event_indexer".to_string(),
+                label: "Sample Event Indexer".to_string(),
                 type_: ComponentType::EventIndexer,
                 description: "Description".to_string(),
                 tags: Some(vec![

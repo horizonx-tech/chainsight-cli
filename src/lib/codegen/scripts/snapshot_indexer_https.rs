@@ -2,16 +2,19 @@ use anyhow::ensure;
 
 use crate::{
     lib::codegen::{
-        components::snapshot_indexer_https::SnapshotIndexerHTTPSComponentManifest,
+        components::{
+            common::ComponentManifest,
+            snapshot_indexer_https::SnapshotIndexerHTTPSComponentManifest,
+        },
         scripts::common::{generate_command_to_set_task, init_in_env_task},
     },
     types::{ComponentType, Network},
 };
 
 fn script_contents(manifest: &SnapshotIndexerHTTPSComponentManifest, network: Network) -> String {
-    let script_to_set_task =
-        generate_command_to_set_task(&manifest.metadata.label, &network, manifest.interval, 10);
-    let init_in_env_task = init_in_env_task(&network, &manifest.metadata.label);
+    let id = manifest.id().unwrap();
+    let script_to_set_task = generate_command_to_set_task(&id, &network, manifest.interval, 10);
+    let init_in_env_task = init_in_env_task(&network, &id);
 
     format!(
         r#"#!/bin/bash
