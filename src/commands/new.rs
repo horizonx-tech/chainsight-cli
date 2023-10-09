@@ -47,13 +47,17 @@ pub struct NewOpts {
 
 pub fn exec(env: &EnvironmentImpl, opts: NewOpts) -> anyhow::Result<()> {
     let log = env.get_logger();
-    let project_name = opts.project_name;
-    let project_name_path = Path::new(&project_name);
-    if project_name_path.exists() {
+    let project_path = Path::new(&opts.project_name);
+    let project_name = project_path.file_stem().unwrap().to_str().unwrap();
+    if project_path.exists() {
         bail!(format!(r#"Project '{}' already exists"#, project_name));
     }
     info!(log, r#"Start creating new project '{}'..."#, project_name);
-    let res = create_project(&project_name, opts.no_samples);
+    let res = create_project(
+        &project_path.to_string_lossy(),
+        project_name,
+        opts.no_samples,
+    );
     match res {
         Ok(_) => {
             info!(log, r#"Project '{}' created successfully"#, project_name);
@@ -75,31 +79,35 @@ pub fn exec(env: &EnvironmentImpl, opts: NewOpts) -> anyhow::Result<()> {
     }
 }
 
-fn create_project(project_name: &str, no_samples: bool) -> anyhow::Result<()> {
+fn create_project(project_path: &str, project_name: &str, no_samples: bool) -> anyhow::Result<()> {
     // Create directories
-    fs::create_dir_all(format!("{}/components", project_name))?;
-    fs::create_dir_all(format!("{}/interfaces", project_name))?;
+    fs::create_dir_all(format!("{}/components", project_path))?;
+    fs::create_dir_all(format!("{}/interfaces", project_path))?;
 
     // Create files
     fs::write(
-        format!("{}/{}", project_name, GITIGNORE_FILENAME),
+        format!("{}/{}", project_path, GITIGNORE_FILENAME),
         gitignore(),
     )?;
-    fs::write(format!("{}/{}", project_name, CHAINSIGHT_FILENAME), "")?;
+    fs::write(format!("{}/{}", project_path, CHAINSIGHT_FILENAME), "")?;
 
     if !no_samples {
-        return create_sample_components(project_name, "sample");
+        return create_sample_components(project_path, project_name, "sample");
     }
 
     fs::write(
-        format!("{}/{}", project_name, PROJECT_MANIFEST_FILENAME),
+        format!("{}/{}", project_path, PROJECT_MANIFEST_FILENAME),
         ProjectManifestData::new(project_name, PROJECT_MANIFEST_VERSION, &[]).to_str_as_yaml()?,
     )?;
 
     Ok(())
 }
 
-fn create_sample_components(project_name: &str, component_prefix: &str) -> anyhow::Result<()> {
+fn create_sample_components(
+    project_path: &str,
+    project_name: &str,
+    component_prefix: &str,
+) -> anyhow::Result<()> {
     let event_indexer_id = format!("{}_event_indexer", component_prefix);
     let event_indexer_path = format!("components/{}.yaml", event_indexer_id);
     let algorithm_indexer_id = format!("{}_algorithm_indexer", component_prefix);
@@ -115,7 +123,7 @@ fn create_sample_components(project_name: &str, component_prefix: &str) -> anyho
     let snapshot_indexer_https_id = format!("{}_snapshot_indexer_https", component_prefix);
     let snapshot_indexer_https_path = format!("components/{}.yaml", snapshot_indexer_https_id);
     fs::write(
-        format!("{}/{}", project_name, PROJECT_MANIFEST_FILENAME),
+        format!("{}/{}", project_path, PROJECT_MANIFEST_FILENAME),
         ProjectManifestData::new(
             project_name,
             PROJECT_MANIFEST_VERSION,
@@ -132,31 +140,31 @@ fn create_sample_components(project_name: &str, component_prefix: &str) -> anyho
         .to_str_as_yaml()?,
     )?;
     fs::write(
-        format!("{}/{}", project_name, event_indexer_path),
+        format!("{}/{}", project_path, event_indexer_path),
         template_event_indexer_manifest(&event_indexer_id).to_str_as_yaml()?,
     )?;
     fs::write(
-        format!("{}/{}", project_name, algorithm_indexer_path),
+        format!("{}/{}", project_path, algorithm_indexer_path),
         template_algorithm_indexer_manifest(&algorithm_indexer_id).to_str_as_yaml()?,
     )?;
     fs::write(
-        format!("{}/{}", project_name, snapshot_indexer_evm_path),
+        format!("{}/{}", project_path, snapshot_indexer_evm_path),
         template_snapshot_indexer_evm_manifest(&snapshot_indexer_evm_id).to_str_as_yaml()?,
     )?;
     fs::write(
-        format!("{}/{}", project_name, snapshot_indexer_icp_path),
+        format!("{}/{}", project_path, snapshot_indexer_icp_path),
         template_snapshot_indexer_icp_manifest(&snapshot_indexer_icp_id).to_str_as_yaml()?,
     )?;
     fs::write(
-        format!("{}/{}", project_name, relayer_path),
+        format!("{}/{}", project_path, relayer_path),
         template_relayer_manifest(&relayer_id).to_str_as_yaml()?,
     )?;
     fs::write(
-        format!("{}/{}", project_name, algorithm_lens_path),
+        format!("{}/{}", project_path, algorithm_lens_path),
         template_algorithm_lens_manifest(&algorithm_lens_id).to_str_as_yaml()?,
     )?;
     fs::write(
-        format!("{}/{}", project_name, snapshot_indexer_https_path),
+        format!("{}/{}", project_path, snapshot_indexer_https_path),
         template_snapshot_indexer_https_manifest(&snapshot_indexer_https_id).to_str_as_yaml()?,
     )?;
 
@@ -261,7 +269,7 @@ mod tests {
         let project_name = "new_test_create_project";
         run_with_teardown(
             || {
-                let created = create_project(project_name, false);
+                let created = create_project(project_name, project_name, false);
                 assert!(created.is_ok());
                 assert!(Path::new(project_name).exists());
                 assert!(Path::new(&format!("{}/{}", project_name, CHAINSIGHT_FILENAME)).exists());
@@ -297,7 +305,7 @@ mod tests {
         let project_name = "new_test_create_project_without_samples";
         run_with_teardown(
             || {
-                let created = create_project(project_name, true);
+                let created = create_project(project_name, project_name, true);
                 assert!(created.is_ok());
                 assert!(Path::new(project_name).exists());
                 assert!(Path::new(&format!("{}/{}", project_name, CHAINSIGHT_FILENAME)).exists());

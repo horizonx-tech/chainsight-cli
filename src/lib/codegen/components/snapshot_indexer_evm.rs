@@ -233,7 +233,7 @@ interval: 3600
     }
 
     #[test]
-    fn test_snapshot_outputs_evm() {
+    fn test_snapshot_outputs() {
         let manifest = SnapshotIndexerEVMComponentManifest {
             id: Some("sample_snapshot_indexer_evm".to_owned()),
             version: "v1".to_owned(),

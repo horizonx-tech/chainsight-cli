@@ -227,7 +227,7 @@ interval: 3600
     }
 
     #[test]
-    fn test_snapshot_outputs_icp() {
+    fn test_snapshot_outputs() {
         let manifest = SnapshotIndexerICPComponentManifest {
             id: Some("sample_snapshot_indexer_icp".to_owned()),
             version: "v1".to_owned(),
