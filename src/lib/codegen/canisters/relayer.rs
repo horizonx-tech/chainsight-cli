@@ -5,7 +5,7 @@ use quote::{format_ident, quote};
 use crate::{
     lib::codegen::{
         canisters::common::{
-            generate_outside_call_idents, generate_request_arg_idents, OutsideCallIdentsType,
+            generate_outside_call_idents, generate_request_arg_idents, OutsideCallType,
         },
         components::{
             common::{ComponentManifest, DestinationType},
@@ -19,7 +19,8 @@ use crate::{
 use super::common::{CanisterMethodIdentifier, CanisterMethodValueType};
 
 fn common_codes() -> proc_macro2::TokenStream {
-    let outside_call_idents = generate_outside_call_idents(OutsideCallIdentsType::All);
+    let outside_call_idents =
+        generate_outside_call_idents(&vec![OutsideCallType::Evm, OutsideCallType::Chainsight]);
     quote! {
         use std::str::FromStr;
         use chainsight_cdk_macros::{manage_single_state, setup_func, init_in, timer_task_func, define_web3_ctx, define_transform_for_web3, define_get_ethereum_address, chainsight_common, did_export,relayer_source};

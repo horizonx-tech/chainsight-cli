@@ -33,21 +33,21 @@ fn generate_command_to_setup(
     format!(
         r#"dfx canister {} call {} setup "(
     \"{}\",
-    \"{}\",
     record {{
         url = \"{}\";
         from = null;
         chain_id = {};
         env = variant {{ {} }};
-    }}
+    }},
+    \"{}\",
 )""#,
         network_param(network),
         id,
-        target_canister,
         dst_address,
         dst_rpc_url,
         dst_network_id,
-        ecdsa_key_env
+        ecdsa_key_env,
+        target_canister,
     )
 }
 
