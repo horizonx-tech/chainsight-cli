@@ -25,12 +25,29 @@ pub fn load_env(contents: &str) -> anyhow::Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[test]
-    fn test_load_env() {
-        let dotenv_file = r#"
+
+    const DOTENV_FILE: &str = r#"
         TEST_ENV=TEST
         TEST_ENV2=TEST2
         "#;
+
+    #[test]
+    fn test_cache_envfile() {
+        let test_dotenv = ".env__test_cache_envfile";
+        std::fs::write(test_dotenv, DOTENV_FILE).unwrap();
+
+        cache_envfile(Some(test_dotenv)).unwrap();
+        assert_eq!(dotenvy::var("TEST_ENV").unwrap(), "TEST");
+        assert_eq!(dotenvy::var("TEST_ENV2").unwrap(), "TEST2");
+        assert!(dotenvy::var("TEST_ENV3").is_err());
+
+        // teardown
+        std::fs::remove_file(test_dotenv).unwrap();
+        let _ = dotenvy::dotenv();
+    }
+
+    #[test]
+    fn test_load_env() {
         let contents = r#"
         TEST_ENV: ${TEST_ENV}
         TEST_ENV2: ${TEST_ENV2}
@@ -45,7 +62,7 @@ mod tests {
         "#;
         // setup
         let test_dotenv = "test_dotenv";
-        std::fs::write(test_dotenv, dotenv_file).unwrap();
+        std::fs::write(test_dotenv, DOTENV_FILE).unwrap();
         dotenvy::from_filename(test_dotenv).ok();
         // test
         let actual = load_env(contents).unwrap();
