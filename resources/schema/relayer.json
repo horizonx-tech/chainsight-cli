@@ -80,7 +80,7 @@
           "$id": "#/properties/datasource/properties/location",
           "type": "object",
           "title": "datasource location",
-          "required": ["id", "args"],
+          "required": ["id"],
           "properties": {
             "id": {
               "$id": "#/properties/datasource/properties/location/properties/id",
@@ -92,22 +92,6 @@
                 "bw4dl-smaaa-aaaaa-qaacq-cai"
               ],
               "pattern": "^[a-z0-9_-]+$"
-            },
-            "args": {
-              "$id": "#/properties/datasource/properties/location/properties/args",
-              "type": "object",
-              "title": "location arguments",
-              "required": ["id_type"],
-              "properties": {
-                "id_type": {
-                  "$id": "#/properties/datasource/properties/location/properties/args/properties/id_type",
-                  "type": "string",
-                  "title": "type of the id",
-                  "description": "canister_name: id is interpreted as canister name, principal_id: id is interpreted as principal id",
-                  "examples": ["canister_name", "principal_id"],
-                  "pattern": "^(canister_name|principal_id)$"
-                }
-              }
             }
           }
         },

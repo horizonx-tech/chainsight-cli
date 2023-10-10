@@ -1,3 +1,5 @@
+use candid::Principal;
+
 use crate::types::Network;
 
 pub fn network_param(network: &Network) -> &str {
@@ -32,4 +34,11 @@ pub fn init_in_env_task(network: &Network, id: &str) -> String {
             Network::IC => "Production",
         }
     )
+}
+
+pub fn principal_or_resolver_str(str: &str) -> String {
+    match Principal::from_text(str) {
+        Ok(p) => p.to_string(),
+        Err(_) => format!("$(dfx canister id {})", str),
+    }
 }

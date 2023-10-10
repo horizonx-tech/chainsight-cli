@@ -197,7 +197,7 @@ mod tests {
     use jsonschema::JSONSchema;
 
     use crate::lib::{
-        codegen::components::common::{CanisterIdType, DatasourceLocation, DatasourceMethod},
+        codegen::components::common::{DatasourceLocation, DatasourceMethod},
         test_utils::SrcString,
     };
 
@@ -214,10 +214,7 @@ mod tests {
                 tags: Some(vec!["Oracle".to_string(), "snapshot".to_string()]),
             },
             datasource: Datasource {
-                location: DatasourceLocation::new_canister(
-                    "datasource_canister_id".to_string(),
-                    CanisterIdType::CanisterName,
-                ),
+                location: DatasourceLocation::new_canister("datasource_canister_id".to_string()),
                 method: DatasourceMethod {
                     identifier:
                         "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"
@@ -253,8 +250,6 @@ datasource:
     type: canister
     location:
         id: datasource_canister_id
-        args:
-            id_type: canister_name
     method:
         identifier: 'get_last_snapshot : () -> (record { value : text; timestamp : nat64 })'
         interface: null
@@ -284,7 +279,6 @@ interval: 3600
                 datasource: Datasource {
                     location: DatasourceLocation::new_canister(
                         "datasource_canister_id".to_string(),
-                        CanisterIdType::CanisterName
                     ),
                     method: DatasourceMethod {
                         identifier:

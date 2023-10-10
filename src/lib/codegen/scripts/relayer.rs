@@ -1,13 +1,12 @@
 use anyhow::ensure;
-use candid::Principal;
 
 use crate::{
     lib::codegen::{
-        components::{
-            common::{CanisterIdType, ComponentManifest},
-            relayer::RelayerComponentManifest,
+        components::{common::ComponentManifest, relayer::RelayerComponentManifest},
+        scripts::common::{
+            generate_command_to_set_task, init_in_env_task, network_param,
+            principal_or_resolver_str,
         },
-        scripts::common::{generate_command_to_set_task, init_in_env_task, network_param},
     },
     types::{ComponentType, Network},
 };
@@ -15,23 +14,16 @@ use crate::{
 fn generate_command_to_setup(
     id: &str,
     datasrc_id: &str,
-    datasrc_id_type: CanisterIdType,
     lens_targets: &Vec<String>,
     dst_address: &str,
     dst_network_id: u32,
     dst_rpc_url: &str,
     network: &Network,
 ) -> String {
-    let target_canister = match datasrc_id_type {
-        CanisterIdType::CanisterName => format!("$(dfx canister id {})", datasrc_id),
-        CanisterIdType::PrincipalId => datasrc_id.to_string(),
-    };
+    let target_canister = principal_or_resolver_str(datasrc_id);
     let lens_target_canisters = lens_targets
         .into_iter()
-        .map(|t| match Principal::from_text(t) {
-            Ok(p) => p.to_string(),
-            Err(_) => format!("$(dfx canister id {})", t),
-        })
+        .map(|t| principal_or_resolver_str(&t))
         .collect::<Vec<String>>();
 
     let lens_targets_arg = if lens_target_canisters.is_empty() {
@@ -76,7 +68,6 @@ fn script_contents(manifest: &RelayerComponentManifest, network: Network) -> Str
     let script_to_setup = generate_command_to_setup(
         &id,
         &manifest.datasource.location.id,
-        manifest.datasource.location.args.id_type.unwrap(), // todo: check validation
         &manifest.lens_targets.clone().map_or(vec![], |v| {
             v.identifiers
                 .iter()

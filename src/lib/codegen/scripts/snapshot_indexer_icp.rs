@@ -3,24 +3,18 @@ use anyhow::ensure;
 use crate::{
     lib::codegen::{
         components::{
-            common::{CanisterIdType, ComponentManifest},
-            snapshot_indexer_icp::SnapshotIndexerICPComponentManifest,
+            common::ComponentManifest, snapshot_indexer_icp::SnapshotIndexerICPComponentManifest,
         },
-        scripts::common::{generate_command_to_set_task, init_in_env_task, network_param},
+        scripts::common::{
+            generate_command_to_set_task, init_in_env_task, network_param,
+            principal_or_resolver_str,
+        },
     },
     types::{ComponentType, Network},
 };
 
-fn generate_command_to_setup(
-    id: &str,
-    datasrc_id: &str,
-    datasrc_id_type: CanisterIdType,
-    network: &Network,
-) -> String {
-    let target_canister = match datasrc_id_type {
-        CanisterIdType::CanisterName => format!("$(dfx canister id {})", datasrc_id),
-        CanisterIdType::PrincipalId => datasrc_id.to_string(),
-    };
+fn generate_command_to_setup(id: &str, datasrc_id: &str, network: &Network) -> String {
+    let target_canister = principal_or_resolver_str(datasrc_id);
 
     format!(
         r#"dfx canister {} call {} setup "(
@@ -34,12 +28,7 @@ fn generate_command_to_setup(
 fn script_contents(manifest: &SnapshotIndexerICPComponentManifest, network: Network) -> String {
     let id = manifest.id().unwrap();
 
-    let setup_contents = generate_command_to_setup(
-        &id,
-        &manifest.datasource.location.id,
-        manifest.datasource.location.args.id_type.unwrap(), // todo: check validation // todo: fail commands::exec::tests::test_exec for here
-        &network,
-    );
+    let setup_contents = generate_command_to_setup(&id, &manifest.datasource.location.id, &network);
 
     let start_timer_contents = generate_command_to_set_task(
         &id,
