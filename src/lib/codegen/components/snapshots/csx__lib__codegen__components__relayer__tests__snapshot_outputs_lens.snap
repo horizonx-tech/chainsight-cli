@@ -1,0 +1,10 @@
+---
+source: src/lib/codegen/components/relayer.rs
+expression: "SrcString::from(&manifest.generate_user_impl_template().unwrap())"
+---
+pub type CallCanisterResponse = CustomResponseStruct;
+#[derive(Clone, Debug, candid::CandidType, candid::Deserialize)]
+pub struct CustomResponseStruct {
+pub value:String, pub timestamp:u64 };
+pub fn filter(_:& CallCanisterResponse) -> bool {
+true }

@@ -1,4 +1,5 @@
 use anyhow::ensure;
+use candid::Principal;
 
 use crate::{
     lib::codegen::{
@@ -15,6 +16,7 @@ fn generate_command_to_setup(
     id: &str,
     datasrc_id: &str,
     datasrc_id_type: CanisterIdType,
+    lens_targets: &Vec<String>,
     dst_address: &str,
     dst_network_id: u32,
     dst_rpc_url: &str,
@@ -23,6 +25,22 @@ fn generate_command_to_setup(
     let target_canister = match datasrc_id_type {
         CanisterIdType::CanisterName => format!("$(dfx canister id {})", datasrc_id),
         CanisterIdType::PrincipalId => datasrc_id.to_string(),
+    };
+    let lens_target_canisters = lens_targets
+        .into_iter()
+        .map(|t| match Principal::from_text(t) {
+            Ok(p) => p.to_string(),
+            Err(_) => format!("$(dfx canister id {})", t),
+        })
+        .collect::<Vec<String>>();
+
+    let lens_targets_arg = if lens_target_canisters.is_empty() {
+        "".to_string()
+    } else {
+        format!(
+            r#"vec {{ \"{}\" }},"#,
+            lens_target_canisters.join(r#"\"; \""#)
+        )
     };
 
     let ecdsa_key_env = match network {
@@ -40,6 +58,7 @@ fn generate_command_to_setup(
         env = variant {{ {} }};
     }},
     \"{}\",
+    {}
 )""#,
         network_param(network),
         id,
@@ -48,6 +67,7 @@ fn generate_command_to_setup(
         dst_network_id,
         ecdsa_key_env,
         target_canister,
+        lens_targets_arg,
     )
 }
 
@@ -57,6 +77,12 @@ fn script_contents(manifest: &RelayerComponentManifest, network: Network) -> Str
         &id,
         &manifest.datasource.location.id,
         manifest.datasource.location.args.id_type.unwrap(), // todo: check validation
+        &manifest.lens_targets.clone().map_or(vec![], |v| {
+            v.identifiers
+                .iter()
+                .map(|i| i.to_string())
+                .collect::<Vec<String>>()
+        }),
         &manifest.destination.oracle_address,
         manifest.destination.network_id,
         &manifest.destination.rpc_url,

@@ -323,4 +323,53 @@ interval: 3600
         ));
         assert_display_snapshot!(&manifest.generate_scripts(Network::Local).unwrap());
     }
+
+    #[test]
+    fn test_snapshot_outputs_lens() {
+        let manifest = RelayerComponentManifest {
+            id: Some("sample_relayer".to_string()),
+            version: "v1".to_string(),
+            metadata: ComponentMetadata {
+                label: "Sample Relayer".to_string(),
+                type_: ComponentType::Relayer,
+                description: "Description".to_string(),
+                tags: Some(vec!["Oracle".to_string(), "snapshot".to_string()]),
+            },
+            datasource: Datasource {
+                location: DatasourceLocation::new_canister(
+                    "datasource_canister_id".to_string(),
+                    CanisterIdType::CanisterName,
+                ),
+                method: DatasourceMethod {
+                    identifier: "calculate : () -> (record { value : text; timestamp : nat64 })"
+                        .to_string(),
+                    interface: None,
+                    args: vec![],
+                },
+            },
+            destination: DestinationField {
+                network_id: 80001,
+                type_: DestinationType::StringOracle,
+                oracle_address: "0x0539a0EF8e5E60891fFf0958A059E049e43020d9".to_string(),
+                rpc_url: "https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL_KEY}"
+                    .to_string(),
+            },
+            lens_targets: Option::Some(LensTargets {
+                identifiers: vec![
+                    "lens_target_canister_1".to_string(),
+                    "lens_target_canister_2".to_string(),
+                ],
+            }),
+            interval: 3600,
+        };
+
+        // FIXME failed to load oracle abi at ./__interfaces/{}.json
+        // assert_display_snapshot!(SrcString::from(
+        //     &manifest.generate_codes(Option::None).unwrap()
+        // ));
+        assert_display_snapshot!(SrcString::from(
+            &manifest.generate_user_impl_template().unwrap()
+        ));
+        assert_display_snapshot!(&manifest.generate_scripts(Network::Local).unwrap());
+    }
 }
