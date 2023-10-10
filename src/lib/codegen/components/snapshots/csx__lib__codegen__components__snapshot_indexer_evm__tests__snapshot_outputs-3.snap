@@ -9,7 +9,7 @@ dfx canister  call sample_snapshot_indexer_evm init_in '(variant { "LocalDevelop
 dfx canister  call sample_snapshot_indexer_evm setup "(
     \"6b175474e89094c44da98b954eedeac495271d0f\",
     record {
-        url = \"https://mainnet.infura.io/v3/${INFURA_MAINNET_RPC_URL}\";
+        url = \"https://mainnet.infura.io/v3/${INFURA_MAINNET_RPC_URL_KEY}\";
         from = null;
         chain_id = 1;
         env = variant { LocalDevelopment };

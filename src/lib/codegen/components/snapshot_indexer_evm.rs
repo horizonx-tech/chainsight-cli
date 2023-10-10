@@ -178,7 +178,7 @@ datasource:
         id: 6b175474e89094c44da98b954eedeac495271d0f
         args:
             network_id: 1
-            rpc_url: https://mainnet.infura.io/v3/${INFURA_MAINNET_RPC_URL}
+            rpc_url: https://mainnet.infura.io/v3/${INFURA_MAINNET_RPC_URL_KEY}
     method:
         identifier: totalSupply():(uint256)
         interface: ERC20.json
@@ -206,7 +206,7 @@ interval: 3600
                     location: DatasourceLocation::new_contract(
                         "6b175474e89094c44da98b954eedeac495271d0f".to_string(),
                         1,
-                        "https://mainnet.infura.io/v3/${INFURA_MAINNET_RPC_URL}".to_string(),
+                        "https://mainnet.infura.io/v3/${INFURA_MAINNET_RPC_URL_KEY}".to_string(),
                     ),
                     method: DatasourceMethod {
                         identifier: "totalSupply():(uint256)".to_owned(),
@@ -247,7 +247,7 @@ interval: 3600
                 location: DatasourceLocation::new_contract(
                     "6b175474e89094c44da98b954eedeac495271d0f".to_string(),
                     1,
-                    "https://mainnet.infura.io/v3/${INFURA_MAINNET_RPC_URL}".to_string(),
+                    "https://mainnet.infura.io/v3/${INFURA_MAINNET_RPC_URL_KEY}".to_string(),
                 ),
                 method: DatasourceMethod {
                     identifier: "totalSupply():(uint256)".to_owned(),

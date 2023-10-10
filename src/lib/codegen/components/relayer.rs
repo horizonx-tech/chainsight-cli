@@ -186,7 +186,7 @@ impl Default for DestinationField {
             network_id,
             oracle_type,
             get_oracle_address(network_id, oracle_type),
-            "https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL}".to_string(),
+            "https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL_KEY}".to_string(),
         )
     }
 }
@@ -228,7 +228,7 @@ destination:
     network_id: 80001
     type: uint256
     oracle_address: 0x0539a0EF8e5E60891fFf0958A059E049e43020d9
-    rpc_url: https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL}
+    rpc_url: https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL_KEY}
 interval: 3600
         "#;
 
@@ -263,7 +263,7 @@ interval: 3600
                     network_id: 80001,
                     type_: DestinationType::Uint256Oracle,
                     oracle_address: "0x0539a0EF8e5E60891fFf0958A059E049e43020d9".to_string(),
-                    rpc_url: "https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL}"
+                    rpc_url: "https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL_KEY}"
                         .to_string(),
                 },
                 lens_targets: None,
@@ -307,7 +307,8 @@ interval: 3600
                 network_id: 80001,
                 type_: DestinationType::StringOracle,
                 oracle_address: "0x0539a0EF8e5E60891fFf0958A059E049e43020d9".to_string(),
-                rpc_url: "https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL}".to_string(),
+                rpc_url: "https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL_KEY}"
+                    .to_string(),
             },
             lens_targets: None,
             interval: 3600,

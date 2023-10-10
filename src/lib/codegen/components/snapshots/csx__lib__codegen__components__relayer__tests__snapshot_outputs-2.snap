@@ -10,7 +10,7 @@ dfx canister  call sample_relayer setup "(
     \"$(dfx canister id datasource_canister_id)\",
     \"0x0539a0EF8e5E60891fFf0958A059E049e43020d9\",
     record {
-        url = \"https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL}\";
+        url = \"https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL_KEY}\";
         from = null;
         chain_id = 80001;
         env = variant { LocalDevelopment };

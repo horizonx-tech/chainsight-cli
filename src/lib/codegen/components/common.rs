@@ -147,7 +147,7 @@ impl DatasourceLocation {
         Self::new_contract(
             "6b175474e89094c44da98b954eedeac495271d0f".to_string(), // DAI token
             1,
-            "https://mainnet.infura.io/v3/${INFURA_MAINNET_RPC_URL}".to_string(),
+            "https://mainnet.infura.io/v3/${INFURA_MAINNET_RPC_URL_KEY}".to_string(),
         )
     }
 
