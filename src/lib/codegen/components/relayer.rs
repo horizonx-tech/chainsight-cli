@@ -203,6 +203,41 @@ mod tests {
 
     use super::*;
 
+    fn sample_relayer_manifest() -> RelayerComponentManifest {
+        RelayerComponentManifest {
+            id: Some(String::from("sample_relayer")),
+            version: "v1".to_string(),
+            metadata: ComponentMetadata {
+                label: "Sample Relayer".to_string(),
+                type_: ComponentType::Relayer,
+                description: "Description".to_string(),
+                tags: Some(vec!["Oracle".to_string(), "snapshot".to_string()]),
+            },
+            datasource: Datasource {
+                location: DatasourceLocation::new_canister(
+                    "datasource_canister_id".to_string(),
+                    CanisterIdType::CanisterName,
+                ),
+                method: DatasourceMethod {
+                    identifier:
+                        "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"
+                            .to_string(),
+                    interface: None,
+                    args: vec![],
+                },
+            },
+            destination: DestinationField {
+                network_id: 80001,
+                type_: DestinationType::StringOracle,
+                oracle_address: "0x0539a0EF8e5E60891fFf0958A059E049e43020d9".to_string(),
+                rpc_url: "https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL_KEY}"
+                    .to_string(),
+            },
+            lens_targets: None,
+            interval: 3600,
+        }
+    }
+
     #[test]
     fn test_to_manifest_struct() {
         let yaml = r#"
@@ -281,38 +316,7 @@ interval: 3600
 
     #[test]
     fn test_snapshot_outputs() {
-        let manifest = RelayerComponentManifest {
-            id: Some("sample_relayer".to_string()),
-            version: "v1".to_string(),
-            metadata: ComponentMetadata {
-                label: "Sample Relayer".to_string(),
-                type_: ComponentType::Relayer,
-                description: "Description".to_string(),
-                tags: Some(vec!["Oracle".to_string(), "snapshot".to_string()]),
-            },
-            datasource: Datasource {
-                location: DatasourceLocation::new_canister(
-                    "datasource_canister_id".to_string(),
-                    CanisterIdType::CanisterName,
-                ),
-                method: DatasourceMethod {
-                    identifier:
-                        "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"
-                            .to_string(),
-                    interface: None,
-                    args: vec![],
-                },
-            },
-            destination: DestinationField {
-                network_id: 80001,
-                type_: DestinationType::StringOracle,
-                oracle_address: "0x0539a0EF8e5E60891fFf0958A059E049e43020d9".to_string(),
-                rpc_url: "https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL_KEY}"
-                    .to_string(),
-            },
-            lens_targets: None,
-            interval: 3600,
-        };
+        let manifest = sample_relayer_manifest();
 
         // FIXME failed to load oracle abi at ./__interfaces/{}.json
         // assert_display_snapshot!(SrcString::from(
@@ -326,42 +330,19 @@ interval: 3600
 
     #[test]
     fn test_snapshot_outputs_lens() {
-        let manifest = RelayerComponentManifest {
-            id: Some("sample_relayer".to_string()),
-            version: "v1".to_string(),
-            metadata: ComponentMetadata {
-                label: "Sample Relayer".to_string(),
-                type_: ComponentType::Relayer,
-                description: "Description".to_string(),
-                tags: Some(vec!["Oracle".to_string(), "snapshot".to_string()]),
-            },
-            datasource: Datasource {
-                location: DatasourceLocation::new_canister(
-                    "datasource_canister_id".to_string(),
-                    CanisterIdType::CanisterName,
-                ),
-                method: DatasourceMethod {
-                    identifier: "calculate : () -> (record { value : text; timestamp : nat64 })"
-                        .to_string(),
-                    interface: None,
-                    args: vec![],
-                },
-            },
-            destination: DestinationField {
-                network_id: 80001,
-                type_: DestinationType::StringOracle,
-                oracle_address: "0x0539a0EF8e5E60891fFf0958A059E049e43020d9".to_string(),
-                rpc_url: "https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL_KEY}"
-                    .to_string(),
-            },
-            lens_targets: Option::Some(LensTargets {
-                identifiers: vec![
-                    "lens_target_canister_1".to_string(),
-                    "lens_target_canister_2".to_string(),
-                ],
-            }),
-            interval: 3600,
+        let mut manifest = sample_relayer_manifest();
+        manifest.datasource.method = DatasourceMethod {
+            identifier: "calculate : () -> (record { value : text; timestamp : nat64 })"
+                .to_string(),
+            interface: None,
+            args: vec![],
         };
+        manifest.lens_targets = Option::Some(LensTargets {
+            identifiers: vec![
+                "lens_target_canister_1".to_string(),
+                "lens_target_canister_2".to_string(),
+            ],
+        });
 
         // FIXME failed to load oracle abi at ./__interfaces/{}.json
         // assert_display_snapshot!(SrcString::from(
