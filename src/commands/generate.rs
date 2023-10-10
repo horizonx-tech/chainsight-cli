@@ -21,7 +21,8 @@ use crate::lib::codegen::templates::{
     accessors_cargo_toml, bindings_cargo_toml, canister_project_cargo_toml, logic_cargo_toml,
     root_cargo_toml,
 };
-use crate::lib::utils::{find_duplicates, paths};
+use crate::lib::utils::env::cache_envfile;
+use crate::lib::utils::{find_duplicates, paths, DOTENV_FILENAME};
 use crate::{
     lib::{
         codegen::project::ProjectManifestData,
@@ -72,6 +73,13 @@ pub fn exec(env: &EnvironmentImpl, opts: GenerateOpts) -> anyhow::Result<()> {
         log,
         r#"Start code generation for project '{}'"#, project_manifest.label
     );
+
+    // load env
+    let env_file_path = format!("{}/{}", &project_path_str, DOTENV_FILENAME);
+    if Path::new(&env_file_path).is_file() {
+        info!(log, r#"Load env file: "{}""#, &env_file_path);
+        cache_envfile(Some(&env_file_path))?;
+    }
 
     // check duplicated component paths
     {
