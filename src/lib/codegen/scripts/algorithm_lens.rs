@@ -2,14 +2,14 @@ use anyhow::ensure;
 
 use crate::{
     lib::codegen::{
-        components::algorithm_lens::AlgorithmLensComponentManifest,
+        components::{algorithm_lens::AlgorithmLensComponentManifest, common::ComponentManifest},
         scripts::common::init_in_env_task,
     },
     types::{ComponentType, Network},
 };
 
 fn script_contents(manifest: &AlgorithmLensComponentManifest, network: Network) -> String {
-    let init_in_env_task = init_in_env_task(&network, &manifest.metadata.label);
+    let init_in_env_task = init_in_env_task(&network, &manifest.id().unwrap());
 
     format!(
         r#"#!/bin/bash

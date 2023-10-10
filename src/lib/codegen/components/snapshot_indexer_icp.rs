@@ -17,9 +17,11 @@ use super::{
     },
 };
 
-/// Component Manifest: Snapshot
+/// Component Manifest: Snapshot Indexer ICP
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct SnapshotIndexerICPComponentManifest {
+    #[serde(skip_serializing)]
+    pub id: Option<String>,
     pub version: String,
     pub metadata: ComponentMetadata,
     pub datasource: Datasource,
@@ -35,6 +37,7 @@ pub struct LensTarget {
 
 impl SnapshotIndexerICPComponentManifest {
     pub fn new(
+        id: &str,
         label: &str,
         description: &str,
         version: &str,
@@ -43,6 +46,7 @@ impl SnapshotIndexerICPComponentManifest {
         interval: u32,
     ) -> Self {
         Self {
+            id: Some(id.to_owned()),
             version: version.to_owned(),
             metadata: ComponentMetadata {
                 label: label.to_owned(),
@@ -62,9 +66,17 @@ impl SnapshotIndexerICPComponentManifest {
     }
 }
 impl ComponentManifest for SnapshotIndexerICPComponentManifest {
+    fn load_with_id(path: &str, id: &str) -> anyhow::Result<Self> {
+        let manifest = Self::load(path)?;
+        Ok(Self {
+            id: Some(id.to_owned()),
+            ..manifest
+        })
+    }
+
     fn to_str_as_yaml(&self) -> anyhow::Result<String> {
         let yaml = serde_yaml::to_string(&self)?;
-        Ok(self.yaml_str_with_configs(yaml, "snapshot_indexer".to_string()))
+        Ok(self.yaml_str_with_configs(yaml, "snapshot_indexer_icp".to_string()))
     }
 
     fn validate_manifest(&self) -> anyhow::Result<()> {
@@ -84,6 +96,10 @@ impl ComponentManifest for SnapshotIndexerICPComponentManifest {
 
     fn component_type(&self) -> ComponentType {
         ComponentType::SnapshotIndexerICP
+    }
+
+    fn id(&self) -> Option<String> {
+        self.id.clone()
     }
 
     fn metadata(&self) -> &ComponentMetadata {
@@ -172,6 +188,7 @@ interval: 3600
         assert_eq!(
             component,
             SnapshotIndexerICPComponentManifest {
+                id: None,
                 version: "v1".to_owned(),
                 metadata: ComponentMetadata {
                     label: "sample_snapshot_indexer_icp".to_owned(),
@@ -210,8 +227,9 @@ interval: 3600
     }
 
     #[test]
-    fn test_snapshot_outputs_icp() {
+    fn test_snapshot_outputs() {
         let manifest = SnapshotIndexerICPComponentManifest {
+            id: Some("sample_snapshot_indexer_icp".to_owned()),
             version: "v1".to_owned(),
             metadata: ComponentMetadata {
                 label: "sample_snapshot_indexer_icp".to_owned(),

@@ -2,14 +2,17 @@ use anyhow::ensure;
 
 use crate::{
     lib::codegen::{
-        components::{common::CanisterIdType, relayer::RelayerComponentManifest},
+        components::{
+            common::{CanisterIdType, ComponentManifest},
+            relayer::RelayerComponentManifest,
+        },
         scripts::common::{generate_command_to_set_task, init_in_env_task, network_param},
     },
     types::{ComponentType, Network},
 };
 
 fn generate_command_to_setup(
-    label: &str,
+    id: &str,
     datasrc_id: &str,
     datasrc_id_type: CanisterIdType,
     dst_address: &str,
@@ -39,7 +42,7 @@ fn generate_command_to_setup(
     }}
 )""#,
         network_param(network),
-        label,
+        id,
         target_canister,
         dst_address,
         dst_rpc_url,
@@ -49,8 +52,9 @@ fn generate_command_to_setup(
 }
 
 fn script_contents(manifest: &RelayerComponentManifest, network: Network) -> String {
+    let id = manifest.id().unwrap();
     let script_to_setup = generate_command_to_setup(
-        &manifest.metadata.label,
+        &id,
         &manifest.datasource.location.id,
         manifest.datasource.location.args.id_type.unwrap(), // todo: check validation
         &manifest.destination.oracle_address,
@@ -59,12 +63,12 @@ fn script_contents(manifest: &RelayerComponentManifest, network: Network) -> Str
         &network,
     );
     let script_to_set_task = generate_command_to_set_task(
-        &manifest.metadata.label,
+        &id,
         &network,
         manifest.interval,
         10, // temp: fixed value, todo: make it configurable
     );
-    let init_in_env_task = init_in_env_task(&network, &manifest.metadata.label);
+    let init_in_env_task = init_in_env_task(&network, &id);
 
     format!(
         r#"#!/bin/bash

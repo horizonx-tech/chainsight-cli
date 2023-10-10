@@ -2,14 +2,16 @@ use anyhow::ensure;
 
 use crate::{
     lib::codegen::{
-        components::algorithm_indexer::AlgorithmIndexerComponentManifest,
+        components::{
+            algorithm_indexer::AlgorithmIndexerComponentManifest, common::ComponentManifest,
+        },
         scripts::common::{generate_command_to_set_task, init_in_env_task, network_param},
     },
     types::{ComponentType, Network},
 };
 
 fn generate_command_to_setup(
-    label: &str,
+    id: &str,
     datasrc_id: &str,
     network: &Network,
     start_from: u64,
@@ -22,26 +24,27 @@ fn generate_command_to_setup(
     }}
     )""#,
         network_param(network),
-        label,
+        id,
         datasrc_id,
         start_from
     )
 }
 
 fn script_contents(manifest: &AlgorithmIndexerComponentManifest, network: Network) -> String {
+    let id = manifest.id().unwrap();
     let script_to_setup = generate_command_to_setup(
-        &manifest.metadata.label,
+        &id,
         &manifest.datasource.principal,
         &network,
         manifest.datasource.from,
     );
     let script_to_set_task = generate_command_to_set_task(
-        &manifest.metadata.label,
+        &id,
         &network,
         manifest.interval,
         10, // temp: fixed value, todo: make it configurable
     );
-    let init_in_env_task = init_in_env_task(&network, &manifest.metadata.label);
+    let init_in_env_task = init_in_env_task(&network, &id);
 
     format!(
         r#"#!/bin/bash

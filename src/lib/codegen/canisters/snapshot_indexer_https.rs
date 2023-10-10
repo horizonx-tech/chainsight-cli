@@ -1,6 +1,8 @@
 use quote::{format_ident, quote};
 
-use crate::lib::codegen::components::snapshot_indexer_https::SnapshotIndexerHTTPSComponentManifest;
+use crate::lib::codegen::components::{
+    common::ComponentManifest, snapshot_indexer_https::SnapshotIndexerHTTPSComponentManifest,
+};
 
 use super::snapshot_indexer_icp::generate_queries_without_timestamp;
 
@@ -8,7 +10,7 @@ pub fn generate_codes(
     manifest: &SnapshotIndexerHTTPSComponentManifest,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     let url = &manifest.datasource.url;
-    let label = &manifest.metadata.label;
+    let id = &manifest.id().ok_or(anyhow::anyhow!("id is required"))?;
     let mut header_keys: Vec<&String> = manifest.datasource.headers.keys().collect();
     header_keys.sort();
     let mut header_values: Vec<&String> = manifest.datasource.headers.values().collect();
@@ -19,7 +21,7 @@ pub fn generate_codes(
     query_values.sort();
     let queries = generate_queries_without_timestamp(format_ident!("SnapshotValue"));
 
-    let label_ident = format_ident!("{}", label);
+    let id_ident = format_ident!("{}", id);
     let out = quote! {
         use std::collections::HashMap;
 
@@ -33,7 +35,7 @@ pub fn generate_codes(
 
         init_in!();
         chainsight_common!(60);
-        use #label_ident::*;
+        use #id_ident::*;
         #[derive(Debug, Clone, candid::CandidType, candid::Deserialize, serde::Serialize, StableMemoryStorable)]
         #[stable_mem_storable_opts(max_size = 10000, is_fixed_size = false)] // temp: max_size
         pub struct Snapshot {
@@ -80,7 +82,7 @@ pub fn generate_codes(
         }
         snapshot_https_source!();
         #queries
-        did_export!(#label);
+        did_export!(#id);
     };
     Ok(out)
 }

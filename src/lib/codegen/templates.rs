@@ -152,8 +152,8 @@ chainsight-cdk.workspace = true
     )
 }
 
-pub fn dfx_json(project_labels: Vec<String>) -> String {
-    let canisters = project_labels
+pub fn dfx_json(project_ids: Vec<String>) -> String {
+    let canisters = project_ids
         .iter()
         .map(|label| {
             format!(
@@ -245,12 +245,12 @@ mod tests {
 
     #[test]
     fn test_snapshot_dfx_json() {
-        let project_labels = vec![
+        let project_ids = vec![
             "sample_snapshot".to_string(),
             "sample_lens".to_string(),
             "sample_relayer".to_string(),
         ];
-        assert_display_snapshot!(dfx_json(project_labels))
+        assert_display_snapshot!(dfx_json(project_ids))
     }
 
     #[test]

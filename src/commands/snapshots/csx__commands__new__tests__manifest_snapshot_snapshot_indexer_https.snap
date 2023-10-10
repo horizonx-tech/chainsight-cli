@@ -1,11 +1,11 @@
 ---
 source: src/commands/new.rs
-expression: template_snapshot_indexer_https_manifest(COMPONENT_PREFIX).to_str_as_yaml().unwrap()
+expression: template_snapshot_indexer_https_manifest(&id).to_str_as_yaml().unwrap()
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/snapshot_indexer_https.json
 version: v1
 metadata:
-  label: sample_snapshot_indexer_https
+  label: Sample Snapshot Indexer Https
   type: snapshot_indexer_https
   description: ''
   tags:

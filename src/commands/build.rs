@@ -1,5 +1,6 @@
 use std::fmt::Debug;
 use std::fs;
+use std::path::Path;
 use std::process::Command;
 
 use anyhow::{bail, Ok};
@@ -83,28 +84,36 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
         let relative_component_path = component.component_path;
         let component_path = format!("{}/{}", &project_path_str, relative_component_path);
         let component_type = ComponentTypeInManifest::determine_type(&component_path)?;
+        let id = Path::new(&component_path)
+            .file_stem()
+            .unwrap()
+            .to_str()
+            .unwrap();
 
-        let data: Box<dyn ComponentManifest> = match component_type {
-            ComponentType::EventIndexer => {
-                Box::new(EventIndexerComponentManifest::load(&component_path)?)
-            }
-            ComponentType::AlgorithmIndexer => {
-                Box::new(AlgorithmIndexerComponentManifest::load(&component_path)?)
-            }
-            ComponentType::SnapshotIndexerICP => {
-                Box::new(SnapshotIndexerICPComponentManifest::load(&component_path)?)
-            }
-            ComponentType::SnapshotIndexerEVM => {
-                Box::new(SnapshotIndexerEVMComponentManifest::load(&component_path)?)
-            }
-            ComponentType::Relayer => Box::new(RelayerComponentManifest::load(&component_path)?),
-            ComponentType::AlgorithmLens => {
-                Box::new(AlgorithmLensComponentManifest::load(&component_path)?)
-            }
-            ComponentType::SnapshotIndexerHTTPS => Box::new(
-                SnapshotIndexerHTTPSComponentManifest::load(&component_path)?,
-            ),
-        };
+        let data: Box<dyn ComponentManifest> =
+            match component_type {
+                ComponentType::EventIndexer => Box::new(
+                    EventIndexerComponentManifest::load_with_id(&component_path, id)?,
+                ),
+                ComponentType::AlgorithmIndexer => Box::new(
+                    AlgorithmIndexerComponentManifest::load_with_id(&component_path, id)?,
+                ),
+                ComponentType::SnapshotIndexerICP => Box::new(
+                    SnapshotIndexerICPComponentManifest::load_with_id(&component_path, id)?,
+                ),
+                ComponentType::SnapshotIndexerEVM => Box::new(
+                    SnapshotIndexerEVMComponentManifest::load_with_id(&component_path, id)?,
+                ),
+                ComponentType::Relayer => {
+                    Box::new(RelayerComponentManifest::load_with_id(&component_path, id)?)
+                }
+                ComponentType::AlgorithmLens => Box::new(
+                    AlgorithmLensComponentManifest::load_with_id(&component_path, id)?,
+                ),
+                ComponentType::SnapshotIndexerHTTPS => Box::new(
+                    SnapshotIndexerHTTPSComponentManifest::load_with_id(&component_path, id)?,
+                ),
+            };
         component_data.push(data);
     }
 
@@ -138,19 +147,15 @@ fn execute_codebuild(
     }
     let projects = component_data
         .iter()
-        .map(|data| data.metadata().label.to_string())
+        .map(|data| data.id().unwrap())
         .collect::<Vec<String>>();
     fs::write(format!("{}/dfx.json", output_path_str), dfx_json(projects))?;
 
     // Copy .did to output dir
     for component_datum in component_data {
-        let label = &component_datum.metadata().label.clone();
-        let did_src_path = format!(
-            "{}/{}.did",
-            paths::canisters_path_str(src_path_str, label),
-            label
-        );
-        let did_dst_path = format!("{}/{}.did", output_path_str, label);
+        let id = &component_datum.id().unwrap();
+        let did_src_path = format!("{}/{}.did", paths::canisters_path_str(src_path_str, id), id);
+        let did_dst_path = format!("{}/{}.did", output_path_str, id);
         fs::copy(did_src_path, did_dst_path)?;
     }
 
@@ -187,13 +192,13 @@ fn execute_codebuild(
     let action = "Shrink/Optimize modules";
     info!(log, "{}...", action);
     for component_datum in component_data {
-        let label = &component_datum.metadata().label.clone();
+        let id = &component_datum.id().unwrap();
         let wasm_path = format!(
             "{}/target/wasm32-unknown-unknown/release/{}.wasm",
             src_path_str,
-            paths::canister_name(label)
+            paths::canister_name(id)
         );
-        let output_path = format!("{}/{}.wasm", output_path_str, label);
+        let output_path = format!("{}/{}.wasm", output_path_str, id);
         let output = Command::new("ic-wasm")
             .args([&wasm_path, "-o", &output_path, "shrink"])
             .output()
@@ -202,14 +207,14 @@ fn execute_codebuild(
             debug!(
                 log,
                 "[{}] {}",
-                label,
+                id,
                 std::str::from_utf8(&output.stdout).unwrap_or("failed to parse stdout")
             );
-            debug!(log, "[{}] Succeeded: {}", label, action);
+            debug!(log, "[{}] Succeeded: {}", id, action);
         } else {
             bail!(format!(
                 "[{}] Failed: '{}' by: {}",
-                label,
+                id,
                 action,
                 std::str::from_utf8(&output.stderr).unwrap_or("failed to parse stdout")
             ));
@@ -228,7 +233,7 @@ fn execute_codebuild(
 }
 
 fn add_meta(
-    label: &str,
+    id: &str,
     key: &str,
     value: &str,
     wasm_path: &str,
@@ -247,14 +252,14 @@ fn add_meta(
         debug!(
             log,
             "[{}] {}",
-            label,
+            id,
             std::str::from_utf8(&output.stdout).unwrap_or("failed to parse stdout")
         );
-        debug!(log, "[{}] Succeeded: '{}'", label, action);
+        debug!(log, "[{}] Succeeded: '{}'", id, action);
     } else {
         bail!(format!(
             "[{}] Failed: '{}' by: {}",
-            label,
+            id,
             action,
             std::str::from_utf8(&output.stderr).unwrap_or("failed to parse stdout")
         ));
@@ -267,13 +272,13 @@ fn add_metadata_to_wasm(
     project_path_str: &str,
     component_datum: &dyn ComponentManifest,
 ) -> anyhow::Result<()> {
-    let label = &component_datum.metadata().label.clone();
-    let wasm_path = &format!("{}/{}.wasm", ARTIFACTS_DIR, label);
+    let id = &component_datum.id().unwrap();
+    let wasm_path = &format!("{}/{}.wasm", ARTIFACTS_DIR, id);
     let put_meta = |key: &str, value: &str| -> anyhow::Result<()> {
-        add_meta(label, key, value, wasm_path, project_path_str, log)
+        add_meta(id, key, value, wasm_path, project_path_str, log)
     };
 
-    put_meta("chainsight:label", label)?;
+    put_meta("chainsight:label", &component_datum.metadata().label)?;
     put_meta(
         "chainsight:component_type",
         &component_datum.component_type().to_string(),

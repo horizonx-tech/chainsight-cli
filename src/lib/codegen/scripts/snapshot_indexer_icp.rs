@@ -3,7 +3,8 @@ use anyhow::ensure;
 use crate::{
     lib::codegen::{
         components::{
-            common::CanisterIdType, snapshot_indexer_icp::SnapshotIndexerICPComponentManifest,
+            common::{CanisterIdType, ComponentManifest},
+            snapshot_indexer_icp::SnapshotIndexerICPComponentManifest,
         },
         scripts::common::{generate_command_to_set_task, init_in_env_task, network_param},
     },
@@ -11,7 +12,7 @@ use crate::{
 };
 
 fn generate_command_to_setup(
-    label: &str,
+    id: &str,
     datasrc_id: &str,
     datasrc_id_type: CanisterIdType,
     network: &Network,
@@ -26,25 +27,27 @@ fn generate_command_to_setup(
     \"{}\"
 )""#,
         network_param(network),
-        label,
+        id,
         target_canister
     )
 }
 fn script_contents(manifest: &SnapshotIndexerICPComponentManifest, network: Network) -> String {
+    let id = manifest.id().unwrap();
+
     let setup_contents = generate_command_to_setup(
-        &manifest.metadata.label,
+        &id,
         &manifest.datasource.location.id,
         manifest.datasource.location.args.id_type.unwrap(), // todo: check validation // todo: fail commands::exec::tests::test_exec for here
         &network,
     );
 
     let start_timer_contents = generate_command_to_set_task(
-        &manifest.metadata.label,
+        &id,
         &network,
         manifest.interval,
         5, // temp: fixed value, todo: make it configurable
     );
-    let init_in_env_task = init_in_env_task(&network, &manifest.metadata.label);
+    let init_in_env_task = init_in_env_task(&network, &id);
 
     format!(
         r#"#!/bin/bash

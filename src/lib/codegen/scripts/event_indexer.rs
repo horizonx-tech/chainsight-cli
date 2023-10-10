@@ -2,14 +2,14 @@ use anyhow::ensure;
 
 use crate::{
     lib::codegen::{
-        components::event_indexer::EventIndexerComponentManifest,
+        components::{common::ComponentManifest, event_indexer::EventIndexerComponentManifest},
         scripts::common::{generate_command_to_set_task, init_in_env_task, network_param},
     },
     types::{ComponentType, Network},
 };
 
 fn generate_command_to_setup(
-    label: &str,
+    id: &str,
     datasrc_id: &str,
     network: &Network,
     rpc_url: &str,
@@ -34,7 +34,7 @@ fn generate_command_to_setup(
     }}
     )""#,
         network_param(network),
-        label,
+        id,
         datasrc_id,
         env,
         rpc_url,
@@ -44,8 +44,9 @@ fn generate_command_to_setup(
 }
 
 fn script_contents(manifest: &EventIndexerComponentManifest, network: Network) -> String {
+    let id = manifest.id().unwrap();
     let script_to_setup = generate_command_to_setup(
-        &manifest.metadata.label,
+        &id,
         &manifest.datasource.id,
         &network,
         &manifest.datasource.network.rpc_url,
@@ -53,12 +54,12 @@ fn script_contents(manifest: &EventIndexerComponentManifest, network: Network) -
         manifest.datasource.from,
     );
     let script_to_set_task = generate_command_to_set_task(
-        &manifest.metadata.label,
+        &id,
         &network,
         manifest.interval,
         10, // temp: fixed value, todo: make it configurable
     );
-    let init_in_env_task = init_in_env_task(&network, &manifest.metadata.label);
+    let init_in_env_task = init_in_env_task(&network, &id);
 
     format!(
         r#"#!/bin/bash
