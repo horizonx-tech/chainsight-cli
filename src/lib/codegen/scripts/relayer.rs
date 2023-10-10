@@ -14,7 +14,7 @@ use crate::{
 fn generate_command_to_setup(
     id: &str,
     datasrc_id: &str,
-    lens_targets: &Vec<String>,
+    lens_targets: &[String],
     dst_address: &str,
     dst_network_id: u32,
     dst_rpc_url: &str,
@@ -22,8 +22,8 @@ fn generate_command_to_setup(
 ) -> String {
     let target_canister = principal_or_resolver_str(datasrc_id);
     let lens_target_canisters = lens_targets
-        .into_iter()
-        .map(|t| principal_or_resolver_str(&t))
+        .iter()
+        .map(|t| principal_or_resolver_str(t))
         .collect::<Vec<String>>();
 
     let lens_targets_arg = if lens_target_canisters.is_empty() {
