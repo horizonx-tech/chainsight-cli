@@ -10,7 +10,7 @@ dfx canister  call sample_event_indexer setup "(
     \"0x6B175474E89094C44Da98b954EedeAC495271d0F\",
     record{
         env=variant{\"LocalDevelopment\"};
-        url=\"https://mainnet.infura.io/v3/<YOUR_KEY>\";
+        url=\"https://mainnet.infura.io/v3/${INFURA_MAINNET_RPC_URL_KEY}\";
         chain_id=1        
     },
     record{

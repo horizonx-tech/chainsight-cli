@@ -186,7 +186,7 @@ impl EventIndexerDatasource {
                 Some("ERC20.json".to_string()),
             ),
             network: SourceNetwork {
-                rpc_url: "https://mainnet.infura.io/v3/<YOUR_KEY>".to_string(),
+                rpc_url: "https://mainnet.infura.io/v3/${INFURA_MAINNET_RPC_URL_KEY}".to_string(),
                 chain_id: 1,
             },
             from: 17660942,
@@ -238,7 +238,7 @@ datasource:
         interface: ERC20.json
     contract_type: ERC20
     network: 
-        rpc_url: https://mainnet.infura.io/v3/<YOUR_KEY>
+        rpc_url: https://mainnet.infura.io/v3/${INFURA_MAINNET_RPC_URL_KEY}
         chain_id: 1
     from: 17660942
 interval: 3600
@@ -269,7 +269,8 @@ interval: 3600
                         interface: Some("ERC20.json".to_string())
                     },
                     network: SourceNetwork {
-                        rpc_url: "https://mainnet.infura.io/v3/<YOUR_KEY>".to_string(),
+                        rpc_url: "https://mainnet.infura.io/v3/${INFURA_MAINNET_RPC_URL_KEY}"
+                            .to_string(),
                         chain_id: 1,
                     },
                     from: 17660942,
@@ -310,7 +311,8 @@ interval: 3600
                     interface: Some("ERC20.json".to_string()),
                 },
                 network: SourceNetwork {
-                    rpc_url: "https://mainnet.infura.io/v3/<YOUR_KEY>".to_string(),
+                    rpc_url: "https://mainnet.infura.io/v3/${INFURA_MAINNET_RPC_URL_KEY}"
+                        .to_string(),
                     chain_id: 1,
                 },
                 from: 17660942,
