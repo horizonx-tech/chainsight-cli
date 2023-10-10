@@ -3,6 +3,7 @@ use std::{panic, path::Path};
 use inflector::cases::snakecase::to_snake_case;
 
 pub mod clap;
+pub mod env;
 pub mod interaction;
 pub mod paths;
 pub mod serializer;
@@ -10,6 +11,7 @@ pub mod serializer;
 pub const CHAINSIGHT_FILENAME: &str = ".chainsight";
 pub const PROJECT_MANIFEST_FILENAME: &str = "project.yaml";
 pub const PROJECT_MANIFEST_VERSION: &str = "v1";
+pub const DOTENV_FILENAME: &str = ".env";
 pub const GITIGNORE_FILENAME: &str = ".gitignore";
 pub const ARTIFACTS_DIR: &str = "artifacts";
 

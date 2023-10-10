@@ -20,7 +20,9 @@ use crate::{
             project::ProjectManifestData,
         },
         environment::EnvironmentImpl,
-        utils::{is_chainsight_project, PROJECT_MANIFEST_FILENAME},
+        utils::{
+            env::cache_envfile, is_chainsight_project, DOTENV_FILENAME, PROJECT_MANIFEST_FILENAME,
+        },
     },
     types::{ComponentType, Network},
 };
@@ -67,7 +69,13 @@ pub fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
     info!(log, r#"Execute canister processing..."#);
 
     let project_path_str = project_path.unwrap_or(".".to_string());
-    let artifacts_path_str = format!("{}/artifacts", &project_path_str);
+
+    // load env
+    let env_file_path = format!("{}/{}", &project_path_str, DOTENV_FILENAME);
+    if Path::new(&env_file_path).is_file() {
+        info!(log, r#"Load env file: "{}""#, &env_file_path);
+        cache_envfile(Some(&env_file_path))?;
+    }
 
     // load component definitions from manifests
     let project_manifest = ProjectManifestData::load(&format!(
@@ -112,6 +120,8 @@ pub fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
             };
         component_data.push(data);
     }
+
+    let artifacts_path_str = format!("{}/artifacts", &project_path_str);
 
     if opts.only_execute_cmds {
         info!(log, r#"Skip to generate commands to call components"#);

@@ -17,7 +17,8 @@ use crate::lib::codegen::components::snapshot_indexer_evm::SnapshotIndexerEVMCom
 use crate::lib::codegen::components::snapshot_indexer_https::SnapshotIndexerHTTPSComponentManifest;
 use crate::lib::codegen::components::snapshot_indexer_icp::SnapshotIndexerICPComponentManifest;
 use crate::lib::codegen::templates::dfx_json;
-use crate::lib::utils::{find_duplicates, paths, ARTIFACTS_DIR};
+use crate::lib::utils::env::cache_envfile;
+use crate::lib::utils::{find_duplicates, paths, ARTIFACTS_DIR, DOTENV_FILENAME};
 use crate::{
     lib::{
         codegen::project::ProjectManifestData,
@@ -62,6 +63,14 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
         log,
         r#"Start building project '{}'"#, project_manifest.label
     );
+
+    // load env
+    let env_file_path = format!("{}/{}", &project_path_str, DOTENV_FILENAME);
+    if Path::new(&env_file_path).is_file() {
+        info!(log, r#"Load env file: "{}""#, &env_file_path);
+        cache_envfile(Some(&env_file_path))?;
+    }
+
     // check duplicated component paths
     {
         let component_paths = project_manifest

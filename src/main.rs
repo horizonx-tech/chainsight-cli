@@ -8,8 +8,11 @@ mod types;
 use clap::{ArgAction, Parser};
 use commands::{exec, Command};
 use config::cli_version_str;
-use dotenvy::dotenv;
-use lib::{environment::EnvironmentImpl, logger::create_root_logger, utils};
+use lib::{
+    environment::EnvironmentImpl,
+    logger::create_root_logger,
+    utils::{self, env::cache_envfile},
+};
 use slog::error;
 
 /// The Chainsight Executor
@@ -30,7 +33,7 @@ struct Cli {
 
 fn main() {
     let args = Cli::parse();
-    dotenv().ok();
+    let _ = cache_envfile(None); // NOTE: Proceed regardless of the absence of an env file or environment variables.
     let verbose_level = args.verbose as i64 - args.quiet as i64;
     let logger = create_root_logger(verbose_level);
     let env = EnvironmentImpl::new().with_logger(logger.clone());
