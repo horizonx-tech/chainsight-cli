@@ -16,8 +16,7 @@ init_in!();
 manage_single_state!("target_addr", String, false);
 setup_func!({
 target_addr:String, config:IndexingConfig
-}
-;
+});
 timer_task_func!("set_task", "index", true);
 use sample_algorithm_indexer::*;
 algorithm_indexer!(HashMap<u64, Vec<Transfer>>, "proxy_call");
@@ -26,5 +25,6 @@ algorithm_indexer!(HashMap<u64, Vec<Transfer>>, "proxy_call");
 pub struct SampleOutput {
 pub result:String, pub value:String
 }
+
 did_export!("sample_algorithm_indexer");
 
