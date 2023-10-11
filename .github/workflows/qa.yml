@@ -91,7 +91,7 @@ jobs:
         with:
           toolchain: nightly
           command: test
-          args: --all-features --no-fail-fast -- --skip commands::tests::
+          args: --all-features --no-fail-fast -- --skip commands::tests
         env:
           CARGO_INCREMENTAL: '0'
           RUSTFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
@@ -123,13 +123,6 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
             toolchain: nightly
-      - uses: actions-rs/cargo@v1
-        with:
-          toolchain: nightly
-          command: test
-          args: commands::tests -- -Zunstable-options --ensure-time
-        env:
-          CARGO_INCREMENTAL: '0'
-          RUSTFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
-          RUSTDOCFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
-          RUST_TEST_TIME_UNIT: 60000,300000
+      - name: Run snapshot tests
+        run: |
+          RUST_TEST_TIME_UNIT=60000,300000 cargo +nightly test commands::tests -- -Zunstable-options --ensure-time
