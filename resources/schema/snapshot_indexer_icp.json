@@ -74,7 +74,7 @@
           "type": "object",
           "title": "location of the datasource",
           "description": "location of the datasource. For contract, it is the contract address. For canister, it is the canister id or canister name defined in dfx.json.",
-          "required": ["id", "args"],
+          "required": ["id"],
           "properties": {
             "id": {
               "$id": "#/properties/datasource/properties/location/properties/id",
@@ -87,39 +87,6 @@
                 "pj_snapshot_indexer_icp",
                 "rrkah-fqaaa-aaaaa-aaaaq-cai"
               ]
-            },
-            "args": {
-              "$id": "#/properties/datasource/properties/location/properties/args",
-              "title": "args",
-              "description": "args for the datasource.",
-              "type": "object",
-              "properties": {
-                "network_id": {
-                  "$id": "#/properties/datasource/properties/location/properties/args/properties/network_id",
-                  "type": "integer",
-                  "title": "network id",
-                  "description": "chain id. It is required if type is contract.",
-                  "examples": [1, 31337],
-                  "pattern": "^[0-9]+$"
-                },
-                "rpc_url": {
-                  "$id": "#/properties/datasource/properties/location/properties/args/properties/rpc_url",
-                  "type": "string",
-                  "title": "rpc url",
-                  "description": "rpc url of the datasource. It is required if type is contract.",
-                  "examples": ["https://mainnet.infura.io/v3/YOUR_API_KEY"],
-                  "pattern": "^(http|https)://"
-                },
-                "id_type": {
-                  "$id": "#/properties/datasource/properties/location/properties/args/properties/id_type",
-                  "type": "string",
-                  "title": "id type",
-                  "description": "type of the id. It is required if type is canister.",
-                  "examples": ["canister_id", "canister_name"],
-                  "pattern": "^(canister_id|canister_name)$",
-                  "enum": ["canister_id", "canister_name"]
-                }
-              }
             }
           }
         },

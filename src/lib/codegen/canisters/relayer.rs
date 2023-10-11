@@ -1,11 +1,10 @@
 use anyhow::{bail, ensure};
-use candid::Principal;
 use quote::{format_ident, quote};
 
 use crate::{
     lib::codegen::{
         canisters::common::{
-            generate_outside_call_idents, generate_request_arg_idents, OutsideCallIdentsType,
+            generate_outside_call_idents, generate_request_arg_idents, OutsideCallType,
         },
         components::{
             common::{ComponentManifest, DestinationType},
@@ -19,7 +18,6 @@ use crate::{
 use super::common::{CanisterMethodIdentifier, CanisterMethodValueType};
 
 fn common_codes() -> proc_macro2::TokenStream {
-    let outside_call_idents = generate_outside_call_idents(OutsideCallIdentsType::All);
     quote! {
         use std::str::FromStr;
         use chainsight_cdk_macros::{manage_single_state, setup_func, init_in, timer_task_func, define_web3_ctx, define_transform_for_web3, define_get_ethereum_address, chainsight_common, did_export,relayer_source};
@@ -27,8 +25,6 @@ fn common_codes() -> proc_macro2::TokenStream {
         use chainsight_cdk::rpc::{CallProvider, Caller, Message};
 
         chainsight_common!(3600);
-
-        #outside_call_idents
 
         define_get_ethereum_address!();
 
@@ -63,25 +59,11 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
             type CallCanisterArgs = #id_ident::CallCanisterArgs;
         },
     };
-    let lens_targets: Vec<Principal> = manifest
-        .clone()
-        .lens_targets
-        .map(|t| {
-            t.identifiers
-                .iter()
-                .map(|p| Principal::from_text(p).expect("lens target must be principal"))
-                .collect()
-        })
-        .or_else(|| Some(vec![]))
-        .unwrap();
-    let lens_targets_string_ident: Vec<_> = lens_targets.iter().map(|p| p.to_text()).collect();
 
     let get_args_ident = match manifest.lens_targets.is_some() {
         true => quote! {
             pub fn call_args() -> Vec<String> {
-                vec![
-                    #(#lens_targets_string_ident.to_string()),*
-                ]
+                get_lens_targets()
             }
         },
         false => quote! {
@@ -100,7 +82,15 @@ fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macr
         },
     };
 
+    let mut outside_call_types = vec![OutsideCallType::Evm, OutsideCallType::Chainsight];
+    if manifest.lens_targets.is_some() {
+        outside_call_types.push(OutsideCallType::Lens);
+    }
+    let outside_call_idents = generate_outside_call_idents(&outside_call_types);
+
     Ok(quote! {
+        #outside_call_idents
+
         ic_solidity_bindgen::contract_abi!(#abi_path);
         use #id_ident::*;
         #relayer_source_ident

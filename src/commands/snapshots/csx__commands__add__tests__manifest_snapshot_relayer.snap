@@ -14,8 +14,6 @@ metadata:
 datasource:
   location:
     id: sample_snapshot_indexer_evm
-    args:
-      id_type: canister_name
   method:
     identifier: function_identifier()
     interface: null
