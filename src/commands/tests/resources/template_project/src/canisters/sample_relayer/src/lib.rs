@@ -6,14 +6,14 @@ use chainsight_cdk_macros::{
 use ic_web3_rs::types::{Address, U256};
 use std::str::FromStr;
 chainsight_common!(3600);
+define_get_ethereum_address!();
+timer_task_func!("set_task", "sync", true);
+init_in!();
 define_web3_ctx!();
 define_transform_for_web3!();
 manage_single_state!("target_addr", String, false);
 manage_single_state!("target_canister", String, false);
-setup_func ! ({ target_canister : String , target_addr : String , web3_ctx_param : chainsight_cdk :: web3 :: Web3CtxParam });
-define_get_ethereum_address!();
-timer_task_func!("set_task", "sync", true);
-init_in!();
+setup_func ! ({ target_addr : String , web3_ctx_param : chainsight_cdk :: web3 :: Web3CtxParam , target_canister : String });
 ic_solidity_bindgen::contract_abi!("./__interfaces/Uint256Oracle.json");
 use sample_relayer::*;
 relayer_source!("get_last_snapshot_value", false);
