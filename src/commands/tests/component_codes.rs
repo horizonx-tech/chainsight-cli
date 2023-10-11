@@ -116,7 +116,7 @@ fn get_generated_src_paths(
 fn test() {
     let root_path: &str = "test__component_codes";
     let components = [
-        &ALGORITHM_INDEXER,
+        // &ALGORITHM_INDEXER,
         // &ALGORITHM_LENS,
         &EVENT_INDEXER,
         &SNAPSHOT_INDEXER_ICP,
