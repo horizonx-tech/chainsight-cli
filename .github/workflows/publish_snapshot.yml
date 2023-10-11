@@ -1,0 +1,95 @@
+name: Publish Snapshot
+on:
+  push:
+    branches:
+      - 'main'
+env:
+  RUST_VERSION: 1.72.1
+jobs:
+  build_cli:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [ x86_64-apple-darwin, x86_64-unknown-linux-gnu ]
+        include:
+          - os: macos-12
+            target: x86_64-apple-darwin
+            binary_path: target/x86_64-apple-darwin/release
+            name: x86_64-darwin
+            tar: gtar
+          - os: ubuntu-20.04
+            target: x86_64-unknown-linux-gnu
+            binary_path: target/x86_64-unknown-linux-gnu/release
+            name: x86_64-linux
+            tar: tar
+    steps:
+      - uses: actions/checkout@v3
+      - name: Cache Cargo
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ env.RUST_VERSION }}-publish-1
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ env.RUST_VERSION }}
+          override: true
+        if: contains(matrix.os, 'macos')
+      - name: Add snapshot version
+        run: |
+          brew install gnu-sed
+          gsed -i -z "s/name = \"csx\"\nversion = \"0.1.0\"/name = \"csx\"\nversion = \"0.1.0-$(git show --format='%h' --no-patch)\"/" Cargo*
+        if: contains(matrix.os, 'macos')
+      - name: Add snapshot version
+        run: |
+          sed -i -z "s/name = \"csx\"\nversion = \"0.1.0\"/name = \"csx\"\nversion = \"0.1.0-$(git show --format='%h' --no-patch)\"/" Cargo*
+        if: contains(matrix.os, 'ubuntu')
+      - name: Build
+        run: |
+          cargo clean --target ${{ matrix.target }} --release
+          cargo build --target ${{ matrix.target }} --locked --release
+      - name: Strip binaries
+        run: |
+          cd ${{ matrix.binary_path }}
+          sudo chown -R $(whoami) .
+          strip csx
+      - name: Set env
+        run: |
+          echo "TARBALL_FILENAME=csx-${{ matrix.name }}.tar.gz" >> $GITHUB_ENV
+          echo "SHA256_FILENAME=csx-${{ matrix.name }}.tar.gz.sha256" >> $GITHUB_ENV
+      - name: Create tarball of binaries and sha256 of tarball
+        run: |
+          ${{ matrix.tar }} -zcC ${{ matrix.binary_path }} -f ${{ env.TARBALL_FILENAME }} csx
+          shasum -a 256 ${{ env.TARBALL_FILENAME }} > ${{ env.SHA256_FILENAME }}
+          shasum -c ${{ env.SHA256_FILENAME }}
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: csx-${{ matrix.name }}
+          path: |
+            ${{ env.TARBALL_FILENAME }}
+            ${{ env.SHA256_FILENAME }}
+  publish:
+    runs-on: ubuntu-latest
+    needs: build_cli
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [ 'x86_64-darwin', 'x86_64-linux' ]
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: csx-${{ matrix.name }}
+      - name: Publish tarball and sha256
+        uses: svenstaro/upload-release-action@v2
+        with:
+          file: csx-*.tar.*
+          file_glob: true
+          prerelease: true
+          overwrite: true
+          tag: snapshot
