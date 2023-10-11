@@ -14,7 +14,7 @@ use crate::{
 };
 
 fn generate_command_to_setup(id: &str, datasrc_id: &str, network: &Network) -> String {
-    let target_canister = principal_or_resolver_str(datasrc_id);
+    let target_canister = principal_or_resolver_str(datasrc_id, network);
 
     format!(
         r#"dfx canister {} call {} setup "(

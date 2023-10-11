@@ -36,9 +36,9 @@ pub fn init_in_env_task(network: &Network, id: &str) -> String {
     )
 }
 
-pub fn principal_or_resolver_str(str: &str) -> String {
+pub fn principal_or_resolver_str(str: &str, network: &Network) -> String {
     match Principal::from_text(str) {
         Ok(p) => p.to_string(),
-        Err(_) => format!("$(dfx canister id {})", str),
+        Err(_) => format!("$(dfx canister {} id {})", network_param(network), str),
     }
 }

@@ -14,7 +14,7 @@ dfx canister  call sample_relayer setup "(
         chain_id = 80001;
         env = variant { LocalDevelopment };
     },
-    \"$(dfx canister id datasource_canister_id)\",
+    \"$(dfx canister  id datasource_canister_id)\",
     
 )"
 # set_task

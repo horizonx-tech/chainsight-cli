@@ -20,10 +20,10 @@ fn generate_command_to_setup(
     dst_rpc_url: &str,
     network: &Network,
 ) -> String {
-    let target_canister = principal_or_resolver_str(datasrc_id);
+    let target_canister = principal_or_resolver_str(datasrc_id, network);
     let lens_target_canisters = lens_targets
         .iter()
-        .map(|t| principal_or_resolver_str(t))
+        .map(|t| principal_or_resolver_str(t, network))
         .collect::<Vec<String>>();
 
     let lens_targets_arg = if lens_target_canisters.is_empty() {
