@@ -1,0 +1,24 @@
+[package]
+name = "sample_algorithm_lens"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["rlib"]
+
+[dependencies]
+candid.workspace = true
+ic-cdk.workspace = true
+ic-cdk-macros.workspace = true
+ic-cdk-timers.workspace = true
+ic-stable-structures.workspace = true
+serde.workspace = true
+serde_bytes.workspace = true
+hex.workspace = true
+
+ic-web3-rs.workspace = true
+ic-solidity-bindgen.workspace = true
+chainsight-cdk-macros.workspace = true
+chainsight-cdk.workspace = true
+
+sample_algorithm_lens_accessors = { path = "../../accessors/sample_algorithm_lens_accessors" }
