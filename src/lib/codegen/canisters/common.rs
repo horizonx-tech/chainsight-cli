@@ -224,54 +224,51 @@ pub fn convert_type_from_candid_type(s: &str) -> (String, bool) {
     (s.to_string(), false)
 }
 
-pub enum OutsideCallIdentsType {
-    Eth,
-    CrossCanisterCall,
-    All,
+pub enum OutsideCallType {
+    Evm,
+    Chainsight,
+    Lens,
 }
 /// Generate common identifiers such as storage, setter, etc. for outside calls
-pub fn generate_outside_call_idents(type_: OutsideCallIdentsType) -> proc_macro2::TokenStream {
-    let eth_idents = quote! {
-        define_web3_ctx!();
-        define_transform_for_web3!();
-
-        manage_single_state!("target_addr", String, false);
-    };
-    let cross_canister_call_idents = quote! {
-        manage_single_state!("target_canister", String, false);
-    };
-    match type_ {
-        OutsideCallIdentsType::Eth => {
-            quote! {
-                #eth_idents
-
-                setup_func!({
+pub fn generate_outside_call_idents(type_: &Vec<OutsideCallType>) -> proc_macro2::TokenStream {
+    let mut fields = vec![];
+    let mut args = vec![];
+    for _type in type_ {
+        match _type {
+            OutsideCallType::Evm => {
+                fields.push(quote! {
+                    define_web3_ctx!();
+                    define_transform_for_web3!();
+                    manage_single_state!("target_addr", String, false);
+                });
+                args.push(quote! {
                     target_addr: String,
                     web3_ctx_param: chainsight_cdk::web3::Web3CtxParam
                 });
             }
-        }
-        OutsideCallIdentsType::CrossCanisterCall => {
-            quote! {
-                #cross_canister_call_idents
-
-                setup_func!({
+            OutsideCallType::Chainsight => {
+                fields.push(quote! {
+                    manage_single_state!("target_canister", String, false);
+                });
+                args.push(quote! {
                     target_canister: String
                 });
             }
-        }
-        OutsideCallIdentsType::All => {
-            quote! {
-                #eth_idents
-                #cross_canister_call_idents
-
-                setup_func!({
-                    target_canister: String,
-                    target_addr: String,
-                    web3_ctx_param: chainsight_cdk::web3::Web3CtxParam
+            OutsideCallType::Lens => {
+                fields.push(quote! {
+                    manage_single_state!("lens_targets", Vec<String>, false);
+                });
+                args.push(quote! {
+                    lens_targets: Vec<String>
                 });
             }
         }
+    }
+    quote! {
+        #(#fields)*
+        setup_func!({
+            #(#args),*
+        });
     }
 }
 

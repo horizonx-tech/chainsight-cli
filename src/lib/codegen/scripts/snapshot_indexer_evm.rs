@@ -42,7 +42,7 @@ fn generate_command_to_setup(
 }
 fn script_contents(manifest: &SnapshotIndexerEVMComponentManifest, network: Network) -> String {
     let id = manifest.id().unwrap();
-    let datasrc_location_args = manifest.datasource.location.args.clone();
+    let datasrc_location_args = manifest.datasource.location.args.clone().unwrap(); // todo: check validation
 
     let setup_contents = generate_command_to_setup(
         &id,

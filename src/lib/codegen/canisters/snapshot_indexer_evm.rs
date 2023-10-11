@@ -7,7 +7,7 @@ use crate::{
             canisters::{
                 common::{
                     generate_outside_call_idents, generate_request_arg_idents,
-                    ContractMethodIdentifier, OutsideCallIdentsType,
+                    ContractMethodIdentifier, OutsideCallType,
                 },
                 snapshot_indexer_icp::generate_queries_without_timestamp,
             },
@@ -22,7 +22,7 @@ use crate::{
 };
 
 fn common_codes() -> proc_macro2::TokenStream {
-    let outside_call_idents = generate_outside_call_idents(OutsideCallIdentsType::Eth);
+    let outside_call_idents = generate_outside_call_idents(&vec![OutsideCallType::Evm]);
 
     quote! {
         use std::str::FromStr;

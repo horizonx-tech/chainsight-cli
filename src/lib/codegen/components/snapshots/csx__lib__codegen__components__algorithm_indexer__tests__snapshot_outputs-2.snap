@@ -7,5 +7,6 @@ use std::collections::HashMap;
 pub struct Transfer {
 pub from:String, pub to:String, pub value:String
 }
+
 pub fn persist(elem:HashMap<u64, Vec<Transfer>>) {
 todo!() }

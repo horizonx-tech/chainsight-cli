@@ -10,13 +10,6 @@ use crate::{
     types::{ComponentType, Network},
 };
 
-#[derive(Deserialize, Serialize, Clone, Copy, Debug, PartialEq, clap::ValueEnum)]
-pub enum CanisterIdType {
-    #[serde(rename = "canister_name")]
-    CanisterName,
-    #[serde(rename = "principal_id")]
-    PrincipalId,
-}
 #[allow(clippy::enum_variant_names)]
 #[derive(Deserialize, Serialize, Clone, Copy, Debug, PartialEq, clap::ValueEnum)]
 pub enum DestinationType {
@@ -64,7 +57,8 @@ pub struct Datasource {
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct DatasourceLocation {
     pub id: String,
-    pub args: DatasourceLocationArgs,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub args: Option<DatasourceLocationArgs>,
 }
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct DatasourceLocationArgs {
@@ -73,10 +67,6 @@ pub struct DatasourceLocationArgs {
     pub network_id: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rpc_url: Option<String>,
-
-    // for canister
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub id_type: Option<CanisterIdType>,
 }
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct DatasourceMethod {
@@ -154,30 +144,19 @@ impl DatasourceLocation {
     pub fn new_contract(id: String, network_id: u32, rpc_url: String) -> Self {
         Self {
             id,
-            args: DatasourceLocationArgs {
+            args: Option::Some(DatasourceLocationArgs {
                 network_id: Some(network_id),
                 rpc_url: Some(rpc_url),
-                id_type: None,
-            },
+            }),
         }
     }
 
     pub fn default_canister() -> Self {
-        Self::new_canister(
-            "sample_snapshot_indexer_evm".to_string(),
-            CanisterIdType::CanisterName,
-        )
+        Self::new_canister("sample_snapshot_indexer_evm".to_string())
     }
 
-    pub fn new_canister(id: String, id_type: CanisterIdType) -> Self {
-        Self {
-            id,
-            args: DatasourceLocationArgs {
-                network_id: None,
-                rpc_url: None,
-                id_type: Some(id_type),
-            },
-        }
+    pub fn new_canister(id: String) -> Self {
+        Self { id, args: None }
     }
 }
 

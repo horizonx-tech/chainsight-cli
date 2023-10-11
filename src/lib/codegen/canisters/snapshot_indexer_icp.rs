@@ -6,7 +6,7 @@ use crate::{
     lib::codegen::{
         canisters::common::{
             generate_outside_call_idents, generate_request_arg_idents, CanisterMethodIdentifier,
-            CanisterMethodValueType, OutsideCallIdentsType,
+            CanisterMethodValueType, OutsideCallType,
         },
         components::{
             common::ComponentManifest, snapshot_indexer_icp::SnapshotIndexerICPComponentManifest,
@@ -16,8 +16,7 @@ use crate::{
 };
 
 fn common_codes() -> proc_macro2::TokenStream {
-    let outside_call_idents =
-        generate_outside_call_idents(OutsideCallIdentsType::CrossCanisterCall);
+    let outside_call_idents = generate_outside_call_idents(&vec![OutsideCallType::Chainsight]);
 
     quote! {
         use candid::{Decode, Encode};

@@ -6,10 +6,5 @@ pub type CallCanisterResponse = CustomResponseStruct;
 #[derive(Clone, Debug, candid::CandidType, candid::Deserialize)]
 pub struct CustomResponseStruct {
 pub value:String, pub timestamp:u64 };
-pub type CallCanisterArgs =();
-pub fn call_args() -> CallCanisterArgs {
-()
-}
-
 pub fn filter(_:& CallCanisterResponse) -> bool {
 true }

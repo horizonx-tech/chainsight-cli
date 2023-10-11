@@ -1,6 +1,5 @@
 ---
 source: src/commands/new.rs
-assertion_line: 355
 expression: template_snapshot_indexer_icp_manifest(&id).to_str_as_yaml().unwrap()
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/snapshot_indexer_icp.json
@@ -16,8 +15,6 @@ metadata:
 datasource:
   location:
     id: sample_snapshot_indexer_evm
-    args:
-      id_type: canister_name
   method:
     identifier: 'get_last_snapshot : () -> (record { value : text; timestamp : nat64 })'
     interface: null
