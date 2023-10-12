@@ -14,6 +14,9 @@ mod remove;
 mod test;
 mod upgrade;
 
+#[cfg(test)]
+mod tests;
+
 #[derive(Debug, Subcommand)]
 pub enum Command {
     // Config(config::ConfigOpts),

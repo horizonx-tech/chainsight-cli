@@ -1,0 +1,17 @@
+[workspace]
+members = ["canisters/*"]
+
+[workspace.dependencies]
+candid = "0.8"
+ic-cdk = "0.8"
+ic-cdk-macros = "0.6.10"
+ic-cdk-timers = "0.1"
+ic-stable-structures = "0.5.5"
+serde = "1.0.163"
+serde_bytes = "0.11.12"
+hex = "0.4.3"
+
+ic-web3-rs = { version = "0.1.1" }
+ic-solidity-bindgen = { version = "0.1.5" }
+chainsight-cdk-macros = { git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "892a7555a58b9e026daedf178078681c84381c26" }
+chainsight-cdk = { git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "892a7555a58b9e026daedf178078681c84381c26" }

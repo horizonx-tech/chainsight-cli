@@ -1,0 +1,45 @@
+type Body = record { data : BodyData };
+type BodyData = record { data : CurrencyData };
+type CanisterMetricsSnapshot = record { cycles : nat; timestamp : nat64 };
+type CurrencyData = record { quote : Quote };
+type Data = record { body : Body };
+type Env = variant { Production; Test; LocalDevelopment };
+type InitError = variant {
+  InvalidDestination : text;
+  InvalidPrincipal : principal;
+  InvalidContent : text;
+  InvalidRequest : text;
+};
+type Quote = record { usd : QuoteData };
+type QuoteData = record { volume_24h : float64; price : float64 };
+type Result = variant { Ok; Err : InitError };
+type Snapshot = record { value : SnapshotValue; timestamp : nat64 };
+type SnapshotValue = record { data : Data };
+service : {
+  get_last_snapshot : () -> (Snapshot) query;
+  get_last_snapshot_value : () -> (SnapshotValue) query;
+  get_snapshot : (nat64) -> (Snapshot) query;
+  get_snapshot_value : (nat64) -> (SnapshotValue) query;
+  get_snapshots : () -> (vec Snapshot) query;
+  get_top_snapshot_values : (nat64) -> (vec SnapshotValue) query;
+  get_top_snapshots : (nat64) -> (vec Snapshot) query;
+  init_in : (Env) -> (Result);
+  last_executed : () -> (nat64) query;
+  metric : () -> (CanisterMetricsSnapshot) query;
+  metrics : (nat64) -> (vec CanisterMetricsSnapshot) query;
+  proxy_canister_metrics_snapshots_len : (vec nat8) -> (vec nat8);
+  proxy_get_canister_metrics_snapshot : (vec nat8) -> (vec nat8);
+  proxy_get_canister_metrics_snapshots : (vec nat8) -> (vec nat8);
+  proxy_get_last_canister_metrics_snapshot : (vec nat8) -> (vec nat8);
+  proxy_get_last_snapshot : (vec nat8) -> (vec nat8);
+  proxy_get_last_snapshot_value : (vec nat8) -> (vec nat8);
+  proxy_get_snapshot : (vec nat8) -> (vec nat8);
+  proxy_get_snapshot_value : (vec nat8) -> (vec nat8);
+  proxy_get_snapshots : (vec nat8) -> (vec nat8);
+  proxy_get_top_canister_metrics_snapshots : (vec nat8) -> (vec nat8);
+  proxy_get_top_snapshot_values : (vec nat8) -> (vec nat8);
+  proxy_get_top_snapshots : (vec nat8) -> (vec nat8);
+  proxy_snapshots_len : (vec nat8) -> (vec nat8);
+  set_task : (nat32, nat32) -> ();
+  snapshots_len : () -> (nat64) query;
+}
