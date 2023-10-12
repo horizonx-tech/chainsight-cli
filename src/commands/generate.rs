@@ -154,14 +154,6 @@ fn exec_codegen(
     // generate workspace
     let src_path_str = &paths::src_path_str(project_path_str);
     fs::create_dir_all(src_path_str).expect("failed to create dir: src");
-    if !Path::new(&format!("{}/Cargo.toml", src_path_str)).is_file() {
-        fs::write(format!("{}/Cargo.toml", src_path_str), root_cargo_toml())?;
-    } else {
-        info!(
-            log,
-            r#"Skip creating workspace: '{}/Cargo.toml' already exists"#, src_path_str
-        )
-    }
 
     // remove generated files
     let _ = fs::remove_dir_all(format!("{}/__interfaces", src_path_str));
@@ -177,6 +169,7 @@ fn exec_codegen(
     }
 
     // generate canister projects
+    let mut is_exist_accessors_folder = false;
     for data in component_data {
         let id = data.id().unwrap();
 
@@ -231,6 +224,20 @@ fn exec_codegen(
                     err
                 )
             })?;
+            is_exist_accessors_folder = true;
+        }
+
+        // Generate Cargo.toml that configure the entire workspace
+        if !Path::new(&format!("{}/Cargo.toml", src_path_str)).is_file() {
+            fs::write(
+                format!("{}/Cargo.toml", src_path_str),
+                root_cargo_toml(is_exist_accessors_folder),
+            )?;
+        } else {
+            info!(
+                log,
+                r#"Skip creating workspace: '{}/Cargo.toml' already exists"#, src_path_str
+            )
         }
 
         // Processes about interface
