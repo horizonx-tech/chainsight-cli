@@ -26,7 +26,7 @@ slog = { version = "2.7.0", features = ["max_level_trace"] }
 slog-async = "2.7.0"
 slog-term = "2.9.0"
 syn = "2.0.38"
-chainsight-cdk = { git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "c3ad4d7d33795d589e1213bbd8a73f425540c59b" }
+chainsight-cdk = { git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "662edfe7fff9ac1cdaa92ec0d46680fcbc704913" }
 
 
 [dev-dependencies]

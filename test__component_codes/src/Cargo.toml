@@ -1,5 +1,13 @@
 [workspace]
-members = ["canisters/*"]
+members = [
+    "bindings/*",
+    "canisters/*",
+    "logics/*"
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
 
 [workspace.dependencies]
 candid = "0.8"

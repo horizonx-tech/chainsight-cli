@@ -35,7 +35,7 @@ impl Into<chainsight_cdk::config::components::AlgorithmIndexerConfig>
         AlgorithmIndexerConfig {
             common: CommonConfig {
                 monitor_duration: self.interval,
-                canister_name: self.metadata.label,
+                canister_name: self.id.unwrap(),
             },
             indexing: chainsight_cdk::indexer::IndexingConfig {
                 start_from: self.datasource.from,

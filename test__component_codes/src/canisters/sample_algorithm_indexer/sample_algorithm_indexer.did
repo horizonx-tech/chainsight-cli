@@ -1,0 +1,11 @@
+type Account = record { address : text };
+service : {
+  between_account : (record { text; text }) -> (
+      vec record { text; Account },
+    ) query;
+  get_account : (text) -> (opt Account) query;
+  last_account : (nat64) -> (vec record { text; Account }) query;
+  proxy_between_account : (vec nat8) -> (vec nat8);
+  proxy_get_account : (vec nat8) -> (vec nat8);
+  proxy_last_account : (vec nat8) -> (vec nat8);
+}

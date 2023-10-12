@@ -1,38 +1,16 @@
 use anyhow::ensure;
-use chainsight_cdk::config::components::AlgorithmInputType;
+use chainsight_cdk::config::components::{AlgorithmIndexerConfig, AlgorithmInputType};
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote};
 
 use crate::{
-    lib::codegen::components::{
-        algorithm_indexer::{AlgorithmIndexerComponentManifest, AlgorithmOutputType},
-        common::ComponentManifest,
+    lib::codegen::components::algorithm_indexer::{
+        AlgorithmIndexerComponentManifest, AlgorithmOutputType,
     },
     types::ComponentType,
 };
 
-fn common_codes() -> TokenStream {
-    quote! {
-        use candid::CandidType;
-        use chainsight_cdk::{core::*};
-        use chainsight_cdk::{indexer::IndexingConfig, storage::Data};
-        use chainsight_cdk_macros::*;
-        use serde::{Deserialize, Serialize};
-        use std::collections::HashMap;
-        chainsight_common!(3600);
-        init_in!();
-        manage_single_state!("target_addr", String, false);
-
-        setup_func!({
-            target_addr: String,
-            config: IndexingConfig
-        });
-        timer_task_func!("set_task", "index", true);
-
-
-    }
-}
-
+// TODO: remove this. see: https://github.com/horizonx-tech/chainsight-sdk/blob/662edfe7fff9ac1cdaa92ec0d46680fcbc704913/chainsight-cdk-macros/src/canisters/algorithm_indexer.rs#L39
 fn input_type_ident(manifest: &AlgorithmIndexerComponentManifest) -> TokenStream {
     let event_struct = format_ident!("{}", &manifest.datasource.input.name);
     let source_type = manifest.datasource.source_type.clone();
@@ -63,11 +41,8 @@ fn input_type_ident(manifest: &AlgorithmIndexerComponentManifest) -> TokenStream
 fn custom_codes(
     manifest: &AlgorithmIndexerComponentManifest,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    let id = &manifest.id().ok_or(anyhow::anyhow!("id is required"))?;
-
-    let logic_ident = format_ident!("{}", id);
-    let source_ident = input_type_ident(manifest);
-    let method = &manifest.datasource.method;
+    let conf: AlgorithmIndexerConfig = (manifest.clone()).into();
+    let conf_json = serde_json::to_string(&conf).unwrap();
 
     let mut output_structs_quotes = Vec::new();
     let (mut key_value_count, mut key_values_count) = (0, 0);
@@ -106,18 +81,11 @@ fn custom_codes(
             }
         });
     }
-    let out = quote! {
-        use #logic_ident::*;
-        algorithm_indexer!(#source_ident, #method);
 
-        #(#output_structs_quotes)*
-
-    };
-
-    // temp
     Ok(quote! {
-        #out
-        did_export!(#id);
+        use chainsight_cdk_macros::def_algorithm_indexer_canister;
+        def_algorithm_indexer_canister!(#conf_json);
+        #(#output_structs_quotes)*
     })
 }
 
@@ -126,16 +94,7 @@ pub fn generate_codes(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::R
         manifest.metadata.type_ == ComponentType::AlgorithmIndexer,
         "type is not AlgorithmIndexer"
     );
-
-    let common_code_token = common_codes();
-    let custom_code_token = custom_codes(manifest)?;
-
-    let code = quote! {
-        #common_code_token
-        #custom_code_token
-    };
-
-    Ok(code)
+    custom_codes(manifest)
 }
 
 pub fn generate_app(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Result<TokenStream> {
