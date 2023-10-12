@@ -15,8 +15,12 @@ pub fn load_env(contents: &str) -> anyhow::Result<String> {
     for (k, v) in dotenvy::vars() {
         envs.insert(k, v);
     }
+    _load_env(contents, envs)
+}
+
+fn _load_env(contents: &str, env: HashMap<String, String>) -> anyhow::Result<String> {
     let mut contents = contents.to_string();
-    for (k, v) in envs {
+    for (k, v) in env {
         contents = contents.replace(&format!("${{{}}}", k), &v);
     }
     Ok(contents)
@@ -61,15 +65,15 @@ mod tests {
         raw: raw
         "#;
         // setup
-        let test_dotenv = "test_dotenv";
-        std::fs::write(test_dotenv, DOTENV_FILE).unwrap();
-        dotenvy::from_filename(test_dotenv).ok();
+        let mut envs = HashMap::new();
+        [("TEST_ENV", "TEST"), ("TEST_ENV2", "TEST2")]
+            .iter()
+            .for_each(|(k, v)| {
+                envs.insert(k.to_string(), v.to_string());
+            });
         // test
-        let actual = load_env(contents).unwrap();
+        let actual = _load_env(contents, envs).unwrap();
         assert_eq!(actual, expected);
-        // teardown
-        std::fs::remove_file(test_dotenv).unwrap();
-        dotenvy::dotenv().ok();
     }
     #[test]
     fn test_load_env_without_env_file() {
@@ -80,7 +84,7 @@ mod tests {
         raw: raw
         "#;
         let expected = contents;
-        let actual = load_env(contents).unwrap();
+        let actual = _load_env(contents, HashMap::new()).unwrap();
         assert_eq!(actual, expected);
         dotenvy::dotenv().ok();
     }
