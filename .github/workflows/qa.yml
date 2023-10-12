@@ -7,102 +7,6 @@ on:
 env:
   RUST_VERSION: 1.72.1
 jobs:
-  doc:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the source code
-        uses: actions/checkout@v3
-      - name: Check if pip is installed
-        run: |
-          if ! command -v pip &> /dev/null
-          then
-              echo "pip could not be found"
-              exit
-          fi
-      - name: install json-schema-for-humans
-        run: pip install json-schema-for-humans
-      - name: Generate docs
-        run: rm -r docs/schema/* && generate-schema-doc resources/schema/ docs/schema/ --config template_name=md
-      - name: if updated, push them
-        uses: stefanzweifel/git-auto-commit-action@v4
-        if: ${{ steps.changes.outputs.files_changed == 'true' }}
-        
-  format:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the source code
-        uses: actions/checkout@v3
-      - name: Cache Cargo
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ env.RUST_VERSION }}
-      - name: Install Rust
-        run: |
-          rustup update ${{ env.RUST_VERSION }} --no-self-update
-          rustup default ${{ env.RUST_VERSION }}
-          rustup component add rustfmt
-      - name: Check format
-        run: cargo fmt --all --check
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the source code
-        uses: actions/checkout@v3
-      - name: Cache Cargo
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ env.RUST_VERSION }}
-      - name: Install Rust
-        run: |
-          rustup update ${{ env.RUST_VERSION }} --no-self-update
-          rustup default ${{ env.RUST_VERSION }}
-          rustup component add clippy
-      - name: Execute lint (clippy)
-        run: cargo clippy -- -D clippy::all
-  unit-test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the source code
-        uses: actions/checkout@v3
-      - name: Cache Cargo
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ env.RUST_VERSION }}
-      - name: Install Rust
-        run: |
-          rustup update ${{ env.RUST_VERSION }} --no-self-update
-          rustup default ${{ env.RUST_VERSION }}
-      - uses: actions-rs/toolchain@v1
-        with:
-            toolchain: nightly
-      - uses: actions-rs/cargo@v1
-        with:
-          toolchain: nightly
-          command: test
-          args: --all-features --no-fail-fast -- --skip commands::tests
-        env:
-          CARGO_INCREMENTAL: '0'
-          RUSTFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
-          RUSTDOCFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
-      - uses: actions-rs/grcov@v0.1
-        id: coverage
-      - name: Coveralls upload
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: ${{ steps.coverage.outputs.report }}
   snapshot-test:
     runs-on: ubuntu-latest
     steps:
@@ -124,6 +28,10 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
             toolchain: nightly
+      - name: Check rustfmt version
+        run: |
+           cargo fmt --version
+           rustfmt --version
       - name: Format test resources
         working-directory: src/commands/tests/resources/template_project/src
         run: |
