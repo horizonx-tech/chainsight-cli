@@ -124,10 +124,6 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
             toolchain: nightly
-      - name: Format test resources
-        working-directory: src/commands/tests/resources/template_project/src
-        run: |
-          cargo fmt
       - name: Run snapshot tests
         run: |
           RUST_TEST_TIME_UNIT=60000,300000 cargo +nightly test commands::tests -- -Zunstable-options --ensure-time

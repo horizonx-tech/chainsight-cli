@@ -1,4 +1,4 @@
-use std::{fs, process::Command};
+use std::{fs, io::Write, process::Command};
 
 use crate::{
     commands::{
@@ -36,7 +36,7 @@ fn pre_process(root_path: &str, component: &[&TestComponent]) -> anyhow::Result<
     Ok(())
 }
 
-fn execute(root_path: &str, components: &[&TestComponent]) {
+fn execute(root_path: &str) {
     // process
     let mute_logger = create_root_logger(-4);
     let env = EnvironmentImpl::new().with_logger(mute_logger);
@@ -45,52 +45,57 @@ fn execute(root_path: &str, components: &[&TestComponent]) {
         generate::GenerateOpts::new(Some(root_path.to_string())),
     )
     .is_ok());
-
-    // NOTE: to compare formatted codes
-    format_code(&format!("{}/src", root_path));
-
-    for c in components {
-        asserts_per_component(&root_path, c);
-    }
 }
 
-fn asserts_per_component(root_path: &str, c: &TestComponent) {
+fn assert_components(root_path: &str, components: &[&TestComponent]) {
+    for c in components {
+        assert_per_component(&root_path, c);
+    }
+}
+fn assert_per_component(root_path: &str, c: &TestComponent) {
     let (_, actual_bindings_path, actual_canister_path, actual_logics_path) =
         get_generated_src_paths(root_path, c.id);
     let (_, expected_bindings_path, expected_canister_path, expected_logics_path) =
         get_src_paths_in_resource(c.id);
+    // TODO: check accessors
 
     // assertions
+    assert_codes_in_path(&actual_bindings_path, &expected_bindings_path);
+    assert_codes_in_path(&actual_canister_path, &expected_canister_path);
+    assert_codes_in_path(&actual_logics_path, &expected_logics_path);
+}
+fn assert_codes_in_path(actual_path: &str, expected_path: &str) {
+    let actual = fs::read_to_string(actual_path).unwrap();
+    let expected = fs::read_to_string(expected_path).unwrap();
     assert_eq!(
-        fs::read_to_string(actual_bindings_path).unwrap(),
-        fs::read_to_string(expected_bindings_path).unwrap(),
-        "fail to compare /bindings: {}",
-        c.id
+        format_code(actual),
+        format_code(expected),
+        "fail to compare: {} vs {}",
+        actual_path,
+        expected_path
     );
-    assert_eq!(
-        fs::read_to_string(actual_canister_path).unwrap(),
-        fs::read_to_string(expected_canister_path).unwrap(),
-        "fail to compare /canisters: {}",
-        c.id
-    );
-    assert_eq!(
-        fs::read_to_string(actual_logics_path).unwrap(),
-        fs::read_to_string(expected_logics_path).unwrap(),
-        "fail to compare /logics: {}",
-        c.id
-    );
+}
+fn format_code(code: String) -> String {
+    let mut child = Command::new("rustfmt")
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .spawn()
+        .expect("Failed to run rustfmt");
+
+    let mut stdin = child.stdin.take().expect("Failed to open stdin");
+    std::thread::spawn(move || {
+        stdin
+            .write_all(code.as_bytes())
+            .expect("Failed to write to stdin");
+    });
+
+    let output = child.wait_with_output().expect("Failed to read stdout");
+    String::from_utf8(output.stdout).expect("Output is not valid UTF-8")
 }
 
 fn post_process(root_path: &str) -> anyhow::Result<()> {
     fs::remove_dir_all(&root_path)?;
     Ok(())
-}
-
-fn format_code(path: &str) {
-    let _ = Command::new("cargo")
-        .current_dir(path)
-        .args(["fmt"])
-        .output();
 }
 
 fn get_generated_src_paths(
@@ -116,8 +121,8 @@ fn get_generated_src_paths(
 fn test() {
     let root_path: &str = "test__component_codes";
     let components = [
-        // &ALGORITHM_INDEXER,
-        // &ALGORITHM_LENS,
+        &ALGORITHM_INDEXER,
+        // &ALGORITHM_LENS, // TODO: enable this
         &EVENT_INDEXER,
         &SNAPSHOT_INDEXER_ICP,
         &SNAPSHOT_INDEXER_EVM,
@@ -126,6 +131,7 @@ fn test() {
     ];
 
     assert!(pre_process(root_path, &components).is_ok());
-    execute(root_path, &components);
+    execute(root_path);
+    assert_components(root_path, &components);
     assert!(post_process(root_path).is_ok());
 }
