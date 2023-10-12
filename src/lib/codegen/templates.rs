@@ -2,7 +2,15 @@ use crate::lib::utils::paths;
 
 pub fn root_cargo_toml() -> String {
     r#"[workspace]
-members = ["canisters/*"]
+members = [
+    "bindings/*",
+    "canisters/*",
+    "logics/*"
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
 
 [workspace.dependencies]
 candid = "0.8"
@@ -25,8 +33,8 @@ pub fn logic_cargo_toml(project_name: &str, dependencies: Vec<String>) -> String
     let txt = format!(
         r#"[package]
 name = "{}"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
 
 [lib]
 crate-type = ["rlib"]
@@ -63,8 +71,8 @@ pub fn accessors_cargo_toml(project_name: &str, dependencies: Vec<String>) -> St
     let txt = format!(
         r#"[package]
 name = "{}"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
 
 [lib]
 crate-type = ["rlib"]
@@ -101,8 +109,8 @@ pub fn canister_project_cargo_toml(project_name: &str) -> String {
     format!(
         r#"[package]
 name = "{}"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
 
 [lib]
 crate-type = ["cdylib"]
@@ -133,8 +141,8 @@ pub fn bindings_cargo_toml(component: &str) -> String {
     format!(
         r#"[package]
 name = "{}"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
 
 [lib]
 crate-type = ["rlib"]

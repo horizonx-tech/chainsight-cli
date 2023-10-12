@@ -4,8 +4,8 @@ expression: canister_project_cargo_toml(PROJECT_NAME)
 ---
 [package]
 name = "sample_canister"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
 
 [lib]
 crate-type = ["cdylib"]
