@@ -32,6 +32,11 @@ jobs:
         run: |
            cargo fmt --version
            rustfmt --version
+      - name: Check directory
+        run: |
+           pwd
+           ls -l
+           ls -l src
       - name: Format test resources
         working-directory: src/commands/tests/resources/template_project/src
         run: |
