@@ -1,9 +1,9 @@
 ---
 source: src/lib/codegen/templates.rs
-expression: root_cargo_toml(false)
+expression: root_cargo_toml(true)
 ---
 [workspace]
-members = ["bindings/*", "canisters/*", "logics/*"]
+members = ["bindings/*", "canisters/*", "logics/*", "accessors/*"]
 
 [workspace.package]
 version = "0.1.0"

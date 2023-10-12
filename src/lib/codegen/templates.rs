@@ -1,12 +1,15 @@
 use crate::lib::utils::paths;
 
-pub fn root_cargo_toml() -> String {
-    r#"[workspace]
-members = [
-    "bindings/*",
-    "canisters/*",
-    "logics/*"
-]
+pub fn root_cargo_toml(with_accessors: bool) -> String {
+    let members = if with_accessors {
+        vec!["bindings", "canisters", "logics", "accessors"]
+    } else {
+        vec!["bindings", "canisters", "logics"]
+    };
+
+    format!(
+        r#"[workspace]
+members = [{}]
 
 [workspace.package]
 version = "0.1.0"
@@ -22,11 +25,17 @@ serde = "1.0.163"
 serde_bytes = "0.11.12"
 hex = "0.4.3"
 
-ic-web3-rs = { version = "0.1.1" }
-ic-solidity-bindgen = { version = "0.1.5" }
-chainsight-cdk-macros = { git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "892a7555a58b9e026daedf178078681c84381c26" }
-chainsight-cdk = { git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "892a7555a58b9e026daedf178078681c84381c26" }
-"#.to_string()
+ic-web3-rs = {{ version = "0.1.1" }}
+ic-solidity-bindgen = {{ version = "0.1.5" }}
+chainsight-cdk-macros = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "892a7555a58b9e026daedf178078681c84381c26" }}
+chainsight-cdk = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "892a7555a58b9e026daedf178078681c84381c26" }}
+"#,
+        members
+            .iter()
+            .map(|x| format!(r#""{}/*""#, x))
+            .collect::<Vec<String>>()
+            .join(", ")
+    )
 }
 
 pub fn logic_cargo_toml(project_name: &str, dependencies: Vec<String>) -> String {
@@ -226,7 +235,12 @@ mod tests {
 
     #[test]
     fn test_snapshot_root_cargo_toml() {
-        assert_display_snapshot!(root_cargo_toml())
+        assert_display_snapshot!(root_cargo_toml(false))
+    }
+
+    #[test]
+    fn test_snapshot_root_cargo_toml_with_accessors() {
+        assert_display_snapshot!(root_cargo_toml(true))
     }
 
     #[test]
