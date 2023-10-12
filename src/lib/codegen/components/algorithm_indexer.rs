@@ -28,23 +28,23 @@ pub struct AlgorithmIndexerComponentManifest {
     pub interval: u32,
 }
 
-impl Into<chainsight_cdk::config::components::AlgorithmIndexerConfig>
-    for AlgorithmIndexerComponentManifest
+impl From<AlgorithmIndexerComponentManifest>
+    for chainsight_cdk::config::components::AlgorithmIndexerConfig
 {
-    fn into(self) -> chainsight_cdk::config::components::AlgorithmIndexerConfig {
+    fn from(val: AlgorithmIndexerComponentManifest) -> Self {
         AlgorithmIndexerConfig {
             common: CommonConfig {
-                monitor_duration: self.interval,
-                canister_name: self.id.unwrap(),
+                monitor_duration: val.interval,
+                canister_name: val.id.unwrap(),
             },
             indexing: chainsight_cdk::indexer::IndexingConfig {
-                start_from: self.datasource.from,
+                start_from: val.datasource.from,
                 chunk_size: None,
             },
             input: chainsight_cdk::config::components::AlgorithmIndexerInput {
-                method_name: self.datasource.method,
-                response_type: self.datasource.input.name,
-                source_type: self.datasource.source_type,
+                method_name: val.datasource.method,
+                response_type: val.datasource.input.name,
+                source_type: val.datasource.source_type,
             },
         }
     }
