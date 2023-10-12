@@ -2,7 +2,12 @@ use crate::lib::utils::paths;
 
 pub fn root_cargo_toml() -> String {
     r#"[workspace]
-members = ["canisters/*"]
+members = [
+    "accessors/*",
+    "bindings/*",
+    "canisters/*",
+    "logics/*"
+]
 
 [workspace.dependencies]
 candid = "0.8"
