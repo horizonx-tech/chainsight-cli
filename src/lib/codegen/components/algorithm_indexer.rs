@@ -1,5 +1,8 @@
 use std::collections::HashMap;
 
+use chainsight_cdk::config::components::{
+    AlgorithmIndexerConfig, AlgorithmInputType, CommonConfig,
+};
 use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 
@@ -23,6 +26,28 @@ pub struct AlgorithmIndexerComponentManifest {
     pub datasource: AlgorithmIndexerDatasource,
     pub output: Vec<AlgorithmIndexerOutput>,
     pub interval: u32,
+}
+
+impl Into<chainsight_cdk::config::components::AlgorithmIndexerConfig>
+    for AlgorithmIndexerComponentManifest
+{
+    fn into(self) -> chainsight_cdk::config::components::AlgorithmIndexerConfig {
+        AlgorithmIndexerConfig {
+            common: CommonConfig {
+                monitor_duration: self.interval,
+                canister_name: self.metadata.label,
+            },
+            indexing: chainsight_cdk::indexer::IndexingConfig {
+                start_from: self.datasource.from,
+                chunk_size: None,
+            },
+            input: chainsight_cdk::config::components::AlgorithmIndexerInput {
+                method_name: self.datasource.method,
+                response_type: self.datasource.input.name,
+                source_type: self.datasource.source_type,
+            },
+        }
+    }
 }
 
 impl AlgorithmIndexerComponentManifest {
@@ -148,16 +173,6 @@ pub enum AlgorithmOutputType {
     KeyValues,
     #[serde(rename = "key_value")]
     KeyValue,
-}
-
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-pub enum AlgorithmInputType {
-    #[serde(rename = "event_indexer")]
-    EventIndexer,
-    #[serde(rename = "key_value")]
-    KeyValue,
-    #[serde(rename = "key_values")]
-    KeyValues,
 }
 
 impl Default for AlgorithmIndexerOutput {

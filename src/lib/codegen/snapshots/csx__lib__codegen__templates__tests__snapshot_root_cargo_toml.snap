@@ -25,6 +25,6 @@ hex = "0.4.3"
 
 ic-web3-rs = { version = "0.1.1" }
 ic-solidity-bindgen = { version = "0.1.5" }
-chainsight-cdk-macros = { git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "892a7555a58b9e026daedf178078681c84381c26" }
-chainsight-cdk = { git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "892a7555a58b9e026daedf178078681c84381c26" }
+chainsight-cdk-macros = { git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "c3ad4d7d33795d589e1213bbd8a73f425540c59b" }
+chainsight-cdk = { git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "c3ad4d7d33795d589e1213bbd8a73f425540c59b" }
 

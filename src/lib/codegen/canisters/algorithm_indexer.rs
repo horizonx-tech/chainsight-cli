@@ -1,12 +1,11 @@
 use anyhow::ensure;
+use chainsight_cdk::config::components::AlgorithmInputType;
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote};
 
 use crate::{
     lib::codegen::components::{
-        algorithm_indexer::{
-            AlgorithmIndexerComponentManifest, AlgorithmInputType, AlgorithmOutputType,
-        },
+        algorithm_indexer::{AlgorithmIndexerComponentManifest, AlgorithmOutputType},
         common::ComponentManifest,
     },
     types::ComponentType,
