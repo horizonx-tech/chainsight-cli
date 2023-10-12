@@ -4,7 +4,6 @@ expression: root_cargo_toml()
 ---
 [workspace]
 members = [
-    "accessors/*",
     "bindings/*",
     "canisters/*",
     "logics/*"

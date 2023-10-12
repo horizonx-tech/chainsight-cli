@@ -3,7 +3,6 @@ use crate::lib::utils::paths;
 pub fn root_cargo_toml() -> String {
     r#"[workspace]
 members = [
-    "accessors/*",
     "bindings/*",
     "canisters/*",
     "logics/*"
