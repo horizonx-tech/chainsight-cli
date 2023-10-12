@@ -20,11 +20,11 @@ pub fn cli_version_str() -> &'static str {
 
 fn git_commit_hash() -> String {
     let commit_hash = Command::new("git")
-        .args(&["rev-parse", "HEAD"])
+        .args(["rev-parse", "HEAD"])
         .output()
         .expect("failed to execute command \"git rev-parse HEAD\"");
 
     String::from_utf8(commit_hash.stdout.to_vec())
         .unwrap()
-        .replace("\n", "")
+        .replace('\n', "")
 }
