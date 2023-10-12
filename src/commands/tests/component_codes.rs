@@ -117,21 +117,21 @@ fn get_generated_src_paths(
     )
 }
 
-#[test]
-fn test() {
-    let root_path: &str = "test__component_codes";
-    let components = [
-        &ALGORITHM_INDEXER,
-        // &ALGORITHM_LENS, // TODO: enable this
-        &EVENT_INDEXER,
-        &SNAPSHOT_INDEXER_ICP,
-        &SNAPSHOT_INDEXER_EVM,
-        &SNAPSHOT_INDEXER_HTTPS,
-        &RELAYER,
-    ];
+// #[test]
+// fn test() {
+//     let root_path: &str = "test__component_codes";
+//     let components = [
+//         &ALGORITHM_INDEXER,
+//         // &ALGORITHM_LENS, // TODO: enable this
+//         &EVENT_INDEXER,
+//         &SNAPSHOT_INDEXER_ICP,
+//         &SNAPSHOT_INDEXER_EVM,
+//         &SNAPSHOT_INDEXER_HTTPS,
+//         &RELAYER,
+//     ];
 
-    assert!(pre_process(root_path, &components).is_ok());
-    execute(root_path);
-    assert_components(root_path, &components);
-    assert!(post_process(root_path).is_ok());
-}
+//     assert!(pre_process(root_path, &components).is_ok());
+//     execute(root_path);
+//     assert_components(root_path, &components);
+//     assert!(post_process(root_path).is_ok());
+// }

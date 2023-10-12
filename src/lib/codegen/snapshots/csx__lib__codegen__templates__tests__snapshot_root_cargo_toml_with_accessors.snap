@@ -1,9 +1,9 @@
 ---
 source: src/lib/codegen/templates.rs
-expression: root_cargo_toml(false)
+expression: root_cargo_toml(true)
 ---
 [workspace]
-members = ["bindings/*", "canisters/*", "logics/*"]
+members = ["bindings/*", "canisters/*", "logics/*", "accessors/*"]
 
 [workspace.package]
 version = "0.1.0"
@@ -21,6 +21,6 @@ hex = "0.4.3"
 
 ic-web3-rs = { version = "0.1.1" }
 ic-solidity-bindgen = { version = "0.1.5" }
-chainsight-cdk-macros = { git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "662edfe7fff9ac1cdaa92ec0d46680fcbc704913" }
-chainsight-cdk = { git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "662edfe7fff9ac1cdaa92ec0d46680fcbc704913" }
+chainsight-cdk-macros = { git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "892a7555a58b9e026daedf178078681c84381c26" }
+chainsight-cdk = { git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "892a7555a58b9e026daedf178078681c84381c26" }
 
