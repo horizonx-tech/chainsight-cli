@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::{
-    lib::utils::env::load_env,
+    lib::utils::{env::load_env, serializer::ordered_map},
     types::{ComponentType, Network},
 };
 
@@ -37,6 +37,7 @@ pub enum SourceType {
 pub struct Sources {
     pub source_type: SourceType,
     pub source: String,
+    #[serde(serialize_with = "ordered_map")]
     pub attributes: HashMap<String, Value>,
 }
 

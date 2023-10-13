@@ -1,0 +1,34 @@
+---
+source: src/commands/tests/mod.rs
+expression: "format!(\"{:#?}\", & metadata)"
+---
+[
+    (
+        "chainsight:component_type",
+        "relayer",
+    ),
+    (
+        "chainsight:description",
+        "",
+    ),
+    (
+        "chainsight:destination",
+        "{\"destination_type\":\"evm\",\"destination\":\"0539a0EF8e5E60891fFf0958A059E049e43020d9\",\"attributes\":{\"chain_id\":80001}}",
+    ),
+    (
+        "chainsight:intervalSec",
+        "3600",
+    ),
+    (
+        "chainsight:label",
+        "Sample Relayer",
+    ),
+    (
+        "chainsight:sources",
+        "[{\"source_type\":\"chainsight\",\"source\":\"sample_snapshot_indexer_evm\",\"attributes\":{}}]",
+    ),
+    (
+        "chainsight:tags",
+        "[\"Oracle\",\"snapshot\"]",
+    ),
+]

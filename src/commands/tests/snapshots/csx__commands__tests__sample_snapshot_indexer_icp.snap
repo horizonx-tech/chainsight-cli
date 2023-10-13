@@ -1,0 +1,30 @@
+---
+source: src/commands/tests/mod.rs
+expression: "format!(\"{:#?}\", & metadata)"
+---
+[
+    (
+        "chainsight:component_type",
+        "snapshot_indexer_icp",
+    ),
+    (
+        "chainsight:description",
+        "",
+    ),
+    (
+        "chainsight:intervalSec",
+        "3600",
+    ),
+    (
+        "chainsight:label",
+        "Sample Snapshot Indexer Icp",
+    ),
+    (
+        "chainsight:sources",
+        "[{\"source_type\":\"chainsight\",\"source\":\"sample_snapshot_indexer_evm\",\"attributes\":{\"function_name\":\"get_last_snapshot\"}}]",
+    ),
+    (
+        "chainsight:tags",
+        "[\"ERC-20\",\"Ethereum\",\"DAI\"]",
+    ),
+]

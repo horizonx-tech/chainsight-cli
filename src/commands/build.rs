@@ -43,6 +43,12 @@ pub struct BuildOpts {
     only_build: bool,
 }
 
+impl BuildOpts {
+    pub fn new(path: Option<String>, only_build: bool) -> Self {
+        Self { path, only_build }
+    }
+}
+
 pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
     let log = env.get_logger();
     let project_path = opts.path.clone();

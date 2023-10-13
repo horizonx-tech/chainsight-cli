@@ -1,0 +1,30 @@
+---
+source: src/commands/tests/mod.rs
+expression: "format!(\"{:#?}\", & metadata)"
+---
+[
+    (
+        "chainsight:component_type",
+        "snapshot_indexer_evm",
+    ),
+    (
+        "chainsight:description",
+        "",
+    ),
+    (
+        "chainsight:intervalSec",
+        "3600",
+    ),
+    (
+        "chainsight:label",
+        "Sample Snapshot Indexer Evm",
+    ),
+    (
+        "chainsight:sources",
+        "[{\"source_type\":\"evm\",\"source\":\"6b175474e89094c44da98b954eedeac495271d0f\",\"attributes\":{\"function_name\":\"totalSupply\"}}]",
+    ),
+    (
+        "chainsight:tags",
+        "[\"ERC-20\",\"Ethereum\",\"DAI\"]",
+    ),
+]
