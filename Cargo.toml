@@ -30,6 +30,7 @@ syn = "2.0.18"
 [dev-dependencies]
 insta = { version =  "1.33.0", features = ["yaml"] }
 jsonschema = "0.17"
+ic-wasm = "0.6.0"
 
 [profile.dev.package]
 insta.opt-level = 3
