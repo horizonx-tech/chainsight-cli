@@ -1,0 +1,30 @@
+---
+source: src/commands/tests/mod.rs
+expression: "format!(\"{:#?}\", & metadata)"
+---
+[
+    (
+        "chainsight:component_type",
+        "algorithm_indexer",
+    ),
+    (
+        "chainsight:description",
+        "",
+    ),
+    (
+        "chainsight:intervalSec",
+        "3600",
+    ),
+    (
+        "chainsight:label",
+        "Sample Algorithm Indexer",
+    ),
+    (
+        "chainsight:sources",
+        "[{\"source_type\":\"chainsight\",\"source\":\"be2us-64aaa-aaaaa-qaabq-cai\",\"attributes\":{}}]",
+    ),
+    (
+        "chainsight:tags",
+        "[\"Ethereum\",\"Account\"]",
+    ),
+]

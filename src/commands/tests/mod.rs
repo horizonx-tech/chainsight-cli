@@ -1,218 +1,147 @@
-#[cfg(test)]
-mod test {
-    use std::{
-        fs::{self, File},
-        io::Read,
-        path::Path,
-    };
+use std::{
+    fs::{self, File},
+    io::Read,
+    path::Path,
+};
 
-    use ic_wasm::metadata::list_metadata;
+use ic_wasm::metadata::{get_metadata, list_metadata};
+use insta::assert_display_snapshot;
 
-    use crate::{
-        commands::{build, generate},
-        lib::{environment::EnvironmentImpl, logger::create_root_logger},
-    };
+use crate::{
+    commands::{build, generate},
+    lib::{environment::EnvironmentImpl, logger::create_root_logger},
+};
 
-    // NOTE: Currently only one pattern of template pj
-    const TEST_PROJECT_PATH: &str = "e2e/resources/template";
+// NOTE: Currently only one pattern of template pj
+const TEST_PROJECT_PATH: &str = "e2e/resources";
 
-    const METADATA_LABELS: [&str; 6] = [
-        "icp:public chainsight:label",
-        "icp:public chainsight:component_type",
-        "icp:public chainsight:description",
-        "icp:public chainsight:tags",
-        "icp:public chainsight:sources",
-        "icp:public chainsight:intervalSec",
-    ];
-    const METADATA_LABEL_FOR_DESTINATION: &'static str = "icp:public chainsight:destination";
+// Copy all yaml files under e2e/resources/{key} and generate project.yaml from those file names.
+fn generate_project_by_resources(pj_root_path: &str, key: &str) -> anyhow::Result<Vec<String>> {
+    fs::create_dir_all(format!("{}/components", pj_root_path))?;
+    fs::create_dir_all(format!("{}/interfaces", pj_root_path))?;
+    fs::write(format!("{}/{}", pj_root_path, ".chainsight"), "")?;
 
-    pub struct TestComponent {
-        pub id: &'static str,
-        pub metadata_labels: Vec<String>,
-    }
-    impl TestComponent {
-        pub fn component_path(&self) -> String {
-            format!("components/{}.yaml", self.id)
-        }
-    }
+    let mut component_ids = Vec::<String>::new();
+    let components_path = format!("{}/components", pj_root_path);
+    for entry in fs::read_dir(format!("{}/{}", TEST_PROJECT_PATH, key))? {
+        let entry = entry?;
+        let src_path = entry.path();
+        let dst_path = format!(
+            "{}/{}",
+            components_path,
+            entry.file_name().to_str().unwrap()
+        );
+        fs::copy(&src_path, &dst_path)?;
 
-    pub fn algorthm_indexer() -> TestComponent {
-        TestComponent {
-            id: "sample_algorithm_indexer",
-            metadata_labels: METADATA_LABELS.iter().map(|&s| s.to_string()).collect(),
-        }
-    }
-
-    // pub fn algorithm_lens() -> TestComponent {
-    //     TestComponent {
-    //         id: "sample_algorithm_lens",
-    //         metadata_labels: METADATA_LABELS.iter().map(|&s| s.to_string()).collect(),
-    //     }
-    // }
-
-    pub fn event_indexer() -> TestComponent {
-        TestComponent {
-            id: "sample_event_indexer",
-            metadata_labels: METADATA_LABELS.iter().map(|&s| s.to_string()).collect(),
-        }
+        component_ids.push(
+            entry
+                .path()
+                .file_stem()
+                .unwrap()
+                .to_string_lossy()
+                .into_owned(),
+        );
     }
 
-    pub fn relayer() -> TestComponent {
-        let metadata_labels = METADATA_LABELS
-            .iter()
-            .map(|&s| s.to_string())
-            .chain(vec![METADATA_LABEL_FOR_DESTINATION.to_string()])
-            .collect();
+    fs::write(
+        format!("{}/{}", pj_root_path, "project.yaml"),
+        generate_project_manifest(component_ids.as_slice()),
+    )?;
 
-        TestComponent {
-            id: "sample_relayer",
-            metadata_labels,
-        }
-    }
+    Ok(component_ids)
+}
 
-    pub fn snapshot_indexer_evm() -> TestComponent {
-        TestComponent {
-            id: "sample_snapshot_indexer_evm",
-            metadata_labels: METADATA_LABELS.iter().map(|&s| s.to_string()).collect(),
-        }
-    }
-
-    pub fn snapshot_indexer_https() -> TestComponent {
-        TestComponent {
-            id: "sample_snapshot_indexer_https",
-            metadata_labels: METADATA_LABELS.iter().map(|&s| s.to_string()).collect(),
-        }
-    }
-
-    pub fn snapshot_indexer_icp() -> TestComponent {
-        TestComponent {
-            id: "sample_snapshot_indexer_icp",
-            metadata_labels: METADATA_LABELS.iter().map(|&s| s.to_string()).collect(),
-        }
-    }
-
-    pub fn minimum_project_folder(root_path: &str) -> anyhow::Result<()> {
-        fs::create_dir_all(format!("{}/components", root_path))?;
-        fs::create_dir_all(format!("{}/interfaces", root_path))?;
-
-        fs::write(format!("{}/{}", root_path, ".chainsight"), "")?;
-
-        Ok(())
-    }
-
-    pub fn generate_project_manifest(ids: &[String]) -> String {
-        let component_rows = ids
-            .iter()
-            .map(|id| format!("- component_path: components/{}.yaml", id))
-            .collect::<Vec<String>>()
-            .join("\n");
-        format!(
-            r#"version: v1
+fn generate_project_manifest(ids: &[String]) -> String {
+    let component_rows = ids
+        .iter()
+        .map(|id| format!("- component_path: components/{}.yaml", id))
+        .collect::<Vec<String>>()
+        .join("\n");
+    format!(
+        r#"version: v1
 label: project
 components:
 {}"#,
-            component_rows
-        )
+        component_rows
+    )
+}
+
+fn execute(root_path: &str) {
+    // process
+    let mute_logger = create_root_logger(-4);
+    let env = EnvironmentImpl::new().with_logger(mute_logger);
+
+    let res = generate::exec(
+        &env,
+        generate::GenerateOpts::new(Some(root_path.to_string())),
+    );
+    if let Err(e) = res {
+        panic!("Failed to generate project: {:?}", e);
+    }
+    let res = build::exec(
+        &env,
+        build::BuildOpts::new(Some(root_path.to_string()), true),
+    );
+    if let Err(e) = res {
+        panic!("Failed to build project: {:?}", e);
     }
 
-    pub fn get_manifest_path_in_resource(id: &str) -> String {
-        format!("{}/{}.yaml", TEST_PROJECT_PATH, id)
+    assert!(res.is_ok());
+}
+fn assert_artifacts(root_path: &str, component_ids: &[String]) {
+    let artifacts_path = format!("{}/artifacts", root_path);
+    assert!(Path::new(&format!("{}/dfx.json", artifacts_path)).is_file());
+
+    for cid in component_ids {
+        assert_per_component(&artifacts_path, cid);
     }
+}
+fn assert_per_component(artifacts_path: &str, component_id: &String) {
+    // Asserts whether Artifacts exists
+    assert!(Path::new(&format!("{}/{}.did", artifacts_path, component_id)).is_file());
+    let wasm_path = format!("{}/{}.wasm", artifacts_path, component_id);
+    assert!(Path::new(&wasm_path).is_file());
 
-    fn pre_process(root_path: &str, component: &[&TestComponent]) -> anyhow::Result<()> {
-        minimum_project_folder(root_path)?;
+    // Asserts metadatas in modules
+    let mut wasm_bytes = Vec::<u8>::new();
+    File::open(&wasm_path)
+        .unwrap()
+        .read_to_end(&mut wasm_bytes)
+        .unwrap();
+    let module =
+        ic_wasm::utils::parse_wasm(&wasm_bytes, true).expect("Failed to parse wasm to module");
 
-        let mut component_ids = Vec::<String>::new();
-        for c in component {
-            let src_path = format!("./{}", get_manifest_path_in_resource(c.id));
-            let dst_path = format!("./{}/{}", root_path, &c.component_path());
-            fs::copy(&src_path, &dst_path)?;
+    let mut metadata_names = list_metadata(&module);
+    metadata_names.sort();
+    let name_prefix = "icp:public "; // TODO: or icp:private
+    let metadata = metadata_names
+        .iter()
+        .map(|fullname| {
+            let name: &str = fullname
+                .strip_prefix(name_prefix)
+                .expect(format!("Failed about metadata - No prefix: {}", fullname).as_str());
+            let data = get_metadata(&module, name)
+                .expect(format!("Failed to get metadata: {}", name).as_str());
+            let data_str = String::from_utf8_lossy(&data).to_string();
+            (name.to_string(), data_str)
+        })
+        .collect::<Vec<(String, String)>>();
+    assert_display_snapshot!(component_id.to_string(), format!("{:#?}", &metadata));
+}
 
-            component_ids.push(c.id.to_string());
-        }
+fn post_process(root_path: &str) -> anyhow::Result<()> {
+    fs::remove_dir_all(&root_path)?;
+    Ok(())
+}
 
-        fs::write(
-            format!("{}/{}", root_path, "project.yaml"),
-            generate_project_manifest(component_ids.as_slice()),
-        )?;
+#[test]
+fn test_template() {
+    let root_path: &str = "test__e2e_template";
+    let test_target_key = "template";
 
-        Ok(())
-    }
-
-    fn execute(root_path: &str) {
-        // process
-        let mute_logger = create_root_logger(-4);
-        let env = EnvironmentImpl::new().with_logger(mute_logger);
-        assert!(generate::exec(
-            &env,
-            generate::GenerateOpts::new(Some(root_path.to_string())),
-        )
-        .is_ok());
-        assert!(build::exec(
-            &env,
-            build::BuildOpts::new(Some(root_path.to_string()), true),
-        )
-        .is_ok());
-    }
-    fn assert_artifacts(root_path: &str, components: &[&TestComponent]) {
-        let artifacts_path = format!("{}/artifacts", root_path);
-        assert!(Path::new(&format!("{}/dfx.json", artifacts_path)).is_file());
-
-        for c in components {
-            assert_per_component(&artifacts_path, c);
-        }
-    }
-    fn assert_per_component(artifacts_path: &str, c: &TestComponent) {
-        assert!(Path::new(&format!("{}/{}.did", artifacts_path, c.id)).is_file());
-        let wasm_path = format!("{}/{}.wasm", artifacts_path, c.id);
-        assert!(Path::new(&wasm_path).is_file());
-
-        let mut wasm_bytes = Vec::<u8>::new();
-        File::open(&wasm_path)
-            .unwrap()
-            .read_to_end(&mut wasm_bytes)
-            .unwrap();
-        let module =
-            ic_wasm::utils::parse_wasm(&wasm_bytes, true).expect("Failed to parse wasm to module");
-        assert!(are_equal_unordered(
-            list_metadata(&module),
-            c.metadata_labels.iter().map(AsRef::as_ref).collect(),
-        ));
-    }
-
-    fn are_equal_unordered<T: Ord>(mut a: Vec<T>, mut b: Vec<T>) -> bool {
-        if a.len() != b.len() {
-            return false;
-        }
-
-        a.sort();
-        b.sort();
-
-        a == b
-    }
-
-    fn post_process(root_path: &str) -> anyhow::Result<()> {
-        fs::remove_dir_all(&root_path)?;
-        Ok(())
-    }
-
-    #[test]
-    fn test() {
-        let root_path: &str = "test__component_modules";
-
-        let components = [
-            &algorthm_indexer(),
-            // &algorithm_lens(),
-            &event_indexer(),
-            &relayer(),
-            &snapshot_indexer_evm(),
-            &snapshot_indexer_https(),
-            &snapshot_indexer_icp(),
-        ];
-
-        assert!(pre_process(root_path, &components).is_ok());
-        execute(root_path);
-        assert_artifacts(root_path, &components);
-        // assert!(post_process(root_path).is_ok());
-    }
+    let component_ids = generate_project_by_resources(root_path, test_target_key)
+        .expect("Failed to generate_project_by_resources");
+    execute(root_path);
+    assert_artifacts(root_path, &component_ids);
+    assert!(post_process(root_path).is_ok());
 }

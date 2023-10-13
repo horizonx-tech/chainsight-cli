@@ -1,0 +1,30 @@
+---
+source: src/commands/tests/mod.rs
+expression: "format!(\"{:#?}\", & metadata)"
+---
+[
+    (
+        "chainsight:component_type",
+        "event_indexer",
+    ),
+    (
+        "chainsight:description",
+        "",
+    ),
+    (
+        "chainsight:intervalSec",
+        "3600",
+    ),
+    (
+        "chainsight:label",
+        "Sample Event Indexer",
+    ),
+    (
+        "chainsight:sources",
+        "[{\"source_type\":\"evm\",\"source\":\"0x6B175474E89094C44Da98b954EedeAC495271d0F\",\"attributes\":{\"chain_id\":1,\"contract_type\":\"ERC-20\",\"event_name\":\"Transfer\"}}]",
+    ),
+    (
+        "chainsight:tags",
+        "[\"Ethereum\",\"ERC-20\",\"Transfer\"]",
+    ),
+]

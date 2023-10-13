@@ -1,0 +1,30 @@
+---
+source: src/commands/tests/mod.rs
+expression: "format!(\"{:#?}\", & metadata)"
+---
+[
+    (
+        "chainsight:component_type",
+        "snapshot_indexer_https",
+    ),
+    (
+        "chainsight:description",
+        "",
+    ),
+    (
+        "chainsight:intervalSec",
+        "3600",
+    ),
+    (
+        "chainsight:label",
+        "Sample Snapshot Indexer Https",
+    ),
+    (
+        "chainsight:sources",
+        "[{\"source_type\":\"https\",\"source\":\"https://api.coingecko.com/api/v3/simple/price\",\"attributes\":{}}]",
+    ),
+    (
+        "chainsight:tags",
+        "[\"coingecko\",\"DAI\",\"USD\"]",
+    ),
+]
