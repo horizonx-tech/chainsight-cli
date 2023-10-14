@@ -138,10 +138,13 @@ fn post_process(root_path: &str) -> anyhow::Result<()> {
 fn test_template() {
     let root_path: &str = "test__e2e_template";
     let test_target_key = "template";
-
-    let component_ids = generate_project_by_resources(root_path, test_target_key)
-        .expect("Failed to generate_project_by_resources");
-    execute(root_path);
-    assert_artifacts(root_path, &component_ids);
+    let test = || {
+        let component_ids = generate_project_by_resources(root_path, test_target_key)
+            .expect("Failed to generate_project_by_resources");
+        execute(root_path);
+        assert_artifacts(root_path, &component_ids);
+    };
+    let result = std::panic::catch_unwind(test);
     assert!(post_process(root_path).is_ok());
+    assert!(result.is_ok())
 }
