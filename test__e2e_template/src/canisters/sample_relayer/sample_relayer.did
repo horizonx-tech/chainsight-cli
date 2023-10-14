@@ -1,0 +1,53 @@
+type CanisterMetricsSnapshot = record { cycles : nat; timestamp : nat64 };
+type Env = variant { Production; Test; LocalDevelopment };
+type HttpHeader = record { value : text; name : text };
+type HttpResponse = record {
+  status : nat;
+  body : vec nat8;
+  headers : vec HttpHeader;
+};
+type InitError = variant {
+  InvalidDestination : text;
+  InvalidPrincipal : principal;
+  InvalidContent : text;
+  InvalidRequest : text;
+};
+type RelayerWithLensSourceAttrs = record {
+  function_name : text;
+  sources : vec text;
+};
+type Result = variant { Ok; Err : InitError };
+type Result_1 = variant { Ok; Err : text };
+type SourceType = variant { evm; https; chainsight };
+type Sources = record {
+  source : text;
+  interval_sec : opt nat32;
+  attributes : RelayerWithLensSourceAttrs;
+  source_type : SourceType;
+};
+type TransformArgs = record { context : vec nat8; response : HttpResponse };
+type Web3CtxParam = record {
+  env : Env;
+  url : text;
+  from : opt text;
+  chain_id : nat64;
+};
+service : {
+  get_ethereum_address : () -> (text);
+  get_proxy : () -> (principal);
+  get_sources : () -> (vec Sources) query;
+  init_in : (Env) -> (Result);
+  last_executed : () -> (nat64) query;
+  metric : () -> (CanisterMetricsSnapshot) query;
+  metrics : (nat64) -> (vec CanisterMetricsSnapshot) query;
+  proxy_canister_metrics_snapshots_len : (vec nat8) -> (vec nat8);
+  proxy_get_canister_metrics_snapshot : (vec nat8) -> (vec nat8);
+  proxy_get_canister_metrics_snapshots : (vec nat8) -> (vec nat8);
+  proxy_get_last_canister_metrics_snapshot : (vec nat8) -> (vec nat8);
+  proxy_get_top_canister_metrics_snapshots : (vec nat8) -> (vec nat8);
+  set_task : (nat32, nat32) -> ();
+  setup : (text, Web3CtxParam, text) -> (Result_1);
+  transform : (TransformArgs) -> (HttpResponse) query;
+  transform_get_filter_changes : (TransformArgs) -> (HttpResponse) query;
+  transform_send_transaction : (TransformArgs) -> (HttpResponse) query;
+}
