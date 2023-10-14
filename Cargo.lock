@@ -616,8 +616,6 @@ dependencies = [
  "dialoguer",
  "dotenvy",
  "ethabi 18.0.0",
- "ic-solidity-bindgen",
- "ic-solidity-bindgen-macros",
  "ic-wasm",
  "insta",
  "jsonschema",
