@@ -5,7 +5,7 @@ expression: "SrcString::from(&manifest.generate_codes(Option::None).unwrap())"
 use chainsight_cdk_macros::def_algorithm_indexer_canister;
 def_algorithm_indexer_canister!("{
 \"common\":{
-\"monitor_duration\":3600, \"canister_name\":\"sample_algorithm_indexer\"
+\"monitor_duration\":60, \"canister_name\":\"sample_algorithm_indexer\"
 }, \"indexing\":{
 \"start_from\":17660942, \"chunk_size\":null
 }, \"input\":{

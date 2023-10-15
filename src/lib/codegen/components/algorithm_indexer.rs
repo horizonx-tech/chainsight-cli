@@ -34,7 +34,7 @@ impl From<AlgorithmIndexerComponentManifest>
     fn from(val: AlgorithmIndexerComponentManifest) -> Self {
         AlgorithmIndexerConfig {
             common: CommonConfig {
-                monitor_duration: val.interval,
+                monitor_duration: 60,
                 canister_name: val.id.unwrap(),
             },
             indexing: chainsight_cdk::indexer::IndexingConfig {

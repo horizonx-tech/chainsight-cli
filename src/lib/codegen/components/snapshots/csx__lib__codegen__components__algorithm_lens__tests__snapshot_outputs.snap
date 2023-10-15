@@ -2,14 +2,10 @@
 source: src/lib/codegen/components/algorithm_lens.rs
 expression: "SrcString::from(&manifest.generate_codes(Option::None).unwrap())"
 ---
-use chainsight_cdk_macros::{
-chainsight_common, did_export, init_in, lens_method };
-use candid::CandidType;
-use ic_web3_rs::futures::{
-future::BoxFuture, FutureExt };
-chainsight_common!(60);
-init_in!();
-use sample_algorithm_lens::*;
-lens_method!(1usize);
-did_export!("sample_algorithm_lens");
+use chainsight_cdk_macros::def_algorithm_lens_canister;
+def_algorithm_lens_canister!("{
+\"common\":{
+\"monitor_duration\":60, \"canister_name\":\"sample_algorithm_lens\"
+}, \"target_count\":1
+}");
 

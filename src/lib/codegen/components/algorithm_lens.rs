@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use candid::Principal;
+use chainsight_cdk::config::components::CommonConfig;
 use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 
@@ -46,6 +47,20 @@ impl AlgorithmLensComponentManifest {
         }
     }
 }
+impl From<AlgorithmLensComponentManifest>
+    for chainsight_cdk::config::components::AlgorithmLensConfig
+{
+    fn from(val: AlgorithmLensComponentManifest) -> Self {
+        Self {
+            common: CommonConfig {
+                canister_name: val.id.clone().unwrap(),
+                monitor_duration: 60,
+            },
+            target_count: val.datasource.methods.len(),
+        }
+    }
+}
+
 impl ComponentManifest for AlgorithmLensComponentManifest {
     fn load_with_id(path: &str, id: &str) -> anyhow::Result<Self> {
         let manifest = Self::load(path)?;
