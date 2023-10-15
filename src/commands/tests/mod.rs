@@ -8,7 +8,10 @@ use ic_wasm::metadata::{get_metadata, list_metadata};
 use insta::assert_display_snapshot;
 
 use crate::{
-    commands::{build, generate},
+    commands::{
+        build::{self, BuildOpts},
+        generate,
+    },
     lib::{environment::EnvironmentImpl, logger::create_root_logger},
 };
 
@@ -80,7 +83,10 @@ fn execute(root_path: &str) {
     }
     let res = build::exec(
         &env,
-        build::BuildOpts::new(Some(root_path.to_string()), true),
+        BuildOpts {
+            path: Some(root_path.to_string()),
+            only_build: true,
+        },
     );
     if let Err(e) = res {
         panic!("Failed to build project: {:?}", e);
