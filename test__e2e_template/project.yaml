@@ -1,0 +1,9 @@
+version: v1
+label: project
+components:
+- component_path: components/sample_snapshot_indexer_evm.yaml
+- component_path: components/sample_relayer.yaml
+- component_path: components/sample_snapshot_indexer_icp.yaml
+- component_path: components/sample_algorithm_indexer.yaml
+- component_path: components/sample_event_indexer.yaml
+- component_path: components/sample_snapshot_indexer_https.yaml
