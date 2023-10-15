@@ -13,7 +13,7 @@ You can confirm that it has been installed and is in the path by running the fol
 
 ```bash
 % rustc --version 
-rustc 1.72.1 (d5c2e9c34 2023-09-13)
+rustc 1.73.0 (2023-10-05)
 % cargo make --version
 cargo-make 0.36.3
 % dfx --version
