@@ -11,33 +11,20 @@ use crate::{
     types::ComponentType,
 };
 use anyhow::{ensure, Result};
+use chainsight_cdk::config::components::AlgorithmLensConfig;
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote};
 
 use super::common::{CanisterMethodIdentifier, CanisterMethodValueType};
 
-fn common_codes() -> TokenStream {
-    quote! {
-        use chainsight_cdk_macros::{chainsight_common, did_export, init_in, lens_method};
-        use candid::CandidType;
-        use ic_web3_rs::futures::{future::BoxFuture, FutureExt};
-        chainsight_common!(60);
-        init_in!();
-    }
-}
-
 fn custom_codes(
     manifest: &AlgorithmLensComponentManifest,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    let id = &manifest.id().ok_or(anyhow::anyhow!("id is required"))?;
-
-    let logic_ident: Ident = format_ident!("{}", id);
-    let input_count = manifest.datasource.methods.len();
-
+    let conf: AlgorithmLensConfig = (manifest.clone()).into();
+    let conf_json = serde_json::to_string(&conf).unwrap();
     Ok(quote! {
-        use #logic_ident::*;
-        lens_method!(#input_count);
-        did_export!(#id);
+        use chainsight_cdk_macros::def_algorithm_lens_canister;
+        def_algorithm_lens_canister!(#conf_json);
     })
 }
 
@@ -46,16 +33,7 @@ pub fn generate_codes(manifest: &AlgorithmLensComponentManifest) -> anyhow::Resu
         manifest.metadata.type_ == ComponentType::AlgorithmLens,
         "type is not AlgorithmLens"
     );
-
-    let common_code_token = common_codes();
-    let custom_code_token = custom_codes(manifest)?;
-
-    let code = quote! {
-        #common_code_token
-        #custom_code_token
-    };
-
-    Ok(code)
+    custom_codes(manifest)
 }
 
 pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result<TokenStream> {
