@@ -35,12 +35,18 @@ pub struct BuildOpts {
     /// Specify the path of the project to build.
     /// If not specified, the current directory is targeted.
     #[arg(long)]
-    pub path: Option<String>,
+    path: Option<String>,
 
     /// Only perform build.
     /// Perform this steps with code already generated.
     #[arg(long)]
-    pub only_build: bool,
+    only_build: bool,
+}
+
+impl BuildOpts {
+    pub fn new(path: Option<String>, only_build: bool) -> Self {
+        Self { path, only_build }
+    }
 }
 
 pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
@@ -296,7 +302,7 @@ fn add_metadata_to_wasm(
         "chainsight:description",
         &component_datum.metadata().description,
     )?;
-    let tags = component_datum.metadata().tags.clone().unwrap_or_default();
+    let tags = component_datum.metadata().tags.clone().unwrap_or(vec![]);
     let tags_str = serde_json::to_string(&tags)?;
 
     put_meta("chainsight:tags", tags_str.as_str())?;

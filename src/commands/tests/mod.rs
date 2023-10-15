@@ -8,10 +8,7 @@ use ic_wasm::metadata::{get_metadata, list_metadata};
 use insta::assert_display_snapshot;
 
 use crate::{
-    commands::{
-        build::{self, BuildOpts},
-        generate,
-    },
+    commands::{build, generate},
     lib::{environment::EnvironmentImpl, logger::create_root_logger},
 };
 
@@ -83,10 +80,7 @@ fn execute(root_path: &str) {
     }
     let res = build::exec(
         &env,
-        BuildOpts {
-            path: Some(root_path.to_string()),
-            only_build: true,
-        },
+        build::BuildOpts::new(Some(root_path.to_string()), true),
     );
     if let Err(e) = res {
         panic!("Failed to build project: {:?}", e);
@@ -144,13 +138,10 @@ fn post_process(root_path: &str) -> anyhow::Result<()> {
 fn test_template() {
     let root_path: &str = "test__e2e_template";
     let test_target_key = "template";
-    let test = || {
-        let component_ids = generate_project_by_resources(root_path, test_target_key)
-            .expect("Failed to generate_project_by_resources");
-        execute(root_path);
-        assert_artifacts(root_path, &component_ids);
-    };
-    let result = std::panic::catch_unwind(test);
+
+    let component_ids = generate_project_by_resources(root_path, test_target_key)
+        .expect("Failed to generate_project_by_resources");
+    execute(root_path);
+    assert_artifacts(root_path, &component_ids);
     assert!(post_process(root_path).is_ok());
-    assert!(result.is_ok())
 }
