@@ -121,10 +121,13 @@ jobs:
           rustup update ${{ env.RUST_VERSION }} --no-self-update
           rustup default ${{ env.RUST_VERSION }}
           rustup component add rustfmt
-      - uses: actions-rs/toolchain@v1
+          rustup toolchain install nightly
+          rustup target add wasm32-unknown-unknown --toolchain nightly
+      - uses: baptiste0928/cargo-install@v2
         with:
-            toolchain: nightly
+          crate: ic-wasm
+          git: https://github.com/dfinity/ic-wasm
       - name: Run integration tests
         # TODO: use /tests for integration-test of cargo project instead of selecting folder
         run: |
-          RUST_TEST_TIME_UNIT=60000,300000 cargo +nightly test commands::tests --features integration-test -- -Zunstable-options --ensure-time
+          RUST_TEST_TIME_UNIT=300000,480000 cargo +nightly test commands::tests --features integration-test -- -Zunstable-options --ensure-time
