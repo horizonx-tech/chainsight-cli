@@ -644,6 +644,7 @@ dependencies = [
  "slog-async",
  "slog-term",
  "syn 2.0.38",
+ "walrus",
 ]
 
 [[package]]

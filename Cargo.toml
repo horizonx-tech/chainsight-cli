@@ -28,6 +28,7 @@ slog = { version = "2.7.0", features = ["max_level_trace"] }
 slog-async = "2.7.0"
 slog-term = "2.9.0"
 syn = "2.0.18"
+walrus = "0.20.1"
 
 [dev-dependencies]
 insta = { version =  "1.33.0", features = ["yaml"] }
