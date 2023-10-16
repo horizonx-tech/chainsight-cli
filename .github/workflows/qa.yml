@@ -91,7 +91,7 @@ jobs:
         with:
           toolchain: nightly
           command: test
-          args: --all-features --no-fail-fast
+          args: --no-fail-fast
         env:
           CARGO_INCREMENTAL: '0'
           RUSTFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
@@ -103,7 +103,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: ${{ steps.coverage.outputs.report }}
-  snapshot-test:
+  integration-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the source code
@@ -124,6 +124,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
             toolchain: nightly
-      - name: Run snapshot tests
+      - name: Run integration tests
+        # TODO: use /tests for integration-test of cargo project instead of selecting folder
         run: |
           RUST_TEST_TIME_UNIT=60000,300000 cargo +nightly test commands::tests --features integration-test -- -Zunstable-options --ensure-time
