@@ -7,7 +7,6 @@
 - [rust](https://www.rust-lang.org/tools/install): To generate Canister code to be compiled into Module
 - [cargo-make](https://github.com/sagiegurari/cargo-make): To output interface automatically
 - [dfx](https://internetcomputer.org/docs/current/developer-docs/setup/install): To interact with Internet Computer
-- [ic-wasm](https://github.com/dfinity/ic-wasm): To optimize modules and manipulate metadata
 
 You can confirm that it has been installed and is in the path by running the following in a terminal.
 
@@ -18,8 +17,6 @@ rustc 1.73.0 (2023-10-05)
 cargo-make 0.36.3
 % dfx --version
 dfx 0.14.0
-% ic-wasm --version
-ic-wasm 0.3.7
 ```
 
 ## Note
