@@ -29,6 +29,12 @@ Before you can deploy on your local machine, you need to deploy [chainsight-mana
     make local port=${YOUR_DFX_PORT}
   ```
 
+If you face the erorr `git@github.com: Permission denied (publickey).`, please check if you can access to GitHub with SSH.
+
+ ```bash
+ ssh -T git@github.com
+ ```
+
 ## Install CLI
 
 You can choose between the following two methods of installation.
