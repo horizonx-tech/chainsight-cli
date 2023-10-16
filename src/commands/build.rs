@@ -256,7 +256,7 @@ fn add_metadata_to_wasm(
 ) -> anyhow::Result<()> {
     let id = &component_datum.id().unwrap();
     let wasm_path = &format!("{}/{}.wasm", output_path, id);
-    let wasm_bytes = fs::read(&wasm_path)?;
+    let wasm_bytes = fs::read(wasm_path)?;
     let mut wasm_module = parse_wasm(&wasm_bytes, true)?;
 
     let mut put_meta = |key: &str, value: &str| -> anyhow::Result<()> {
@@ -282,7 +282,7 @@ fn add_metadata_to_wasm(
         put_meta(key, value)?;
     }
 
-    wasm_module.emit_wasm_file(&wasm_path)?;
+    wasm_module.emit_wasm_file(wasm_path)?;
 
     anyhow::Ok(())
 }
