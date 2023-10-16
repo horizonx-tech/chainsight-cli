@@ -5,7 +5,11 @@ use std::process::Command;
 
 use anyhow::{bail, Ok};
 use clap::Parser;
+use ic_wasm::metadata::{add_metadata, Kind};
+use ic_wasm::shrink::shrink;
+use ic_wasm::utils::parse_wasm;
 use slog::{debug, info, Logger};
+use walrus::Module;
 
 use crate::commands::generate;
 use crate::lib::codegen::components::algorithm_indexer::AlgorithmIndexerComponentManifest;
@@ -149,7 +153,7 @@ fn execute_codebuild(
     project_path_str: &str,
     component_data: &Vec<Box<dyn ComponentManifest>>,
 ) -> anyhow::Result<()> {
-    let src_path_str = &paths::src_path_str(project_path_str);
+    let src_path_str: &String = &paths::src_path_str(project_path_str);
     let output_path_str = &format!("{}/{}", project_path_str, ARTIFACTS_DIR);
     if fs::metadata(output_path_str).is_err() {
         fs::create_dir_all(output_path_str)?;
@@ -207,34 +211,25 @@ fn execute_codebuild(
             src_path_str,
             paths::canister_name(id)
         );
-        let output_path = format!("{}/{}.wasm", output_path_str, id);
-        let output = Command::new("ic-wasm")
-            .args([&wasm_path, "-o", &output_path, "shrink"])
-            .output()
-            .expect("failed to execute process: ic_wasm shrink");
-        if output.status.success() {
-            debug!(
-                log,
-                "[{}] {}",
-                id,
-                std::str::from_utf8(&output.stdout).unwrap_or("failed to parse stdout")
-            );
-            debug!(log, "[{}] Succeeded: {}", id, action);
-        } else {
-            bail!(format!(
-                "[{}] Failed: '{}' by: {}",
-                id,
-                action,
-                std::str::from_utf8(&output.stderr).unwrap_or("failed to parse stdout")
-            ));
-        }
+        let output_filepath = format!("{}/{}.wasm", output_path_str, id);
+        let wasm_bytes = fs::read(&wasm_path)?;
+        let mut wasm_module = parse_wasm(&wasm_bytes, true)?;
+        shrink(&mut wasm_module);
+        wasm_module.emit_wasm_file(&output_filepath)?;
+        debug!(
+            log,
+            "[{}] {}",
+            id,
+            std::str::from_utf8(&output.stdout).unwrap_or("failed to parse stdout")
+        );
+        debug!(log, "[{}] Succeeded: {}", id, action);
     }
     info!(log, "Succeeded: {}", action);
 
     let action = "Add metadata to modules";
     info!(log, "{}...", action);
     for component_datum in component_data {
-        add_metadata_to_wasm(log, project_path_str, component_datum.as_ref())?;
+        add_metadata_to_wasm(log, output_path_str, component_datum.as_ref())?;
     }
     info!(log, "Succeeded: {}", action);
 
@@ -245,46 +240,27 @@ fn add_meta(
     id: &str,
     key: &str,
     value: &str,
-    wasm_path: &str,
-    project_path_str: &str,
+    wasm_module: &mut Module,
     log: &Logger,
 ) -> anyhow::Result<()> {
     let action = format!("Add metadata {}", key);
-    let output = Command::new("ic-wasm")
-        .current_dir(project_path_str)
-        .args([
-            wasm_path, "-o", wasm_path, "metadata", key, "-d", value, "-v", "public",
-        ])
-        .output()
-        .unwrap_or_else(|_| panic!("failed to execute process: ic-wasm metadata {}", key));
-    if output.status.success() {
-        debug!(
-            log,
-            "[{}] {}",
-            id,
-            std::str::from_utf8(&output.stdout).unwrap_or("failed to parse stdout")
-        );
-        debug!(log, "[{}] Succeeded: '{}'", id, action);
-    } else {
-        bail!(format!(
-            "[{}] Failed: '{}' by: {}",
-            id,
-            action,
-            std::str::from_utf8(&output.stderr).unwrap_or("failed to parse stdout")
-        ));
-    };
+    add_metadata(wasm_module, Kind::Public, key, value.as_bytes().to_vec());
+    debug!(log, "[{}] Succeeded: '{}'", id, action);
     anyhow::Ok(())
 }
 
 fn add_metadata_to_wasm(
     log: &Logger,
-    project_path_str: &str,
+    output_path: &str,
     component_datum: &dyn ComponentManifest,
 ) -> anyhow::Result<()> {
     let id = &component_datum.id().unwrap();
-    let wasm_path = &format!("{}/{}.wasm", ARTIFACTS_DIR, id);
-    let put_meta = |key: &str, value: &str| -> anyhow::Result<()> {
-        add_meta(id, key, value, wasm_path, project_path_str, log)
+    let wasm_path = &format!("{}/{}.wasm", output_path, id);
+    let wasm_bytes = fs::read(wasm_path)?;
+    let mut wasm_module = parse_wasm(&wasm_bytes, true)?;
+
+    let mut put_meta = |key: &str, value: &str| -> anyhow::Result<()> {
+        add_meta(id, key, value, &mut wasm_module, log)
     };
 
     put_meta("chainsight:label", &component_datum.metadata().label)?;
@@ -305,5 +281,8 @@ fn add_metadata_to_wasm(
     for (key, value) in component_datum.custom_tags().iter() {
         put_meta(key, value)?;
     }
+
+    wasm_module.emit_wasm_file(wasm_path)?;
+
     anyhow::Ok(())
 }

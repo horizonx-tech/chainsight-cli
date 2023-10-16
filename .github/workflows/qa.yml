@@ -123,10 +123,6 @@ jobs:
           rustup component add rustfmt
           rustup toolchain install nightly
           rustup target add wasm32-unknown-unknown --toolchain nightly
-      - uses: baptiste0928/cargo-install@v2
-        with:
-          crate: ic-wasm
-          git: https://github.com/dfinity/ic-wasm
       - name: Run integration tests
         # TODO: use /tests for integration-test of cargo project instead of selecting folder
         run: |
