@@ -14,7 +14,7 @@ mod remove;
 mod test;
 mod upgrade;
 
-#[cfg(test)]
+#[cfg(feature = "integration-test")]
 mod tests;
 
 #[derive(Debug, Subcommand)]
