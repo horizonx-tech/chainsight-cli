@@ -25,6 +25,23 @@ pub struct EventIndexerComponentManifest {
     pub interval: u32,
 }
 
+impl From<EventIndexerComponentManifest>
+    for chainsight_cdk::config::components::EventIndexerConfig
+{
+    fn from(val: EventIndexerComponentManifest) -> Self {
+        Self {
+            common: chainsight_cdk::config::components::CommonConfig {
+                canister_name: val.id.clone().unwrap(),
+                monitor_duration: 60,
+            },
+            def: chainsight_cdk::config::components::EventIndexerEventDefinition {
+                identifier: val.datasource.event.identifier,
+                abi_file_path: val.datasource.event.interface.unwrap(),
+            },
+        }
+    }
+}
+
 impl EventIndexerComponentManifest {
     pub fn new(
         id: &str,
@@ -72,11 +89,9 @@ impl ComponentManifest for EventIndexerComponentManifest {
 
     fn generate_codes(
         &self,
-        interface_contract: Option<ethabi::Contract>,
+        _interface_contract: Option<ethabi::Contract>,
     ) -> anyhow::Result<TokenStream> {
-        let interface_contract =
-            interface_contract.ok_or_else(|| anyhow::anyhow!("interface contract is not found"))?;
-        canisters::event_indexer::generate_codes(self, interface_contract)
+        canisters::event_indexer::generate_codes(self)
     }
 
     fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
