@@ -36,7 +36,10 @@ impl From<EventIndexerComponentManifest>
             },
             def: chainsight_cdk::config::components::EventIndexerEventDefinition {
                 identifier: val.datasource.event.identifier,
-                abi_file_path: val.datasource.event.interface.unwrap(),
+                abi_file_path: format!(
+                    "./__interfaces/{}",
+                    val.datasource.event.interface.unwrap()
+                ),
             },
         }
     }
