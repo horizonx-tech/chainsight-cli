@@ -34,7 +34,7 @@ fn common_codes() -> proc_macro2::TokenStream {
 }
 
 fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macro2::TokenStream> {
-    let id = &manifest.id().ok_or(anyhow::anyhow!("id is required"))?;
+    let id: &String = &manifest.id().ok_or(anyhow::anyhow!("id is required"))?;
     let method = &manifest.datasource.method;
     let method_identifier = CanisterMethodIdentifier::parse_from_str(&method.identifier)?;
 
