@@ -227,7 +227,6 @@ pub fn convert_type_from_candid_type(s: &str) -> (String, bool) {
 pub enum OutsideCallType {
     Evm,
     Chainsight,
-    Lens,
 }
 /// Generate common identifiers such as storage, setter, etc. for outside calls
 pub fn generate_outside_call_idents(type_: &Vec<OutsideCallType>) -> proc_macro2::TokenStream {
@@ -252,14 +251,6 @@ pub fn generate_outside_call_idents(type_: &Vec<OutsideCallType>) -> proc_macro2
                 });
                 args.push(quote! {
                     target_canister: String
-                });
-            }
-            OutsideCallType::Lens => {
-                fields.push(quote! {
-                    manage_single_state!("lens_targets", Vec<String>, false);
-                });
-                args.push(quote! {
-                    lens_targets: Vec<String>
                 });
             }
         }

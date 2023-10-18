@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use chainsight_cdk::config::components::LensTargets;
 use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -9,12 +10,9 @@ use crate::{
     types::{ComponentType, Network},
 };
 
-use super::{
-    algorithm_lens::LensTargets,
-    common::{
-        custom_tags_interval_sec, ComponentManifest, ComponentMetadata, Datasource,
-        DestinationType, SnapshotStorage, Sources,
-    },
+use super::common::{
+    custom_tags_interval_sec, ComponentManifest, ComponentMetadata, Datasource, DestinationType,
+    SnapshotStorage, Sources,
 };
 
 /// Component Manifest: Snapshot Indexer ICP
