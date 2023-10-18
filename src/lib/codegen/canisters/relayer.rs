@@ -1,217 +1,16 @@
 use anyhow::{bail, ensure};
+use chainsight_cdk::config::components::RelayerConfig;
 use quote::{format_ident, quote};
 
 use crate::{
     lib::codegen::{
-        canisters::common::{
-            generate_outside_call_idents, generate_request_arg_idents, OutsideCallType,
-        },
-        components::{
-            common::{ComponentManifest, DestinationType},
-            relayer::RelayerComponentManifest,
-        },
-        oracle::get_oracle_attributes,
+        canisters::common::generate_request_arg_idents,
+        components::{common::DestinationType, relayer::RelayerComponentManifest},
     },
     types::ComponentType,
 };
 
 use super::common::{CanisterMethodIdentifier, CanisterMethodValueType};
-
-fn common_codes() -> proc_macro2::TokenStream {
-    quote! {
-        use std::str::FromStr;
-        use chainsight_cdk_macros::{manage_single_state, setup_func, init_in, timer_task_func, define_web3_ctx, define_transform_for_web3, define_get_ethereum_address, chainsight_common, did_export,relayer_source};
-        use ic_web3_rs::types::{Address, U256};
-        use chainsight_cdk::rpc::{CallProvider, Caller, Message};
-
-        chainsight_common!(3600);
-
-        define_get_ethereum_address!();
-
-        timer_task_func!("set_task", "sync", true);
-        init_in!();
-    }
-}
-
-fn custom_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<proc_macro2::TokenStream> {
-    let id: &String = &manifest.id().ok_or(anyhow::anyhow!("id is required"))?;
-    let method = &manifest.datasource.method;
-    let method_identifier = CanisterMethodIdentifier::parse_from_str(&method.identifier)?;
-
-    let id_ident = format_ident!("{}", &id);
-    let method_ident = "proxy_".to_string() + &method_identifier.identifier;
-    let method_ident_origin = &method_identifier.identifier;
-
-    // from destination: about oracle
-    let destination = &manifest.destination;
-    let (oracle_name_str, _, _) = get_oracle_attributes(&destination.type_);
-    let oracle_ident = format_ident!("{}", oracle_name_str);
-    let abi_path = format!("./__interfaces/{}.json", oracle_name_str);
-
-    // for response type
-    let response_type: CanisterMethodValueType = method_identifier.return_value;
-    let sync_data_ident = generate_ident_sync_to_oracle(response_type, destination.type_)?;
-    let args_type_ident = match manifest.lens_targets.is_some() {
-        true => quote! {
-            type CallCanisterArgs = Vec<String>;
-        },
-        false => quote! {
-            type CallCanisterArgs = #id_ident::CallCanisterArgs;
-        },
-    };
-
-    let get_args_ident = match manifest.lens_targets.is_some() {
-        true => quote! {
-            pub fn call_args() -> Vec<String> {
-                get_lens_targets()
-            }
-        },
-        false => quote! {
-            pub fn call_args() -> CallCanisterArgs {
-                #id_ident::call_args()
-            }
-        },
-    };
-
-    let relayer_source_ident = match manifest.lens_targets.is_some() {
-        true => quote! {
-            relayer_source!(#method_ident_origin, true);
-        },
-        false => quote! {
-            relayer_source!(#method_ident_origin, false);
-        },
-    };
-
-    let mut outside_call_types = vec![OutsideCallType::Evm, OutsideCallType::Chainsight];
-    if manifest.lens_targets.is_some() {
-        outside_call_types.push(OutsideCallType::Lens);
-    }
-    let outside_call_idents = generate_outside_call_idents(&outside_call_types);
-
-    Ok(quote! {
-        #outside_call_idents
-
-        ic_solidity_bindgen::contract_abi!(#abi_path);
-        use #id_ident::*;
-        #relayer_source_ident
-        #args_type_ident
-        #get_args_ident
-
-
-        async fn sync() {
-            let target_canister = candid::Principal::from_text(get_target_canister()).unwrap();
-            let call_result = CallProvider::new()
-            .call(Message::new::<CallCanisterArgs>(call_args(), _get_target_proxy(target_canister.clone()).await, #method_ident).unwrap())
-            .await;
-            if let Err(err) = call_result {
-                ic_cdk::println!("error: {:?}", err);
-                return;
-            }
-            let val = call_result.unwrap().reply::<CallCanisterResponse>();
-            if let Err(err) = val {
-                ic_cdk::println!("error: {:?}", err);
-                return;
-            }
-            let datum = val.unwrap();
-            if !filter(&datum) {
-                return;
-            }
-
-            #oracle_ident::new(
-                Address::from_str(&get_target_addr()).unwrap(),
-                &web3_ctx().unwrap()
-            ).update_state(#sync_data_ident, None).await.unwrap();
-            ic_cdk::println!("value_to_sync={:?}", datum);
-        }
-
-        did_export!(#id);
-    })
-}
-
-fn generate_ident_sync_to_oracle(
-    canister_response_type: CanisterMethodValueType,
-    oracle_type: DestinationType,
-) -> anyhow::Result<proc_macro2::TokenStream> {
-    let res = match canister_response_type {
-        CanisterMethodValueType::Scalar(ty, _) => {
-            let arg_ident = format_ident!("datum");
-            match oracle_type {
-                DestinationType::Uint256Oracle => {
-                    generate_quote_to_convert_datum_to_u256(arg_ident, &ty)?
-                }
-                DestinationType::Uint128Oracle => {
-                    generate_quote_to_convert_datum_to_integer(arg_ident, &ty, "u128")?
-                }
-                DestinationType::Uint64Oracle => {
-                    generate_quote_to_convert_datum_to_integer(arg_ident, &ty, "u64")?
-                }
-                DestinationType::StringOracle => quote! { datum.clone().to_string() },
-            }
-        }
-        CanisterMethodValueType::Tuple(_) => {
-            match oracle_type {
-                DestinationType::StringOracle => {
-                    quote! { format!("{:?}", &datum) } // temp
-                }
-                _ => bail!("not support tuple type for oracle"),
-            }
-        }
-        CanisterMethodValueType::Struct(_) => {
-            match oracle_type {
-                DestinationType::StringOracle => {
-                    quote! { format!("{:?}", &datum) } // temp
-                }
-                _ => bail!("not support struct type for oracle"),
-            }
-        }
-        CanisterMethodValueType::Vector(_, _) => {
-            match oracle_type {
-                DestinationType::StringOracle => {
-                    quote! { format!("{:?}", &datum) } // temp
-                }
-                _ => bail!("not support vec type for oracle"),
-            }
-        }
-    };
-    anyhow::Ok(res)
-}
-
-fn generate_quote_to_convert_datum_to_u256(
-    arg_ident: proc_macro2::Ident,
-    datum_scalar_type: &str,
-) -> anyhow::Result<proc_macro2::TokenStream> {
-    let res = match datum_scalar_type {
-        "u8" | "u16" | "u32" | "u64" | "u128" | "U256" | "chainsight_cdk::core::U256" => {
-            quote! { U256::from(#arg_ident) }
-        }
-        "i8" | "i16" | "i32" | "i64" | "i128" => quote! { U256::from(#arg_ident) }, // NOTE: a positive value check needs to be performed on the generated code
-        "String" => quote! { U256::from_dec_str(&#arg_ident).unwrap() },
-        _ => bail!("This type cannot be converted to U256"),
-    };
-    Ok(res)
-}
-
-fn generate_quote_to_convert_datum_to_integer(
-    arg_ident: proc_macro2::Ident,
-    datum_scalar_type: &str,
-    converted_datum_type: &str,
-) -> anyhow::Result<proc_macro2::TokenStream> {
-    let converted_datum_type_ident = format_ident!("{}", converted_datum_type);
-    let res = match datum_scalar_type {
-        "u8" | "u16" | "u32" | "u64" | "u128" => {
-            quote! { #arg_ident as #converted_datum_type_ident }
-        }
-        "i8" | "i16" | "i32" | "i64" | "i128" => {
-            quote! { #arg_ident as #converted_datum_type_ident }
-        } // NOTE: a positive value check needs to be performed on the generated code
-        "String" => quote! { #converted_datum_type_ident::from_str(&#arg_ident).unwrap() },
-        _ => bail!(format!(
-            "This type cannot be converted to {}",
-            converted_datum_type
-        )),
-    };
-    Ok(res)
-}
 
 pub fn generate_codes(
     manifest: &RelayerComponentManifest,
@@ -220,15 +19,12 @@ pub fn generate_codes(
         manifest.metadata.type_ == ComponentType::Relayer,
         "type is not Relayer"
     );
-
-    let common_code_token = common_codes();
-    let custom_code_token = custom_codes(manifest)?;
-
+    let config: RelayerConfig = manifest.clone().into();
+    let config_json = serde_json::to_string(&config)?;
     let code = quote! {
-        #common_code_token
-        #custom_code_token
+        use chainsight_cdk_macros::def_relayer_canister;
+        def_relayer_canister!(#config_json);
     };
-
     Ok(code)
 }
 
