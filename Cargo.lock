@@ -410,7 +410,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "chainsight-cdk"
 version = "0.1.0"
-source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=d9e28118f522986551b9dfcc3f6111eec3c54a15#d9e28118f522986551b9dfcc3f6111eec3c54a15"
+source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=8d2ff20bf56ba5e695ed4c4822e9ec9a9f0748af#8d2ff20bf56ba5e695ed4c4822e9ec9a9f0748af"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -423,7 +423,9 @@ dependencies = [
  "ic-stable-memory",
  "ic-stable-structures",
  "ic-web3-rs",
+ "lazy_static",
  "primitive-types 0.12.2",
+ "regex",
  "serde",
  "serde_json",
  "syn 2.0.38",
