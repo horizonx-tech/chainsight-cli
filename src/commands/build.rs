@@ -213,7 +213,7 @@ fn execute_codebuild(
         );
         let output_filepath = format!("{}/{}.wasm", output_path_str, id);
         let wasm_bytes = fs::read(&wasm_path)?;
-        let mut wasm_module = parse_wasm(&wasm_bytes, true)?;
+        let mut wasm_module = parse_wasm(&wasm_bytes, false)?;
         shrink(&mut wasm_module);
         wasm_module.emit_wasm_file(&output_filepath)?;
         debug!(
@@ -257,7 +257,7 @@ fn add_metadata_to_wasm(
     let id = &component_datum.id().unwrap();
     let wasm_path = &format!("{}/{}.wasm", output_path, id);
     let wasm_bytes = fs::read(wasm_path)?;
-    let mut wasm_module = parse_wasm(&wasm_bytes, true)?;
+    let mut wasm_module = parse_wasm(&wasm_bytes, false)?;
 
     let mut put_meta = |key: &str, value: &str| -> anyhow::Result<()> {
         add_meta(id, key, value, &mut wasm_module, log)
