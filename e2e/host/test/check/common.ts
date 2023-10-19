@@ -13,7 +13,7 @@ export const loadCandidIds = async (): Promise<CandidIdsType> => {
   const filepath = path.join(
     __dirname,
     '../../../docker/.outputs/.dfx/local/canister_ids.json'
-  );
+  ); // TODO: calculate/consider path
   const raw = fs.readFileSync(filepath, 'utf8');
   return JSON.parse(raw);
 };

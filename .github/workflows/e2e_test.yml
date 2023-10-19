@@ -1,0 +1,57 @@
+name: End-to-end test
+on:
+  pull_request: # temp
+  push:
+    branches:
+      - main
+jobs:
+  e2e-test:
+    runs-on: ubuntu-latest
+    steps:
+    #   - name: Checkout the source code
+    #     uses: actions/checkout@v3
+    #   - name: Cache Cargo
+    #     uses: actions/cache@v3
+    #     with:
+    #       path: |
+    #         ~/.cargo/registry
+    #         ~/.cargo/git
+    #         target
+    #       key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ env.RUST_VERSION }}
+    #   - name: Install Rust
+    #     run: |
+    #       rustup update ${{ env.RUST_VERSION }} --no-self-update
+    #       rustup default ${{ env.RUST_VERSION }}
+    #       rustup component add rustfmt
+    #       rustup toolchain install nightly
+    #       rustup target add wasm32-unknown-unknown --toolchain nightly
+    #   - name: Run e2e test - build & static check of modules
+    #     # TODO: use /tests for integration-test of cargo project instead of selecting folder
+    #     run: |
+    #       RUST_TEST_TIME_UNIT=300000,480000 cargo +nightly test commands::tests --features integration-test -- -Zunstable-options --ensure-time
+      - name: (TEMP) Prepare e2e test with docker
+        working-directory: e2e
+        run: |
+          cp -rp ./temp/inputs/* ./docker/.inputs
+      - name: Prepare e2e test with docker
+        working-directory: e2e
+        run: |
+          cd host
+          yarn install
+          yarn exec:add-networks-to-dfx-json
+          cd ../docker
+          docker pull megared05/dfx_hardhat_node:v0.1.0
+          docker run -t \
+            --name e2e_node \
+            -p 18545:18545 -p 14943:14943 \
+            -v $PWD/.inputs:/workspace/artifacts \
+            -v $PWD/.outputs:/workspace/outputs \
+            --rm megared05/dfx_hardhat_node:v0.1.0
+      - name: Run e2e test - Pre-check for node itself
+        working-directory: e2e
+        run: |
+          yarn test:pre-check
+      - name: Run e2e test - deploy & check deployed canisters
+        working-directory: e2e
+        run: |
+          yarn test:check

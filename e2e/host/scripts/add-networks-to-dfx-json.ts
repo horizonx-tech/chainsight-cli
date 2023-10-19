@@ -14,7 +14,7 @@ const NETWORKS_DATA = {
 };
 
 const main = async () => {
-  const filepath = path.join(__dirname, '../../docker/.inputs/dfx.json');
+  const filepath = path.join(__dirname, '../../docker/.inputs/dfx.json'); // TODO: calculate/consider path
   const data: Data = JSON.parse(fs.readFileSync(filepath, 'utf8'));
   data.networks = NETWORKS_DATA;
   const updatedData = JSON.stringify(data, null, 2);
