@@ -174,18 +174,17 @@ pub fn dfx_json(project_ids: Vec<String>) -> String {
         .iter()
         .map(|label| {
             format!(
-                r#"      "{}": {{
-        "type": "custom",
-        "candid": "./{}.did",
-        "wasm": "./{}.wasm",
-        "metadata": [
-          {{
-            "name": "candid:service",
-            "visibility": "public"
-          }}
-        ]
-      }}
-"#,
+                r#"    "{}": {{
+      "type": "custom",
+      "candid": "./{}.did",
+      "wasm": "./{}.wasm",
+      "metadata": [
+        {{
+          "name": "candid:service",
+          "visibility": "public"
+        }}
+      ]
+    }}"#,
                 label, label, label
             )
         })
