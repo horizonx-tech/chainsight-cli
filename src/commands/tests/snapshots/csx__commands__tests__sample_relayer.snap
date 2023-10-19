@@ -24,6 +24,10 @@ expression: "format!(\"{:#?}\", & metadata)"
         "Sample Relayer",
     ),
     (
+        "chainsight:oracleType",
+        "uint256",
+    ),
+    (
         "chainsight:sources",
         "[{\"source_type\":\"chainsight\",\"source\":\"sample_snapshot_indexer_evm\",\"attributes\":{}}]",
     ),
