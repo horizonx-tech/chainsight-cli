@@ -173,6 +173,17 @@ impl ComponentManifest for RelayerComponentManifest {
             "chainsight:destination".to_string(),
             serde_json::to_string(&dest).unwrap(),
         );
+        let oracle_type_str = match self.destination_type() {
+            Some(DestinationType::Uint256) => "uint256",
+            Some(DestinationType::Uint128) => "uint128",
+            Some(DestinationType::Uint64) => "uint64",
+            Some(DestinationType::String) => "string",
+            _ => panic!("Invalid oracle type"),
+        };
+        res.insert(
+            "chainsight:oracleType".to_string(),
+            oracle_type_str.to_string(),
+        );
         let (interval_key, interval_val) = custom_tags_interval_sec(self.interval);
         res.insert(interval_key, interval_val);
         res
