@@ -1,0 +1,69 @@
+type CanisterMetricsSnapshot = record { cycles : nat; timestamp : nat64 };
+type Env = variant { Production; Test; LocalDevelopment };
+type HttpHeader = record { value : text; name : text };
+type HttpResponse = record {
+  status : nat;
+  body : vec nat8;
+  headers : vec HttpHeader;
+};
+type InitError = variant {
+  InvalidDestination : text;
+  InvalidPrincipal : principal;
+  InvalidContent : text;
+  InvalidRequest : text;
+};
+type Result = variant { Ok; Err : InitError };
+type Result_1 = variant { Ok; Err : text };
+type Snapshot = record { value : text; timestamp : nat64 };
+type SourceType = variant { evm; https; chainsight };
+type Sources = record {
+  source : text;
+  interval_sec : opt nat32;
+  attributes : Web3AlgorithmIndexerSourceAttrs;
+  source_type : SourceType;
+};
+type TransformArgs = record { context : vec nat8; response : HttpResponse };
+type Web3AlgorithmIndexerSourceAttrs = record {
+  chain_id : nat64;
+  function_name : text;
+};
+type Web3CtxParam = record {
+  env : Env;
+  url : text;
+  from : opt text;
+  chain_id : nat64;
+};
+service : {
+  get_last_snapshot : () -> (Snapshot) query;
+  get_last_snapshot_value : () -> (text) query;
+  get_proxy : () -> (principal);
+  get_snapshot : (nat64) -> (Snapshot) query;
+  get_snapshot_value : (nat64) -> (text) query;
+  get_snapshots : () -> (vec Snapshot) query;
+  get_sources : () -> (vec Sources) query;
+  get_top_snapshot_values : (nat64) -> (vec text) query;
+  get_top_snapshots : (nat64) -> (vec Snapshot) query;
+  init_in : (Env) -> (Result);
+  last_executed : () -> (nat64) query;
+  metric : () -> (CanisterMetricsSnapshot) query;
+  metrics : (nat64) -> (vec CanisterMetricsSnapshot) query;
+  proxy_canister_metrics_snapshots_len : (vec nat8) -> (vec nat8);
+  proxy_get_canister_metrics_snapshot : (vec nat8) -> (vec nat8);
+  proxy_get_canister_metrics_snapshots : (vec nat8) -> (vec nat8);
+  proxy_get_last_canister_metrics_snapshot : (vec nat8) -> (vec nat8);
+  proxy_get_last_snapshot : (vec nat8) -> (vec nat8);
+  proxy_get_last_snapshot_value : (vec nat8) -> (vec nat8);
+  proxy_get_snapshot : (vec nat8) -> (vec nat8);
+  proxy_get_snapshot_value : (vec nat8) -> (vec nat8);
+  proxy_get_snapshots : (vec nat8) -> (vec nat8);
+  proxy_get_top_canister_metrics_snapshots : (vec nat8) -> (vec nat8);
+  proxy_get_top_snapshot_values : (vec nat8) -> (vec nat8);
+  proxy_get_top_snapshots : (vec nat8) -> (vec nat8);
+  proxy_snapshots_len : (vec nat8) -> (vec nat8);
+  set_task : (nat32, nat32) -> ();
+  setup : (text, Web3CtxParam) -> (Result_1);
+  snapshots_len : () -> (nat64) query;
+  transform : (TransformArgs) -> (HttpResponse) query;
+  transform_get_filter_changes : (TransformArgs) -> (HttpResponse) query;
+  transform_send_transaction : (TransformArgs) -> (HttpResponse) query;
+}
