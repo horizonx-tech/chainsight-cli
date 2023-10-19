@@ -41,7 +41,7 @@ pub fn generate_app(
             quote! { pub type CallCanisterResponse = #ty_ident }
         }
         CanisterMethodValueType::Tuple(tys) => match oracle_type {
-            DestinationType::StringOracle => {
+            DestinationType::String => {
                 let type_idents = tys
                     .iter()
                     .map(|(ty, _)| format_ident!("{}", ty))
@@ -51,7 +51,7 @@ pub fn generate_app(
             _ => bail!("not support tuple type for oracle"),
         },
         CanisterMethodValueType::Struct(values) => match oracle_type {
-            DestinationType::StringOracle => {
+            DestinationType::String => {
                 let response_type_def_ident = format_ident!("{}", "CustomResponseStruct");
                 let struct_tokens = values
                     .into_iter()

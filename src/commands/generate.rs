@@ -16,7 +16,6 @@ use crate::lib::codegen::components::relayer::RelayerComponentManifest;
 use crate::lib::codegen::components::snapshot_indexer_evm::SnapshotIndexerEVMComponentManifest;
 use crate::lib::codegen::components::snapshot_indexer_https::SnapshotIndexerHTTPSComponentManifest;
 use crate::lib::codegen::components::snapshot_indexer_icp::SnapshotIndexerICPComponentManifest;
-use crate::lib::codegen::oracle::get_oracle_attributes;
 use crate::lib::codegen::templates::{
     accessors_cargo_toml, bindings_cargo_toml, canister_project_cargo_toml, logic_cargo_toml,
     root_cargo_toml,
@@ -278,8 +277,9 @@ fn exec_codegen(
         }
 
         // copy and move oracle interface
-        if let Some(value) = data.destination_type() {
-            let (_, json_name, json_contents) = get_oracle_attributes(&value);
+        if let Some(_) = data.destination_type() {
+            let json_name = "Oracle.json";
+            let json_contents = include_str!("../../resources/Oracle.json");
             fs::write(
                 format!("{}/{}", &interfaces_path_str, &json_name),
                 json_contents,
