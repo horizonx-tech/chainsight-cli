@@ -277,7 +277,7 @@ fn exec_codegen(
         }
 
         // copy and move oracle interface
-        if let Some(_) = data.destination_type() {
+        if data.destination_type().is_some() {
             let json_name = "Oracle.json";
             let json_contents = include_str!("../../resources/Oracle.json");
             fs::write(
