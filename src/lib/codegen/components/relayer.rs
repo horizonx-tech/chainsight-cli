@@ -174,10 +174,10 @@ impl ComponentManifest for RelayerComponentManifest {
             serde_json::to_string(&dest).unwrap(),
         );
         let oracle_type_str = match self.destination_type() {
-            Some(DestinationType::Uint256Oracle) => "uint256",
-            Some(DestinationType::Uint128Oracle) => "uint128",
-            Some(DestinationType::Uint64Oracle) => "uint64",
-            Some(DestinationType::StringOracle) => "string",
+            Some(DestinationType::Uint256) => "uint256",
+            Some(DestinationType::Uint128) => "uint128",
+            Some(DestinationType::Uint64) => "uint64",
+            Some(DestinationType::String) => "string",
             _ => panic!("Invalid oracle type"),
         };
         res.insert(
