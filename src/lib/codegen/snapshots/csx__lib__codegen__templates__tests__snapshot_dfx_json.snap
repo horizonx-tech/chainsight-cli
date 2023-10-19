@@ -1,46 +1,43 @@
 ---
 source: src/lib/codegen/templates.rs
-expression: dfx_json(project_labels)
+expression: dfx_json(project_ids)
 ---
 {
   "version": 1,
   "canisters": {
-      "sample_snapshot": {
-        "type": "custom",
-        "candid": "./sample_snapshot.did",
-        "wasm": "./sample_snapshot.wasm",
-        "metadata": [
-          {
-            "name": "candid:service",
-            "visibility": "public"
-          }
-        ]
-      }
-,
-      "sample_lens": {
-        "type": "custom",
-        "candid": "./sample_lens.did",
-        "wasm": "./sample_lens.wasm",
-        "metadata": [
-          {
-            "name": "candid:service",
-            "visibility": "public"
-          }
-        ]
-      }
-,
-      "sample_relayer": {
-        "type": "custom",
-        "candid": "./sample_relayer.did",
-        "wasm": "./sample_relayer.wasm",
-        "metadata": [
-          {
-            "name": "candid:service",
-            "visibility": "public"
-          }
-        ]
-      }
-
+    "sample_snapshot": {
+      "type": "custom",
+      "candid": "./sample_snapshot.did",
+      "wasm": "./sample_snapshot.wasm",
+      "metadata": [
+        {
+          "name": "candid:service",
+          "visibility": "public"
+        }
+      ]
+    },
+    "sample_lens": {
+      "type": "custom",
+      "candid": "./sample_lens.did",
+      "wasm": "./sample_lens.wasm",
+      "metadata": [
+        {
+          "name": "candid:service",
+          "visibility": "public"
+        }
+      ]
+    },
+    "sample_relayer": {
+      "type": "custom",
+      "candid": "./sample_relayer.did",
+      "wasm": "./sample_relayer.wasm",
+      "metadata": [
+        {
+          "name": "candid:service",
+          "visibility": "public"
+        }
+      ]
+    }
   },
   "defaults": {
     "build": {
