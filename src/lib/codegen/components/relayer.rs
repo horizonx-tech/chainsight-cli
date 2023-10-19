@@ -10,7 +10,7 @@ use crate::{
     lib::codegen::{
         canisters::{self},
         components::common::custom_tags_interval_sec,
-        oracle::{get_oracle_address, get_oracle_attributes},
+        oracle::get_oracle_address,
         scripts,
     },
     types::{ComponentType, Network},
@@ -62,14 +62,13 @@ impl RelayerComponentManifest {
 
 impl From<RelayerComponentManifest> for chainsight_cdk::config::components::RelayerConfig {
     fn from(val: RelayerComponentManifest) -> Self {
-        let (oracle_name_str, _, _) = get_oracle_attributes(&val.destination_type().unwrap());
         let identifier =
             CanisterMethodIdentifier::parse_from_str(&val.datasource.method.identifier).unwrap();
-        let oracle_type = match oracle_name_str.as_str() {
-            "Uint256Oracle" => "uint256".to_string(),
-            "Uint128Oracle" => "uint128".to_string(),
-            "Uint64Oracle" => "uint64".to_string(),
-            "StringOracle" => "string".to_string(),
+        let oracle_type = match val.destination_type() {
+            Some(DestinationType::Uint256) => "uint256".to_string(),
+            Some(DestinationType::Uint128) => "uint128".to_string(),
+            Some(DestinationType::Uint64) => "uint64".to_string(),
+            Some(DestinationType::String) => "string".to_string(),
             _ => panic!("Invalid oracle type"),
         };
         Self {
@@ -77,7 +76,7 @@ impl From<RelayerComponentManifest> for chainsight_cdk::config::components::Rela
                 canister_name: val.id.clone().unwrap(),
                 monitor_duration: 60,
             },
-            abi_file_path: format!("__interfaces/{}.json", oracle_name_str),
+            abi_file_path: "__interfaces/Oracle.json".to_string(),
             canister_method_value_type: identifier.return_value,
             destination: val.destination.oracle_address,
             lens_targets: val.lens_targets,
@@ -207,11 +206,11 @@ impl DestinationField {
 impl Default for DestinationField {
     fn default() -> Self {
         let network_id = 80001; // NOTE: (temp) polygon mumbai
-        let oracle_type = DestinationType::Uint256Oracle;
+        let oracle_type = DestinationType::Uint256;
         Self::new(
             network_id,
             oracle_type,
-            get_oracle_address(network_id, oracle_type),
+            get_oracle_address(network_id),
             "https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL_KEY}".to_string(),
         )
     }
@@ -251,7 +250,7 @@ mod tests {
             },
             destination: DestinationField {
                 network_id: 80001,
-                type_: DestinationType::StringOracle,
+                type_: DestinationType::String,
                 oracle_address: "0x0539a0EF8e5E60891fFf0958A059E049e43020d9".to_string(),
                 rpc_url: "https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL_KEY}"
                     .to_string(),
@@ -316,7 +315,7 @@ interval: 3600
                 },
                 destination: DestinationField {
                     network_id: 80001,
-                    type_: DestinationType::Uint256Oracle,
+                    type_: DestinationType::Uint256,
                     oracle_address: "0x0539a0EF8e5E60891fFf0958A059E049e43020d9".to_string(),
                     rpc_url: "https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL_KEY}"
                         .to_string(),
