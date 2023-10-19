@@ -5,6 +5,7 @@
   "license": "Apache-2.0",
   "keywords": [],
   "scripts": {
+    "exec:add-networks-to-dfx-json": "ts-node scripts/add-networks-to-dfx-json.ts",
     "test:pre-check": "vitest test/pre-check",
     "test:check": "vitest test/check",
     "lint": "gts lint",
@@ -19,6 +20,7 @@
     "@types/node": "^20.8.6",
     "ethers": "^6.8.0",
     "gts": "^5.2.0",
+    "ts-node": "^10.9.1",
     "typescript": "~5.2.0",
     "vitest": "^0.34.6"
   }
