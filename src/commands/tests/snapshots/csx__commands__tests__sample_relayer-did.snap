@@ -1,0 +1,5 @@
+---
+source: src/commands/tests/mod.rs
+expression: "fs::read_to_string(&did_path).unwrap()"
+---
+service : {}
