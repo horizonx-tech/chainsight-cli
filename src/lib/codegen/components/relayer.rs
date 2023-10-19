@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use anyhow::Ok;
+use chainsight_cdk::config::components::{CanisterMethodIdentifier, CommonConfig, LensTargets};
 use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -9,17 +10,14 @@ use crate::{
     lib::codegen::{
         canisters::{self},
         components::common::custom_tags_interval_sec,
-        oracle::get_oracle_address,
+        oracle::{get_oracle_address, get_oracle_attributes},
         scripts,
     },
     types::{ComponentType, Network},
 };
 
-use super::{
-    algorithm_lens::LensTargets,
-    common::{
-        ComponentManifest, ComponentMetadata, Datasource, DestinationType, SourceType, Sources,
-    },
+use super::common::{
+    ComponentManifest, ComponentMetadata, Datasource, DestinationType, SourceType, Sources,
 };
 
 /// Component Manifest: Relayer
@@ -61,6 +59,34 @@ impl RelayerComponentManifest {
         }
     }
 }
+
+impl From<RelayerComponentManifest> for chainsight_cdk::config::components::RelayerConfig {
+    fn from(val: RelayerComponentManifest) -> Self {
+        let (oracle_name_str, _, _) = get_oracle_attributes(&val.destination_type().unwrap());
+        let identifier =
+            CanisterMethodIdentifier::parse_from_str(&val.datasource.method.identifier).unwrap();
+        let oracle_type = match oracle_name_str.as_str() {
+            "Uint256Oracle" => "uint256".to_string(),
+            "Uint128Oracle" => "uint128".to_string(),
+            "Uint64Oracle" => "uint64".to_string(),
+            "StringOracle" => "string".to_string(),
+            _ => panic!("Invalid oracle type"),
+        };
+        Self {
+            common: CommonConfig {
+                canister_name: val.id.clone().unwrap(),
+                monitor_duration: 60,
+            },
+            abi_file_path: format!("__interfaces/{}.json", oracle_name_str),
+            canister_method_value_type: identifier.return_value,
+            destination: val.destination.oracle_address,
+            lens_targets: val.lens_targets,
+            method_name: identifier.identifier,
+            oracle_type,
+        }
+    }
+}
+
 impl ComponentManifest for RelayerComponentManifest {
     fn load_with_id(path: &str, id: &str) -> anyhow::Result<Self> {
         let manifest = Self::load(path)?;
