@@ -9,6 +9,8 @@ env:
 jobs:
   doc:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout the source code
         uses: actions/checkout@v3
@@ -23,10 +25,15 @@ jobs:
         run: pip install json-schema-for-humans
       - name: Generate docs
         run: rm -r docs/schema/* && generate-schema-doc resources/schema/ docs/schema/ --config template_name=md
+      - name: Check if there are doc diffs
+        id: diff
+        run: echo "::set-output name=changed::$(git diff --name-only docs/schema | wc -l)"
       - name: if updated, push them
-        uses: stefanzweifel/git-auto-commit-action@v4
-        if: ${{ steps.changes.outputs.files_changed == 'true' }}
-        
+        if: ${{ steps.diff.outputs.changed != '0' }}
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Automated Update schema docs
+          file_pattern: 'docs/schema'
   format:
     runs-on: ubuntu-latest
     steps:
