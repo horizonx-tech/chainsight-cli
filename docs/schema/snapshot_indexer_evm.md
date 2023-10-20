@@ -152,7 +152,7 @@
 **Example:** 
 
 ```json
-"Relayer for ETHUSD"
+"Snapshot Indexer for ETHUSD"
 ```
 
 ### <a name="metadata_tags"></a>2.4. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > metadata > tags`
@@ -499,4 +499,4 @@ true
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-10-20 at 09:09:48 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-10-20 at 13:37:36 +0000
