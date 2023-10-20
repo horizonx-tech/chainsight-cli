@@ -135,10 +135,10 @@ fn assert_per_component(artifacts_path: &str, component_id: &String) {
     assert_display_snapshot!(component_id.to_string(), format!("{:#?}", &metadata));
 }
 
-fn post_process(root_path: &str) -> anyhow::Result<()> {
-    fs::remove_dir_all(&root_path)?;
-    Ok(())
-}
+// fn post_process(root_path: &str) -> anyhow::Result<()> {
+//     fs::remove_dir_all(&root_path)?;
+//     Ok(())
+// }
 
 #[test]
 fn test_template() {
