@@ -26,11 +26,12 @@ jobs:
           fi
       - name: install json-schema-for-humans
         run: pip install json-schema-for-humans
-      - name: Generate docs
-        run: rm -r docs/schema/* && generate-schema-doc resources/schema/ docs/schema/ --config template_name=md
       - name: Check if there are doc diffs
         id: diff
-        run: echo "changed=$(git diff --name-only ${{ github.event.before }} HEAD -- docs/schema/ | wc -l)" >> $GITHUB_OUTPUT
+        run: echo "changed=$(git diff --name-only ${{ github.event.before }} HEAD -- resources/schema/ | wc -l)" >> $GITHUB_OUTPUT
+      - name: Generate docs
+        if: ${{ steps.diff.outputs.changed != '0' }}
+        run: rm -r docs/schema/* && generate-schema-doc resources/schema/ docs/schema/ --config template_name=md
       - name: if updated, push them
         if: ${{ steps.diff.outputs.changed != '0' }}
         uses: stefanzweifel/git-auto-commit-action@v5
