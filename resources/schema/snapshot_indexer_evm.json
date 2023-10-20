@@ -48,7 +48,7 @@
           "type": "string",
           "title": "description of the canister",
           "description": "Can be used to filter canisters in the UI",
-          "examples": ["Relayer for ETHUSD"]
+          "examples": ["Snapshot Indexer for ETHUSD"]
         },
         "tags": {
           "$id": "#/properties/metadata/properties/tags",
