@@ -16,7 +16,7 @@ rustc 1.73.0 (2023-10-05)
 % cargo make --version
 cargo-make 0.36.3
 % dfx --version
-dfx 0.14.0
+dfx 0.15.1
 ```
 
 ## Note
