@@ -410,14 +410,16 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "chainsight-cdk"
 version = "0.1.0"
-source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=8d2ff20bf56ba5e695ed4c4822e9ec9a9f0748af#8d2ff20bf56ba5e695ed4c4822e9ec9a9f0748af"
+source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=9a3511f0b2df6772dd795c5448012676f25cb58e#9a3511f0b2df6772dd795c5448012676f25cb58e"
 dependencies = [
  "anyhow",
  "async-trait",
  "candid 0.8.4",
  "combine-proc-macro",
  "derive_more",
+ "ethabi 18.0.0",
  "futures",
+ "hex",
  "ic-cdk 0.8.1",
  "ic-solidity-bindgen",
  "ic-stable-memory",

@@ -14,13 +14,13 @@ use crate::{
 #[derive(Deserialize, Serialize, Clone, Copy, Debug, PartialEq, clap::ValueEnum)]
 pub enum DestinationType {
     #[serde(rename = "uint256")]
-    Uint256Oracle,
+    Uint256,
     #[serde(rename = "uint128")]
-    Uint128Oracle,
+    Uint128,
     #[serde(rename = "uint64")]
-    Uint64Oracle,
+    Uint64,
     #[serde(rename = "string")]
-    StringOracle,
+    String,
 }
 #[derive(Deserialize, Serialize, Clone, Copy, Debug, PartialEq, clap::ValueEnum)]
 

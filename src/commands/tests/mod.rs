@@ -104,9 +104,16 @@ fn assert_artifacts(root_path: &str, component_ids: &[String]) {
 }
 fn assert_per_component(artifacts_path: &str, component_id: &String) {
     // Asserts whether Artifacts exists
-    assert!(Path::new(&format!("{}/{}.did", artifacts_path, component_id)).is_file());
+    let did_path = format!("{}/{}.did", artifacts_path, component_id);
+    assert!(Path::new(&did_path).is_file());
     let wasm_path = format!("{}/{}.wasm", artifacts_path, component_id);
     assert!(Path::new(&wasm_path).is_file());
+
+    // Asserts generated .did
+    assert_display_snapshot!(
+        format!("{}-did", &component_id),
+        fs::read_to_string(&did_path).unwrap()
+    );
 
     // Asserts metadatas in modules
     let mut wasm_bytes = Vec::<u8>::new();
