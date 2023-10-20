@@ -1,7 +1,7 @@
 import {describe, test, expect} from 'vitest';
 import {ethers} from 'ethers';
 import {HttpAgent} from '@dfinity/agent';
-import {DFX_URL, HARDHAT_URL} from '../common';
+import {DFX_URL, HARDHAT_URL} from '../../src';
 
 test('setup test tool', () => {
   expect('ping').toBe('ping');
