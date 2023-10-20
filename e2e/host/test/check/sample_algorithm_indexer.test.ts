@@ -1,5 +1,6 @@
 import {describe, test, expect} from 'vitest';
-import {NODE_URL, assertMetric, getMetadata, loadCandidIds} from './common';
+import {getMetadata, loadCandidIds} from './utils';
+import {DFX_URL} from '../../src';
 
 const CANISTER_NAME = 'sample_algorithm_indexer';
 
@@ -19,7 +20,7 @@ describe('readState', () => {
   test('.metadata', async () => {
     const ids = await loadCandidIds();
     const id = ids[CANISTER_NAME].local;
-    const res = await getMetadata(id, NODE_URL);
+    const res = await getMetadata(id, DFX_URL);
 
     // eslint-disable-next-line node/no-unsupported-features/es-builtins
     expect(Object.fromEntries(res)).toStrictEqual({
