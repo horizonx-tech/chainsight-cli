@@ -1,8 +1,6 @@
 import fetch, {FetchError} from 'node-fetch';
 import {exit} from 'node:process';
-
-const DFX_NODE_URL = 'http://localhost:14943';
-const HARDHAT_NODE_URL = 'http://localhost:18545';
+import {DFX_URL, HARDHAT_URL} from '../src';
 
 const MAX_RETIRES = 20;
 const RETRY_INTERVAL = 15000;
@@ -36,12 +34,12 @@ const pingWithWait = async (url: string, expected_status: number) => {
 };
 
 const main = async () => {
-  await pingWithWait(DFX_NODE_URL, 400);
-  await pingWithWait(HARDHAT_NODE_URL, 200);
+  await pingWithWait(DFX_URL, 400);
+  await pingWithWait(HARDHAT_URL, 200);
 
   const [isConnDfx, isConnHardhat] = await Promise.all([
-    ping(DFX_NODE_URL, 400),
-    ping(HARDHAT_NODE_URL, 200),
+    ping(DFX_URL, 400),
+    ping(HARDHAT_URL, 200),
   ]);
 
   if (!isConnDfx || !isConnHardhat) {
