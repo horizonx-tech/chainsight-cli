@@ -11,8 +11,6 @@
   - [3.1. Property `Chainsight Relayer specification > datasource > type`](#datasource_type)
   - [3.2. Property `Chainsight Relayer specification > datasource > location`](#datasource_location)
     - [3.2.1. Property `Chainsight Relayer specification > datasource > location > id`](#datasource_location_id)
-    - [3.2.2. Property `Chainsight Relayer specification > datasource > location > args`](#datasource_location_args)
-      - [3.2.2.1. Property `Chainsight Relayer specification > datasource > location > args > id_type`](#datasource_location_args_id_type)
   - [3.3. Property `Chainsight Relayer specification > datasource > method`](#datasource_method)
     - [3.3.1. Property `Chainsight Relayer specification > datasource > method > identifier`](#datasource_method_identifier)
     - [3.3.2. Property `Chainsight Relayer specification > datasource > method > args`](#datasource_method_args)
@@ -120,7 +118,11 @@
 ```
 
 ```json
-"snapshot_indexer"
+"snapshot_indexer_icp"
+```
+
+```json
+"snapshot_indexer_evm"
 ```
 
 ```json
@@ -135,9 +137,9 @@
 "algorithm_lens"
 ```
 
-| Restrictions                      |                                                                                                                                                                                                                                                                                                       |
-| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Must match regular expression** | ```^(event_indexer\|algorithm_indexer\|snapshot_indexer\|snapshot_indexer_https\|relayer\|algorithm_lens)$``` [Test](https://regex101.com/?regex=%5E%28event_indexer%7Calgorithm_indexer%7Csnapshot_indexer%7Csnapshot_indexer_https%7Crelayer%7Calgorithm_lens%29%24&testString=%22event_indexer%22) |
+| Restrictions                      |                                                                                                                                                                                                                                                                                                                                                            |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Must match regular expression** | ```^(event_indexer\|algorithm_indexer\|snapshot_indexer_icp\|snapshot_indexer_evm\|snapshot_indexer_https\|relayer\|algorithm_lens)$``` [Test](https://regex101.com/?regex=%5E%28event_indexer%7Calgorithm_indexer%7Csnapshot_indexer_icp%7Csnapshot_indexer_evm%7Csnapshot_indexer_https%7Crelayer%7Calgorithm_lens%29%24&testString=%22event_indexer%22) |
 
 ### <a name="metadata_description"></a>2.3. Property `Chainsight Relayer specification > metadata > description`
 
@@ -249,10 +251,9 @@
 | **Required**              | Yes                                                                       |
 | **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
 
-| Property                             | Pattern | Type   | Deprecated | Definition | Title/Description  |
-| ------------------------------------ | ------- | ------ | ---------- | ---------- | ------------------ |
-| + [id](#datasource_location_id )     | No      | string | No         | -          | canister id        |
-| + [args](#datasource_location_args ) | No      | object | No         | -          | location arguments |
+| Property                         | Pattern | Type   | Deprecated | Definition | Title/Description |
+| -------------------------------- | ------- | ------ | ---------- | ---------- | ----------------- |
+| + [id](#datasource_location_id ) | No      | string | No         | -          | canister id       |
 
 #### <a name="datasource_location_id"></a>3.2.1. Property `Chainsight Relayer specification > datasource > location > id`
 
@@ -278,45 +279,6 @@
 | Restrictions                      |                                                                                                                        |
 | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | **Must match regular expression** | ```^[a-z0-9_-]+$``` [Test](https://regex101.com/?regex=%5E%5Ba-z0-9_-%5D%2B%24&testString=%22algorithm_lens_ethusd%22) |
-
-#### <a name="datasource_location_args"></a>3.2.2. Property `Chainsight Relayer specification > datasource > location > args`
-
-**Title:** location arguments
-
-|                           |                                                                           |
-| ------------------------- | ------------------------------------------------------------------------- |
-| **Type**                  | `object`                                                                  |
-| **Required**              | Yes                                                                       |
-| **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
-
-| Property                                        | Pattern | Type   | Deprecated | Definition | Title/Description |
-| ----------------------------------------------- | ------- | ------ | ---------- | ---------- | ----------------- |
-| + [id_type](#datasource_location_args_id_type ) | No      | string | No         | -          | type of the id    |
-
-##### <a name="datasource_location_args_id_type"></a>3.2.2.1. Property `Chainsight Relayer specification > datasource > location > args > id_type`
-
-**Title:** type of the id
-
-|              |          |
-| ------------ | -------- |
-| **Type**     | `string` |
-| **Required** | Yes      |
-
-**Description:** canister_name: id is interpreted as canister name, principal_id: id is interpreted as principal id
-
-**Examples:** 
-
-```json
-"canister_name"
-```
-
-```json
-"principal_id"
-```
-
-| Restrictions                      |                                                                                                                                                   |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Must match regular expression** | ```^(canister_name\|principal_id)$``` [Test](https://regex101.com/?regex=%5E%28canister_name%7Cprincipal_id%29%24&testString=%22canister_name%22) |
 
 ### <a name="datasource_method"></a>3.3. Property `Chainsight Relayer specification > datasource > method`
 
@@ -598,4 +560,4 @@
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-09-22 at 08:47:25 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-10-20 at 09:09:47 +0000

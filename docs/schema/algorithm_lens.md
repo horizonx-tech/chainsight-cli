@@ -13,12 +13,6 @@
       - [3.1.1.1. Property `Chainsight Algorithm Lens specification > datasource > methods > method > label`](#datasource_methods_items_label)
       - [3.1.1.2. Property `Chainsight Algorithm Lens specification > datasource > methods > method > identifier`](#datasource_methods_items_identifier)
       - [3.1.1.3. Property `Chainsight Algorithm Lens specification > datasource > methods > method > candid_file_path`](#datasource_methods_items_candid_file_path)
-- [4. Property `Chainsight Algorithm Lens specification > output`](#output)
-  - [4.1. Property `Chainsight Algorithm Lens specification > output > type`](#output_type)
-  - [4.2. Property `Chainsight Algorithm Lens specification > output > type_name`](#output_type_name)
-  - [4.3. Property `Chainsight Algorithm Lens specification > output > name`](#output_name)
-  - [4.4. Property `Chainsight Algorithm Lens specification > output > fields`](#output_fields)
-    - [4.4.1. Property `Chainsight Algorithm Lens specification > output > fields > additionalProperties`](#output_fields_additionalProperties)
 
 **Title:** Chainsight Algorithm Lens specification
 
@@ -35,7 +29,6 @@
 | + [version](#version )       | No      | string | No         | -          | specification version of the canister |
 | + [metadata](#metadata )     | No      | object | No         | -          | metadata                              |
 | + [datasource](#datasource ) | No      | object | No         | -          | -                                     |
-| + [output](#output )         | No      | object | No         | -          | output                                |
 
 ## <a name="version"></a>1. Property `Chainsight Algorithm Lens specification > version`
 
@@ -116,6 +109,14 @@
 ```
 
 ```json
+"snapshot_indexer_icp"
+```
+
+```json
+"snapshot_indexer_evm"
+```
+
+```json
 "snapshot_indexer_https"
 ```
 
@@ -127,9 +128,9 @@
 "algorithm_lens"
 ```
 
-| Restrictions                      |                                                                                                                                                                                                                                                                                                       |
-| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Must match regular expression** | ```^(event_indexer\|algorithm_indexer\|snapshot_indexer\|snapshot_indexer_https\|relayer\|algorithm_lens)$``` [Test](https://regex101.com/?regex=%5E%28event_indexer%7Calgorithm_indexer%7Csnapshot_indexer%7Csnapshot_indexer_https%7Crelayer%7Calgorithm_lens%29%24&testString=%22event_indexer%22) |
+| Restrictions                      |                                                                                                                                                                                                                                                                                                                                                            |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Must match regular expression** | ```^(event_indexer\|algorithm_indexer\|snapshot_indexer_icp\|snapshot_indexer_evm\|snapshot_indexer_https\|relayer\|algorithm_lens)$``` [Test](https://regex101.com/?regex=%5E%28event_indexer%7Calgorithm_indexer%7Csnapshot_indexer_icp%7Csnapshot_indexer_evm%7Csnapshot_indexer_https%7Crelayer%7Calgorithm_lens%29%24&testString=%22event_indexer%22) |
 
 ### <a name="metadata_description"></a>2.3. Property `Chainsight Algorithm Lens specification > metadata > description`
 
@@ -308,132 +309,5 @@
 "artifacts/chainlink/src/chainlink.did"
 ```
 
-## <a name="output"></a>4. Property `Chainsight Algorithm Lens specification > output`
-
-**Title:** output
-
-|                           |                                                                           |
-| ------------------------- | ------------------------------------------------------------------------- |
-| **Type**                  | `object`                                                                  |
-| **Required**              | Yes                                                                       |
-| **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
-
-**Description:** output of the algorithm lens
-
-| Property                          | Pattern | Type   | Deprecated | Definition | Title/Description |
-| --------------------------------- | ------- | ------ | ---------- | ---------- | ----------------- |
-| + [type](#output_type )           | No      | string | No         | -          | type              |
-| - [type_name](#output_type_name ) | No      | string | No         | -          | type_name         |
-| - [name](#output_name )           | No      | string | No         | -          | name              |
-| - [fields](#output_fields )       | No      | object | No         | -          | fields            |
-
-### <a name="output_type"></a>4.1. Property `Chainsight Algorithm Lens specification > output > type`
-
-**Title:** type
-
-|              |          |
-| ------------ | -------- |
-| **Type**     | `string` |
-| **Required** | Yes      |
-
-**Description:** type of the output. You can use primitive type of Rust or User defined struct
-
-**Examples:** 
-
-```json
-"primitive"
-```
-
-```json
-"struct"
-```
-
-| Restrictions                      |                                                                                                                           |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| **Must match regular expression** | ```^(primitive\|struct)$``` [Test](https://regex101.com/?regex=%5E%28primitive%7Cstruct%29%24&testString=%22primitive%22) |
-
-### <a name="output_type_name"></a>4.2. Property `Chainsight Algorithm Lens specification > output > type_name`
-
-**Title:** type_name
-
-|              |          |
-| ------------ | -------- |
-| **Type**     | `string` |
-| **Required** | No       |
-
-**Description:** primitive type name. Required if 'output.type' is 'primitive'
-
-**Examples:** 
-
-```json
-"u128"
-```
-
-```json
-"String"
-```
-
-```json
-"bool"
-```
-
-### <a name="output_name"></a>4.3. Property `Chainsight Algorithm Lens specification > output > name`
-
-**Title:** name
-
-|              |          |
-| ------------ | -------- |
-| **Type**     | `string` |
-| **Required** | No       |
-
-**Description:** name of the output struct. Required if 'output.type' is 'struct'
-
-**Example:** 
-
-```json
-"ETHUSDPrice"
-```
-
-| Restrictions                      |                                                                                                                  |
-| --------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| **Must match regular expression** | ```^[a-zA-Z0-9_]+$``` [Test](https://regex101.com/?regex=%5E%5Ba-zA-Z0-9_%5D%2B%24&testString=%22ETHUSDPrice%22) |
-
-### <a name="output_fields"></a>4.4. Property `Chainsight Algorithm Lens specification > output > fields`
-
-**Title:** fields
-
-|                           |                                                                                                                         |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| **Type**                  | `object`                                                                                                                |
-| **Required**              | No                                                                                                                      |
-| **Additional properties** | [[Should-conform]](#output_fields_additionalProperties "Each additional property must conform to the following schema") |
-
-**Description:** set of field names and their Rust types. Required if 'output.type' is 'struct'
-
-| Property                                   | Pattern | Type   | Deprecated | Definition | Title/Description |
-| ------------------------------------------ | ------- | ------ | ---------- | ---------- | ----------------- |
-| - [](#output_fields_additionalProperties ) | No      | string | No         | -          | -                 |
-
-#### <a name="output_fields_additionalProperties"></a>4.4.1. Property `Chainsight Algorithm Lens specification > output > fields > additionalProperties`
-
-|              |          |
-| ------------ | -------- |
-| **Type**     | `string` |
-| **Required** | No       |
-
-**Examples:** 
-
-```json
-"u128"
-```
-
-```json
-"String"
-```
-
-```json
-"bool"
-```
-
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-09-22 at 08:47:25 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-10-20 at 09:09:48 +0000
