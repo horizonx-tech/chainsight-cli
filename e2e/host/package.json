@@ -1,5 +1,5 @@
 {
-  "name": "integration_test_project",
+  "name": "e2e_test",
   "version": "0.0.0",
   "description": "",
   "license": "Apache-2.0",
@@ -8,7 +8,7 @@
     "exec:add-networks-to-dfx-json": "ts-node scripts/add-networks-to-dfx-json.ts",
     "exec:node-up-checker": "ts-node scripts/node-up-checker.ts",
     "test:pre-check": "vitest test/pre-check",
-    "test:check": "vitest test/check",
+    "test": "vitest test/check",
     "lint": "gts lint",
     "clean": "gts clean",
     "fix": "gts fix",
