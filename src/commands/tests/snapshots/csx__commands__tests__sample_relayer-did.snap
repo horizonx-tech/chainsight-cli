@@ -21,6 +21,7 @@ type RelayerWithLensSourceAttrs = record {
   sources : vec text;
 };
 type Result = variant { Ok; Err : InitError };
+type Result_1 = variant { Ok; Err : text };
 type SourceType = variant { evm; https; chainsight };
 type Sources = record {
   source : text;
@@ -29,6 +30,12 @@ type Sources = record {
   source_type : SourceType;
 };
 type TransformArgs = record { context : vec nat8; response : HttpResponse };
+type Web3CtxParam = record {
+  env : Env;
+  url : text;
+  from : opt text;
+  chain_id : nat64;
+};
 service : {
   get_ethereum_address : () -> (text);
   get_proxy : () -> (principal);
@@ -43,6 +50,7 @@ service : {
   proxy_get_last_canister_metrics_snapshot : (vec nat8) -> (vec nat8);
   proxy_get_top_canister_metrics_snapshots : (vec nat8) -> (vec nat8);
   set_task : (nat32, nat32) -> ();
+  setup : (text, text, Web3CtxParam) -> (Result_1);
   transform : (TransformArgs) -> (HttpResponse) query;
   transform_get_filter_changes : (TransformArgs) -> (HttpResponse) query;
   transform_send_transaction : (TransformArgs) -> (HttpResponse) query;
