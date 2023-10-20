@@ -25,14 +25,15 @@ jobs:
           rustup component add rustfmt
           rustup toolchain install nightly
           rustup target add wasm32-unknown-unknown --toolchain nightly
-      - name: Run e2e test - build & static check of modules
+      - name: Run e2e test (Build & Check Module)
         # TODO: use /tests for integration-test of cargo project instead of selecting folder
         run: |
           RUST_TEST_TIME_UNIT=300000,480000 cargo +nightly test commands::tests --features integration-test -- -Zunstable-options --ensure-time
-      - name: Bring artifacts for e2e
+      - name: Pre-process e2e test (Deployment) - Copy artifacts
+        # TODO: Improve artifacts takeover
         run: |
           cp -rp ./test__e2e_template/artifacts/* ./e2e/docker/.inputs
-      - name: Pre-process e2e test with docker
+      - name: Pre-process e2e test (Deployment) - Prepare node & Deploy components
         working-directory: e2e
         run: |
           cd host
@@ -46,20 +47,15 @@ jobs:
             -v $PWD/.inputs:/workspace/artifacts \
             -v $PWD/.outputs:/workspace/outputs \
             --rm megared05/dfx_hardhat_node:v0.1.0
-      - name: Wait for node startup
+      - name: Pre-process e2e test (Deployment) - Wait for node startup
         working-directory: e2e/host
         run: |
           yarn exec:node-up-checker
-      - name: Run e2e test - Pre-check for node itself
+      - name: Run e2e test (Deployment) - Pre-check for node itself
         working-directory: e2e/host
         run: |
           yarn test:pre-check
-      - name: Run e2e test - Deploy & check deployed canisters
+      - name: Run e2e test (Deployment) - Deploy & check deployed canisters
         working-directory: e2e/host
         run: |
           yarn test:check
-      - name: Post-process e2e test with docker
-        working-directory: e2e/docker
-        run: |
-          docker stop e2e_node
-          docker rm e2e_node
