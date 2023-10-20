@@ -47,11 +47,15 @@ jobs:
             -v $PWD/.inputs:/workspace/artifacts \
             -v $PWD/.outputs:/workspace/outputs \
             --rm megared05/dfx_hardhat_node:v0.1.0
+      - name: Wait for node startup
+        working-directory: e2e/host
+        run: |
+          yarn exec:node-up-checker
       - name: Run e2e test - Pre-check for node itself
-        working-directory: e2e
+        working-directory: e2e/host
         run: |
           yarn test:pre-check
       - name: Run e2e test - deploy & check deployed canisters
-        working-directory: e2e
+        working-directory: e2e/host
         run: |
           yarn test:check
