@@ -14,6 +14,9 @@ jobs:
     steps:
       - name: Checkout the source code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 5
+          token: ${{ secrets.PAT }}
       - name: Check if pip is installed
         run: |
           if ! command -v pip &> /dev/null
@@ -27,7 +30,7 @@ jobs:
         run: rm -r docs/schema/* && generate-schema-doc resources/schema/ docs/schema/ --config template_name=md
       - name: Check if there are doc diffs
         id: diff
-        run: echo "::set-output name=changed::$(git diff --name-only docs/schema | wc -l)"
+        run: echo "changed=$(git diff --name-only ${{ github.event.before }} HEAD -- docs/schema/ | wc -l)" >> $GITHUB_OUTPUT
       - name: if updated, push them
         if: ${{ steps.diff.outputs.changed != '0' }}
         uses: stefanzweifel/git-auto-commit-action@v5
