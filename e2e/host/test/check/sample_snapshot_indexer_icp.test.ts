@@ -1,6 +1,6 @@
-import {describe, test, expect} from 'vitest';
-import {getMetadata, loadCandidIds} from './utils';
-import {DFX_URL} from '../../src';
+import {describe, test} from 'vitest';
+import {loadCandidIds} from './utils';
+import {assertMetadata} from './assertions';
 
 const CANISTER_NAME = 'sample_snapshot_indexer_icp';
 
@@ -20,10 +20,8 @@ describe('readState', () => {
   test('.metadata', async () => {
     const ids = await loadCandidIds();
     const id = ids[CANISTER_NAME].local;
-    const res = await getMetadata(id, DFX_URL);
 
-    // eslint-disable-next-line node/no-unsupported-features/es-builtins
-    expect(Object.fromEntries(res)).toStrictEqual({
+    await assertMetadata(id, {
       'chainsight:label': 'Sample Snapshot Indexer Icp',
       'chainsight:component_type': 'snapshot_indexer_icp',
     });

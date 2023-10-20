@@ -3,9 +3,15 @@ import * as path from 'path';
 import {CanisterStatus, HttpAgent} from '@dfinity/agent';
 import {Principal} from '@dfinity/principal';
 import {MetaData} from '@dfinity/agent/lib/cjs/canisterStatus';
+import {DFX_URL} from '../../src';
+
+export const getAgent = async () => {
+  const agent = new HttpAgent({host: DFX_URL});
+  await agent.fetchRootKey();
+  return agent;
+};
 
 export type CandidIdsType = {[key: string]: {local: string}};
-
 export const loadCandidIds = async (): Promise<CandidIdsType> => {
   const filepath = path.join(
     __dirname,
@@ -15,18 +21,14 @@ export const loadCandidIds = async (): Promise<CandidIdsType> => {
   return JSON.parse(raw);
 };
 
-export const getMetadata = async (canister_id: string, host: string) => {
-  const agent = new HttpAgent({host});
-  await agent.fetchRootKey();
-  const ident = Principal.fromText(canister_id);
+export const getMetadata = async (canisterId: string, keys: string[]) => {
+  const agent = await getAgent();
+  const ident = Principal.fromText(canisterId);
 
   return await CanisterStatus.request({
     agent,
     canisterId: ident,
-    paths: [
-      toMetadata('chainsight:label'),
-      toMetadata('chainsight:component_type'),
-    ],
+    paths: keys.map(toMetadata),
   });
 };
 

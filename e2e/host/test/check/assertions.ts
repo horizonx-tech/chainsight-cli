@@ -1,11 +1,12 @@
 import {expect} from 'vitest';
-import {Actor, HttpAgent} from '@dfinity/agent';
+import {Actor} from '@dfinity/agent';
 import {IDL} from '@dfinity/candid';
 import {Principal} from '@dfinity/principal';
+import {getAgent, getMetadata} from './utils';
 
-export const assertMetric = async (canister_id: string, host: string) => {
-  const agent = new HttpAgent({host});
-  const ident = Principal.fromText(canister_id);
+export const assertMetric = async (canisterId: string) => {
+  const agent = await getAgent();
+  const ident = Principal.fromText(canisterId);
 
   const idl: IDL.InterfaceFactory = ({IDL}) => {
     return IDL.Service({
@@ -24,4 +25,14 @@ export const assertMetric = async (canister_id: string, host: string) => {
   };
   expect(res.cycles).toBeGreaterThan(0);
   expect(res.timestamp).toBeGreaterThan(0);
+};
+
+export const assertMetadata = async (
+  canisterId: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  expected: {[key in string]: any}
+) => {
+  const result = await getMetadata(canisterId, Object.keys(expected));
+  // eslint-disable-next-line node/no-unsupported-features/es-builtins
+  expect(Object.fromEntries(result)).toStrictEqual(expected);
 };
