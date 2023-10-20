@@ -117,7 +117,11 @@
 ```
 
 ```json
-"snapshot_indexer"
+"snapshot_indexer_icp"
+```
+
+```json
+"snapshot_indexer_evm"
 ```
 
 ```json
@@ -132,9 +136,9 @@
 "algorithm_lens"
 ```
 
-| Restrictions                      |                                                                                                                                                                                                                                                                                                       |
-| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Must match regular expression** | ```^(event_indexer\|algorithm_indexer\|snapshot_indexer\|snapshot_indexer_https\|relayer\|algorithm_lens)$``` [Test](https://regex101.com/?regex=%5E%28event_indexer%7Calgorithm_indexer%7Csnapshot_indexer%7Csnapshot_indexer_https%7Crelayer%7Calgorithm_lens%29%24&testString=%22event_indexer%22) |
+| Restrictions                      |                                                                                                                                                                                                                                                                                                                                                            |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Must match regular expression** | ```^(event_indexer\|algorithm_indexer\|snapshot_indexer_icp\|snapshot_indexer_evm\|snapshot_indexer_https\|relayer\|algorithm_lens)$``` [Test](https://regex101.com/?regex=%5E%28event_indexer%7Calgorithm_indexer%7Csnapshot_indexer_icp%7Csnapshot_indexer_evm%7Csnapshot_indexer_https%7Crelayer%7Calgorithm_lens%29%24&testString=%22event_indexer%22) |
 
 ### <a name="metadata_description"></a>2.3. Property `Chainsight Event Indexer specification > metadata > description`
 
@@ -522,4 +526,4 @@
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-09-22 at 08:47:25 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-10-20 at 09:09:48 +0000
