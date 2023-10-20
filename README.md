@@ -2,7 +2,6 @@
 
 # Chainsight command-line execution envirionment
 
-
 Tool for users/developers to interact with the Chainsight Platform.
 
 This primarily builds/controls the Component running in Chainsight Platform.
