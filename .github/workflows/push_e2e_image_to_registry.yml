@@ -1,6 +1,8 @@
 name: Push image for e2e test to registry
 on:
   push:
+    branches:
+      - main
     paths:
       - 'e2e/docker/**'
 jobs:
