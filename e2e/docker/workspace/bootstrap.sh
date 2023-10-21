@@ -1,14 +1,20 @@
 #!/usr/bin/env bash
-cp -rp artifacts ws_dfx
+if [ -d "./artifacts" ]; then
+    cp -rp artifacts ws_dfx
+else
+    mkdir ws_dfx
+fi
 cd ws_dfx
 
 # dfx
 dfx start --background --clean
-dfx canister create --all
-dfx build
-dfx canister install --all
-## check dashboard url (dfx deploy)
-dfx deploy
+if [ -f "./dfx.json" ]; then
+    dfx canister create --all
+    dfx build
+    dfx canister install --all
+    ## check dashboard url (dfx deploy)
+    dfx deploy
+fi
 ## collect deliverables from deployments
 mkdir -p ../outputs/.dfx
 cp -rp .env ../outputs
