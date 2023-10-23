@@ -241,10 +241,34 @@ echo "Run script for '{}'"
     format!(
         r#"#!/bin/bash
 script_dir=$(dirname "$(readlink -f "$0")")
+
+. "$script_dir/utils.sh"
+
+set -e -o pipefail
+trap 'on_error $BASH_SOURCE $LINENO "$BASH_COMMAND" "$@"' ERR
+
 {}
 "#,
         contents_for_component
     )
+}
+
+fn utils_sh() -> String {
+    r#"#!/bin/bash
+
+function on_error()
+{
+    status=$?
+    script=$1
+    line=$2
+    command=$3
+
+    echo "------------------------------------------------------------"
+    echo "Error occured on $script [Line $line]: Status $status"
+    echo "command: $command"
+    echo "------------------------------------------------------------"
+}"#
+    .to_string()
 }
 
 #[cfg(test)]
@@ -332,5 +356,10 @@ mod tests {
             "sample_relayer".to_string(),
         ];
         assert_display_snapshot!(entrypoint_sh(project_ids))
+    }
+
+    #[test]
+    fn test_snapshot_utils_sh() {
+        assert_display_snapshot!(utils_sh())
     }
 }
