@@ -57,6 +57,7 @@ pub struct ExecOpts {
 }
 
 const ENTRYPOINT_SHELL_FILENAME: &str = "entrypoint.sh";
+const UTILS_SHELL_FILENAME: &str = "utils.sh";
 
 pub fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
     let log = env.get_logger();
@@ -184,9 +185,14 @@ fn execute_to_generate_commands(
         .map(|c| c.id().unwrap())
         .collect::<Vec<String>>();
     fs::write(&entrypoint_filepath, entrypoint_sh(component_ids))?;
+    let utils_filepath = format!("{}/{}", &script_root_path_str, UTILS_SHELL_FILENAME);
+    fs::write(&utils_filepath, utils_sh())?;
     let mut perms = fs::metadata(&entrypoint_filepath)?.permissions();
     perms.set_mode(0o755);
     fs::set_permissions(&entrypoint_filepath, perms)?;
+    let mut perms = fs::metadata(&utils_filepath)?.permissions();
+    perms.set_mode(0o755);
+    fs::set_permissions(&utils_filepath, perms)?;
 
     info!(log, r#"Entrypoint Script generated successfully"#);
 
@@ -214,9 +220,10 @@ fn execute_commands(log: &Logger, built_project_path_str: &str) -> anyhow::Resul
         info!(log, "{} successfully", complete_msg);
     } else {
         bail!(format!(
-            "Failed: {} by: {}",
+            "Failed: {} by: {}\n(stdout at run time)\n{}",
             complete_msg,
-            std::str::from_utf8(&output.stderr).unwrap_or("failed to parse stderr")
+            std::str::from_utf8(&output.stderr).unwrap_or("failed to parse stderr"),
+            std::str::from_utf8(&output.stdout).unwrap_or("failed to parse stdout")
         ));
     }
 
@@ -263,11 +270,13 @@ function on_error()
     line=$2
     command=$3
 
-    echo "------------------------------------------------------------"
-    echo "Error occured on $script [Line $line]: Status $status"
-    echo "command: $command"
-    echo "------------------------------------------------------------"
-}"#
+    {
+        # echo "Status: $status"
+        echo "occured on $script [Line $line]"
+        echo "command: $command"
+    } 1>&2
+}
+"#
     .to_string()
 }
 
