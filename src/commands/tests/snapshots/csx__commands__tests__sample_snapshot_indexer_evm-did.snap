@@ -68,6 +68,7 @@ service : {
   setup : (text, Web3CtxParam) -> (Result_1);
   snapshots_len : () -> (nat64) query;
   transform : (TransformArgs) -> (HttpResponse) query;
+  transform_eip1559_support : (TransformArgs) -> (HttpResponse) query;
   transform_get_filter_changes : (TransformArgs) -> (HttpResponse) query;
   transform_send_transaction : (TransformArgs) -> (HttpResponse) query;
 }
