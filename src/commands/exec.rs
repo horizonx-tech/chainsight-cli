@@ -358,21 +358,6 @@ mod tests {
     }
 
     #[test]
-    fn test_snapshot_entrypoint_sh() {
-        let project_ids = vec![
-            "sample_snapshot".to_string(),
-            "sample_lens".to_string(),
-            "sample_relayer".to_string(),
-        ];
-        assert_display_snapshot!(entrypoint_sh(project_ids))
-    }
-
-    #[test]
-    fn test_snapshot_utils_sh() {
-        assert_display_snapshot!(utils_sh())
-    }
-
-    #[test]
     fn test_scripts_snapshot() {
         let project_name = "exec_test_scripts_snapshot";
         run(
