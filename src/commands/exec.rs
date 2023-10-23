@@ -57,6 +57,7 @@ pub struct ExecOpts {
 }
 
 const ENTRYPOINT_SHELL_FILENAME: &str = "entrypoint.sh";
+const UTILS_SHELL_FILENAME: &str = "utils.sh";
 
 pub fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
     let log = env.get_logger();
@@ -183,27 +184,15 @@ fn execute_to_generate_commands(
         .iter()
         .map(|c| c.id().unwrap())
         .collect::<Vec<String>>();
-    let entrypoint_contents = format!(
-        r#"#!/bin/bash
-script_dir=$(dirname "$(readlink -f "$0")")
-{}
-"#,
-        component_ids
-            .iter()
-            .map(|id| format!(
-                r#"
-echo "Run script for '{}'"
-. "$script_dir/components/{}.sh"
-"#,
-                &id, &id
-            ))
-            .collect::<Vec<String>>()
-            .join("\n")
-    );
-    fs::write(&entrypoint_filepath, entrypoint_contents)?;
+    fs::write(&entrypoint_filepath, entrypoint_sh(component_ids))?;
+    let utils_filepath = format!("{}/{}", &script_root_path_str, UTILS_SHELL_FILENAME);
+    fs::write(&utils_filepath, utils_sh())?;
     let mut perms = fs::metadata(&entrypoint_filepath)?.permissions();
     perms.set_mode(0o755);
     fs::set_permissions(&entrypoint_filepath, perms)?;
+    let mut perms = fs::metadata(&utils_filepath)?.permissions();
+    perms.set_mode(0o755);
+    fs::set_permissions(&utils_filepath, perms)?;
 
     info!(log, r#"Entrypoint Script generated successfully"#);
 
@@ -231,17 +220,70 @@ fn execute_commands(log: &Logger, built_project_path_str: &str) -> anyhow::Resul
         info!(log, "{} successfully", complete_msg);
     } else {
         bail!(format!(
-            "Failed: {} by: {}",
+            "Failed: {} by: {}\n(stdout at run time)\n{}",
             complete_msg,
-            std::str::from_utf8(&output.stderr).unwrap_or("failed to parse stderr")
+            std::str::from_utf8(&output.stderr).unwrap_or("failed to parse stderr"),
+            std::str::from_utf8(&output.stdout).unwrap_or("failed to parse stdout")
         ));
     }
 
     anyhow::Ok(())
 }
 
+fn entrypoint_sh(component_ids: Vec<String>) -> String {
+    let contents_for_component = component_ids
+        .iter()
+        .map(|id| {
+            format!(
+                r#"
+echo "Run script for '{}'"
+. "$script_dir/components/{}.sh"
+"#,
+                &id, &id
+            )
+        })
+        .collect::<Vec<String>>()
+        .join("\n");
+
+    format!(
+        r#"#!/bin/bash
+script_dir=$(dirname "$(readlink -f "$0")")
+
+. "$script_dir/utils.sh"
+
+set -e -o pipefail
+trap 'on_error $BASH_SOURCE $LINENO "$BASH_COMMAND" "$@"' ERR
+
+{}
+"#,
+        contents_for_component
+    )
+}
+
+fn utils_sh() -> String {
+    r#"#!/bin/bash
+
+function on_error()
+{
+    status=$?
+    script=$1
+    line=$2
+    command=$3
+
+    {
+        # echo "Status: $status"
+        echo "occured on $script [Line $line]"
+        echo "command: $command"
+    } 1>&2
+}
+"#
+    .to_string()
+}
+
 #[cfg(test)]
 mod tests {
+    use insta::assert_display_snapshot;
+
     use crate::{
         commands::{
             new,
@@ -313,5 +355,20 @@ mod tests {
                 tear_down(project_name);
             },
         );
+    }
+
+    #[test]
+    fn test_snapshot_entrypoint_sh() {
+        let project_ids = vec![
+            "sample_snapshot".to_string(),
+            "sample_lens".to_string(),
+            "sample_relayer".to_string(),
+        ];
+        assert_display_snapshot!(entrypoint_sh(project_ids))
+    }
+
+    #[test]
+    fn test_snapshot_utils_sh() {
+        assert_display_snapshot!(utils_sh())
     }
 }
