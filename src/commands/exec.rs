@@ -153,7 +153,7 @@ fn execute_to_generate_commands(
     network: Network,
     component_data: &Vec<Box<dyn ComponentManifest>>,
 ) -> anyhow::Result<()> {
-    // generate /scripts
+    // generate scripts per component (/scripts/components)
     let script_root_path_str = format!("{}/scripts", &built_project_path_str);
     let scripts_path_str = format!("{}/scripts/components", &built_project_path_str);
     let script_root_path = Path::new(&script_root_path_str);
@@ -167,9 +167,7 @@ fn execute_to_generate_commands(
         let filepath = format!("{}/{}.sh", &scripts_path_str, &id);
         fs::write(&filepath, data.generate_scripts(network.clone())?)?;
 
-        let mut perms = fs::metadata(&filepath)?.permissions();
-        perms.set_mode(0o755);
-        fs::set_permissions(&filepath, perms)?;
+        chmod_executable(&filepath)?;
 
         info!(
             log,
@@ -177,8 +175,7 @@ fn execute_to_generate_commands(
         );
     }
 
-    // temp
-    // - automatic relative path setting
+    // generate common scripts (/scripts)
     let entrypoint_filepath = format!("{}/{}", &script_root_path_str, ENTRYPOINT_SHELL_FILENAME);
     let component_ids = component_data
         .iter()
@@ -187,16 +184,20 @@ fn execute_to_generate_commands(
     fs::write(&entrypoint_filepath, entrypoint_sh(component_ids))?;
     let utils_filepath = format!("{}/{}", &script_root_path_str, UTILS_SHELL_FILENAME);
     fs::write(&utils_filepath, utils_sh())?;
-    let mut perms = fs::metadata(&entrypoint_filepath)?.permissions();
-    perms.set_mode(0o755);
-    fs::set_permissions(&entrypoint_filepath, perms)?;
-    let mut perms = fs::metadata(&utils_filepath)?.permissions();
-    perms.set_mode(0o755);
-    fs::set_permissions(&utils_filepath, perms)?;
+    for path in [&entrypoint_filepath, &utils_filepath] {
+        chmod_executable(path)?;
+    }
 
     info!(log, r#"Entrypoint Script generated successfully"#);
 
     anyhow::Ok(())
+}
+
+fn chmod_executable(path: &str) -> anyhow::Result<()> {
+    let mut perms = fs::metadata(path)?.permissions();
+    perms.set_mode(0o755);
+    fs::set_permissions(path, perms)?;
+    Ok(())
 }
 
 fn execute_commands(log: &Logger, built_project_path_str: &str) -> anyhow::Result<()> {
@@ -358,17 +359,60 @@ mod tests {
     }
 
     #[test]
-    fn test_snapshot_entrypoint_sh() {
-        let project_ids = vec![
-            "sample_snapshot".to_string(),
-            "sample_lens".to_string(),
-            "sample_relayer".to_string(),
-        ];
-        assert_display_snapshot!(entrypoint_sh(project_ids))
-    }
+    fn test_scripts_snapshot() {
+        let project_name = "exec_test_scripts_snapshot";
+        run(
+            || {
+                set_up(project_name);
+            },
+            || {
+                let _ = exec(
+                    &test_env(),
+                    ExecOpts {
+                        path: Some(project_name.to_string()),
+                        component: None,
+                        network: Network::Local,
+                        only_generate_cmds: true,
+                        only_execute_cmds: false,
+                    },
+                );
+                let project = ProjectManifestData::load(&format!(
+                    "{}/{}",
+                    project_name, PROJECT_MANIFEST_FILENAME
+                ))
+                .unwrap();
 
-    #[test]
-    fn test_snapshot_utils_sh() {
-        assert_display_snapshot!(utils_sh())
+                let scripts_root = format!("{}/artifacts/scripts", project_name);
+                let entrypoint_sh_path = format!("{}/{}", scripts_root, ENTRYPOINT_SHELL_FILENAME);
+                assert_display_snapshot!(
+                    ENTRYPOINT_SHELL_FILENAME,
+                    fs::read_to_string(entrypoint_sh_path).unwrap()
+                );
+                let utils_sh_path = format!("{}/{}", scripts_root, UTILS_SHELL_FILENAME);
+                assert_display_snapshot!(
+                    UTILS_SHELL_FILENAME,
+                    fs::read_to_string(utils_sh_path).unwrap()
+                );
+
+                let component_ids = project
+                    .components
+                    .iter()
+                    .map(|c| {
+                        let path = std::path::Path::new(c.component_path.as_str());
+                        path.file_stem().unwrap().to_str().unwrap().to_string()
+                    })
+                    .collect::<Vec<String>>();
+                for id in component_ids {
+                    let component_sh_path = format!("{}/components/{}.sh", scripts_root, id);
+                    assert_display_snapshot!(
+                        format!("{}.sh", id),
+                        fs::read_to_string(component_sh_path).unwrap()
+                    );
+                }
+            },
+            || {
+                tear_down(project_name);
+            },
+        );
     }
 }

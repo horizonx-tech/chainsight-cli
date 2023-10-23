@@ -1,6 +1,6 @@
 ---
 source: src/commands/exec.rs
-expression: utils_sh()
+expression: "fs::read_to_string(utils_sh_path).unwrap()"
 ---
 #!/bin/bash
 
