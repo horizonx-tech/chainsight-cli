@@ -1,0 +1,20 @@
+---
+source: src/commands/exec.rs
+assertion_line: 334
+expression: entrypoint_sh(project_ids)
+---
+#!/bin/bash
+script_dir=$(dirname "$(readlink -f "$0")")
+
+echo "Run script for 'sample_snapshot'"
+. "$script_dir/components/sample_snapshot.sh"
+
+
+echo "Run script for 'sample_lens'"
+. "$script_dir/components/sample_lens.sh"
+
+
+echo "Run script for 'sample_relayer'"
+. "$script_dir/components/sample_relayer.sh"
+
+

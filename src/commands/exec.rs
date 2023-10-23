@@ -183,24 +183,7 @@ fn execute_to_generate_commands(
         .iter()
         .map(|c| c.id().unwrap())
         .collect::<Vec<String>>();
-    let entrypoint_contents = format!(
-        r#"#!/bin/bash
-script_dir=$(dirname "$(readlink -f "$0")")
-{}
-"#,
-        component_ids
-            .iter()
-            .map(|id| format!(
-                r#"
-echo "Run script for '{}'"
-. "$script_dir/components/{}.sh"
-"#,
-                &id, &id
-            ))
-            .collect::<Vec<String>>()
-            .join("\n")
-    );
-    fs::write(&entrypoint_filepath, entrypoint_contents)?;
+    fs::write(&entrypoint_filepath, entrypoint_sh(component_ids))?;
     let mut perms = fs::metadata(&entrypoint_filepath)?.permissions();
     perms.set_mode(0o755);
     fs::set_permissions(&entrypoint_filepath, perms)?;
@@ -240,8 +223,34 @@ fn execute_commands(log: &Logger, built_project_path_str: &str) -> anyhow::Resul
     anyhow::Ok(())
 }
 
+fn entrypoint_sh(component_ids: Vec<String>) -> String {
+    let contents_for_component = component_ids
+        .iter()
+        .map(|id| {
+            format!(
+                r#"
+echo "Run script for '{}'"
+. "$script_dir/components/{}.sh"
+"#,
+                &id, &id
+            )
+        })
+        .collect::<Vec<String>>()
+        .join("\n");
+
+    format!(
+        r#"#!/bin/bash
+script_dir=$(dirname "$(readlink -f "$0")")
+{}
+"#,
+        contents_for_component
+    )
+}
+
 #[cfg(test)]
 mod tests {
+    use insta::assert_display_snapshot;
+
     use crate::{
         commands::{
             new,
@@ -313,5 +322,15 @@ mod tests {
                 tear_down(project_name);
             },
         );
+    }
+
+    #[test]
+    fn test_snapshot_entrypoint_sh() {
+        let project_ids = vec![
+            "sample_snapshot".to_string(),
+            "sample_lens".to_string(),
+            "sample_relayer".to_string(),
+        ];
+        assert_display_snapshot!(entrypoint_sh(project_ids))
     }
 }
