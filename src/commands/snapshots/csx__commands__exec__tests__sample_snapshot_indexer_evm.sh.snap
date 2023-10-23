@@ -1,0 +1,20 @@
+---
+source: src/commands/exec.rs
+expression: "fs::read_to_string(component_sh_path).unwrap()"
+---
+#!/bin/bash
+# init
+dfx canister  call sample_snapshot_indexer_evm init_in '(variant { "LocalDevelopment" })'
+# setup
+dfx canister  call sample_snapshot_indexer_evm setup "(
+    \"6b175474e89094c44da98b954eedeac495271d0f\",
+    record {
+        url = \"https://mainnet.infura.io/v3/\";
+        from = null;
+        chain_id = 1;
+        env = variant { LocalDevelopment };
+    }
+)"
+# set_task
+dfx canister  call sample_snapshot_indexer_evm set_task '(3600, 0)'
+

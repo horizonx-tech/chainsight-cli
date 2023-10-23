@@ -1,0 +1,41 @@
+---
+source: src/commands/exec.rs
+expression: "fs::read_to_string(entrypoint_sh_path).unwrap()"
+---
+#!/bin/bash
+script_dir=$(dirname "$(readlink -f "$0")")
+
+. "$script_dir/utils.sh"
+
+set -e -o pipefail
+trap 'on_error $BASH_SOURCE $LINENO "$BASH_COMMAND" "$@"' ERR
+
+
+echo "Run script for 'sample_event_indexer'"
+. "$script_dir/components/sample_event_indexer.sh"
+
+
+echo "Run script for 'sample_algorithm_indexer'"
+. "$script_dir/components/sample_algorithm_indexer.sh"
+
+
+echo "Run script for 'sample_snapshot_indexer_evm'"
+. "$script_dir/components/sample_snapshot_indexer_evm.sh"
+
+
+echo "Run script for 'sample_snapshot_indexer_icp'"
+. "$script_dir/components/sample_snapshot_indexer_icp.sh"
+
+
+echo "Run script for 'sample_relayer'"
+. "$script_dir/components/sample_relayer.sh"
+
+
+echo "Run script for 'sample_algorithm_lens'"
+. "$script_dir/components/sample_algorithm_lens.sh"
+
+
+echo "Run script for 'sample_snapshot_indexer_https'"
+. "$script_dir/components/sample_snapshot_indexer_https.sh"
+
+

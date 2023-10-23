@@ -1,0 +1,8 @@
+---
+source: src/commands/exec.rs
+expression: "fs::read_to_string(component_sh_path).unwrap()"
+---
+#!/bin/bash
+# init
+dfx canister  call sample_algorithm_lens init_in '(variant { "LocalDevelopment" })'
+

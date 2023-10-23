@@ -1,0 +1,10 @@
+---
+source: src/commands/exec.rs
+expression: "fs::read_to_string(component_sh_path).unwrap()"
+---
+#!/bin/bash
+# init
+dfx canister  call sample_snapshot_indexer_https init_in '(variant { "LocalDevelopment" })'
+# set_task
+dfx canister  call sample_snapshot_indexer_https set_task '(3600, 10)'
+

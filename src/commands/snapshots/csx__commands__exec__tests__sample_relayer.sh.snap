@@ -1,0 +1,22 @@
+---
+source: src/commands/exec.rs
+expression: "fs::read_to_string(component_sh_path).unwrap()"
+---
+#!/bin/bash
+# init
+dfx canister  call sample_relayer init_in '(variant { "LocalDevelopment" })'
+# setup
+dfx canister  call sample_relayer setup "(
+    \"0539a0EF8e5E60891fFf0958A059E049e43020d9\",
+    record {
+        url = \"https://polygon-mumbai.infura.io/v3/\";
+        from = null;
+        chain_id = 80001;
+        env = variant { LocalDevelopment };
+    },
+    \"$(dfx canister  id sample_snapshot_indexer_evm)\",
+    
+)"
+# set_task
+dfx canister  call sample_relayer set_task '(3600, 10)'
+

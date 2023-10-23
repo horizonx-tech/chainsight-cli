@@ -371,4 +371,62 @@ mod tests {
     fn test_snapshot_utils_sh() {
         assert_display_snapshot!(utils_sh())
     }
+
+    #[test]
+    fn test_scripts_snapshot() {
+        let project_name = "exec_test_scripts_snapshot";
+        run(
+            || {
+                set_up(project_name);
+            },
+            || {
+                let _ = exec(
+                    &test_env(),
+                    ExecOpts {
+                        path: Some(project_name.to_string()),
+                        component: None,
+                        network: Network::Local,
+                        only_generate_cmds: true,
+                        only_execute_cmds: false,
+                    },
+                );
+                let project = ProjectManifestData::load(&format!(
+                    "{}/{}",
+                    project_name, PROJECT_MANIFEST_FILENAME
+                ))
+                .unwrap();
+
+                let scripts_root = format!("{}/artifacts/scripts", project_name);
+                let entrypoint_sh_path = format!("{}/{}", scripts_root, ENTRYPOINT_SHELL_FILENAME);
+                assert_display_snapshot!(
+                    ENTRYPOINT_SHELL_FILENAME,
+                    fs::read_to_string(entrypoint_sh_path).unwrap()
+                );
+                let utils_sh_path = format!("{}/{}", scripts_root, UTILS_SHELL_FILENAME);
+                assert_display_snapshot!(
+                    UTILS_SHELL_FILENAME,
+                    fs::read_to_string(utils_sh_path).unwrap()
+                );
+
+                let component_ids = project
+                    .components
+                    .iter()
+                    .map(|c| {
+                        let path = std::path::Path::new(c.component_path.as_str());
+                        path.file_stem().unwrap().to_str().unwrap().to_string()
+                    })
+                    .collect::<Vec<String>>();
+                for id in component_ids {
+                    let component_sh_path = format!("{}/components/{}.sh", scripts_root, id);
+                    assert_display_snapshot!(
+                        format!("{}.sh", id),
+                        fs::read_to_string(component_sh_path).unwrap()
+                    );
+                }
+            },
+            || {
+                tear_down(project_name);
+            },
+        );
+    }
 }
