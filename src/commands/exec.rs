@@ -184,7 +184,7 @@ fn execute_to_generate_commands(
     fs::write(&entrypoint_filepath, entrypoint_sh(component_ids))?;
     let utils_filepath = format!("{}/{}", &script_root_path_str, UTILS_SHELL_FILENAME);
     fs::write(&utils_filepath, utils_sh())?;
-    for path in vec![&entrypoint_filepath, &utils_filepath] {
+    for path in [&entrypoint_filepath, &utils_filepath] {
         chmod_executable(path)?;
     }
 
@@ -194,9 +194,9 @@ fn execute_to_generate_commands(
 }
 
 fn chmod_executable(path: &str) -> anyhow::Result<()> {
-    let mut perms = fs::metadata(&path)?.permissions();
+    let mut perms = fs::metadata(path)?.permissions();
     perms.set_mode(0o755);
-    fs::set_permissions(&path, perms)?;
+    fs::set_permissions(path, perms)?;
     Ok(())
 }
 
