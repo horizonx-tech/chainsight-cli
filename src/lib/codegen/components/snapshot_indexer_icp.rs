@@ -135,7 +135,7 @@ impl ComponentManifest for SnapshotIndexerICPComponentManifest {
         };
 
         Ok(GeneratedCodes {
-            lib: lib,
+            lib,
             types: Some(types),
         })
     }
