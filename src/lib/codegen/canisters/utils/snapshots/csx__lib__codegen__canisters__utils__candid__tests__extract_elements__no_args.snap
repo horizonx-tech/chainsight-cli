@@ -1,0 +1,9 @@
+---
+source: src/lib/codegen/canisters/utils/candid.rs
+expression: "format!(\"{:#?}\", result)"
+---
+(
+    "get_value",
+    "",
+    "text",
+)

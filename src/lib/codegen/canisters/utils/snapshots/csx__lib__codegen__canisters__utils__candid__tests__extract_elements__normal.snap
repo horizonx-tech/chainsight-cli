@@ -1,0 +1,9 @@
+---
+source: src/lib/codegen/canisters/utils/candid.rs
+expression: "format!(\"{:#?}\", result)"
+---
+(
+    "update_value",
+    "nat64",
+    "text",
+)
