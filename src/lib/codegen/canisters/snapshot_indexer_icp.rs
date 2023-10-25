@@ -1,13 +1,11 @@
-use anyhow::{bail, ensure};
+use anyhow::ensure;
 use candid::Principal;
 use quote::{format_ident, quote};
 
 use crate::{
     lib::codegen::{
-        canisters::common::{
-            generate_outside_call_idents, generate_request_arg_idents, CanisterMethodIdentifier,
-            CanisterMethodValueType, OutsideCallType,
-        },
+        canisters::common::{generate_outside_call_idents, OutsideCallType},
+        canisters::utils::candid::CanisterMethodIdentifier,
         components::{
             common::ComponentManifest, snapshot_indexer_icp::SnapshotIndexerICPComponentManifest,
         },
@@ -22,6 +20,9 @@ fn common_codes() -> proc_macro2::TokenStream {
         use candid::{Decode, Encode};
         use chainsight_cdk_macros::{init_in,manage_single_state, setup_func, prepare_stable_structure, stable_memory_for_vec, StableMemoryStorable, timer_task_func, chainsight_common, did_export, snapshot_icp_source};
         use chainsight_cdk::rpc::{CallProvider, Caller, Message};
+
+        mod types;
+
         init_in!();
         chainsight_common!(3600);
 
@@ -38,52 +39,13 @@ fn custom_codes(
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     let id = &manifest.id().ok_or(anyhow::anyhow!("id is required"))?;
     let method = &manifest.datasource.method;
-    let method_identifier = CanisterMethodIdentifier::parse_from_str(&method.identifier)?;
+    let method_identifier = CanisterMethodIdentifier::new(&method.identifier)?;
 
     let id_ident = format_ident!("{}", id);
     let method_ident = "proxy_".to_string() + &method_identifier.identifier; // NOTE: to call through proxy
 
-    // for response type
-    let response_type = method_identifier.return_value;
-    let (response_type_ident, response_type_def_ident) = match response_type {
-        CanisterMethodValueType::Scalar(ty, _) => {
-            let type_ident = format_ident!("{}", &ty);
-            (quote! { type SnapshotValue = #type_ident; }, quote! {})
-        }
-        CanisterMethodValueType::Tuple(tys) => {
-            let type_idents = tys
-                .iter()
-                .map(|(ty, _)| format_ident!("{}", ty))
-                .collect::<Vec<proc_macro2::Ident>>();
-            (
-                quote! { type SnapshotValue = (#(#type_idents),*); },
-                quote! {},
-            )
-        }
-        CanisterMethodValueType::Struct(values) => {
-            let response_type_def_ident = format_ident!("{}", "CustomResponseStruct");
-            let struct_tokens = values
-                .into_iter()
-                .map(|(key, ty, _)| {
-                    let key_ident = format_ident!("{}", key);
-                    let ty_ident = format_ident!("{}", ty);
-                    quote! {
-                        pub #key_ident: #ty_ident
-                    }
-                })
-                .collect::<Vec<_>>();
-            (
-                quote! { type SnapshotValue = #response_type_def_ident; },
-                quote! {
-                    #[derive(Clone, Debug, candid::CandidType, serde::Serialize, candid::Deserialize)]
-                    pub struct #response_type_def_ident {
-                        #(#struct_tokens),*
-                    }
-                },
-            )
-        }
-        _ => bail!("Unsupported type"),
-    };
+    let response_ty_name_def_ident =
+        format_ident!("{}", CanisterMethodIdentifier::RESPONSE_TYPE_NAME);
 
     // consider whether to add timestamp information to the snapshot
     let (
@@ -95,13 +57,14 @@ fn custom_codes(
     ) = if manifest.storage.with_timestamp {
         (
             quote! {
+
                 #[derive(Clone, Debug, candid::CandidType, candid::Deserialize, serde::Serialize, StableMemoryStorable)]
                 #[stable_mem_storable_opts(max_size = 10000, is_fixed_size = false)] // temp: max_size
                 pub struct Snapshot {
                     pub value: SnapshotValue,
                     pub timestamp: u64,
                 }
-                #response_type_ident
+                pub type SnapshotValue = types::#response_ty_name_def_ident;
             },
             quote! { let current_ts_sec = ic_cdk::api::time() / 1000000; },
             quote! {
@@ -116,11 +79,13 @@ fn custom_codes(
     } else {
         (
             quote! {
+                // #types_codes_compiled_identifier
+
                 #[derive(Debug, Clone, candid :: CandidType, candid :: Deserialize, serde::Serialize, StableMemoryStorable)]
                 #[stable_mem_storable_opts(max_size = 10000, is_fixed_size = false)] // temp: max_size
                 pub struct Snapshot(pub SnapshotValue);
 
-                #response_type_ident
+                pub type SnapshotValue = types::#response_ty_name_def_ident;
             },
             quote! {},
             quote! { let datum = Snapshot((res.unwrap().clone())); },
@@ -170,7 +135,6 @@ fn custom_codes(
 
         #queries_expect_timestamp
 
-        #response_type_def_ident
         #args_type_ident
         #get_args_ident
 
@@ -234,22 +198,30 @@ pub fn generate_app(
         return Ok(quote! {});
     }
 
-    let method = &manifest.datasource.method;
-    let method_identifier = CanisterMethodIdentifier::parse_from_str(&method.identifier)?;
-    let method_args = method
-        .args
-        .iter()
-        .enumerate()
-        .map(|(idx, arg)| (method_identifier.params[idx].clone(), arg.clone()))
-        .collect();
-    let (request_val_idents, request_type_idents) = generate_request_arg_idents(&method_args);
+    let method_identifier = CanisterMethodIdentifier::new(&manifest.datasource.method.identifier)?;
+    let (args_ty, _) = method_identifier.get_types();
+    let code = if args_ty.is_some() {
+        let request_args_ty_name_def_ident =
+            format_ident!("{}", CanisterMethodIdentifier::REQUEST_ARGS_TYPE_NAME);
 
-    let code = quote! {
-        pub type CallCanisterArgs = (#(#request_type_idents),*);
-        pub fn call_args() -> CallCanisterArgs {
-            (#(#request_val_idents),*)
+        quote! {
+            mod types;
+
+            pub type CallCanisterArgs = types::#request_args_ty_name_def_ident;
+            // todo: set return_value by parsing manifest
+            pub fn call_args() -> CallCanisterArgs {
+                todo!()
+            }
+        }
+    } else {
+        quote! {
+            pub type CallCanisterArgs = ();
+            pub fn call_args() -> CallCanisterArgs {
+                ()
+            }
         }
     };
+
     Ok(code)
 }
 

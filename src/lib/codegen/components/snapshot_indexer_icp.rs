@@ -1,18 +1,21 @@
 use std::collections::HashMap;
 
 use chainsight_cdk::config::components::LensTargets;
-use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::{
-    lib::codegen::{canisters, components::common::SourceType, scripts},
+    lib::codegen::{
+        canisters::{self, utils::candid::CanisterMethodIdentifier},
+        components::common::SourceType,
+        scripts,
+    },
     types::{ComponentType, Network},
 };
 
 use super::common::{
     custom_tags_interval_sec, ComponentManifest, ComponentMetadata, Datasource, DestinationType,
-    SnapshotStorage, Sources,
+    GeneratedCodes, SnapshotStorage, Sources,
 };
 
 /// Component Manifest: Snapshot Indexer ICP
@@ -84,8 +87,19 @@ impl ComponentManifest for SnapshotIndexerICPComponentManifest {
     fn generate_codes(
         &self,
         _interface_contract: Option<ethabi::Contract>,
-    ) -> anyhow::Result<TokenStream> {
-        canisters::snapshot_indexer_icp::generate_codes(self)
+    ) -> anyhow::Result<GeneratedCodes> {
+        let lib = canisters::snapshot_indexer_icp::generate_codes(self)?;
+
+        // NOTE/TODO: Duplicate types.rs in /logics
+        let types = {
+            let identifier = CanisterMethodIdentifier::new(&self.datasource.method.identifier)?;
+            identifier.compile()
+        };
+
+        Ok(GeneratedCodes {
+            lib,
+            types: Some(types),
+        })
     }
 
     fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
@@ -112,8 +126,18 @@ impl ComponentManifest for SnapshotIndexerICPComponentManifest {
         self.datasource.method.interface.clone()
     }
 
-    fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
-        canisters::snapshot_indexer_icp::generate_app(self)
+    fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
+        let lib = canisters::snapshot_indexer_icp::generate_app(self)?;
+
+        let types = {
+            let identifier = CanisterMethodIdentifier::new(&self.datasource.method.identifier)?;
+            identifier.compile()
+        };
+
+        Ok(GeneratedCodes {
+            lib: lib,
+            types: Some(types),
+        })
     }
     fn get_sources(&self) -> Sources {
         let mut attr = HashMap::new();
@@ -250,10 +274,10 @@ interval: 3600
         };
 
         assert_display_snapshot!(SrcString::from(
-            &manifest.generate_codes(Option::None).unwrap()
+            &manifest.generate_codes(Option::None).unwrap().lib
         ));
         assert_display_snapshot!(SrcString::from(
-            &manifest.generate_user_impl_template().unwrap()
+            &manifest.generate_user_impl_template().unwrap().lib
         ));
         assert_display_snapshot!(&manifest.generate_scripts(Network::Local).unwrap());
     }

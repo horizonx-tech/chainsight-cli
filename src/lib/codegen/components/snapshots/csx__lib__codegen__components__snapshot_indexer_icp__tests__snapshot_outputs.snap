@@ -1,6 +1,6 @@
 ---
 source: src/lib/codegen/components/snapshot_indexer_icp.rs
-expression: "SrcString::from(&manifest.generate_codes(Option::None).unwrap())"
+expression: "SrcString::from(&manifest.generate_codes(Option::None).unwrap().lib)"
 ---
 use candid::{
 Decode, Encode };
@@ -8,6 +8,7 @@ use chainsight_cdk_macros::{
 init_in, manage_single_state, setup_func, prepare_stable_structure, stable_memory_for_vec, StableMemoryStorable, timer_task_func, chainsight_common, did_export, snapshot_icp_source };
 use chainsight_cdk::rpc::{
 CallProvider, Caller, Message };
+mod types;
 init_in!();
 chainsight_common!(3600);
 manage_single_state!("target_canister", String, false);
@@ -23,7 +24,7 @@ pub struct Snapshot {
 pub value:SnapshotValue, pub timestamp:u64,
 }
 
-type SnapshotValue = CustomResponseStruct;
+pub type SnapshotValue = types::ResponseType;
 fn _get_last_snapshot_value() -> SnapshotValue {
 get_last_snapshot().value
 }
@@ -73,11 +74,6 @@ chainsight_cdk::rpc::ReceiverProvider::< u64, Vec<SnapshotValue>>::new(proxy(), 
 pub async fn proxy_get_snapshot_value(input:std::vec::Vec<u8>) -> std::vec::Vec<u8>{
 use chainsight_cdk::rpc::Receiver;
 chainsight_cdk::rpc::ReceiverProvider::< u64, SnapshotValue>:: new(proxy(), _get_snapshot_value, ).reply(input).await
-}
-
-#[derive(Clone, Debug, candid::CandidType, serde::Serialize, candid::Deserialize)]
-pub struct CustomResponseStruct {
-pub value:String, pub timestamp:u64
 }
 
 type CallCanisterArgs = sample_snapshot_indexer_icp::CallCanisterArgs;
