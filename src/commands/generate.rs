@@ -10,7 +10,9 @@ use slog::{debug, info, Logger};
 use crate::lib::codegen::bindings::generate_rs_bindings;
 use crate::lib::codegen::components::algorithm_indexer::AlgorithmIndexerComponentManifest;
 use crate::lib::codegen::components::algorithm_lens::AlgorithmLensComponentManifest;
-use crate::lib::codegen::components::common::{ComponentManifest, ComponentTypeInManifest};
+use crate::lib::codegen::components::common::{
+    ComponentManifest, ComponentTypeInManifest, GeneratedCodes,
+};
 use crate::lib::codegen::components::event_indexer::EventIndexerComponentManifest;
 use crate::lib::codegen::components::relayer::RelayerComponentManifest;
 use crate::lib::codegen::components::snapshot_indexer_evm::SnapshotIndexerEVMComponentManifest;
@@ -185,15 +187,21 @@ fn exec_codegen(
                 r#"[{}] Skip creating logic project: '{}' already exists"#, id, logic_path_str,
             );
         } else {
+            let codes = data.generate_user_impl_template();
+            let src = match codes {
+                anyhow::Result::Ok(codes) => Some(CargoProjectSrc {
+                    lib: codes.lib.to_string(),
+                    types: codes.types.map(|t| t.to_string()),
+                }),
+                anyhow::Result::Err(_) => Some(CargoProjectSrc {
+                    lib: String::default(),
+                    types: None,
+                }),
+            };
             create_cargo_project(
                 logic_path_str,
                 Option::Some(&logic_cargo_toml(&id, data.dependencies())),
-                Option::Some(
-                    &data
-                        .generate_user_impl_template()
-                        .unwrap_or_default()
-                        .to_string(),
-                ),
+                src,
             )
             .map_err(|err| {
                 anyhow::anyhow!(r#"[{}] Failed to create logic project by: {}"#, id, err)
@@ -208,13 +216,14 @@ fn exec_codegen(
             let accessors_path_str = &paths::accessors_path_str(src_path_str, &id);
             create_cargo_project(
                 accessors_path_str,
-                Option::Some(&accessors_cargo_toml(&id, data.dependencies())),
-                Option::Some(
-                    &data
+                Some(&accessors_cargo_toml(&id, data.dependencies())),
+                Some(CargoProjectSrc {
+                    lib: data
                         .generate_dependency_accessors()
                         .unwrap_or_default()
                         .to_string(),
-                ),
+                    types: None,
+                }),
             )
             .map_err(|err| {
                 anyhow::anyhow!(
@@ -292,13 +301,17 @@ fn exec_codegen(
 
         // canister
         let canister_pj_path_str = &paths::canisters_path_str(src_path_str, &id);
-        let canister_src = &data.generate_codes(interface_contract).map_err(|err| {
-            anyhow::anyhow!(r#"[{}] Failed to generate canister code by: {}"#, id, err)
-        })?;
+        let GeneratedCodes { lib, types } =
+            data.generate_codes(interface_contract).map_err(|err| {
+                anyhow::anyhow!(r#"[{}] Failed to generate canister code by: {}"#, id, err)
+            })?;
         create_cargo_project(
             canister_pj_path_str,
-            Option::Some(&canister_project_cargo_toml(&id)),
-            Option::Some(&canister_src.to_string()),
+            Some(&canister_project_cargo_toml(&id)),
+            Some(CargoProjectSrc {
+                lib: lib.to_string(),
+                types: types.map(|t| t.to_string()),
+            }),
         )
         .map_err(|err| {
             anyhow::anyhow!(r#"[{}] Failed to create canister project by: {}"#, id, err)
@@ -306,14 +319,9 @@ fn exec_codegen(
 
         // generate dummy bindings to be able to run cargo test
         let bindings_path_str = &paths::bindings_path_str(src_path_str, &id);
-        create_cargo_project(
-            bindings_path_str,
-            Option::Some(&bindings_cargo_toml(&id)),
-            Option::None,
-        )
-        .map_err(|err| {
-            anyhow::anyhow!(r#"[{}] Failed to create bindings project by: {}"#, id, err)
-        })?;
+        create_cargo_project(bindings_path_str, Some(&bindings_cargo_toml(&id)), None).map_err(
+            |err| anyhow::anyhow!(r#"[{}] Failed to create bindings project by: {}"#, id, err),
+        )?;
     }
 
     // generate canister bindings
@@ -369,19 +377,28 @@ fn builtin_interface(name: &str) -> Option<&'static str> {
     Some(interface)
 }
 
-pub fn create_cargo_project(
+struct CargoProjectSrc {
+    pub lib: String,
+    pub types: Option<String>,
+}
+fn create_cargo_project(
     path_str: &str,
     manifest: Option<&str>,
-    src: Option<&str>,
+    src: Option<CargoProjectSrc>,
 ) -> anyhow::Result<()> {
     fs::create_dir_all(Path::new(&format!("{}/src", path_str)))?;
     fs::write(
         Path::new(&format!("{}/Cargo.toml", path_str)),
         manifest.unwrap_or_default(),
     )?;
-    fs::write(
-        Path::new(&format!("{}/src/lib.rs", path_str)),
-        src.unwrap_or_default(),
-    )?;
+    if let Some(CargoProjectSrc { lib, types }) = src {
+        fs::write(Path::new(&format!("{}/src/lib.rs", path_str)), lib)?;
+        if let Some(types) = types {
+            fs::write(Path::new(&format!("{}/src/types.rs", path_str)), types)?
+        };
+    } else {
+        File::create(Path::new(&format!("{}/src/lib.rs", path_str)))?;
+    }
+
     Ok(())
 }
