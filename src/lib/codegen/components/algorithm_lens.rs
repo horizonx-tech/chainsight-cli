@@ -10,7 +10,7 @@ use crate::{
     types::{ComponentType, Network},
 };
 
-use super::common::{ComponentManifest, ComponentMetadata, SourceType, Sources};
+use super::common::{ComponentManifest, ComponentMetadata, GeneratedCodes, SourceType, Sources};
 
 /// Component Manifest: Algorithm Lens
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -78,8 +78,11 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
     fn generate_codes(
         &self,
         _interface_contract: Option<ethabi::Contract>,
-    ) -> anyhow::Result<TokenStream> {
-        canisters::algorithm_lens::generate_codes(self)
+    ) -> anyhow::Result<GeneratedCodes> {
+        Ok(GeneratedCodes {
+            lib: canisters::algorithm_lens::generate_codes(self)?,
+            types: None,
+        })
     }
 
     fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
@@ -106,8 +109,11 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
         None
     }
 
-    fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
-        canisters::algorithm_lens::generate_app(self)
+    fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
+        Ok(GeneratedCodes {
+            lib: canisters::algorithm_lens::generate_app(self)?,
+            types: None,
+        })
     }
 
     fn get_sources(&self) -> Sources {
@@ -255,10 +261,10 @@ output:
         };
 
         assert_display_snapshot!(SrcString::from(
-            &manifest.generate_codes(Option::None).unwrap()
+            &manifest.generate_codes(Option::None).unwrap().lib
         ));
         assert_display_snapshot!(SrcString::from(
-            &manifest.generate_user_impl_template().unwrap()
+            &manifest.generate_user_impl_template().unwrap().lib
         ));
         assert_display_snapshot!(SrcString::from(
             &manifest.generate_dependency_accessors().unwrap()

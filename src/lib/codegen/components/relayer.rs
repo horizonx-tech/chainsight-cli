@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 use anyhow::Ok;
 use chainsight_cdk::config::components::{CanisterMethodIdentifier, CommonConfig, LensTargets};
-use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -17,7 +16,8 @@ use crate::{
 };
 
 use super::common::{
-    ComponentManifest, ComponentMetadata, Datasource, DestinationType, SourceType, Sources,
+    ComponentManifest, ComponentMetadata, Datasource, DestinationType, GeneratedCodes, SourceType,
+    Sources,
 };
 
 /// Component Manifest: Relayer
@@ -107,8 +107,11 @@ impl ComponentManifest for RelayerComponentManifest {
     fn generate_codes(
         &self,
         _interface_contract: Option<ethabi::Contract>,
-    ) -> anyhow::Result<TokenStream> {
-        canisters::relayer::generate_codes(self)
+    ) -> anyhow::Result<GeneratedCodes> {
+        Ok(GeneratedCodes {
+            lib: canisters::relayer::generate_codes(self)?,
+            types: None,
+        })
     }
 
     fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
@@ -147,8 +150,11 @@ impl ComponentManifest for RelayerComponentManifest {
             attributes,
         }
     }
-    fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
-        canisters::relayer::generate_app(self)
+    fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
+        Ok(GeneratedCodes {
+            lib: canisters::relayer::generate_app(self)?,
+            types: None,
+        })
     }
     fn custom_tags(&self) -> HashMap<String, String> {
         #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -353,7 +359,7 @@ interval: 3600
         //     &manifest.generate_codes(Option::None).unwrap()
         // ));
         assert_display_snapshot!(SrcString::from(
-            &manifest.generate_user_impl_template().unwrap()
+            &manifest.generate_user_impl_template().unwrap().lib
         ));
         assert_display_snapshot!(&manifest.generate_scripts(Network::Local).unwrap());
     }
@@ -379,7 +385,7 @@ interval: 3600
         //     &manifest.generate_codes(Option::None).unwrap()
         // ));
         assert_display_snapshot!(SrcString::from(
-            &manifest.generate_user_impl_template().unwrap()
+            &manifest.generate_user_impl_template().unwrap().lib
         ));
         assert_display_snapshot!(&manifest.generate_scripts(Network::Local).unwrap());
     }

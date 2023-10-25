@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use anyhow::bail;
-use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -11,7 +10,8 @@ use crate::{
 };
 
 use super::common::{
-    custom_tags_interval_sec, ComponentManifest, ComponentMetadata, SourceType, Sources,
+    custom_tags_interval_sec, ComponentManifest, ComponentMetadata, GeneratedCodes, SourceType,
+    Sources,
 };
 
 /// Component Manifest: Event Indexer
@@ -93,8 +93,11 @@ impl ComponentManifest for EventIndexerComponentManifest {
     fn generate_codes(
         &self,
         _interface_contract: Option<ethabi::Contract>,
-    ) -> anyhow::Result<TokenStream> {
-        canisters::event_indexer::generate_codes(self)
+    ) -> anyhow::Result<GeneratedCodes> {
+        Ok(GeneratedCodes {
+            lib: canisters::event_indexer::generate_codes(self)?,
+            types: None,
+        })
     }
 
     fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
@@ -154,7 +157,7 @@ impl ComponentManifest for EventIndexerComponentManifest {
         self.datasource.event.interface.clone()
     }
 
-    fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
+    fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
         bail!("not implemented")
     }
     fn custom_tags(&self) -> HashMap<String, String> {
@@ -344,6 +347,7 @@ interval: 3600
             &manifest
                 .generate_codes(Option::Some(ethabi::Contract::load(abi).unwrap()))
                 .unwrap()
+                .lib
         ));
         assert_display_snapshot!(&manifest.generate_scripts(Network::Local).unwrap());
     }

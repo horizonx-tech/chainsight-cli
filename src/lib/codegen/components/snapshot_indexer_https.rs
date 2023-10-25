@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -11,7 +10,7 @@ use crate::{
 
 use super::common::{
     custom_tags_interval_sec, ComponentManifest, ComponentMetadata, DestinationType,
-    SnapshotStorage, Sources,
+    GeneratedCodes, SnapshotStorage, Sources,
 };
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 
@@ -101,8 +100,11 @@ impl ComponentManifest for SnapshotIndexerHTTPSComponentManifest {
     fn generate_codes(
         &self,
         _interface_contract: Option<ethabi::Contract>,
-    ) -> anyhow::Result<TokenStream> {
-        canisters::snapshot_indexer_https::generate_codes(self)
+    ) -> anyhow::Result<GeneratedCodes> {
+        Ok(GeneratedCodes {
+            lib: canisters::snapshot_indexer_https::generate_codes(self)?,
+            types: None,
+        })
     }
 
     fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
@@ -129,8 +131,11 @@ impl ComponentManifest for SnapshotIndexerHTTPSComponentManifest {
         None
     }
 
-    fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
-        canisters::snapshot_indexer_https::generate_app(self)
+    fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
+        Ok(GeneratedCodes {
+            lib: canisters::snapshot_indexer_https::generate_app(self)?,
+            types: None,
+        })
     }
     fn get_sources(&self) -> Sources {
         Sources {
@@ -261,10 +266,10 @@ interval: 3600
         };
 
         assert_display_snapshot!(SrcString::from(
-            &manifest.generate_codes(Option::None).unwrap()
+            &manifest.generate_codes(Option::None).unwrap().lib
         ));
         assert_display_snapshot!(SrcString::from(
-            &manifest.generate_user_impl_template().unwrap()
+            &manifest.generate_user_impl_template().unwrap().lib
         ));
         assert_display_snapshot!(&manifest.generate_scripts(Network::Local).unwrap());
     }
