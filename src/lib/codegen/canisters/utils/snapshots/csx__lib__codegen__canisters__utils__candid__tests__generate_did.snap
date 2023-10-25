@@ -1,0 +1,5 @@
+---
+source: src/lib/codegen/canisters/utils/candid.rs
+expression: did
+---
+type Account = record { owner : principal; subaccount : opt blob };

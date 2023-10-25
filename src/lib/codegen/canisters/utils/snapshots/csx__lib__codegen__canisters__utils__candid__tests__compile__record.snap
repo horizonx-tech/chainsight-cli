@@ -1,0 +1,9 @@
+---
+source: src/lib/codegen/canisters/utils/candid.rs
+expression: compiled
+---
+#![allow(dead_code, unused_imports)]
+use candid::{self, CandidType, Deserialize, Principal, Encode, Decode};
+pub type RequestArgsType = u64;
+#[derive(Clone, Debug, candid :: CandidType, candid :: Deserialize, serde :: Serialize, chainsight_cdk_macros :: StableMemoryStorable)]
+pub struct ResponseType { pub value: String, pub timestamp: u64 }

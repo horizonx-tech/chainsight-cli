@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use chainsight_cdk::config::components::LensTargets;
-use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -12,7 +11,7 @@ use crate::{
 
 use super::common::{
     custom_tags_interval_sec, ComponentManifest, ComponentMetadata, Datasource, DestinationType,
-    SnapshotStorage, Sources,
+    GeneratedCodes, SnapshotStorage, Sources,
 };
 
 /// Component Manifest: Snapshot Indexer EVM
@@ -84,8 +83,11 @@ impl ComponentManifest for SnapshotIndexerEVMComponentManifest {
     fn generate_codes(
         &self,
         _interface_contract: Option<ethabi::Contract>,
-    ) -> anyhow::Result<TokenStream> {
-        canisters::snapshot_indexer_evm::generate_codes(self)
+    ) -> anyhow::Result<GeneratedCodes> {
+        Ok(GeneratedCodes {
+            lib: canisters::snapshot_indexer_evm::generate_codes(self)?,
+            types: None,
+        })
     }
 
     fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
@@ -112,8 +114,11 @@ impl ComponentManifest for SnapshotIndexerEVMComponentManifest {
         self.datasource.method.interface.clone()
     }
 
-    fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream> {
-        canisters::snapshot_indexer_evm::generate_app(self)
+    fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
+        Ok(GeneratedCodes {
+            lib: canisters::snapshot_indexer_evm::generate_app(self)?,
+            types: None,
+        })
     }
 
     fn get_sources(&self) -> Sources {
@@ -265,9 +270,10 @@ interval: 3600
             &manifest
                 .generate_codes(Option::Some(ethabi::Contract::load(abi).unwrap()))
                 .unwrap()
+                .lib
         ));
         assert_display_snapshot!(SrcString::from(
-            &manifest.generate_user_impl_template().unwrap()
+            &manifest.generate_user_impl_template().unwrap().lib
         ));
         assert_display_snapshot!(&manifest.generate_scripts(Network::Local).unwrap());
     }

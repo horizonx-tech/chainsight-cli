@@ -172,6 +172,12 @@ impl Default for SnapshotStorage {
     }
 }
 
+pub struct GeneratedCodes {
+    // TODO: make fields of the same type
+    pub lib: TokenStream,
+    pub types: Option<String>,
+}
+
 /// Common Trait for Manifest of Data Processing Component
 pub trait ComponentManifest: std::fmt::Debug {
     /// Get a structure representing the Component from the manifest
@@ -214,7 +220,7 @@ pub trait ComponentManifest: std::fmt::Debug {
     fn generate_codes(
         &self,
         interface_contract: Option<ethabi::Contract>,
-    ) -> anyhow::Result<TokenStream>;
+    ) -> anyhow::Result<GeneratedCodes>;
 
     /// Generate a script from Component Manifest containing commands to run the Component
     fn generate_scripts(&self, network: Network) -> anyhow::Result<String>;
@@ -241,7 +247,7 @@ pub trait ComponentManifest: std::fmt::Debug {
     fn required_interface(&self) -> Option<String>;
 
     /// Template code to be added/modified by user
-    fn generate_user_impl_template(&self) -> anyhow::Result<TokenStream>;
+    fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes>;
 
     /// Sources of data provided by this component
     fn get_sources(&self) -> Sources;
