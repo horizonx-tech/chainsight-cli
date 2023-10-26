@@ -343,12 +343,14 @@ interval: 3600
         };
 
         let abi = File::open("resources/ERC20.json").unwrap();
-        assert_display_snapshot!(SrcString::from(
-            &manifest
-                .generate_codes(Option::Some(ethabi::Contract::load(abi).unwrap()))
-                .unwrap()
-                .lib
-        ));
+        let generated_codes = manifest
+            .generate_codes(Option::Some(ethabi::Contract::load(abi).unwrap()))
+            .unwrap();
+        assert_display_snapshot!(SrcString::from(&generated_codes.lib));
+        assert!(generated_codes.types.is_none());
+
+        assert!(manifest.generate_user_impl_template().is_err());
+
         assert_display_snapshot!(&manifest.generate_scripts(Network::Local).unwrap());
     }
 }

@@ -384,9 +384,11 @@ interval: 3600
         // assert_display_snapshot!(SrcString::from(
         //     &manifest.generate_codes(Option::None).unwrap()
         // ));
-        assert_display_snapshot!(SrcString::from(
-            &manifest.generate_user_impl_template().unwrap().lib
-        ));
+
+        let generated_user_impl_template = manifest.generate_user_impl_template().unwrap();
+        assert_display_snapshot!(SrcString::from(&generated_user_impl_template.lib));
+        assert!(generated_user_impl_template.types.is_none());
+
         assert_display_snapshot!(&manifest.generate_scripts(Network::Local).unwrap());
     }
 }

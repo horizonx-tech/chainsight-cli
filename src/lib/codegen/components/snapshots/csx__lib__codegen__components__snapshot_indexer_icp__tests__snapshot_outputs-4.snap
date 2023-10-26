@@ -1,6 +1,6 @@
 ---
 source: src/lib/codegen/components/snapshot_indexer_icp.rs
-expression: generated_codes.types.unwrap()
+expression: generated_user_impl_template.types.unwrap()
 ---
 #![allow(dead_code, unused_imports)]
 use candid::{self, CandidType, Deserialize, Principal, Encode, Decode};
