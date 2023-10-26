@@ -41,11 +41,15 @@ fn custom_codes(
     let method = &manifest.datasource.method;
     let method_identifier = CanisterMethodIdentifier::new(&method.identifier)?;
 
-    let id_ident = format_ident!("{}", id);
+    let bindings_crate_ident = format_ident!("{}", id);
     let method_ident = "proxy_".to_string() + &method_identifier.identifier; // NOTE: to call through proxy
 
-    let response_ty_name_def_ident =
-        format_ident!("{}", CanisterMethodIdentifier::RESPONSE_TYPE_NAME);
+    let response_ty_def_ident = {
+        let types_mod_ident = format_ident!("types");
+        let response_ty_name_def_ident =
+            format_ident!("{}", CanisterMethodIdentifier::RESPONSE_TYPE_NAME);
+        quote! { #types_mod_ident::#response_ty_name_def_ident }
+    };
 
     // consider whether to add timestamp information to the snapshot
     let (
@@ -64,7 +68,7 @@ fn custom_codes(
                     pub value: SnapshotValue,
                     pub timestamp: u64,
                 }
-                pub type SnapshotValue = types::#response_ty_name_def_ident;
+                pub type SnapshotValue = #response_ty_def_ident;
             },
             quote! { let current_ts_sec = ic_cdk::api::time() / 1000000; },
             quote! {
@@ -79,13 +83,11 @@ fn custom_codes(
     } else {
         (
             quote! {
-                // #types_codes_compiled_identifier
-
                 #[derive(Debug, Clone, candid :: CandidType, candid :: Deserialize, serde::Serialize, StableMemoryStorable)]
                 #[stable_mem_storable_opts(max_size = 10000, is_fixed_size = false)] // temp: max_size
                 pub struct Snapshot(pub SnapshotValue);
 
-                pub type SnapshotValue = types::#response_ty_name_def_ident;
+                pub type SnapshotValue = #response_ty_def_ident;
             },
             quote! {},
             quote! { let datum = Snapshot((res.unwrap().clone())); },
@@ -94,40 +96,36 @@ fn custom_codes(
         )
     };
 
-    let args_type_ident = match manifest.lens_targets.is_some() {
-        true => quote! {
-            type CallCanisterArgs = Vec<String>;
-        },
-        false => quote! {
-            type CallCanisterArgs = #id_ident::CallCanisterArgs;
-        },
-    };
-    let lens_targets: Vec<Principal> = manifest
-        .clone()
-        .lens_targets
-        .map(|t| {
-            t.identifiers
-                .iter()
-                .map(|p| Principal::from_text(p).expect("lens target must be principal"))
-                .collect()
-        })
-        .or_else(|| Some(vec![]))
-        .unwrap();
-    let lens_targets_string_ident: Vec<_> = lens_targets.iter().map(|p| p.to_text()).collect();
+    let call_canister_args_ident = if manifest.lens_targets.is_some() {
+        let lens_targets: Vec<Principal> = manifest
+            .clone()
+            .lens_targets
+            .map(|t| {
+                t.identifiers
+                    .iter()
+                    .map(|p| Principal::from_text(p).expect("lens target must be principal"))
+                    .collect()
+            })
+            .or_else(|| Some(vec![]))
+            .unwrap();
 
-    let get_args_ident = match manifest.lens_targets.is_some() {
-        true => quote! {
-            pub fn call_args() -> Vec<String> {
+        let lens_targets_string_ident: Vec<_> = lens_targets.iter().map(|p| p.to_text()).collect();
+
+        quote! {
+            type CallCanisterArgs = Vec<String>;
+            pub fn call_args() -> CallCanisterArgs {
                 vec![
                     #(#lens_targets_string_ident.to_string()),*
                 ]
             }
-        },
-        false => quote! {
+        }
+    } else {
+        quote! {
+            type CallCanisterArgs = #bindings_crate_ident::CallCanisterArgs;
             pub fn call_args() -> CallCanisterArgs {
-                #id_ident::call_args()
+                #bindings_crate_ident::call_args()
             }
-        },
+        }
     };
 
     Ok(quote! {
@@ -135,13 +133,11 @@ fn custom_codes(
 
         #queries_expect_timestamp
 
-        #args_type_ident
-        #get_args_ident
-
         snapshot_icp_source!(#method_ident);
 
-        //type CallCanisterArgs = (#(#request_ty_idents),*); TODO
+        #call_canister_args_ident
         type CallCanisterResponse = SnapshotValue;
+
         async fn execute_task() {
             #expr_to_current_ts_sec
             let target_canister = candid::Principal::from_text(get_target_canister()).unwrap();
