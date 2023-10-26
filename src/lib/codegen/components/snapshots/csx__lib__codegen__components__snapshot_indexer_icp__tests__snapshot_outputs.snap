@@ -76,12 +76,12 @@ use chainsight_cdk::rpc::Receiver;
 chainsight_cdk::rpc::ReceiverProvider::< u64, SnapshotValue>:: new(proxy(), _get_snapshot_value, ).reply(input).await
 }
 
+snapshot_icp_source!("proxy_get_last_snapshot");
 type CallCanisterArgs = sample_snapshot_indexer_icp::CallCanisterArgs;
 pub fn call_args() -> CallCanisterArgs {
 sample_snapshot_indexer_icp::call_args()
 }
 
-snapshot_icp_source!("proxy_get_last_snapshot");
 type CallCanisterResponse = SnapshotValue;
 async fn execute_task() {
 let current_ts_sec = ic_cdk::api::time() / 1000000;
