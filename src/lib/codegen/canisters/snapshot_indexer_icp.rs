@@ -138,7 +138,12 @@ fn custom_codes(
         #call_canister_args_ident
         type CallCanisterResponse = SnapshotValue;
 
+        #[ic_cdk::update]
+        #[candid::candid_method(update)]
         async fn execute_task() {
+            if ic_cdk::caller() != proxy() {
+                panic!("Not permitted")
+            }
             #expr_to_current_ts_sec
             let target_canister = candid::Principal::from_text(get_target_canister()).unwrap();
             let px = _get_target_proxy(target_canister).await;
