@@ -38,7 +38,7 @@ pub struct ExecOpts {
 
     /// Specify the name of the component you want to execute.
     /// If this option is not specified, the command will be given to all components managed by the project.
-    #[arg(long)]
+    #[arg(long, short = 'c')]
     component: Option<String>,
 
     /// Specify the network to execute on.
@@ -57,6 +57,7 @@ pub struct ExecOpts {
 }
 
 const ENTRYPOINT_SHELL_FILENAME: &str = "entrypoint.sh";
+const TARGETS_TEXT_FILENAME: &str = "targets.txt";
 const UTILS_SHELL_FILENAME: &str = "utils.sh";
 
 pub fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
@@ -177,11 +178,13 @@ fn execute_to_generate_commands(
 
     // generate common scripts (/scripts)
     let entrypoint_filepath = format!("{}/{}", &script_root_path_str, ENTRYPOINT_SHELL_FILENAME);
+    fs::write(&entrypoint_filepath, entrypoint_sh(TARGETS_TEXT_FILENAME))?;
+    let targets_filepath = format!("{}/{}", &script_root_path_str, TARGETS_TEXT_FILENAME);
     let component_ids = component_data
         .iter()
         .map(|c| c.id().unwrap())
         .collect::<Vec<String>>();
-    fs::write(&entrypoint_filepath, entrypoint_sh(component_ids))?;
+    fs::write(&targets_filepath, targets_txt(component_ids))?;
     let utils_filepath = format!("{}/{}", &script_root_path_str, UTILS_SHELL_FILENAME);
     fs::write(&utils_filepath, utils_sh())?;
     for path in [&entrypoint_filepath, &utils_filepath] {
@@ -231,21 +234,7 @@ fn execute_commands(log: &Logger, built_project_path_str: &str) -> anyhow::Resul
     anyhow::Ok(())
 }
 
-fn entrypoint_sh(component_ids: Vec<String>) -> String {
-    let contents_for_component = component_ids
-        .iter()
-        .map(|id| {
-            format!(
-                r#"
-echo "Run script for '{}'"
-. "$script_dir/components/{}.sh"
-"#,
-                &id, &id
-            )
-        })
-        .collect::<Vec<String>>()
-        .join("\n");
-
+fn entrypoint_sh(targets_filename: &str) -> String {
     format!(
         r#"#!/bin/bash
 script_dir=$(dirname "$(readlink -f "$0")")
@@ -255,10 +244,23 @@ script_dir=$(dirname "$(readlink -f "$0")")
 set -e -o pipefail
 trap 'on_error $BASH_SOURCE $LINENO "$BASH_COMMAND" "$@"' ERR
 
-{}
+IFS=$'\n'
+while read target;
+do
+    echo "Run script for $target"
+    . "$script_dir/components/$target.sh"
+done < $script_dir/{}
 "#,
-        contents_for_component
+        targets_filename
     )
+}
+
+fn targets_txt(component_ids: Vec<String>) -> String {
+    component_ids
+        .iter()
+        .map(|id| format!("{}\n", &id))
+        .collect::<Vec<String>>()
+        .join("")
 }
 
 fn utils_sh() -> String {
@@ -387,6 +389,11 @@ mod tests {
                 assert_display_snapshot!(
                     ENTRYPOINT_SHELL_FILENAME,
                     fs::read_to_string(entrypoint_sh_path).unwrap()
+                );
+                let targets_txt_path = format!("{}/{}", scripts_root, TARGETS_TEXT_FILENAME);
+                assert_display_snapshot!(
+                    TARGETS_TEXT_FILENAME,
+                    fs::read_to_string(targets_txt_path).unwrap()
                 );
                 let utils_sh_path = format!("{}/{}", scripts_root, UTILS_SHELL_FILENAME);
                 assert_display_snapshot!(

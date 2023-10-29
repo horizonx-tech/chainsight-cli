@@ -24,7 +24,7 @@ pub struct DeployOpts {
     path: Option<String>,
 
     /// Specify the component to deploy.
-    /// If not specified, all components are targeted.
+    /// If this option is not specified, the command will be given to all components managed by the project.
     #[arg(long, short = 'c')]
     component: Option<String>,
 
