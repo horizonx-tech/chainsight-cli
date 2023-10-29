@@ -45,30 +45,8 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
     ))?;
     let network = opts.network;
 
-    // exec command - check
     info!(log, "Checking environments...");
-    let local_subnet = format!("http://127.0.0.1:{}", opts.port.unwrap_or(4943));
-    let args = match network {
-        Network::Local => vec!["ping", &local_subnet],
-        Network::IC => vec!["ping", "ic"],
-    };
-    exec_command(log, "dfx", artifacts_path, args)?;
-
-    let args = match network {
-        Network::Local => vec!["identity", "whoami"],
-        Network::IC => vec!["identity", "whoami", "--network", "ic"],
-    };
-    exec_command(log, "dfx", artifacts_path, args)?;
-    let args = match network {
-        Network::Local => vec!["identity", "get-principal"],
-        Network::IC => vec!["identity", "get-principal", "--network", "ic"],
-    };
-    exec_command(log, "dfx", artifacts_path, args)?;
-    let args = match network {
-        Network::Local => vec!["identity", "get-wallet"],
-        Network::IC => vec!["identity", "get-wallet", "--network", "ic"],
-    };
-    exec_command(log, "dfx", artifacts_path, args)?;
+    check_before_deployment(log, artifacts_path, opts.port, network.clone())?;
     info!(log, "Checking environments finished successfully");
 
     // exec command - execution
@@ -76,24 +54,66 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
         log,
         r#"Start deploying project '{}'..."#, project_manifest.label
     );
-    let args = match network {
-        Network::Local => vec!["canister", "create", "--all"],
-        Network::IC => vec!["canister", "create", "--all", "--network", "ic"],
-    };
-    exec_command(log, "dfx", artifacts_path, args)?;
+    execute_deployment(log, &artifacts_path_str, network)?;
+    info!(
+        log,
+        r#"Project '{}' deployed successfully"#, project_manifest.label
+    );
 
-    let args = match network {
-        Network::Local => vec!["build"],
-        Network::IC => vec!["build", "--network", "ic"],
-    };
-    exec_command(log, "dfx", artifacts_path, args)?;
+    Ok(())
+}
 
-    let args = match network {
-        Network::Local => vec!["canister", "install", "--all"],
-        Network::IC => vec!["canister", "install", "--all", "--network", "ic"],
-    };
-    exec_command(log, "dfx", artifacts_path, args)?;
+fn check_before_deployment(
+    log: &Logger,
+    artifacts_path: &Path,
+    port: Option<u16>,
+    network: Network,
+) -> anyhow::Result<()> {
+    let local_subnet = format!("http://127.0.0.1:{}", port.unwrap_or(4943));
 
+    exec_command(
+        log,
+        "dfx",
+        artifacts_path,
+        match network {
+            Network::Local => vec!["ping", &local_subnet],
+            Network::IC => vec!["ping", "ic"],
+        },
+    )?;
+
+    let generate_args: fn(Vec<&'static str>) -> Vec<&'static str> = match network {
+        Network::Local => |args| args,
+        Network::IC => |args| args_with_ic_network(args),
+    };
+    let exec =
+        |args: Vec<&str>| -> anyhow::Result<()> { exec_command(log, "dfx", artifacts_path, args) };
+
+    exec(generate_args(vec!["identity", "whoami"]))?;
+    exec(generate_args(vec!["identity", "get-principal"]))?;
+    exec(generate_args(vec!["identity", "get-wallet"]))?;
+
+    Ok(())
+}
+
+fn execute_deployment(
+    log: &Logger,
+    artifacts_path_str: &str,
+    network: Network,
+) -> anyhow::Result<()> {
+    let artifacts_path = Path::new(&artifacts_path_str);
+
+    let generate_args: fn(Vec<&'static str>) -> Vec<&'static str> = match network {
+        Network::Local => |args| args,
+        Network::IC => |args| args_with_ic_network(args),
+    };
+    let exec =
+        |args: Vec<&str>| -> anyhow::Result<()> { exec_command(log, "dfx", artifacts_path, args) };
+
+    exec(generate_args(vec!["canister", "create", "--all"]))?;
+    exec(generate_args(vec!["build"]))?;
+    exec(generate_args(vec!["canister", "install", "--all"]))?;
+
+    // Check deployed ids
     info!(log, "List deployed canister ids");
     let canister_ids_json_filename = "canister_ids.json";
     let canister_ids_json_path = match network {
@@ -108,12 +128,14 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
         Err(err) => error!(log, "Error reading canister_ids.json: {}", err),
     }
 
-    info!(
-        log,
-        r#"Project '{}' deployed successfully"#, project_manifest.label
-    );
-
     Ok(())
+}
+
+fn args_with_ic_network(args: Vec<&str>) -> Vec<&str> {
+    let mut args = args.clone();
+    args.push("--network");
+    args.push("ic");
+    args
 }
 
 fn exec_command(
