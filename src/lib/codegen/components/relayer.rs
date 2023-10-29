@@ -1,7 +1,10 @@
 use std::collections::HashMap;
 
 use anyhow::Ok;
-use chainsight_cdk::config::components::{CommonConfig, LensTargets};
+use chainsight_cdk::{
+    config::components::{CommonConfig, LensTargets},
+    convert::candid::CanisterMethodIdentifier,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -148,9 +151,14 @@ impl ComponentManifest for RelayerComponentManifest {
         }
     }
     fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
+        let lib = canisters::relayer::generate_app(self)?;
+        let types = {
+            let identifier = CanisterMethodIdentifier::new(&self.datasource.method.identifier)?;
+            identifier.compile()
+        };
         Ok(GeneratedCodes {
-            lib: canisters::relayer::generate_app(self)?,
-            types: None,
+            lib,
+            types: Some(types),
         })
     }
     fn custom_tags(&self) -> HashMap<String, String> {
