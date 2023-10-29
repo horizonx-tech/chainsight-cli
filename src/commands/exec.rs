@@ -138,7 +138,7 @@ pub fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
     } else {
         // execute commands
         info!(log, r#"Start processing for commands execution..."#);
-        execute_commands(log, &artifacts_path_str)?;
+        execute_commands(log, &artifacts_path_str, opts.component)?;
     }
 
     info!(
@@ -203,15 +203,25 @@ fn chmod_executable(path: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn execute_commands(log: &Logger, built_project_path_str: &str) -> anyhow::Result<()> {
+fn execute_commands(
+    log: &Logger,
+    built_project_path_str: &str,
+    selected_component: Option<String>,
+) -> anyhow::Result<()> {
     info!(
         log,
         "Run scripts to execute commands for deployed components"
     );
     let cmd_string = format!("./scripts/{}", ENTRYPOINT_SHELL_FILENAME);
     debug!(log, "Running command: `{}`", &cmd_string);
+    let args = if let Some(c) = selected_component {
+        vec![c]
+    } else {
+        vec![]
+    };
     let output = Command::new(&cmd_string)
         .current_dir(built_project_path_str)
+        .args(&args)
         .output()
         .unwrap_or_else(|_| panic!("failed to execute process: {}", &cmd_string));
     let complete_msg = format!("Executed '{}'", &cmd_string);
@@ -244,12 +254,26 @@ script_dir=$(dirname "$(readlink -f "$0")")
 set -e -o pipefail
 trap 'on_error $BASH_SOURCE $LINENO "$BASH_COMMAND" "$@"' ERR
 
+if [ $# -gt 1 ]; then
+    echo "ERR: Too many arguments."
+    exit 1
+fi
+
+if [ $# -eq 1 ]; then
+    echo "Selected is '$1'"
+    TARGETS=$1
+else
+    TARGETS=`cat $script_dir/{}`
+fi
+
 IFS=$'\n'
 while read target;
 do
     echo "Run script for $target"
     . "$script_dir/components/$target.sh"
-done < $script_dir/{}
+done << FILE
+$TARGETS
+FILE
 "#,
         targets_filename
     )
@@ -351,7 +375,7 @@ mod tests {
         run(
             custom_setup,
             || {
-                let result = execute_commands(&create_root_logger(1), project_name);
+                let result = execute_commands(&create_root_logger(1), project_name, None);
                 assert!(result.is_ok());
             },
             || {
