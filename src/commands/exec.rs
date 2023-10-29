@@ -177,18 +177,24 @@ fn execute_to_generate_commands(
     }
 
     // generate common scripts (/scripts)
-    let entrypoint_filepath = format!("{}/{}", &script_root_path_str, ENTRYPOINT_SHELL_FILENAME);
-    fs::write(&entrypoint_filepath, entrypoint_sh(TARGETS_TEXT_FILENAME))?;
-    let targets_filepath = format!("{}/{}", &script_root_path_str, TARGETS_TEXT_FILENAME);
-    let component_ids = component_data
-        .iter()
-        .map(|c| c.id().unwrap())
-        .collect::<Vec<String>>();
-    fs::write(&targets_filepath, targets_txt(component_ids))?;
-    let utils_filepath = format!("{}/{}", &script_root_path_str, UTILS_SHELL_FILENAME);
-    fs::write(&utils_filepath, utils_sh())?;
-    for path in [&entrypoint_filepath, &utils_filepath] {
-        chmod_executable(path)?;
+    {
+        let path = format!("{}/{}", &script_root_path_str, ENTRYPOINT_SHELL_FILENAME);
+        fs::write(&path, entrypoint_sh(TARGETS_TEXT_FILENAME))?;
+        chmod_executable(&path)?;
+    }
+    {
+        let path = format!("{}/{}", &script_root_path_str, TARGETS_TEXT_FILENAME);
+        let component_ids = component_data
+            .iter()
+            .map(|c| c.id().unwrap())
+            .collect::<Vec<String>>();
+        fs::write(&path, targets_txt(component_ids))?;
+        chmod_executable(&path)?;
+    }
+    {
+        let path = format!("{}/{}", &script_root_path_str, UTILS_SHELL_FILENAME);
+        fs::write(&path, utils_sh())?;
+        chmod_executable(&path)?;
     }
 
     info!(log, r#"Entrypoint Script generated successfully"#);
@@ -215,6 +221,7 @@ fn execute_commands(
     let cmd_string = format!("./scripts/{}", ENTRYPOINT_SHELL_FILENAME);
     debug!(log, "Running command: `{}`", &cmd_string);
     let args = if let Some(c) = selected_component {
+        info!(log, "Selected component is '{}'", &c);
         vec![c]
     } else {
         vec![]
@@ -409,21 +416,14 @@ mod tests {
                 .unwrap();
 
                 let scripts_root = format!("{}/artifacts/scripts", project_name);
-                let entrypoint_sh_path = format!("{}/{}", scripts_root, ENTRYPOINT_SHELL_FILENAME);
-                assert_display_snapshot!(
+                for filename in vec![
                     ENTRYPOINT_SHELL_FILENAME,
-                    fs::read_to_string(entrypoint_sh_path).unwrap()
-                );
-                let targets_txt_path = format!("{}/{}", scripts_root, TARGETS_TEXT_FILENAME);
-                assert_display_snapshot!(
                     TARGETS_TEXT_FILENAME,
-                    fs::read_to_string(targets_txt_path).unwrap()
-                );
-                let utils_sh_path = format!("{}/{}", scripts_root, UTILS_SHELL_FILENAME);
-                assert_display_snapshot!(
                     UTILS_SHELL_FILENAME,
-                    fs::read_to_string(utils_sh_path).unwrap()
-                );
+                ] {
+                    let path = format!("{}/{}", scripts_root, filename);
+                    assert_display_snapshot!(filename, fs::read_to_string(path).unwrap());
+                }
 
                 let component_ids = project
                     .components
