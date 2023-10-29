@@ -47,7 +47,7 @@ pub struct ExecOpts {
     network: Network,
 
     /// Only generate commands.
-    #[arg(long, conflicts_with = "only_execute_cmds")]
+    #[arg(long, conflicts_with_all = ["component", "only_execute_cmds"])]
     only_generate_cmds: bool,
 
     /// Only execute commands.
