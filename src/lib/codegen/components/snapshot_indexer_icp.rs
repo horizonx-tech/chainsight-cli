@@ -1,15 +1,11 @@
 use std::collections::HashMap;
 
-use chainsight_cdk::config::components::LensTargets;
+use chainsight_cdk::{config::components::LensTargets, convert::candid::CanisterMethodIdentifier};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::{
-    lib::codegen::{
-        canisters::{self, utils::candid::CanisterMethodIdentifier},
-        components::common::SourceType,
-        scripts,
-    },
+    lib::codegen::{canisters, components::common::SourceType, scripts},
     types::{ComponentType, Network},
 };
 
