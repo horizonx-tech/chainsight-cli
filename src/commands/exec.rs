@@ -38,7 +38,7 @@ pub struct ExecOpts {
 
     /// Specify the name of the component you want to execute.
     /// If this option is not specified, the command will be given to all components managed by the project.
-    #[arg(long)]
+    #[arg(long, short = 'c')]
     component: Option<String>,
 
     /// Specify the network to execute on.
@@ -47,7 +47,7 @@ pub struct ExecOpts {
     network: Network,
 
     /// Only generate commands.
-    #[arg(long, conflicts_with = "only_execute_cmds")]
+    #[arg(long, conflicts_with_all = ["component", "only_execute_cmds"])]
     only_generate_cmds: bool,
 
     /// Only execute commands.
@@ -57,6 +57,7 @@ pub struct ExecOpts {
 }
 
 const ENTRYPOINT_SHELL_FILENAME: &str = "entrypoint.sh";
+const TARGETS_TEXT_FILENAME: &str = "targets.txt";
 const UTILS_SHELL_FILENAME: &str = "utils.sh";
 
 pub fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
@@ -137,7 +138,7 @@ pub fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
     } else {
         // execute commands
         info!(log, r#"Start processing for commands execution..."#);
-        execute_commands(log, &artifacts_path_str)?;
+        execute_commands(log, &artifacts_path_str, opts.component)?;
     }
 
     info!(
@@ -176,16 +177,24 @@ fn execute_to_generate_commands(
     }
 
     // generate common scripts (/scripts)
-    let entrypoint_filepath = format!("{}/{}", &script_root_path_str, ENTRYPOINT_SHELL_FILENAME);
-    let component_ids = component_data
-        .iter()
-        .map(|c| c.id().unwrap())
-        .collect::<Vec<String>>();
-    fs::write(&entrypoint_filepath, entrypoint_sh(component_ids))?;
-    let utils_filepath = format!("{}/{}", &script_root_path_str, UTILS_SHELL_FILENAME);
-    fs::write(&utils_filepath, utils_sh())?;
-    for path in [&entrypoint_filepath, &utils_filepath] {
-        chmod_executable(path)?;
+    {
+        let path = format!("{}/{}", &script_root_path_str, ENTRYPOINT_SHELL_FILENAME);
+        fs::write(&path, entrypoint_sh(TARGETS_TEXT_FILENAME))?;
+        chmod_executable(&path)?;
+    }
+    {
+        let path = format!("{}/{}", &script_root_path_str, TARGETS_TEXT_FILENAME);
+        let component_ids = component_data
+            .iter()
+            .map(|c| c.id().unwrap())
+            .collect::<Vec<String>>();
+        fs::write(&path, targets_txt(component_ids))?;
+        chmod_executable(&path)?;
+    }
+    {
+        let path = format!("{}/{}", &script_root_path_str, UTILS_SHELL_FILENAME);
+        fs::write(&path, utils_sh())?;
+        chmod_executable(&path)?;
     }
 
     info!(log, r#"Entrypoint Script generated successfully"#);
@@ -200,15 +209,26 @@ fn chmod_executable(path: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn execute_commands(log: &Logger, built_project_path_str: &str) -> anyhow::Result<()> {
+fn execute_commands(
+    log: &Logger,
+    built_project_path_str: &str,
+    selected_component: Option<String>,
+) -> anyhow::Result<()> {
     info!(
         log,
         "Run scripts to execute commands for deployed components"
     );
     let cmd_string = format!("./scripts/{}", ENTRYPOINT_SHELL_FILENAME);
     debug!(log, "Running command: `{}`", &cmd_string);
+    let args = if let Some(c) = selected_component {
+        info!(log, "Selected component is '{}'", &c);
+        vec![c]
+    } else {
+        vec![]
+    };
     let output = Command::new(&cmd_string)
         .current_dir(built_project_path_str)
+        .args(&args)
         .output()
         .unwrap_or_else(|_| panic!("failed to execute process: {}", &cmd_string));
     let complete_msg = format!("Executed '{}'", &cmd_string);
@@ -231,21 +251,7 @@ fn execute_commands(log: &Logger, built_project_path_str: &str) -> anyhow::Resul
     anyhow::Ok(())
 }
 
-fn entrypoint_sh(component_ids: Vec<String>) -> String {
-    let contents_for_component = component_ids
-        .iter()
-        .map(|id| {
-            format!(
-                r#"
-echo "Run script for '{}'"
-. "$script_dir/components/{}.sh"
-"#,
-                &id, &id
-            )
-        })
-        .collect::<Vec<String>>()
-        .join("\n");
-
+fn entrypoint_sh(targets_filename: &str) -> String {
     format!(
         r#"#!/bin/bash
 script_dir=$(dirname "$(readlink -f "$0")")
@@ -255,10 +261,37 @@ script_dir=$(dirname "$(readlink -f "$0")")
 set -e -o pipefail
 trap 'on_error $BASH_SOURCE $LINENO "$BASH_COMMAND" "$@"' ERR
 
-{}
+if [ $# -gt 1 ]; then
+    echo "ERR: Too many arguments."
+    exit 1
+fi
+
+if [ $# -eq 1 ]; then
+    echo "Selected is '$1'"
+    TARGETS=$1
+else
+    TARGETS=`cat $script_dir/{}`
+fi
+
+IFS=$'\n'
+while read target;
+do
+    echo "Run script for $target"
+    . "$script_dir/components/$target.sh"
+done << FILE
+$TARGETS
+FILE
 "#,
-        contents_for_component
+        targets_filename
     )
+}
+
+fn targets_txt(component_ids: Vec<String>) -> String {
+    component_ids
+        .iter()
+        .map(|id| format!("{}\n", &id))
+        .collect::<Vec<String>>()
+        .join("")
 }
 
 fn utils_sh() -> String {
@@ -349,7 +382,7 @@ mod tests {
         run(
             custom_setup,
             || {
-                let result = execute_commands(&create_root_logger(1), project_name);
+                let result = execute_commands(&create_root_logger(1), project_name, None);
                 assert!(result.is_ok());
             },
             || {
@@ -383,16 +416,14 @@ mod tests {
                 .unwrap();
 
                 let scripts_root = format!("{}/artifacts/scripts", project_name);
-                let entrypoint_sh_path = format!("{}/{}", scripts_root, ENTRYPOINT_SHELL_FILENAME);
-                assert_display_snapshot!(
+                for filename in vec![
                     ENTRYPOINT_SHELL_FILENAME,
-                    fs::read_to_string(entrypoint_sh_path).unwrap()
-                );
-                let utils_sh_path = format!("{}/{}", scripts_root, UTILS_SHELL_FILENAME);
-                assert_display_snapshot!(
+                    TARGETS_TEXT_FILENAME,
                     UTILS_SHELL_FILENAME,
-                    fs::read_to_string(utils_sh_path).unwrap()
-                );
+                ] {
+                    let path = format!("{}/{}", scripts_root, filename);
+                    assert_display_snapshot!(filename, fs::read_to_string(path).unwrap());
+                }
 
                 let component_ids = project
                     .components
