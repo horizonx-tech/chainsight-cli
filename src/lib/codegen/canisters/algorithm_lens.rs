@@ -4,7 +4,7 @@ use crate::{
             algorithm_lens::AlgorithmLensComponentManifest, common::ComponentManifest,
         },
         utils::{
-            catch_unwind_silent,
+            catch_unwind_silent, find_duplicates,
             paths::{self, bindings_name},
         },
     },
@@ -110,6 +110,19 @@ pub fn validate_manifest(manifest: &AlgorithmLensComponentManifest) -> anyhow::R
     ensure!(
         manifest.metadata.type_ == ComponentType::AlgorithmLens,
         "type is not AlgorithmLens"
+    );
+
+    // check duplicated id in dependencies
+    let dependencies = manifest.dependencies();
+    let duplicateds = find_duplicates(&dependencies);
+    ensure!(
+        &duplicateds.is_empty(),
+        "duplicated id found in datasource.methods: {}",
+        duplicateds
+            .iter()
+            .map(|s| (**s).as_str())
+            .collect::<Vec<&str>>()
+            .join(", ")
     );
 
     Ok(())
