@@ -1,6 +1,6 @@
 ---
 source: src/lib/codegen/components/snapshot_indexer_evm.rs
-expression: "SrcString::from(&manifest.generate_codes(Option::Some(ethabi::Contract::load(abi).unwrap())).unwrap())"
+expression: "SrcString::from(&generated_codes.lib)"
 ---
 use std::str::FromStr;
 use candid::{
@@ -79,7 +79,13 @@ chainsight_cdk::rpc::ReceiverProvider::< u64, SnapshotValue>:: new(proxy(), _get
 
 ic_solidity_bindgen::contract_abi!("./__interfaces/ERC20.json");
 snapshot_web3_source!("total_supply");
+#[ic_cdk::update]
+#[candid::candid_method(update)]
 async fn execute_task() {
+if ic_cdk::caller()!= proxy() {
+panic!("Not permitted")
+}
+
 let current_ts_sec = ic_cdk::api::time() / 1000000;
 let res = ERC20::new(Address::from_str(& get_target_addr()).unwrap(), & web3_ctx().unwrap()).total_supply(None).await.unwrap();
 let datum = Snapshot {

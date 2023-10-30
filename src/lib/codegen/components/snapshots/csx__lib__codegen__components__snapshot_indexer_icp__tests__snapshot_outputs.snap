@@ -1,6 +1,6 @@
 ---
 source: src/lib/codegen/components/snapshot_indexer_icp.rs
-expression: "SrcString::from(&manifest.generate_codes(Option::None).unwrap().lib)"
+expression: "SrcString::from(&generated_codes.lib)"
 ---
 use candid::{
 Decode, Encode };
@@ -83,7 +83,13 @@ sample_snapshot_indexer_icp::call_args()
 }
 
 type CallCanisterResponse = SnapshotValue;
+#[ic_cdk::update]
+#[candid::candid_method(update)]
 async fn execute_task() {
+if ic_cdk::caller()!= proxy() {
+panic!("Not permitted")
+}
+
 let current_ts_sec = ic_cdk::api::time() / 1000000;
 let target_canister = candid::Principal::from_text(get_target_canister()).unwrap();
 let px = _get_target_proxy(target_canister).await;
