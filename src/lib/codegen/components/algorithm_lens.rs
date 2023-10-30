@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use candid::Principal;
 use chainsight_cdk::config::components::CommonConfig;
@@ -128,9 +128,11 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
     }
 
     fn dependencies(&self) -> Vec<String> {
+        let mut seen = HashSet::new();
         self.datasource
             .methods
             .iter()
+            .filter(|e| seen.insert(e.label.clone())) // remove duplicated
             .map(|e| e.label.clone())
             .collect()
     }
