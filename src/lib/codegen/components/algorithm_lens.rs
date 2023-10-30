@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 use candid::Principal;
 use chainsight_cdk::{config::components::CommonConfig, convert::candid::CanisterMethodIdentifier};
-use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 
 use crate::{
