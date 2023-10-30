@@ -214,16 +214,21 @@ fn exec_codegen(
         }
         if !data.dependencies().is_empty() {
             let accessors_path_str = &paths::accessors_path_str(src_path_str, &id);
+            let codes = data.generate_dependency_accessors();
+            let src = match codes {
+                anyhow::Result::Ok(codes) => Some(CargoProjectSrc {
+                    lib: codes.lib.to_string(),
+                    types: codes.types.map(|t| t.to_string()),
+                }),
+                anyhow::Result::Err(_) => Some(CargoProjectSrc {
+                    lib: String::default(),
+                    types: None,
+                }),
+            };
             create_cargo_project(
                 accessors_path_str,
                 Some(&accessors_cargo_toml(&id, data.dependencies())),
-                Some(CargoProjectSrc {
-                    lib: data
-                        .generate_dependency_accessors()
-                        .unwrap_or_default()
-                        .to_string(),
-                    types: None,
-                }),
+                src,
             )
             .map_err(|err| {
                 anyhow::anyhow!(

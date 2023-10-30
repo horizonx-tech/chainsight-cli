@@ -257,7 +257,7 @@ pub trait ComponentManifest: std::fmt::Debug {
     fn dependencies(&self) -> Vec<String> {
         vec![]
     }
-    fn generate_dependency_accessors(&self) -> anyhow::Result<TokenStream> {
+    fn generate_dependency_accessors(&self) -> anyhow::Result<GeneratedCodes> {
         bail!("not implemented")
     }
 }
