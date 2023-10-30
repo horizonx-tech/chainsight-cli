@@ -193,7 +193,7 @@ metadata:
     - Account
 datasource:
     methods:
-    - id: sample_snapshot_indexer_evm
+    - id: last_snapshot
       identifier: 'get_last_snapshot : () -> (Snapshot)'
       candid_file_path: "interfaces/sample.did"
 output:
@@ -223,7 +223,7 @@ output:
                 },
                 datasource: AlgorithmLensDataSource {
                     methods: vec![AlgorithmLensDataSourceMethod {
-                        id: "sample_snapshot_indexer_evm".to_string(),
+                        id: "last_snapshot".to_string(),
                         identifier: "get_last_snapshot : () -> (Snapshot)".to_string(),
                         candid_file_path: "interfaces/sample.did".to_string(),
                     }],
@@ -238,6 +238,34 @@ output:
         let compiled = JSONSchema::compile(&schema).expect("Invalid schema");
         let result = compiled.validate(&instance);
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_validate_manifests() {
+        let yaml = r#"
+version: v1
+metadata:
+    label: sample_algorithm_lens
+    type: algorithm_lens
+    description: Description
+    tags:
+    - Ethereum
+    - Account
+datasource:
+    methods:
+    - id: last_snapshot
+      identifier: 'get_last_snapshot_1 : () -> (Snapshot)'
+      candid_file_path: "interfaces/sample_1.did"
+    - id: last_snapshot
+      identifier: 'get_last_snapshot_2 : () -> (text)'
+      candid_file_path: "interfaces/sample_2.did"
+"#;
+        let result = serde_yaml::from_str::<AlgorithmLensComponentManifest>(yaml).unwrap();
+        let err = result.validate_manifest().unwrap_err();
+        assert_eq!(
+            err.to_string(),
+            "duplicated id found in datasource.methods: last_snapshot"
+        );
     }
 
     #[test]
