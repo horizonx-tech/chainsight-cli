@@ -1,10 +1,8 @@
 ---
 source: src/lib/codegen/components/relayer.rs
-expression: "SrcString::from(&manifest.generate_user_impl_template().unwrap())"
+expression: "SrcString::from(&generated_user_impl_template.lib)"
 ---
-pub type CallCanisterResponse = CustomResponseStruct;
-#[derive(Clone, Debug, candid::CandidType, candid::Deserialize)]
-pub struct CustomResponseStruct {
-pub value:String, pub timestamp:u64 };
+mod types;
+pub type CallCanisterResponse = types::ResponseType;
 pub fn filter(_:& CallCanisterResponse) -> bool {
 true }
