@@ -1,7 +1,10 @@
 use std::collections::HashMap;
 
 use anyhow::Ok;
-use chainsight_cdk::config::components::{CanisterMethodIdentifier, CommonConfig, LensTargets};
+use chainsight_cdk::{
+    config::components::{CommonConfig, LensTargets},
+    convert::candid::CanisterMethodIdentifier,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -62,8 +65,6 @@ impl RelayerComponentManifest {
 
 impl From<RelayerComponentManifest> for chainsight_cdk::config::components::RelayerConfig {
     fn from(val: RelayerComponentManifest) -> Self {
-        let identifier =
-            CanisterMethodIdentifier::parse_from_str(&val.datasource.method.identifier).unwrap();
         let oracle_type = match val.destination_type() {
             Some(DestinationType::Uint256) => "uint256".to_string(),
             Some(DestinationType::Uint128) => "uint128".to_string(),
@@ -76,12 +77,11 @@ impl From<RelayerComponentManifest> for chainsight_cdk::config::components::Rela
                 canister_name: val.id.clone().unwrap(),
                 monitor_duration: 60,
             },
-            abi_file_path: "__interfaces/Oracle.json".to_string(),
-            canister_method_value_type: identifier.return_value,
             destination: val.destination.oracle_address,
-            lens_targets: val.lens_targets,
-            method_name: identifier.identifier,
+            method_identifier: val.datasource.method.identifier,
             oracle_type,
+            abi_file_path: "__interfaces/Oracle.json".to_string(),
+            lens_targets: val.lens_targets,
         }
     }
 }
@@ -151,9 +151,14 @@ impl ComponentManifest for RelayerComponentManifest {
         }
     }
     fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
+        let lib = canisters::relayer::generate_app(self)?;
+        let types = {
+            let identifier = CanisterMethodIdentifier::new(&self.datasource.method.identifier)?;
+            identifier.compile()
+        };
         Ok(GeneratedCodes {
-            lib: canisters::relayer::generate_app(self)?,
-            types: None,
+            lib,
+            types: Some(types),
         })
     }
     fn custom_tags(&self) -> HashMap<String, String> {
@@ -387,7 +392,7 @@ interval: 3600
 
         let generated_user_impl_template = manifest.generate_user_impl_template().unwrap();
         assert_display_snapshot!(SrcString::from(&generated_user_impl_template.lib));
-        assert!(generated_user_impl_template.types.is_none());
+        assert_display_snapshot!(generated_user_impl_template.types.unwrap());
 
         assert_display_snapshot!(&manifest.generate_scripts(Network::Local).unwrap());
     }

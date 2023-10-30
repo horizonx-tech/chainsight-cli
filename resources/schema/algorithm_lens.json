@@ -79,12 +79,12 @@
             "type": "object",
             "title": "method",
             "description": "method to call on the callee canister",
-            "required": ["label", "identifier", "candid_file_path"],
+            "required": ["id", "identifier", "candid_file_path"],
             "properties": {
-              "label": {
-                "$id": "#/properties/datasource/properties/methods/items/properties/label",
-                "title": "label",
-                "description": "label of this method",
+              "id": {
+                "$id": "#/properties/datasource/properties/methods/items/properties/id",
+                "title": "id",
+                "description": "id of this method",
                 "examples": [
                   "get_ethusd_price_from_coingecko",
                   "get_ethusd_price_from_chainlink"

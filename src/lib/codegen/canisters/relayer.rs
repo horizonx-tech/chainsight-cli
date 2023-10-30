@@ -1,16 +1,10 @@
-use anyhow::{bail, ensure};
-use chainsight_cdk::config::components::RelayerConfig;
+use anyhow::ensure;
+use chainsight_cdk::{
+    config::components::RelayerConfig, convert::candid::CanisterMethodIdentifier,
+};
 use quote::{format_ident, quote};
 
-use crate::{
-    lib::codegen::{
-        canisters::common::generate_request_arg_idents,
-        components::{common::DestinationType, relayer::RelayerComponentManifest},
-    },
-    types::ComponentType,
-};
-
-use super::common::{CanisterMethodIdentifier, CanisterMethodValueType};
+use crate::{lib::codegen::components::relayer::RelayerComponentManifest, types::ComponentType};
 
 pub fn generate_codes(
     manifest: &RelayerComponentManifest,
@@ -31,75 +25,36 @@ pub fn generate_codes(
 pub fn generate_app(
     manifest: &RelayerComponentManifest,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    let method = &manifest.datasource.method;
-    let method_identifier = CanisterMethodIdentifier::parse_from_str(&method.identifier)?;
-    let oracle_type = &manifest.destination.type_;
-
-    let response_type_ident = match method_identifier.return_value {
-        CanisterMethodValueType::Scalar(ty, _) => {
-            let ty_ident = format_ident!("{}", ty);
-            quote! { pub type CallCanisterResponse = #ty_ident }
-        }
-        CanisterMethodValueType::Tuple(tys) => match oracle_type {
-            DestinationType::String => {
-                let type_idents = tys
-                    .iter()
-                    .map(|(ty, _)| format_ident!("{}", ty))
-                    .collect::<Vec<proc_macro2::Ident>>();
-                quote! { pub type CallCanisterResponse = (#(#type_idents),*) }
-            }
-            _ => bail!("not support tuple type for oracle"),
-        },
-        CanisterMethodValueType::Struct(values) => match oracle_type {
-            DestinationType::String => {
-                let response_type_def_ident = format_ident!("{}", "CustomResponseStruct");
-                let struct_tokens = values
-                    .into_iter()
-                    .map(|(key, ty, _)| {
-                        let key_ident = format_ident!("{}", key);
-                        let ty_ident = format_ident!("{}", ty);
-                        quote! {
-                            pub #key_ident: #ty_ident
-                        }
-                    })
-                    .collect::<Vec<_>>();
-                quote! {
-                pub type CallCanisterResponse = #response_type_def_ident;
-                   #[derive(Clone, Debug, candid::CandidType, candid::Deserialize)]
-                   pub struct #response_type_def_ident {
-                       #(#struct_tokens),*
-                   }
-                }
-            }
-            _ => bail!("not support struct type for oracle"),
-        },
-        _ => bail!("not support vector type for oracle"),
-    };
-
-    let args_quote = match &manifest.lens_targets.is_some() {
-        true => quote! {},
-        false => {
-            let method_args = method
-                .args
-                .iter()
-                .enumerate()
-                .map(|(idx, arg)| (method_identifier.params[idx].clone(), arg.clone()))
-                .collect();
-            let (request_val_idents, request_type_idents) =
-                generate_request_arg_idents(&method_args);
-
+    let call_args_idents = if manifest.lens_targets.is_some() {
+        quote! {}
+    } else {
+        let method_identifier =
+            CanisterMethodIdentifier::new(&manifest.datasource.method.identifier)?;
+        let (request_args_type, _) = method_identifier.get_types();
+        if request_args_type.is_some() {
+            let request_args_ident =
+                format_ident!("{}", CanisterMethodIdentifier::REQUEST_ARGS_TYPE_NAME);
             quote! {
-                pub type CallCanisterArgs = (#(#request_type_idents),*);
+                pub type CallCanisterArgs = types::#request_args_ident;
                 pub fn call_args() -> CallCanisterArgs {
-                    (#(#request_val_idents),*)
+                    todo!()
+                }
+            }
+        } else {
+            quote! {
+                pub type CallCanisterArgs = ();
+                pub fn call_args() -> CallCanisterArgs {
+                    ()
                 }
             }
         }
     };
 
+    let response_ident = format_ident!("{}", CanisterMethodIdentifier::RESPONSE_TYPE_NAME);
     Ok(quote! {
-        #response_type_ident;
-        #args_quote
+        mod types;
+        pub type CallCanisterResponse = types::#response_ident;
+        #call_args_idents
         pub fn filter(_: &CallCanisterResponse) -> bool {
             true
         }

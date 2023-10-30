@@ -13,7 +13,7 @@ metadata:
   - Account
 datasource:
   methods:
-  - label: sample_snapshot_indexer_icp
+  - id: sample_snapshot_indexer_icp
     identifier: 'get_last_snapshot : () -> (Snapshot)'
     candid_file_path: interfaces/sample.did
 

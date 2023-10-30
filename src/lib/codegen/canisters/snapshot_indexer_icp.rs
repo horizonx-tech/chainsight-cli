@@ -1,11 +1,11 @@
 use anyhow::ensure;
 use candid::Principal;
+use chainsight_cdk::convert::candid::CanisterMethodIdentifier;
 use quote::{format_ident, quote};
 
 use crate::{
     lib::codegen::{
         canisters::common::{generate_outside_call_idents, OutsideCallType},
-        canisters::utils::candid::CanisterMethodIdentifier,
         components::{
             common::ComponentManifest, snapshot_indexer_icp::SnapshotIndexerICPComponentManifest,
         },

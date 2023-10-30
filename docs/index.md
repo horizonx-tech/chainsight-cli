@@ -5,7 +5,6 @@
 **csx** (Chainsight command-line execution envirionment) depends on several tools. Therefore, developers must have these tools installed and available in advance.
 
 - [rust](https://www.rust-lang.org/tools/install): To generate Canister code to be compiled into Module
-- [cargo-make](https://github.com/sagiegurari/cargo-make): To output interface automatically
 - [dfx](https://internetcomputer.org/docs/current/developer-docs/setup/install): To interact with Internet Computer
 
 You can confirm that it has been installed and is in the path by running the following in a terminal.
@@ -13,10 +12,8 @@ You can confirm that it has been installed and is in the path by running the fol
 ```bash
 % rustc --version 
 rustc 1.73.0 (2023-10-05)
-% cargo make --version
-cargo-make 0.36.3
 % dfx --version
-dfx 0.14.0
+dfx 0.15.1
 ```
 
 ## Note
@@ -312,12 +309,13 @@ Deploy the components of your project. If you want to operate on a local network
 Usage: csx deploy [OPTIONS]
 
 Options:
-      --path <PATH>        Specify the path of the project to deploy. If not specified, the current directory is targeted
-  -v, --verbose...         Displays detailed information about operations. -vv will generate a very large number of messages and can affect performance
-      --network <NETWORK>  Specify the network to execute on [default: local] [possible values: local, ic]
-  -q, --quiet...           Suppresses informational messages. -qq limits to errors only; -qqqq disables them all
-      --port <PORT>        Specifies the port to call. This option is used only if the target is localhost
-  -h, --help               Print help
+      --path <PATH>            Specify the path of the project to deploy. If not specified, the current directory is targeted
+  -v, --verbose...             Displays detailed information about operations. -vv will generate a very large number of messages and can affect performance
+  -c, --component <COMPONENT>  Specify the component to deploy. If this option is not specified, the command will be given to all components managed by the project
+      --network <NETWORK>      Specify the network to execute on [default: local] [possible values: local, ic]
+  -q, --quiet...               Suppresses informational messages. -qq limits to errors only; -qqqq disables them all
+      --port <PORT>            Specifies the port to call. This option is used only if the target is localhost
+  -h, --help                   Print help
 ```
 
 ## csx exec
@@ -338,7 +336,7 @@ Usage: csx exec [OPTIONS]
 Options:
       --path <PATH>            Specify the path of the project that manages the component to be called. Refer to the manifest of this project to build the commands that should be executed
   -v, --verbose...             Displays detailed information about operations. -vv will generate a very large number of messages and can affect performance
-      --component <COMPONENT>  Specify the name of the component you want to execute. If this option is not specified, the command will be given to all components managed by the project
+  -c, --component <COMPONENT>  Specify the name of the component you want to execute. If this option is not specified, the command will be given to all components managed by the project
   -q, --quiet...               Suppresses informational messages. -qq limits to errors only; -qqqq disables them all
       --network <NETWORK>      Specify the network to execute on [default: local] [possible values: local, ic]
       --only-generate-cmds     Only generate commands

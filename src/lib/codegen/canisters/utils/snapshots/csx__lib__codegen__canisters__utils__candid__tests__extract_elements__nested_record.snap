@@ -1,9 +1,0 @@
----
-source: src/lib/codegen/canisters/utils/candid.rs
-expression: "format!(\"{:#?}\", result)"
----
-(
-    "get_last_snapshot",
-    "",
-    "record { dai : record { usd : float64 } }",
-)

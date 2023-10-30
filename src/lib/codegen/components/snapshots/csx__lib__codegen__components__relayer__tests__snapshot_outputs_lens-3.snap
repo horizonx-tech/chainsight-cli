@@ -1,0 +1,22 @@
+---
+source: src/lib/codegen/components/relayer.rs
+expression: "&manifest.generate_scripts(Network::Local).unwrap()"
+---
+#!/bin/bash
+# init
+dfx canister  call sample_relayer init_in '(variant { "LocalDevelopment" })'
+# setup
+dfx canister  call sample_relayer setup "(
+    \"0x0539a0EF8e5E60891fFf0958A059E049e43020d9\",
+    record {
+        url = \"https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL_KEY}\";
+        from = null;
+        chain_id = 80001;
+        env = variant { LocalDevelopment };
+    },
+    \"$(dfx canister  id datasource_canister_id)\",
+    vec { \"$(dfx canister  id lens_target_canister_1)\"; \"$(dfx canister  id lens_target_canister_2)\" },
+)"
+# set_task
+dfx canister  call sample_relayer set_task '(3600, 10)'
+

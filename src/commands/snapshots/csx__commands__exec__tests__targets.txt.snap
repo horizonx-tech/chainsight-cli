@@ -1,0 +1,12 @@
+---
+source: src/commands/exec.rs
+expression: "fs::read_to_string(targets_txt_path).unwrap()"
+---
+sample_event_indexer
+sample_algorithm_indexer
+sample_snapshot_indexer_evm
+sample_snapshot_indexer_icp
+sample_relayer
+sample_algorithm_lens
+sample_snapshot_indexer_https
+

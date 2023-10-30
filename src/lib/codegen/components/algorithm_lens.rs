@@ -131,7 +131,7 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
         self.datasource
             .methods
             .iter()
-            .map(|e| e.label.clone())
+            .map(|e| e.id.clone())
             .collect()
     }
     fn generate_dependency_accessors(&self) -> anyhow::Result<TokenStream> {
@@ -154,7 +154,7 @@ pub struct AlgorithmLensDataSource {
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct AlgorithmLensDataSourceMethod {
-    pub label: String,
+    pub id: String,
     pub identifier: String,
     pub candid_file_path: String,
 }
@@ -163,7 +163,7 @@ impl Default for AlgorithmLensDataSource {
     fn default() -> Self {
         Self {
             methods: vec![AlgorithmLensDataSourceMethod {
-                label: "sample_snapshot_indexer_icp".to_string(),
+                id: "sample_snapshot_indexer_icp".to_string(),
                 identifier: "get_last_snapshot : () -> (Snapshot)".to_string(),
                 candid_file_path: "interfaces/sample.did".to_string(),
             }],
@@ -193,7 +193,7 @@ metadata:
     - Account
 datasource:
     methods:
-    - label: last_snapshot_value
+    - id: last_snapshot
       identifier: 'get_last_snapshot : () -> (Snapshot)'
       candid_file_path: "interfaces/sample.did"
 output:
@@ -223,7 +223,7 @@ output:
                 },
                 datasource: AlgorithmLensDataSource {
                     methods: vec![AlgorithmLensDataSourceMethod {
-                        label: "last_snapshot_value".to_string(),
+                        id: "last_snapshot".to_string(),
                         identifier: "get_last_snapshot : () -> (Snapshot)".to_string(),
                         candid_file_path: "interfaces/sample.did".to_string(),
                     }],
@@ -241,6 +241,34 @@ output:
     }
 
     #[test]
+    fn test_validate_manifests() {
+        let yaml = r#"
+version: v1
+metadata:
+    label: sample_algorithm_lens
+    type: algorithm_lens
+    description: Description
+    tags:
+    - Ethereum
+    - Account
+datasource:
+    methods:
+    - id: last_snapshot
+      identifier: 'get_last_snapshot_1 : () -> (Snapshot)'
+      candid_file_path: "interfaces/sample_1.did"
+    - id: last_snapshot
+      identifier: 'get_last_snapshot_2 : () -> (text)'
+      candid_file_path: "interfaces/sample_2.did"
+"#;
+        let result = serde_yaml::from_str::<AlgorithmLensComponentManifest>(yaml).unwrap();
+        let err = result.validate_manifest().unwrap_err();
+        assert_eq!(
+            err.to_string(),
+            "duplicated id found in datasource.methods: last_snapshot"
+        );
+    }
+
+    #[test]
     fn test_snapshot_outputs() {
         let manifest = AlgorithmLensComponentManifest {
             id: Some("sample_algorithm_lens".to_string()),
@@ -253,7 +281,7 @@ output:
             },
             datasource: AlgorithmLensDataSource {
                 methods: vec![AlgorithmLensDataSourceMethod {
-                    label: "last_snapshot_value".to_string(),
+                    id: "last_snapshot_value".to_string(),
                     identifier: "get_last_snapshot : () -> (Snapshot)".to_string(),
                     candid_file_path: "interfaces/sample.did".to_string(),
                 }],
