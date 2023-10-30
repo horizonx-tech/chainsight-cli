@@ -41,7 +41,7 @@ pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result
     let methods = manifest.datasource.methods.clone();
 
     let call_func_templates = methods.iter().enumerate().map(|(i, m)| {
-        let getter = format_ident!("get_{}", &m.label);
+        let getter = format_ident!("get_{}", &m.id);
         let method_identifier = &CanisterMethodIdentifier::parse_from_str(&m.identifier).unwrap();
         let result= parse_method_args_idents(method_identifier);
         match result {
@@ -97,7 +97,7 @@ pub fn generate_dependencies_accessor(
     };
     let call_funcs = methods
         .iter()
-        .map(|m| generate_query_call(&m.label, &m.identifier));
+        .map(|m| generate_query_call(&m.id, &m.identifier));
 
     let code = quote! {
         #(#call_funcs)*

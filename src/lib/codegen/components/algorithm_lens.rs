@@ -132,8 +132,8 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
         self.datasource
             .methods
             .iter()
-            .filter(|e| seen.insert(e.label.clone())) // remove duplicated
-            .map(|e| e.label.clone())
+            .filter(|e| seen.insert(&e.id)) // remove duplicated
+            .map(|e| e.id.clone())
             .collect()
     }
     fn generate_dependency_accessors(&self) -> anyhow::Result<TokenStream> {
@@ -156,7 +156,7 @@ pub struct AlgorithmLensDataSource {
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct AlgorithmLensDataSourceMethod {
-    pub label: String,
+    pub id: String,
     pub identifier: String,
     pub candid_file_path: String,
 }
@@ -165,7 +165,7 @@ impl Default for AlgorithmLensDataSource {
     fn default() -> Self {
         Self {
             methods: vec![AlgorithmLensDataSourceMethod {
-                label: "sample_snapshot_indexer_icp".to_string(),
+                id: "sample_snapshot_indexer_icp".to_string(),
                 identifier: "get_last_snapshot : () -> (Snapshot)".to_string(),
                 candid_file_path: "interfaces/sample.did".to_string(),
             }],
@@ -195,7 +195,7 @@ metadata:
     - Account
 datasource:
     methods:
-    - label: last_snapshot_value
+    - id: sample_snapshot_indexer_evm
       identifier: 'get_last_snapshot : () -> (Snapshot)'
       candid_file_path: "interfaces/sample.did"
 output:
@@ -225,7 +225,7 @@ output:
                 },
                 datasource: AlgorithmLensDataSource {
                     methods: vec![AlgorithmLensDataSourceMethod {
-                        label: "last_snapshot_value".to_string(),
+                        id: "sample_snapshot_indexer_evm".to_string(),
                         identifier: "get_last_snapshot : () -> (Snapshot)".to_string(),
                         candid_file_path: "interfaces/sample.did".to_string(),
                     }],
@@ -255,7 +255,7 @@ output:
             },
             datasource: AlgorithmLensDataSource {
                 methods: vec![AlgorithmLensDataSourceMethod {
-                    label: "last_snapshot_value".to_string(),
+                    id: "last_snapshot_value".to_string(),
                     identifier: "get_last_snapshot : () -> (Snapshot)".to_string(),
                     candid_file_path: "interfaces/sample.did".to_string(),
                 }],
