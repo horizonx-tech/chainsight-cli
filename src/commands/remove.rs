@@ -22,7 +22,7 @@ use crate::lib::{
 pub struct RemoveOpts {
     /// Specify the path of the project to be removed.
     /// If not specified, the current directory is targeted.
-    #[arg(long, short = 'c')]
+    #[arg(long, short = 'p')]
     pub path: Option<String>,
 }
 

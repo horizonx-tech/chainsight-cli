@@ -244,7 +244,7 @@ Options:
   -v, --verbose...
           Displays detailed information about operations. -vv will generate a very large number of messages and can affect performance
 
-  -c, --path <PATH>
+  -p, --path <PATH>
           Specify the path of the project to which the component is to be added. If not specified, the current directory is targeted
 
   -q, --quiet...
