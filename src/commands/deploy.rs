@@ -1,4 +1,4 @@
-use std::{fs, path::Path, process::Command};
+use std::{collections::BTreeMap, fs::File, path::Path, process::Command};
 
 use anyhow::bail;
 use clap::Parser;
@@ -113,16 +113,8 @@ fn execute_deployment(
 
     // Check deployed ids
     info!(log, "List deployed canister ids");
-    let canister_ids_json_filename = "canister_ids.json";
-    let canister_ids_json_path = match network {
-        Network::Local => format!(
-            "{}/.dfx/local/{}",
-            artifacts_path_str, canister_ids_json_filename
-        ),
-        Network::IC => format!("{}/{}", artifacts_path_str, canister_ids_json_filename),
-    };
-    match fs::read_to_string(canister_ids_json_path) {
-        Ok(contents) => info!(log, "{}", contents),
+    match read_canister_ids_json(artifacts_path_str, network) {
+        Ok(contents) => info!(log, "{:#?}", contents),
         Err(err) => error!(log, "Error reading canister_ids.json: {}", err),
     }
 
@@ -220,6 +212,24 @@ impl DfxArgsBuilder {
         args.push(component);
         args
     }
+}
+
+pub type CanisterName = String;
+pub type NetworkName = String;
+pub type CanisterIdString = String;
+pub type CanisterIds = BTreeMap<CanisterName, BTreeMap<NetworkName, CanisterIdString>>;
+fn read_canister_ids_json(
+    artifacts_path_str: &str,
+    network: Network,
+) -> anyhow::Result<CanisterIds> {
+    let json_filename = "canister_ids.json";
+    let json_path = match network {
+        Network::Local => format!("{}/.dfx/local/{}", artifacts_path_str, json_filename),
+        Network::IC => format!("{}/{}", artifacts_path_str, json_filename),
+    };
+    let json = File::open(json_path)?;
+    let canister_ids: CanisterIds = serde_json::from_reader(json)?;
+    Ok(canister_ids)
 }
 
 #[cfg(test)]
