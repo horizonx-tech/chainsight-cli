@@ -169,7 +169,7 @@ fn generate_accessors_types(
                 if line.contains(res_ty) {
                     return line.replace(res_ty, &format!("{}__{}", res_ty, method.id));
                 }
-                return line.to_string();
+                line.to_string()
             })
             .collect::<Vec<_>>();
         types.extend(contents)
@@ -320,7 +320,9 @@ datasource:
             datasource: AlgorithmLensDataSource {
                 methods: vec![AlgorithmLensDataSourceMethod {
                     id: "last_snapshot_value".to_string(),
-                    identifier: "get_last_snapshot : () -> (Snapshot)".to_string(),
+                    identifier:
+                        "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"
+                            .to_string(),
                     candid_file_path: "interfaces/sample.did".to_string(),
                 }],
             },
