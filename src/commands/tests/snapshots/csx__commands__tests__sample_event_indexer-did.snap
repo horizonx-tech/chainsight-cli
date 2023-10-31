@@ -46,6 +46,7 @@ service : {
   get_last_indexed : () -> (nat64) query;
   get_proxy : () -> (principal);
   get_sources : () -> (vec Sources) query;
+  get_timer_duration : () -> (nat32) query;
   index : () -> ();
   init_in : (Env) -> (Result);
   last_executed : () -> (nat64) query;
@@ -57,7 +58,7 @@ service : {
   proxy_get_canister_metrics_snapshots : (vec nat8) -> (vec nat8);
   proxy_get_last_canister_metrics_snapshot : (vec nat8) -> (vec nat8);
   proxy_get_top_canister_metrics_snapshots : (vec nat8) -> (vec nat8);
-  set_task : (nat32, nat32) -> ();
+  set_task : (nat32, nat32) -> (Result_1);
   setup : (text, Web3CtxParam, IndexingConfig) -> (Result_1);
   transform : (TransformArgs) -> (HttpResponse) query;
   transform_eip1559_support : (TransformArgs) -> (HttpResponse) query;
