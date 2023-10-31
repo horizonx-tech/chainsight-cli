@@ -55,7 +55,7 @@ pub struct AddOpts {
 
     /// Specify the path of the project to which the component is to be added.
     /// If not specified, the current directory is targeted.
-    #[arg(long)]
+    #[arg(long, short = 'c')]
     path: Option<String>,
 }
 
