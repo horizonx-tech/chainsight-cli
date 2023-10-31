@@ -314,7 +314,7 @@ fn get_canister_info(
     let mut result = CanistersInfo::default();
     for (name, ids) in ids {
         // HACK: check to use 'network' name as key
-        if ids.len() > 0 {
+        if !ids.is_empty() {
             let info = call_canister_info(log, artifacts_path, &name, network.clone());
             result.0.insert(name, (format!("{:?}", ids), info));
         }
@@ -340,8 +340,8 @@ fn call_canister_info(
         if lines.is_empty() {
             return None;
         }
-        let controllers = lines[0].split(":").last().unwrap().trim().to_string();
-        let module_hash = lines[1].split(":").last().unwrap().trim().to_string();
+        let controllers = lines[0].split(':').last().unwrap().trim().to_string();
+        let module_hash = lines[1].split(':').last().unwrap().trim().to_string();
         Some(CanisterInfo(controllers, module_hash))
     } else {
         debug!(log, "Failed to call canister info: {}", canister_id_or_name);
