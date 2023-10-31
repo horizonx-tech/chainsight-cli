@@ -33,7 +33,7 @@ use crate::{
 pub struct ExecOpts {
     /// Specify the path of the project that manages the component to be called.
     /// Refer to the manifest of this project to build the commands that should be executed.
-    #[arg(long, short = 'c')]
+    #[arg(long, short = 'p')]
     path: Option<String>,
 
     /// Specify the name of the component you want to execute.
