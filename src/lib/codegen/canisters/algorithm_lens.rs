@@ -3,19 +3,16 @@ use crate::{
         codegen::components::{
             algorithm_lens::AlgorithmLensComponentManifest, common::ComponentManifest,
         },
-        utils::{
-            catch_unwind_silent, find_duplicates,
-            paths::{self, bindings_name},
-        },
+        utils::{find_duplicates, paths},
     },
     types::ComponentType,
 };
-use anyhow::{ensure, Result};
-use chainsight_cdk::config::components::AlgorithmLensConfig;
-use proc_macro2::{Ident, TokenStream};
+use anyhow::ensure;
+use chainsight_cdk::{
+    config::components::AlgorithmLensConfig, convert::candid::CanisterMethodIdentifier,
+};
+use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
-
-use super::common::{CanisterMethodIdentifier, CanisterMethodValueType};
 
 fn custom_codes(
     manifest: &AlgorithmLensComponentManifest,
@@ -42,29 +39,21 @@ pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result
 
     let call_func_templates = methods.iter().enumerate().map(|(i, m)| {
         let getter = format_ident!("get_{}", &m.id);
-        let method_identifier = &CanisterMethodIdentifier::parse_from_str(&m.identifier).unwrap();
-        let result= parse_method_args_idents(method_identifier);
-        match result {
-            Ok(method_args_idents) => {
-                if method_args_idents.is_empty() {
-                    quote! {
-                        let _result = #getter(targets.get(#i).unwrap().clone()).await;
-                    }
-                } else {
-                    quote! {
-                        let _result = #getter(targets.get(#i).unwrap().clone(), #(#method_args_idents::default()),*).await;
-                    }
-                }
-            },
-            Err(error) => {
-                let message = error.to_string();
-                quote! { todo!(#message); }
+        let method_identifier = CanisterMethodIdentifier::new(&m.identifier).expect("method_identifier parse error");
+        let (request_args_type, _) = method_identifier.get_types();
+        if request_args_type.is_some() {
+            quote! {
+                let _result = #getter(targets.get(#i).unwrap().clone(), todo!("Arguments to be used in this call")).await;
+            }
+        } else {
+            quote! {
+                let _result = #getter(targets.get(#i).unwrap().clone()).await;
             }
         }
     });
+
     let output_type_ident = format_ident!("{}", "LensValue");
     let accessors_ident = format_ident!("{}", paths::accessors_name(&id));
-
     let code = quote! {
         use #accessors_ident::*;
 
@@ -100,6 +89,8 @@ pub fn generate_dependencies_accessor(
         .map(|m| generate_query_call(&m.id, &m.identifier));
 
     let code = quote! {
+        mod types;
+        pub use types::*;
         #(#call_funcs)*
         #call_func_dependencies
     };
@@ -128,108 +119,39 @@ pub fn validate_manifest(manifest: &AlgorithmLensComponentManifest) -> anyhow::R
     Ok(())
 }
 
-fn create_return_ident(ty: &String, is_scalar: &bool, label: &str) -> (Ident, TokenStream) {
-    match is_scalar {
-        true => (format_ident!("{}", ty), quote! {}),
-        false => {
-            let crate_ident = format_ident!("{}", bindings_name(label));
-            let ty_ident = format_ident!("{}", ty);
-            let return_ty_ident = format_ident!("{}_{}", ty, label);
-
-            (
-                return_ty_ident.clone(),
-                quote! {
-                    use #crate_ident::#ty_ident as #return_ty_ident;
-                },
-            )
-        }
-    }
-}
-
 fn generate_query_call(label: &str, method_identifier: &str) -> TokenStream {
-    let method_identifier = &CanisterMethodIdentifier::parse_from_str(method_identifier).unwrap();
-    let func_to_call = &method_identifier.identifier.to_string();
-    let proxy_func_to_call = "proxy_".to_string() + func_to_call;
+    let method_identifier =
+        CanisterMethodIdentifier::new(method_identifier).expect("method_identifier parse error");
+    let proxy_func_to_call = format!("proxy_{}", &method_identifier.identifier);
 
-    let result = parse_method_args_idents(method_identifier);
-    match result {
-        Ok(method_args_idents) => {
-            let (method_return_type, method_return_type_import) =
-                match &method_identifier.return_value {
-                    CanisterMethodValueType::Scalar(ty, is_scalar) => {
-                        create_return_ident(ty, is_scalar, label)
-                    }
-                    CanisterMethodValueType::Vector(ty, is_scalar) => {
-                        create_return_ident(ty, is_scalar, label)
-                    }
-                    _ => (format_ident!("{}", "TODO".to_string()), quote!()), // TODO: support tuple & struct
-                };
-            match method_identifier.return_value {
-                CanisterMethodValueType::Scalar(_, _) => match method_args_idents.is_empty() {
-                    true => quote! {
-                        #method_return_type_import
-                        algorithm_lens_finder!(
-                            #label,
-                            #proxy_func_to_call,
-                            #method_return_type
-                        );
-                    },
-                    false => quote! {
-                        #method_return_type_import
-                        algorithm_lens_finder!(
-                            #label,
-                            #proxy_func_to_call,
-                            #method_return_type,
-                            #(#method_args_idents),*
-                        );
-                    },
-                },
-                CanisterMethodValueType::Vector(_, _) => match method_args_idents.is_empty() {
-                    true => quote! {
-                        #method_return_type_import
-                        algorithm_lens_finder!(
-                            #label,
-                            #proxy_func_to_call,
-                            Vec<#method_return_type>
-                        );
-                    },
-                    false => quote! {
-                        #method_return_type_import
-                        algorithm_lens_finder!(
-                            #label,
-                            #proxy_func_to_call,
-                            Vec<#method_return_type>,
-                            #(#method_args_idents),*
-                        );
-                    },
-                },
-                _ => quote! {}, // TODO: support tuple & struct,
-            }
+    let suffix = label;
+    let response_type_idents = format_ident!(
+        "{}__{}",
+        CanisterMethodIdentifier::RESPONSE_TYPE_NAME,
+        &suffix
+    );
+    let (request_args_type, _) = method_identifier.get_types();
+    if request_args_type.is_some() {
+        let request_args_type_idents = format_ident!(
+            "{}__{}",
+            CanisterMethodIdentifier::REQUEST_ARGS_TYPE_NAME,
+            &suffix
+        );
+        quote! {
+            algorithm_lens_finder!(
+                #label,
+                #proxy_func_to_call,
+                #response_type_idents,
+                #request_args_type_idents
+            );
         }
-        _ => quote! {},
+    } else {
+        quote! {
+            algorithm_lens_finder!(
+                #label,
+                #proxy_func_to_call,
+                #response_type_idents
+            );
+        }
     }
-}
-
-fn parse_method_args_idents(
-    method_identifier: &CanisterMethodIdentifier,
-) -> anyhow::Result<Vec<Ident>> {
-    let (method_args_idents_results, errors): (Vec<_>, Vec<_>) = {
-        method_identifier
-            .params
-            .iter()
-            .map(|arg| catch_unwind_silent(|| format_ident!("{}", arg)))
-            .partition(Result::is_ok)
-    };
-
-    if !errors.is_empty() {
-        return Err(anyhow::anyhow!(
-            "Unsupported type found in arguments. Please implement manually: {}",
-            method_identifier.identifier
-        ));
-    }
-
-    Ok(method_args_idents_results
-        .into_iter()
-        .map(Result::unwrap)
-        .collect::<Vec<Ident>>())
 }

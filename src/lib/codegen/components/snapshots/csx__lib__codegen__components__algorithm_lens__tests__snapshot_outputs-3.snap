@@ -1,9 +1,10 @@
 ---
 source: src/lib/codegen/components/algorithm_lens.rs
-expression: "SrcString::from(&manifest.generate_dependency_accessors().unwrap())"
+expression: "SrcString::from(&manifest.generate_dependency_accessors().unwrap().lib)"
 ---
-use last_snapshot_value_bindings::Snapshot as Snapshot_last_snapshot_value;
-algorithm_lens_finder!("last_snapshot_value", "proxy_get_last_snapshot", Snapshot_last_snapshot_value);
+mod types;
+pub use types::*;
+algorithm_lens_finder!("last_snapshot_value", "proxy_get_last_snapshot", ResponseType__last_snapshot_value);
 use chainsight_cdk::lens::LensFinder;
 use chainsight_cdk_macros::algorithm_lens_finder;
 async fn _get_target_proxy(target:candid::Principal) -> candid::Principal {

@@ -54,6 +54,7 @@ pub fn find_duplicates<T: Eq + std::hash::Hash>(values: &[T]) -> Vec<&T> {
     duplicates
 }
 
+#[allow(dead_code)]
 pub fn catch_unwind_silent<F: FnOnce() -> R + panic::UnwindSafe, R>(
     f: F,
 ) -> std::thread::Result<R> {
