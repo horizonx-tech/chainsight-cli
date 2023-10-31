@@ -44,7 +44,7 @@ fn dummy_candid_blob() -> String {
 pub struct GenerateOpts {
     /// Specify the path of the project.
     /// If not specified, the current directory is targeted.
-    #[arg(long)]
+    #[arg(long, short = 'p')]
     path: Option<String>,
 }
 

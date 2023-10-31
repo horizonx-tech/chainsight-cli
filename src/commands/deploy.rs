@@ -27,7 +27,7 @@ use crate::{
 pub struct DeployOpts {
     /// Specify the path of the project to deploy.
     /// If not specified, the current directory is targeted.
-    #[arg(long)]
+    #[arg(long, short = 'p')]
     path: Option<String>,
 
     /// Specify the component to deploy.

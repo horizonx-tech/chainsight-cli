@@ -38,7 +38,7 @@ use crate::{
 pub struct BuildOpts {
     /// Specify the path of the project to build.
     /// If not specified, the current directory is targeted.
-    #[arg(long)]
+    #[arg(long, short = 'p')]
     pub path: Option<String>,
 
     /// Only perform build.
