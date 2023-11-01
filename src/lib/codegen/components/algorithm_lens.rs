@@ -1,8 +1,7 @@
 use std::collections::HashMap;
 
 use candid::Principal;
-use chainsight_cdk::config::components::CommonConfig;
-use proc_macro2::TokenStream;
+use chainsight_cdk::{config::components::CommonConfig, convert::candid::CanisterMethodIdentifier};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -134,9 +133,48 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
             .map(|e| e.id.clone())
             .collect()
     }
-    fn generate_dependency_accessors(&self) -> anyhow::Result<TokenStream> {
-        canisters::algorithm_lens::generate_dependencies_accessor(self)
+    fn generate_dependency_accessors(&self) -> anyhow::Result<GeneratedCodes> {
+        let lib = canisters::algorithm_lens::generate_dependencies_accessor(self)?;
+        let types = generate_accessors_types(&self.datasource.methods)?;
+
+        Ok(GeneratedCodes {
+            lib,
+            types: Some(types),
+        })
     }
+}
+
+fn generate_accessors_types(
+    methods: &Vec<AlgorithmLensDataSourceMethod>,
+) -> anyhow::Result<String> {
+    // OPTIMIZE: this logics
+    let mut types: Vec<String> = vec![];
+    let req_ty = CanisterMethodIdentifier::REQUEST_ARGS_TYPE_NAME;
+    let res_ty = CanisterMethodIdentifier::RESPONSE_TYPE_NAME;
+    types.push("#![allow(dead_code, unused_imports)]".to_string());
+    types.push(
+        "use candid::{self, CandidType, Deserialize, Principal, Encode, Decode};".to_string(),
+    );
+    for method in methods {
+        let method_identifier = CanisterMethodIdentifier::new(&method.identifier)
+            .expect("method_identifier parse error");
+        let contents = method_identifier
+            .compile()
+            .lines()
+            .skip(2)
+            .map(|line| {
+                if line.contains(req_ty) {
+                    return line.replace(req_ty, &format!("{}__{}", req_ty, method.id));
+                }
+                if line.contains(res_ty) {
+                    return line.replace(res_ty, &format!("{}__{}", res_ty, method.id));
+                }
+                line.to_string()
+            })
+            .collect::<Vec<_>>();
+        types.extend(contents)
+    }
+    Ok(types.join("\n"))
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -282,7 +320,9 @@ datasource:
             datasource: AlgorithmLensDataSource {
                 methods: vec![AlgorithmLensDataSourceMethod {
                     id: "last_snapshot_value".to_string(),
-                    identifier: "get_last_snapshot : () -> (Snapshot)".to_string(),
+                    identifier:
+                        "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"
+                            .to_string(),
                     candid_file_path: "interfaces/sample.did".to_string(),
                 }],
             },
@@ -297,7 +337,7 @@ datasource:
         assert!(generated_user_impl_template.types.is_none());
 
         assert_display_snapshot!(SrcString::from(
-            &manifest.generate_dependency_accessors().unwrap()
+            &manifest.generate_dependency_accessors().unwrap().lib
         ));
 
         assert_display_snapshot!(&manifest.generate_scripts(Network::Local).unwrap());

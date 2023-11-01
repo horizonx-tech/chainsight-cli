@@ -6,9 +6,7 @@ use quote::{format_ident, quote};
 use crate::{
     lib::codegen::{
         canisters::common::{generate_outside_call_idents, OutsideCallType},
-        components::{
-            common::ComponentManifest, snapshot_indexer_icp::SnapshotIndexerICPComponentManifest,
-        },
+        components::snapshot_indexer_icp::SnapshotIndexerICPComponentManifest,
     },
     types::ComponentType,
 };
@@ -37,8 +35,15 @@ fn common_codes() -> proc_macro2::TokenStream {
 fn custom_codes(
     manifest: &SnapshotIndexerICPComponentManifest,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    let id = &manifest.id().ok_or(anyhow::anyhow!("id is required"))?;
-    let method = &manifest.datasource.method;
+    let SnapshotIndexerICPComponentManifest {
+        id,
+        datasource,
+        storage,
+        lens_targets,
+        ..
+    } = manifest;
+    let id = &id.clone().ok_or(anyhow::anyhow!("id is required"))?;
+    let method = &datasource.method;
     let method_identifier = CanisterMethodIdentifier::new(&method.identifier)?;
 
     let bindings_crate_ident = format_ident!("{}", id);
@@ -58,7 +63,7 @@ fn custom_codes(
         expr_to_gen_snapshot,
         expr_to_log_datum,
         queries_expect_timestamp,
-    ) = if manifest.storage.with_timestamp {
+    ) = if storage.with_timestamp {
         (
             quote! {
 
@@ -96,10 +101,9 @@ fn custom_codes(
         )
     };
 
-    let call_canister_args_ident = if manifest.lens_targets.is_some() {
-        let lens_targets: Vec<Principal> = manifest
+    let call_canister_args_ident = if lens_targets.is_some() {
+        let lens_targets: Vec<Principal> = lens_targets
             .clone()
-            .lens_targets
             .map(|t| {
                 t.identifiers
                     .iter()
