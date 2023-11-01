@@ -11,10 +11,7 @@ use crate::{
                 },
                 snapshot_indexer_icp::generate_queries_without_timestamp,
             },
-            components::{
-                common::ComponentManifest,
-                snapshot_indexer_evm::SnapshotIndexerEVMComponentManifest,
-            },
+            components::snapshot_indexer_evm::SnapshotIndexerEVMComponentManifest,
         },
         utils::{convert_camel_to_snake, ADDRESS_TYPE, U256_TYPE},
     },
@@ -46,8 +43,14 @@ fn common_codes() -> proc_macro2::TokenStream {
 fn custom_codes(
     manifest: &SnapshotIndexerEVMComponentManifest,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    let id = &manifest.id().ok_or(anyhow::anyhow!("id is required"))?;
-    let method = &manifest.datasource.method;
+    let SnapshotIndexerEVMComponentManifest {
+        id,
+        datasource,
+        storage,
+        ..
+    } = manifest;
+    let id = &id.clone().ok_or(anyhow::anyhow!("id is required"))?;
+    let method = &datasource.method;
     let method_identifier = ContractMethodIdentifier::parse_from_str(&method.identifier)?;
     let method_ident_str = convert_camel_to_snake(&method_identifier.identifier);
     let method_ident = format_ident!("{}", method_ident_str);
@@ -105,7 +108,7 @@ fn custom_codes(
         expr_to_gen_snapshot,
         expr_to_log_datum,
         queries_expect_timestamp,
-    ) = if manifest.storage.with_timestamp {
+    ) = if storage.with_timestamp {
         (
             quote! {
                 #[derive(Debug, Clone, candid::CandidType, candid::Deserialize, serde::Serialize, StableMemoryStorable)]
