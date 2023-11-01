@@ -1,23 +1,22 @@
 use quote::{format_ident, quote};
 
-use crate::lib::codegen::components::{
-    common::ComponentManifest, snapshot_indexer_https::SnapshotIndexerHTTPSComponentManifest,
-};
+use crate::lib::codegen::components::snapshot_indexer_https::SnapshotIndexerHTTPSComponentManifest;
 
 use super::snapshot_indexer_icp::generate_queries_without_timestamp;
 
 pub fn generate_codes(
     manifest: &SnapshotIndexerHTTPSComponentManifest,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    let url = &manifest.datasource.url;
-    let id = &manifest.id().ok_or(anyhow::anyhow!("id is required"))?;
-    let mut header_keys: Vec<&String> = manifest.datasource.headers.keys().collect();
+    let SnapshotIndexerHTTPSComponentManifest { id, datasource, .. } = manifest;
+    let url = &datasource.url;
+    let id = &id.clone().ok_or(anyhow::anyhow!("id is required"))?;
+    let mut header_keys: Vec<&String> = datasource.headers.keys().collect();
     header_keys.sort();
-    let mut header_values: Vec<&String> = manifest.datasource.headers.values().collect();
+    let mut header_values: Vec<&String> = datasource.headers.values().collect();
     header_values.sort();
-    let mut query_keys: Vec<&String> = manifest.datasource.queries.keys().collect();
+    let mut query_keys: Vec<&String> = datasource.queries.keys().collect();
     query_keys.sort();
-    let mut query_values: Vec<&String> = manifest.datasource.queries.values().collect();
+    let mut query_values: Vec<&String> = datasource.queries.values().collect();
     query_values.sort();
     let queries = generate_queries_without_timestamp(format_ident!("SnapshotValue"));
 
