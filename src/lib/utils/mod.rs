@@ -1,7 +1,5 @@
 use std::{panic, path::Path};
 
-use inflector::cases::snakecase::to_snake_case;
-
 pub mod clap;
 pub mod env;
 pub mod interaction;
@@ -14,11 +12,6 @@ pub const PROJECT_MANIFEST_VERSION: &str = "v1";
 pub const DOTENV_FILENAME: &str = ".env";
 pub const GITIGNORE_FILENAME: &str = ".gitignore";
 pub const ARTIFACTS_DIR: &str = "artifacts";
-
-/// To handle 256bits Unsigned Integer type in ic_web3_rs
-pub const U256_TYPE: &str = "ic_web3_rs::types::U256";
-/// To handle Address type in ic_web3_rs
-pub const ADDRESS_TYPE: &str = "ic_web3_rs::types::Address";
 
 /// Check if .chainsight file exists in project folder
 pub fn is_chainsight_project(path: Option<String>) -> Result<(), String> {
@@ -33,13 +26,6 @@ pub fn is_chainsight_project(path: Option<String>) -> Result<(), String> {
         ));
     }
     Ok(())
-}
-
-/// Convert camelCase String to snake_case
-pub fn convert_camel_to_snake(val: &str) -> String {
-    // NOTE: use Inflator in ic-solidity-bindgen
-    // https://github.com/horizonx-tech/ic-solidity-bindgen/blob/0972bede5957927bcb8f675decd93878b849dc76/ic-solidity-bindgen-macros/src/abi_gen.rs#L192
-    to_snake_case(val)
 }
 
 /// Outputs duplicate values for a given set of elements.

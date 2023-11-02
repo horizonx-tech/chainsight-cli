@@ -1,8 +1,13 @@
 ---
 source: src/lib/codegen/components/algorithm_indexer.rs
-expression: "SrcString::from(&manifest.generate_codes(Option::None).unwrap())"
+expression: "SrcString::from(&generated_codes.lib)"
 ---
-use chainsight_cdk_macros::def_algorithm_indexer_canister;
+use chainsight_cdk::storage::Data;
+use chainsight_cdk_macros::{
+def_algorithm_indexer_canister, Persist };
+#[warn(unused_imports)]
+use chainsight_cdk_macros::{
+KeyValueStore, KeyValuesStore };
 def_algorithm_indexer_canister!("{
 \"common\":{
 \"monitor_duration\":60, \"canister_name\":\"sample_algorithm_indexer\"
