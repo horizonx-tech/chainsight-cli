@@ -1,5 +1,6 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
+use chainsight_cdk::config::components::CommonConfig;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -79,6 +80,23 @@ impl SnapshotIndexerHTTPSComponentManifest {
         }
     }
 }
+impl From<SnapshotIndexerHTTPSComponentManifest>
+    for chainsight_cdk::config::components::SnapshotIndexerHTTPSConfig
+{
+    fn from(val: SnapshotIndexerHTTPSComponentManifest) -> Self {
+        let SnapshotIndexerHTTPSComponentManifest { id, datasource, .. } = val;
+        Self {
+            common: CommonConfig {
+                canister_name: id.clone().unwrap(),
+                monitor_duration: 60,
+            },
+            url: datasource.url,
+            headers: BTreeMap::from_iter(datasource.headers),
+            queries: BTreeMap::from_iter(datasource.queries),
+        }
+    }
+}
+
 impl ComponentManifest for SnapshotIndexerHTTPSComponentManifest {
     fn load_with_id(path: &str, id: &str) -> anyhow::Result<Self> {
         let manifest = Self::load(path)?;
