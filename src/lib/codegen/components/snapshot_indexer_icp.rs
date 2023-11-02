@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 
-use chainsight_cdk::{config::components::LensTargets, convert::candid::CanisterMethodIdentifier};
+use chainsight_cdk::{
+    config::components::{CommonConfig, LensTargets},
+    convert::candid::CanisterMethodIdentifier,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -59,6 +62,26 @@ impl SnapshotIndexerICPComponentManifest {
             storage,
             interval,
             lens_targets: None,
+        }
+    }
+}
+impl From<SnapshotIndexerICPComponentManifest>
+    for chainsight_cdk::config::components::SnapshotIndexerICPConfig
+{
+    fn from(val: SnapshotIndexerICPComponentManifest) -> Self {
+        let SnapshotIndexerICPComponentManifest {
+            id,
+            datasource,
+            lens_targets,
+            ..
+        } = val;
+        Self {
+            common: CommonConfig {
+                canister_name: id.clone().unwrap(),
+                monitor_duration: 60,
+            },
+            method_identifier: datasource.method.identifier,
+            lens_targets,
         }
     }
 }
