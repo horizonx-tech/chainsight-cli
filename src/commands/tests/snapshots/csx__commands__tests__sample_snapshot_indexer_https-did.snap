@@ -33,6 +33,7 @@ service : {
   get_sources : () -> (vec Sources) query;
   get_top_snapshot_values : (nat64) -> (vec SnapshotValue) query;
   get_top_snapshots : (nat64) -> (vec Snapshot) query;
+  index : () -> ();
   init_in : (Env) -> (Result);
   metric : () -> (CanisterMetricsSnapshot) query;
   metrics : (nat64) -> (vec CanisterMetricsSnapshot) query;
