@@ -13,7 +13,7 @@ use crate::{
 
 use super::common::{
     custom_tags_interval_sec, ComponentManifest, ComponentMetadata, GeneratedCodes, SourceType,
-    Sources,
+    Sources, DEFAULT_MONITOR_DURATION_SECS,
 };
 
 /// Component Manifest: Algorithm Indexer
@@ -34,8 +34,8 @@ impl From<AlgorithmIndexerComponentManifest>
     fn from(val: AlgorithmIndexerComponentManifest) -> Self {
         AlgorithmIndexerConfig {
             common: CommonConfig {
-                monitor_duration: 60,
                 canister_name: val.id.unwrap(),
+                monitor_duration: DEFAULT_MONITOR_DURATION_SECS,
             },
             indexing: chainsight_cdk::indexer::IndexingConfig {
                 start_from: val.datasource.from,

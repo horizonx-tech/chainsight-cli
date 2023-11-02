@@ -1,11 +1,11 @@
 ---
 source: src/lib/codegen/components/event_indexer.rs
-expression: "SrcString::from(&manifest.generate_codes(Option::Some(ethabi::Contract::load(abi).unwrap())).unwrap())"
+expression: "SrcString::from(&generated_codes.lib)"
 ---
 use chainsight_cdk_macros::def_event_indexer_canister;
 def_event_indexer_canister!("{
 \"common\":{
-\"monitor_duration\":60, \"canister_name\":\"sample_event_indexer\"
+\"monitor_duration\":3600, \"canister_name\":\"sample_event_indexer\"
 }, \"def\":{
 \"identifier\":\"Transfer\", \"abi_file_path\":\"./__interfaces/ERC20.json\"
 }}");

@@ -11,7 +11,7 @@ use crate::{
 
 use super::common::{
     custom_tags_interval_sec, ComponentManifest, ComponentMetadata, GeneratedCodes, SourceType,
-    Sources,
+    Sources, DEFAULT_MONITOR_DURATION_SECS,
 };
 
 /// Component Manifest: Event Indexer
@@ -32,7 +32,7 @@ impl From<EventIndexerComponentManifest>
         Self {
             common: chainsight_cdk::config::components::CommonConfig {
                 canister_name: val.id.clone().unwrap(),
-                monitor_duration: 60,
+                monitor_duration: DEFAULT_MONITOR_DURATION_SECS,
             },
             def: chainsight_cdk::config::components::EventIndexerEventDefinition {
                 identifier: val.datasource.event.identifier,
