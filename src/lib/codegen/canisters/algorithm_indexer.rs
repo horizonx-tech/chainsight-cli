@@ -1,4 +1,4 @@
-use anyhow::ensure;
+use anyhow::{ensure, Context};
 use chainsight_cdk::config::components::{AlgorithmIndexerConfig, AlgorithmInputType};
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote};
@@ -42,7 +42,7 @@ fn custom_codes(
     manifest: &AlgorithmIndexerComponentManifest,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     let conf: AlgorithmIndexerConfig = (manifest.clone()).into();
-    let conf_json = serde_json::to_string(&conf).unwrap();
+    let conf_json = serde_json::to_string(&conf)?;
 
     let mut output_structs_quotes = Vec::new();
     let (mut key_value_count, mut key_values_count) = (0, 0);
@@ -55,7 +55,10 @@ fn custom_codes(
         let mut keys = manifest.output[i].fields.keys().collect::<Vec<_>>();
         keys.sort();
         for key in keys {
-            let value = manifest.output[i].fields.get(key).unwrap();
+            let value = manifest.output[i]
+                .fields
+                .get(key)
+                .context(format!("output.{}.fields.{} is not set", i, key))?;
             output_fields_idents.push(format_ident!("{}", key));
             output_field_types.push(format_ident!("{}", value));
         }
@@ -83,7 +86,10 @@ fn custom_codes(
     }
 
     Ok(quote! {
-        use chainsight_cdk_macros::def_algorithm_indexer_canister;
+        use chainsight_cdk::storage::Data;
+        use chainsight_cdk_macros::{def_algorithm_indexer_canister, Persist};
+        #[warn(unused_imports)]
+        use chainsight_cdk_macros::{KeyValueStore, KeyValuesStore};
         def_algorithm_indexer_canister!(#conf_json);
         #(#output_structs_quotes)*
     })
