@@ -1,5 +1,6 @@
 ---
 source: src/commands/tests/mod.rs
+assertion_line: 113
 expression: "fs::read_to_string(&did_path).unwrap()"
 ---
 type CanisterMetricsSnapshot = record { cycles : nat; timestamp : nat64 };
@@ -32,6 +33,7 @@ service : {
   get_sources : () -> (vec Sources) query;
   get_top_snapshot_values : (nat64) -> (vec ResponseType) query;
   get_top_snapshots : (nat64) -> (vec Snapshot) query;
+  index : () -> ();
   init_in : (Env) -> (Result);
   metric : () -> (CanisterMetricsSnapshot) query;
   metrics : (nat64) -> (vec CanisterMetricsSnapshot) query;
