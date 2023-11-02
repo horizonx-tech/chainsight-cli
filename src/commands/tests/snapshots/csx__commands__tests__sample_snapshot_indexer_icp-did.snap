@@ -24,7 +24,6 @@ type Sources = record {
   source_type : SourceType;
 };
 service : {
-  execute_task : () -> ();
   get_last_snapshot : () -> (Snapshot) query;
   get_last_snapshot_value : () -> (ResponseType) query;
   get_proxy : () -> (principal);
@@ -34,6 +33,7 @@ service : {
   get_sources : () -> (vec Sources) query;
   get_top_snapshot_values : (nat64) -> (vec ResponseType) query;
   get_top_snapshots : (nat64) -> (vec Snapshot) query;
+  index : () -> ();
   init_in : (Env) -> (Result);
   metric : () -> (CanisterMetricsSnapshot) query;
   metrics : (nat64) -> (vec CanisterMetricsSnapshot) query;
