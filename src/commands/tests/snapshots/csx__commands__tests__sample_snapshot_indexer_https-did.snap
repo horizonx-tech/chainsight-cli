@@ -14,7 +14,6 @@ type InitError = variant {
   InvalidRequest : text;
 };
 type Result = variant { Ok; Err : InitError };
-type Result_1 = variant { Ok; Err : text };
 type Snapshot = record { value : SnapshotValue; timestamp : nat64 };
 type SnapshotValue = record { dummy : nat64 };
 type SourceType = variant { evm; https; chainsight };
@@ -32,11 +31,9 @@ service : {
   get_snapshot_value : (nat64) -> (SnapshotValue) query;
   get_snapshots : () -> (vec Snapshot) query;
   get_sources : () -> (vec Sources) query;
-  get_timer_duration : () -> (nat32) query;
   get_top_snapshot_values : (nat64) -> (vec SnapshotValue) query;
   get_top_snapshots : (nat64) -> (vec Snapshot) query;
   init_in : (Env) -> (Result);
-  last_executed : () -> (nat64) query;
   metric : () -> (CanisterMetricsSnapshot) query;
   metrics : (nat64) -> (vec CanisterMetricsSnapshot) query;
   proxy_canister_metrics_snapshots_len : (vec nat8) -> (vec nat8);
@@ -52,6 +49,6 @@ service : {
   proxy_get_top_snapshot_values : (vec nat8) -> (vec nat8);
   proxy_get_top_snapshots : (vec nat8) -> (vec nat8);
   proxy_snapshots_len : (vec nat8) -> (vec nat8);
-  set_task : (nat32, nat32) -> (Result_1);
+  set_task : (nat32, nat32) -> ();
   snapshots_len : () -> (nat64) query;
 }

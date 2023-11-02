@@ -47,11 +47,9 @@ service : {
   get_snapshot_value : (nat64) -> (text) query;
   get_snapshots : () -> (vec Snapshot) query;
   get_sources : () -> (vec Sources) query;
-  get_timer_duration : () -> (nat32) query;
   get_top_snapshot_values : (nat64) -> (vec text) query;
   get_top_snapshots : (nat64) -> (vec Snapshot) query;
   init_in : (Env) -> (Result);
-  last_executed : () -> (nat64) query;
   metric : () -> (CanisterMetricsSnapshot) query;
   metrics : (nat64) -> (vec CanisterMetricsSnapshot) query;
   proxy_canister_metrics_snapshots_len : (vec nat8) -> (vec nat8);
@@ -67,7 +65,7 @@ service : {
   proxy_get_top_snapshot_values : (vec nat8) -> (vec nat8);
   proxy_get_top_snapshots : (vec nat8) -> (vec nat8);
   proxy_snapshots_len : (vec nat8) -> (vec nat8);
-  set_task : (nat32, nat32) -> (Result_1);
+  set_task : (nat32, nat32) -> ();
   setup : (text, Web3CtxParam) -> (Result_1);
   snapshots_len : () -> (nat64) query;
   transform : (TransformArgs) -> (HttpResponse) query;

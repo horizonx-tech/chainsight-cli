@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use chainsight_cdk::config::components::LensTargets;
+use chainsight_cdk::config::components::{CommonConfig, LensTargets};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -59,6 +59,27 @@ impl SnapshotIndexerEVMComponentManifest {
             storage,
             interval,
             lens_targets: None,
+        }
+    }
+}
+impl From<SnapshotIndexerEVMComponentManifest>
+    for chainsight_cdk::config::components::SnapshotIndexerEVMConfig
+{
+    fn from(val: SnapshotIndexerEVMComponentManifest) -> Self {
+        let SnapshotIndexerEVMComponentManifest { id, datasource, .. } = val;
+        Self {
+            common: CommonConfig {
+                canister_name: id.clone().unwrap(),
+                monitor_duration: 60,
+            },
+            method_identifier: datasource.method.identifier,
+            method_args: datasource
+                .method
+                .args
+                .into_iter()
+                .map(yaml_to_json)
+                .collect(),
+            abi_file_path: format!("./__interfaces/{}", datasource.method.interface.unwrap()),
         }
     }
 }
@@ -149,6 +170,14 @@ impl ComponentManifest for SnapshotIndexerEVMComponentManifest {
         res.insert(interval_key, interval_val);
         res
     }
+}
+
+fn yaml_to_json(yaml_value: serde_yaml::Value) -> serde_json::Value {
+    // Convert serde_yaml::Value to a JSON string
+    let json_str = serde_json::to_string(&yaml_value).unwrap();
+
+    // Convert the JSON string to serde_json::Value
+    serde_json::from_str(&json_str).unwrap()
 }
 
 #[cfg(test)]
