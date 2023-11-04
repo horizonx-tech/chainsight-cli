@@ -1,20 +1,8 @@
 import {describe, test} from 'vitest';
 import {loadCandidIds} from './utils';
-import {assertMetadata} from './assertions';
+import {assertMetadata, assertMetric} from './assertions';
 
 const CANISTER_NAME = 'sample_snapshot_indexer_evm';
-
-// describe('common', () => {
-//   test(
-//     '.metric',
-//     async () => {
-//       const ids = await loadCandidIds();
-//       const id = ids[CANISTER_NAME].local;
-//       await assertMetric(id, NODE_URL);
-//     },
-//     {timeout: 10000}
-//   );
-// });
 
 describe('readState', () => {
   test('.metadata', async () => {
@@ -26,4 +14,16 @@ describe('readState', () => {
       'chainsight:component_type': 'snapshot_indexer_evm',
     });
   });
+});
+
+describe('query', () => {
+  test(
+    '.metric',
+    async () => {
+      const ids = await loadCandidIds();
+      const id = ids[CANISTER_NAME].local;
+      await assertMetric(id);
+    },
+    {timeout: 10000}
+  );
 });
