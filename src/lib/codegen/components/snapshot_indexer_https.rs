@@ -288,7 +288,7 @@ interval: 3600
         assert!(generated_codes.types.is_none());
 
         let generated_user_impl_template = manifest.generate_user_impl_template().unwrap();
-        assert_display_snapshot!(SrcString::from(generated_user_impl_template.lib));
+        assert_display_snapshot!(generated_user_impl_template.lib);
         assert!(generated_user_impl_template.types.is_none());
 
         assert_display_snapshot!(&manifest.generate_scripts(Network::Local).unwrap());
