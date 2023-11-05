@@ -175,8 +175,7 @@ impl Default for SnapshotStorage {
 }
 
 pub struct GeneratedCodes {
-    // TODO: make fields of the same type
-    pub lib: TokenStream,
+    pub lib: String,
     pub types: Option<String>,
 }
 
