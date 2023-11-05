@@ -1,13 +1,12 @@
 use anyhow::ensure;
 use chainsight_cdk::config::components::EventIndexerConfig;
-use proc_macro2::TokenStream;
 use quote::quote;
 
 use crate::{
     lib::codegen::components::event_indexer::EventIndexerComponentManifest, types::ComponentType,
 };
 
-pub fn generate_codes(manifest: &EventIndexerComponentManifest) -> anyhow::Result<TokenStream> {
+pub fn generate_codes(manifest: &EventIndexerComponentManifest) -> anyhow::Result<String> {
     ensure!(
         manifest.metadata.type_ == ComponentType::EventIndexer,
         "type is not EventIndexer"
@@ -18,7 +17,7 @@ pub fn generate_codes(manifest: &EventIndexerComponentManifest) -> anyhow::Resul
         use chainsight_cdk_macros::def_event_indexer_canister;
         def_event_indexer_canister!(#config_json);
     };
-    Ok(code)
+    Ok(code.to_string())
 }
 
 pub fn validate_manifest(manifest: &EventIndexerComponentManifest) -> anyhow::Result<()> {

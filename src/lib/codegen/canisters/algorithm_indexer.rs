@@ -95,15 +95,15 @@ fn custom_codes(
     })
 }
 
-pub fn generate_codes(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Result<TokenStream> {
+pub fn generate_codes(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Result<String> {
     ensure!(
         manifest.metadata.type_ == ComponentType::AlgorithmIndexer,
         "type is not AlgorithmIndexer"
     );
-    custom_codes(manifest)
+    custom_codes(manifest).map(|code| code.to_string())
 }
 
-pub fn generate_app(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Result<TokenStream> {
+pub fn generate_app(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Result<String> {
     let input_type = input_type_ident(manifest);
     let event_struct = format_ident!("{}", &manifest.datasource.input.name);
 
@@ -132,7 +132,7 @@ pub fn generate_app(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Res
         }
     };
 
-    Ok(code)
+    Ok(code.to_string())
 }
 
 pub fn validate_manifest(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Result<()> {

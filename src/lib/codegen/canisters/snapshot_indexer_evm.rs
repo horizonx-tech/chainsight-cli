@@ -7,9 +7,7 @@ use crate::{
     types::ComponentType,
 };
 
-pub fn generate_codes(
-    manifest: &SnapshotIndexerEVMComponentManifest,
-) -> anyhow::Result<proc_macro2::TokenStream> {
+pub fn generate_codes(manifest: &SnapshotIndexerEVMComponentManifest) -> anyhow::Result<String> {
     ensure!(
         manifest.metadata.type_ == ComponentType::SnapshotIndexerEVM,
         "type is not SnapshotIndexerEVM"
@@ -20,13 +18,11 @@ pub fn generate_codes(
         use chainsight_cdk_macros::def_snapshot_indexer_evm_canister;
         def_snapshot_indexer_evm_canister!(#config_json);
     };
-    Ok(code)
+    Ok(code.to_string())
 }
 
-pub fn generate_app(
-    _manifest: &SnapshotIndexerEVMComponentManifest,
-) -> anyhow::Result<proc_macro2::TokenStream> {
-    Ok(quote! {})
+pub fn generate_app(_manifest: &SnapshotIndexerEVMComponentManifest) -> anyhow::Result<String> {
+    Ok(quote! {}.to_string())
 }
 
 pub fn validate_manifest(manifest: &SnapshotIndexerEVMComponentManifest) -> anyhow::Result<()> {

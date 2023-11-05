@@ -293,11 +293,11 @@ interval: 3600
         };
 
         let generated_codes = manifest.generate_codes(Option::None).unwrap();
-        assert_display_snapshot!(SrcString::from(&generated_codes.lib));
+        assert_display_snapshot!(SrcString::from(generated_codes.lib));
         assert_display_snapshot!(generated_codes.types.unwrap());
 
         let generated_user_impl_template = manifest.generate_user_impl_template().unwrap();
-        assert_display_snapshot!(SrcString::from(&generated_user_impl_template.lib));
+        assert_display_snapshot!(SrcString::from(generated_user_impl_template.lib));
         assert_display_snapshot!(generated_user_impl_template.types.unwrap());
 
         assert_display_snapshot!(&manifest.generate_scripts(Network::Local).unwrap());

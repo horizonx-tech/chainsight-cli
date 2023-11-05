@@ -1,7 +1,6 @@
 use std::{collections::HashMap, fs::OpenOptions, io::Read, path::Path};
 
 use anyhow::bail;
-use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -175,8 +174,7 @@ impl Default for SnapshotStorage {
 }
 
 pub struct GeneratedCodes {
-    // TODO: make fields of the same type
-    pub lib: TokenStream,
+    pub lib: String,
     pub types: Option<String>,
 }
 
