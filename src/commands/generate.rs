@@ -314,7 +314,7 @@ fn exec_codegen(
             canister_pj_path_str,
             Some(&canister_project_cargo_toml(&id)),
             Some(CargoProjectSrc {
-                lib: lib,
+                lib,
                 types: types.map(|t| t.to_string()),
             }),
         )
