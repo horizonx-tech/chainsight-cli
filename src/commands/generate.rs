@@ -190,7 +190,7 @@ fn exec_codegen(
             let codes = data.generate_user_impl_template();
             let src = match codes {
                 anyhow::Result::Ok(codes) => Some(CargoProjectSrc {
-                    lib: codes.lib.to_string(),
+                    lib: codes.lib,
                     types: codes.types.map(|t| t.to_string()),
                 }),
                 anyhow::Result::Err(_) => Some(CargoProjectSrc {
@@ -217,7 +217,7 @@ fn exec_codegen(
             let codes = data.generate_dependency_accessors();
             let src = match codes {
                 anyhow::Result::Ok(codes) => Some(CargoProjectSrc {
-                    lib: codes.lib.to_string(),
+                    lib: codes.lib,
                     types: codes.types.map(|t| t.to_string()),
                 }),
                 anyhow::Result::Err(_) => Some(CargoProjectSrc {
@@ -314,7 +314,7 @@ fn exec_codegen(
             canister_pj_path_str,
             Some(&canister_project_cargo_toml(&id)),
             Some(CargoProjectSrc {
-                lib: lib.to_string(),
+                lib: lib,
                 types: types.map(|t| t.to_string()),
             }),
         )

@@ -1,7 +1,6 @@
 use std::{collections::HashMap, fs::OpenOptions, io::Read, path::Path};
 
 use anyhow::bail;
-use proc_macro2::TokenStream;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 

@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use anyhow::ensure;
 use chainsight_cdk::config::components::SnapshotIndexerHTTPSConfig;
 use quote::quote;

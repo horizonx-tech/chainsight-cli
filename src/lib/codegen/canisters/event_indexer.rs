@@ -1,6 +1,5 @@
 use anyhow::ensure;
 use chainsight_cdk::config::components::EventIndexerConfig;
-use proc_macro2::TokenStream;
 use quote::quote;
 
 use crate::{
