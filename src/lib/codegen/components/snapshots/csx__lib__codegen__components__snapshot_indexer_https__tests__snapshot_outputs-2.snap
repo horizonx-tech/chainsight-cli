@@ -2,9 +2,9 @@
 source: src/lib/codegen/components/snapshot_indexer_https.rs
 expression: generated_user_impl_template.lib
 ---
-Auto-generated code from manifest.
-You update the structure as needed.
-The existence of the SnapshotValue structure must be maintained.
+// Auto-generated code from manifest.
+// You update the structure as needed.
+// The existence of the SnapshotValue structure must be maintained.
 #[derive(Debug, Clone, candid::CandidType, candid::Deserialize, serde::Serialize, chainsight_cdk_macros::StableMemoryStorable)]
 #[serde(deny_unknown_fields)]
 pub struct SnapshotValue {

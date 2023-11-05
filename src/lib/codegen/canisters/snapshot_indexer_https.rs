@@ -36,9 +36,9 @@ pub fn generate_app(manifest: &SnapshotIndexerHTTPSComponentManifest) -> anyhow:
     let codes = json_typegen_shared::codegen(struct_name, &url, options)
         .map_err(|e| anyhow::anyhow!("Failed to generate code by json_typegen_shared: {:?}", e))?;
 
-    let comments = r#"Auto-generated code from manifest.
-You update the structure as needed.
-The existence of the SnapshotValue structure must be maintained.
+    let comments = r#"// Auto-generated code from manifest.
+// You update the structure as needed.
+// The existence of the SnapshotValue structure must be maintained.
 "#
     .to_string();
 
