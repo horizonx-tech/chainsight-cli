@@ -42,7 +42,9 @@ pub fn generate_app(manifest: &SnapshotIndexerHTTPSComponentManifest) -> anyhow:
 "#
     .to_string();
 
-    Ok(comments + &codes)
+    let use_declares = "use candid::{Decode, Encode};\n";
+
+    Ok(comments + use_declares + &codes)
 }
 
 // NOTE: Duplicate with sdk (chainsight-cdk/src/web2/web2.rs)
