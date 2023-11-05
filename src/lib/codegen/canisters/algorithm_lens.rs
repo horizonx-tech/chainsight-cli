@@ -25,15 +25,15 @@ fn custom_codes(
     })
 }
 
-pub fn generate_codes(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result<TokenStream> {
+pub fn generate_codes(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result<String> {
     ensure!(
         manifest.metadata.type_ == ComponentType::AlgorithmLens,
         "type is not AlgorithmLens"
     );
-    custom_codes(manifest)
+    custom_codes(manifest).map(|code| code.to_string())
 }
 
-pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result<TokenStream> {
+pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result<String> {
     let id = manifest.id().ok_or(anyhow::anyhow!("id is required"))?;
     let methods = manifest.datasource.methods.clone();
 
@@ -68,12 +68,12 @@ pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result
         }
     };
 
-    Ok(code)
+    Ok(code.to_string())
 }
 
 pub fn generate_dependencies_accessor(
     manifest: &AlgorithmLensComponentManifest,
-) -> anyhow::Result<TokenStream> {
+) -> anyhow::Result<String> {
     let methods = manifest.datasource.methods.clone();
 
     let call_func_dependencies = quote! {
@@ -95,7 +95,7 @@ pub fn generate_dependencies_accessor(
         #call_func_dependencies
     };
 
-    Ok(code)
+    Ok(code.to_string())
 }
 pub fn validate_manifest(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result<()> {
     ensure!(

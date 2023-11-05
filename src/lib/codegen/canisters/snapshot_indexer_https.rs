@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use anyhow::ensure;
 use chainsight_cdk::config::components::SnapshotIndexerHTTPSConfig;
 use quote::quote;
@@ -7,9 +9,7 @@ use crate::{
     types::ComponentType,
 };
 
-pub fn generate_codes(
-    manifest: &SnapshotIndexerHTTPSComponentManifest,
-) -> anyhow::Result<proc_macro2::TokenStream> {
+pub fn generate_codes(manifest: &SnapshotIndexerHTTPSComponentManifest) -> anyhow::Result<String> {
     ensure!(
         manifest.metadata.type_ == ComponentType::SnapshotIndexerHTTPS,
         "type is not SnapshotIndexerHTTPS"
@@ -20,12 +20,10 @@ pub fn generate_codes(
         use chainsight_cdk_macros::def_snapshot_indexer_https_canister;
         def_snapshot_indexer_https_canister!(#config_json);
     };
-    Ok(code)
+    Ok(code.to_string())
 }
 
-pub fn generate_app(
-    _manifest: &SnapshotIndexerHTTPSComponentManifest,
-) -> anyhow::Result<proc_macro2::TokenStream> {
+pub fn generate_app(_manifest: &SnapshotIndexerHTTPSComponentManifest) -> anyhow::Result<String> {
     let v = quote! {
         use candid::{Decode, Encode};
         use chainsight_cdk_macros::StableMemoryStorable;
@@ -35,5 +33,5 @@ pub fn generate_app(
            pub dummy: u64
         }
     };
-    Ok(v)
+    Ok(v.to_string())
 }

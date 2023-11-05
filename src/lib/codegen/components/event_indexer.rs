@@ -346,7 +346,7 @@ interval: 3600
         let generated_codes = manifest
             .generate_codes(Option::Some(ethabi::Contract::load(abi).unwrap()))
             .unwrap();
-        assert_display_snapshot!(SrcString::from(&generated_codes.lib));
+        assert_display_snapshot!(SrcString::from(generated_codes.lib));
         assert!(generated_codes.types.is_none());
 
         assert!(manifest.generate_user_impl_template().is_err());

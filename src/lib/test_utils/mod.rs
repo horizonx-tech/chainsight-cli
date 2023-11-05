@@ -13,6 +13,11 @@ impl From<&TokenStream> for SrcString {
         }
     }
 }
+impl From<String> for SrcString {
+    fn from(value: String) -> Self {
+        Self { value }
+    }
+}
 
 impl fmt::Display for SrcString {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

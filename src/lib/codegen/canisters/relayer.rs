@@ -6,9 +6,7 @@ use quote::{format_ident, quote};
 
 use crate::{lib::codegen::components::relayer::RelayerComponentManifest, types::ComponentType};
 
-pub fn generate_codes(
-    manifest: &RelayerComponentManifest,
-) -> anyhow::Result<proc_macro2::TokenStream> {
+pub fn generate_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<String> {
     ensure!(
         manifest.metadata.type_ == ComponentType::Relayer,
         "type is not Relayer"
@@ -19,12 +17,10 @@ pub fn generate_codes(
         use chainsight_cdk_macros::def_relayer_canister;
         def_relayer_canister!(#config_json);
     };
-    Ok(code)
+    Ok(code.to_string())
 }
 
-pub fn generate_app(
-    manifest: &RelayerComponentManifest,
-) -> anyhow::Result<proc_macro2::TokenStream> {
+pub fn generate_app(manifest: &RelayerComponentManifest) -> anyhow::Result<String> {
     let call_args_idents = if manifest.lens_targets.is_some() {
         quote! {}
     } else {
@@ -58,7 +54,8 @@ pub fn generate_app(
         pub fn filter(_: &CallCanisterResponse) -> bool {
             true
         }
-    })
+    }
+    .to_string())
 }
 
 pub fn validate_manifest(manifest: &RelayerComponentManifest) -> anyhow::Result<()> {

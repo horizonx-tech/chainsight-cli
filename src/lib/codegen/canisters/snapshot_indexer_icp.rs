@@ -9,9 +9,7 @@ use crate::{
     types::ComponentType,
 };
 
-pub fn generate_codes(
-    manifest: &SnapshotIndexerICPComponentManifest,
-) -> anyhow::Result<proc_macro2::TokenStream> {
+pub fn generate_codes(manifest: &SnapshotIndexerICPComponentManifest) -> anyhow::Result<String> {
     ensure!(
         manifest.metadata.type_ == ComponentType::SnapshotIndexerICP,
         "type is not SnapshotIndexerICP"
@@ -22,14 +20,12 @@ pub fn generate_codes(
         use chainsight_cdk_macros::def_snapshot_indexer_icp_canister;
         def_snapshot_indexer_icp_canister!(#config_json);
     };
-    Ok(code)
+    Ok(code.to_string())
 }
 
-pub fn generate_app(
-    manifest: &SnapshotIndexerICPComponentManifest,
-) -> anyhow::Result<proc_macro2::TokenStream> {
+pub fn generate_app(manifest: &SnapshotIndexerICPComponentManifest) -> anyhow::Result<String> {
     if manifest.lens_targets.is_some() {
-        return Ok(quote! {});
+        return Ok(quote! {}.to_string());
     }
 
     let method_identifier = CanisterMethodIdentifier::new(&manifest.datasource.method.identifier)?;
@@ -56,7 +52,7 @@ pub fn generate_app(
         }
     };
 
-    Ok(code)
+    Ok(code.to_string())
 }
 
 pub fn validate_manifest(manifest: &SnapshotIndexerICPComponentManifest) -> anyhow::Result<()> {
