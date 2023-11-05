@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use anyhow::ensure;
 use chainsight_cdk::config::components::SnapshotIndexerHTTPSConfig;
 use quote::quote;
@@ -21,15 +23,39 @@ pub fn generate_codes(manifest: &SnapshotIndexerHTTPSComponentManifest) -> anyho
     Ok(code.to_string())
 }
 
-pub fn generate_app(_manifest: &SnapshotIndexerHTTPSComponentManifest) -> anyhow::Result<String> {
-    let v = quote! {
-        use candid::{Decode, Encode};
-        use chainsight_cdk_macros::StableMemoryStorable;
-        // todo!("Implement a structure that matches the response type")
-        #[derive(Debug, Clone, candid::CandidType, candid::Deserialize, serde::Serialize, StableMemoryStorable)]
-        pub struct SnapshotValue {
-           pub dummy: u64
+// TODO: Support for typegen with sample response and json schema
+pub fn generate_app(manifest: &SnapshotIndexerHTTPSComponentManifest) -> anyhow::Result<String> {
+    let SnapshotIndexerHTTPSComponentManifest { datasource, .. } = manifest;
+    let struct_name = "SnapshotValue";
+    let url = build_url(&datasource.url, datasource.queries.clone());
+
+    let mut options = json_typegen_shared::Options::default();
+    options.deny_unknown_fields = true;
+    options.derives = "Debug, Clone, candid::CandidType, candid::Deserialize, serde::Serialize, chainsight_cdk_macros::StableMemoryStorable".into();
+    options.import_style = json_typegen_shared::ImportStyle::QualifiedPaths;
+    let codes = json_typegen_shared::codegen(struct_name, &url, options)
+        .map_err(|e| anyhow::anyhow!("Failed to generate code by json_typegen_shared: {:?}", e))?;
+
+    let comments = r#"// Auto-generated code from manifest.
+// You update the structure as needed.
+// The existence of the SnapshotValue structure must be maintained.
+"#
+    .to_string();
+
+    let use_declares = "use candid::{Decode, Encode};\n";
+
+    Ok(comments + use_declares + &codes)
+}
+
+// NOTE: Duplicate with sdk (chainsight-cdk/src/web2/web2.rs)
+fn build_url(url: &str, queries: HashMap<String, String>) -> String {
+    let mut url = url.to_string();
+    if !queries.is_empty() {
+        url.push('?');
+        for (k, v) in queries {
+            url.push_str(&format!("{}={}&", k, v));
         }
-    };
-    Ok(v.to_string())
+        url.pop();
+    }
+    url
 }

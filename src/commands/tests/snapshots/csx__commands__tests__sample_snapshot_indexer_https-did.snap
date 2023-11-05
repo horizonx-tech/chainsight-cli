@@ -3,6 +3,7 @@ source: src/commands/tests/mod.rs
 expression: "fs::read_to_string(&did_path).unwrap()"
 ---
 type CanisterMetricsSnapshot = record { cycles : nat; timestamp : nat64 };
+type Dai = record { usd : float64 };
 type Env = variant { Production; Test; LocalDevelopment };
 type HttpsSnapshotIndexerSourceAttrs = record {
   queries : vec record { text; text };
@@ -15,7 +16,7 @@ type InitError = variant {
 };
 type Result = variant { Ok; Err : InitError };
 type Snapshot = record { value : SnapshotValue; timestamp : nat64 };
-type SnapshotValue = record { dummy : nat64 };
+type SnapshotValue = record { dai : Dai };
 type SourceType = variant { evm; https; chainsight };
 type Sources = record {
   source : text;
