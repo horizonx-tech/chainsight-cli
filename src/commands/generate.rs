@@ -216,7 +216,7 @@ fn exec_codegen(
                         ),
                     ])))
                 }
-                anyhow::Result::Err(_) => Some(CargoProjectSrc::empty()),
+                anyhow::Result::Err(_) => None,
             };
             create_cargo_project(
                 logic_path_str,
@@ -251,7 +251,7 @@ fn exec_codegen(
                         ),
                     ])))
                 }
-                anyhow::Result::Err(_) => Some(CargoProjectSrc::empty()),
+                anyhow::Result::Err(_) => None,
             };
             create_cargo_project(
                 accessors_path_str,
