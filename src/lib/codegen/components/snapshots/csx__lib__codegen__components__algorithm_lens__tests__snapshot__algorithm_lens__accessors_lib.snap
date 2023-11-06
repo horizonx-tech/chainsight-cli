@@ -1,6 +1,6 @@
 ---
 source: src/lib/codegen/components/algorithm_lens.rs
-expression: "SrcString::from(&manifest.generate_dependency_accessors().unwrap().lib)"
+expression: "SrcString::from(manifest.generate_dependency_accessors().unwrap().lib)"
 ---
 mod types;
 pub use types::*;

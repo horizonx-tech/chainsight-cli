@@ -1,6 +1,6 @@
 ---
 source: src/lib/codegen/components/snapshot_indexer_icp.rs
-expression: "SrcString::from(&generated_user_impl_template.lib)"
+expression: "SrcString::from(generated_user_impl_template.lib)"
 ---
 pub type CallCanisterArgs =();
 pub fn call_args() -> CallCanisterArgs {

@@ -1,6 +1,6 @@
 ---
 source: src/lib/codegen/components/algorithm_indexer.rs
-expression: "SrcString::from(&generated_codes.lib)"
+expression: "SrcString::from(generated_codes.lib)"
 ---
 use chainsight_cdk::storage::Data;
 use chainsight_cdk_macros::{

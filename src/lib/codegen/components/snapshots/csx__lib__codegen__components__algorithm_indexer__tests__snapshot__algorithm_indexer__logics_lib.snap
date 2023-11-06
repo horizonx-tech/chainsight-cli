@@ -1,6 +1,6 @@
 ---
 source: src/lib/codegen/components/algorithm_indexer.rs
-expression: "SrcString::from(&manifest.generate_user_impl_template().unwrap())"
+expression: "SrcString::from(generated_user_impl_template.lib)"
 ---
 use std::collections::HashMap;
 #[derive(Clone, Debug, Default, candid::CandidType, serde::Serialize, serde::Deserialize)]

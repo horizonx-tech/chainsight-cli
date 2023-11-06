@@ -292,14 +292,30 @@ interval: 3600
             interval: 3600,
         };
 
+        let snap_prefix = "snapshot__snapshot_indexer_icp";
         let generated_codes = manifest.generate_codes(Option::None).unwrap();
-        assert_display_snapshot!(SrcString::from(generated_codes.lib));
-        assert_display_snapshot!(generated_codes.types.unwrap());
+        assert_display_snapshot!(
+            format!("{}__canisters_lib", &snap_prefix),
+            SrcString::from(generated_codes.lib)
+        );
+        assert_display_snapshot!(
+            format!("{}__canisters_types", &snap_prefix),
+            generated_codes.types.unwrap()
+        );
 
         let generated_user_impl_template = manifest.generate_user_impl_template().unwrap();
-        assert_display_snapshot!(SrcString::from(generated_user_impl_template.lib));
-        assert_display_snapshot!(generated_user_impl_template.types.unwrap());
+        assert_display_snapshot!(
+            format!("{}__logics_lib", &snap_prefix),
+            SrcString::from(generated_user_impl_template.lib)
+        );
+        assert_display_snapshot!(
+            format!("{}__logics_types", &snap_prefix),
+            generated_user_impl_template.types.unwrap()
+        );
 
-        assert_display_snapshot!(&manifest.generate_scripts(Network::Local).unwrap());
+        assert_display_snapshot!(
+            format!("{}__scripts", &snap_prefix),
+            &manifest.generate_scripts(Network::Local).unwrap()
+        );
     }
 }
