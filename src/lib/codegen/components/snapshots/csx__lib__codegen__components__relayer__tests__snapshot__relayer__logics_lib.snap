@@ -1,8 +1,13 @@
 ---
 source: src/lib/codegen/components/relayer.rs
-expression: "SrcString::from(&generated_user_impl_template.lib)"
+expression: "SrcString::from(manifest.generate_user_impl_template().unwrap().lib)"
 ---
 mod types;
 pub type CallCanisterResponse = types::ResponseType;
+pub type CallCanisterArgs =();
+pub fn call_args() -> CallCanisterArgs {
+()
+}
+
 pub fn filter(_:& CallCanisterResponse) -> bool {
 true }

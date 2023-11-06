@@ -1,6 +1,6 @@
 ---
 source: src/lib/codegen/components/snapshot_indexer_icp.rs
-expression: "SrcString::from(&generated_codes.lib)"
+expression: "SrcString::from(generated_codes.lib)"
 ---
 use chainsight_cdk_macros::def_snapshot_indexer_icp_canister;
 def_snapshot_indexer_icp_canister!("{

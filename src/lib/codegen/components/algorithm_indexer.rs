@@ -314,8 +314,9 @@ interval: 3600
 
     #[test]
     fn test_snapshot_outputs() {
+        let id = "sample_algorithm_indexer".to_string();
         let manifest = AlgorithmIndexerComponentManifest {
-            id: Some("sample_algorithm_indexer".to_string()),
+            id: Some(id.clone()),
             version: "v1".to_string(),
             metadata: ComponentMetadata {
                 label: "Sample Algorithm Indexer".to_string(),
@@ -348,14 +349,24 @@ interval: 3600
             interval: 3600,
         };
 
+        let snap_prefix = "snapshot__algorithm_indexer";
         let generated_codes = manifest.generate_codes(Option::None).unwrap();
-        assert_display_snapshot!(SrcString::from(generated_codes.lib));
+        assert_display_snapshot!(
+            format!("{}__canisters_lib", &snap_prefix),
+            SrcString::from(generated_codes.lib)
+        );
         assert!(generated_codes.types.is_none());
 
         let generated_user_impl_template = manifest.generate_user_impl_template().unwrap();
-        assert_display_snapshot!(SrcString::from(generated_user_impl_template.lib));
+        assert_display_snapshot!(
+            format!("{}__logics_lib", &snap_prefix),
+            SrcString::from(generated_user_impl_template.lib)
+        );
         assert!(generated_user_impl_template.types.is_none());
 
-        assert_display_snapshot!(&manifest.generate_scripts(Network::Local).unwrap());
+        assert_display_snapshot!(
+            format!("{}__scripts", &snap_prefix),
+            &manifest.generate_scripts(Network::Local).unwrap()
+        );
     }
 }
