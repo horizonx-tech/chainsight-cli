@@ -1,6 +1,6 @@
 ---
 source: src/lib/codegen/components/algorithm_lens.rs
-expression: "SrcString::from(&manifest.generate_user_impl_template().unwrap())"
+expression: "SrcString::from(generated_user_impl_template.lib)"
 ---
 use sample_algorithm_lens_accessors::*;
 #[derive(Clone, Debug, Default, candid::CandidType, serde::Deserialize, serde::Serialize)]

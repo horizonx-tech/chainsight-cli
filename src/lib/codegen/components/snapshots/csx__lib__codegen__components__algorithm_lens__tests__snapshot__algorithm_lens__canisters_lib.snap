@@ -1,6 +1,6 @@
 ---
 source: src/lib/codegen/components/algorithm_lens.rs
-expression: "SrcString::from(&manifest.generate_codes(Option::None).unwrap())"
+expression: "SrcString::from(generated_codes.lib)"
 ---
 use chainsight_cdk_macros::def_algorithm_lens_canister;
 def_algorithm_lens_canister!("{
