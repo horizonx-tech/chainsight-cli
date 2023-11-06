@@ -1,4 +1,7 @@
-use std::collections::HashMap;
+use std::{
+    collections::{BTreeMap, HashMap},
+    fs,
+};
 
 use chainsight_cdk::{
     config::components::{CommonConfig, LensTargets},
@@ -13,8 +16,9 @@ use crate::{
 };
 
 use super::common::{
-    custom_tags_interval_sec, ComponentManifest, ComponentMetadata, Datasource, DestinationType,
-    GeneratedCodes, SnapshotStorage, Sources, DEFAULT_MONITOR_DURATION_SECS,
+    custom_tags_interval_sec, generate_types_from_bindings, ComponentManifest, ComponentMetadata,
+    Datasource, DestinationType, GeneratedCodes, SnapshotStorage, Sources,
+    DEFAULT_MONITOR_DURATION_SECS,
 };
 
 /// Component Manifest: Snapshot Indexer ICP
@@ -109,11 +113,10 @@ impl ComponentManifest for SnapshotIndexerICPComponentManifest {
     ) -> anyhow::Result<GeneratedCodes> {
         let lib = canisters::snapshot_indexer_icp::generate_codes(self)?;
 
-        // NOTE/TODO: Duplicate types.rs in /logics
-        let types = {
-            let identifier = CanisterMethodIdentifier::new(&self.datasource.method.identifier)?;
-            identifier.compile()
-        };
+        let types = generate_types_from_bindings(
+            &self.id.clone().unwrap(),
+            &self.datasource.method.identifier,
+        )?;
 
         Ok(GeneratedCodes {
             lib,
@@ -148,15 +151,7 @@ impl ComponentManifest for SnapshotIndexerICPComponentManifest {
     fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
         let lib = canisters::snapshot_indexer_icp::generate_app(self)?;
 
-        let types = {
-            let identifier = CanisterMethodIdentifier::new(&self.datasource.method.identifier)?;
-            identifier.compile()
-        };
-
-        Ok(GeneratedCodes {
-            lib,
-            types: Some(types),
-        })
+        Ok(GeneratedCodes { lib, types: None })
     }
     fn get_sources(&self) -> Sources {
         let mut attr = HashMap::new();
@@ -184,6 +179,24 @@ impl ComponentManifest for SnapshotIndexerICPComponentManifest {
         let (interval_key, interval_val) = custom_tags_interval_sec(self.interval);
         res.insert(interval_key, interval_val);
         res
+    }
+
+    fn generate_bindings(&self) -> anyhow::Result<BTreeMap<String, String>> {
+        let SnapshotIndexerICPComponentManifest {
+            datasource: Datasource { method, .. },
+            ..
+        } = self;
+        let interface = method.interface.clone();
+        let lib = if let Some(path) = interface {
+            let did_str = fs::read_to_string(path)?;
+            let identifier = CanisterMethodIdentifier::new_with_did(&method.identifier, did_str)?;
+            identifier.compile()
+        } else {
+            let identifier = CanisterMethodIdentifier::new(&method.identifier)?;
+            identifier.compile()
+        };
+
+        Ok(BTreeMap::from([("lib".to_string(), lib)]))
     }
 }
 
@@ -298,7 +311,7 @@ interval: 3600
 
         let generated_user_impl_template = manifest.generate_user_impl_template().unwrap();
         assert_display_snapshot!(SrcString::from(generated_user_impl_template.lib));
-        assert_display_snapshot!(generated_user_impl_template.types.unwrap());
+        assert!(generated_user_impl_template.types.is_none());
 
         assert_display_snapshot!(&manifest.generate_scripts(Network::Local).unwrap());
     }

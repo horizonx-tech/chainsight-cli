@@ -1,4 +1,7 @@
-use std::collections::HashMap;
+use std::{
+    collections::{BTreeMap, HashMap},
+    fs,
+};
 
 use anyhow::Ok;
 use chainsight_cdk::{
@@ -19,8 +22,8 @@ use crate::{
 };
 
 use super::common::{
-    ComponentManifest, ComponentMetadata, Datasource, DestinationType, GeneratedCodes, SourceType,
-    Sources, DEFAULT_MONITOR_DURATION_SECS,
+    generate_types_from_bindings, ComponentManifest, ComponentMetadata, Datasource,
+    DestinationType, GeneratedCodes, SourceType, Sources, DEFAULT_MONITOR_DURATION_SECS,
 };
 
 /// Component Manifest: Relayer
@@ -108,9 +111,16 @@ impl ComponentManifest for RelayerComponentManifest {
         &self,
         _interface_contract: Option<ethabi::Contract>,
     ) -> anyhow::Result<GeneratedCodes> {
+        let lib = canisters::relayer::generate_codes(self)?;
+
+        let types = generate_types_from_bindings(
+            &self.id.clone().unwrap(),
+            &self.datasource.method.identifier,
+        )?;
+
         Ok(GeneratedCodes {
-            lib: canisters::relayer::generate_codes(self)?,
-            types: None,
+            lib,
+            types: Some(types),
         })
     }
 
@@ -152,10 +162,12 @@ impl ComponentManifest for RelayerComponentManifest {
     }
     fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
         let lib = canisters::relayer::generate_app(self)?;
-        let types = {
-            let identifier = CanisterMethodIdentifier::new(&self.datasource.method.identifier)?;
-            identifier.compile()
-        };
+
+        let types = generate_types_from_bindings(
+            &self.id.clone().unwrap(),
+            &self.datasource.method.identifier,
+        )?;
+
         Ok(GeneratedCodes {
             lib,
             types: Some(types),
@@ -198,6 +210,24 @@ impl ComponentManifest for RelayerComponentManifest {
         let (interval_key, interval_val) = custom_tags_interval_sec(self.interval);
         res.insert(interval_key, interval_val);
         res
+    }
+
+    fn generate_bindings(&self) -> anyhow::Result<BTreeMap<String, String>> {
+        let RelayerComponentManifest {
+            datasource: Datasource { method, .. },
+            ..
+        } = self;
+        let interface = method.interface.clone();
+        let lib = if let Some(path) = interface {
+            let did_str = fs::read_to_string(path)?;
+            let identifier = CanisterMethodIdentifier::new_with_did(&method.identifier, did_str)?;
+            identifier.compile()
+        } else {
+            let identifier = CanisterMethodIdentifier::new(&method.identifier)?;
+            identifier.compile()
+        };
+
+        Ok(BTreeMap::from([("lib".to_string(), lib)]))
     }
 }
 

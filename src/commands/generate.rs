@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::fmt::Debug;
 use std::fs::File;
 use std::process::Command;
@@ -7,7 +8,6 @@ use anyhow::{bail, Ok};
 use clap::Parser;
 use slog::{debug, info, Logger};
 
-use crate::lib::codegen::bindings::generate_rs_bindings;
 use crate::lib::codegen::components::algorithm_indexer::AlgorithmIndexerComponentManifest;
 use crate::lib::codegen::components::algorithm_lens::AlgorithmLensComponentManifest;
 use crate::lib::codegen::components::common::{
@@ -171,6 +171,7 @@ fn exec_codegen(
 
     // generate canister projects
     let mut is_exist_accessors_folder = false;
+    let mut is_exist_bindings_folder = false;
     for data in component_data {
         let id = data.id().unwrap();
 
@@ -179,7 +180,24 @@ fn exec_codegen(
         }
         info!(log, r#"[{}] Start processing..."#, id);
 
-        // logic template
+        // Generate /bindings/(component)
+        let bindings = data.generate_bindings()?;
+        if !bindings.is_empty() {
+            // generate dummy bindings to be able to run cargo test
+            let bindings_path_str = &paths::bindings_path_str(src_path_str, &id);
+            create_cargo_project(
+                bindings_path_str,
+                Some(&bindings_cargo_toml(&id)),
+                Some(CargoProjectSrc::new_with_mods(bindings.clone())),
+            )
+            .map_err(|err| {
+                anyhow::anyhow!(r#"[{}] Failed to create bindings project by: {}"#, id, err)
+            })?;
+
+            is_exist_bindings_folder = true;
+        }
+
+        // Generate /logics/(component)
         let logic_path_str = &paths::logics_path_str(src_path_str, &id);
         if Path::new(logic_path_str).is_dir() {
             info!(
@@ -189,18 +207,24 @@ fn exec_codegen(
         } else {
             let codes = data.generate_user_impl_template();
             let src = match codes {
-                anyhow::Result::Ok(codes) => Some(CargoProjectSrc {
-                    lib: codes.lib,
-                    types: codes.types.map(|t| t.to_string()),
-                }),
-                anyhow::Result::Err(_) => Some(CargoProjectSrc {
-                    lib: String::default(),
-                    types: None,
-                }),
+                anyhow::Result::Ok(codes) => {
+                    Some(CargoProjectSrc::new_with_mods(BTreeMap::from([
+                        ("lib".to_string(), codes.lib),
+                        (
+                            "types".to_string(),
+                            codes.types.map(|t| t.to_string()).unwrap_or_default(),
+                        ),
+                    ])))
+                }
+                anyhow::Result::Err(_) => Some(CargoProjectSrc::empty()),
             };
             create_cargo_project(
                 logic_path_str,
-                Option::Some(&logic_cargo_toml(&id, data.dependencies())),
+                Option::Some(&logic_cargo_toml(
+                    &id,
+                    !bindings.is_empty(),
+                    data.dependencies(),
+                )),
                 src,
             )
             .map_err(|err| {
@@ -212,22 +236,26 @@ fn exec_codegen(
                 .args(["fmt"])
                 .output();
         }
+
+        // Generate /accessors/(component)
         if !data.dependencies().is_empty() {
             let accessors_path_str = &paths::accessors_path_str(src_path_str, &id);
             let codes = data.generate_dependency_accessors();
             let src = match codes {
-                anyhow::Result::Ok(codes) => Some(CargoProjectSrc {
-                    lib: codes.lib,
-                    types: codes.types.map(|t| t.to_string()),
-                }),
-                anyhow::Result::Err(_) => Some(CargoProjectSrc {
-                    lib: String::default(),
-                    types: None,
-                }),
+                anyhow::Result::Ok(codes) => {
+                    Some(CargoProjectSrc::new_with_mods(BTreeMap::from([
+                        ("lib".to_string(), codes.lib),
+                        (
+                            "types".to_string(),
+                            codes.types.map(|t| t.to_string()).unwrap_or_default(),
+                        ),
+                    ])))
+                }
+                anyhow::Result::Err(_) => Some(CargoProjectSrc::empty()),
             };
             create_cargo_project(
                 accessors_path_str,
-                Some(&accessors_cargo_toml(&id, data.dependencies())),
+                Some(&accessors_cargo_toml(&id, vec![id.to_string()])),
                 src,
             )
             .map_err(|err| {
@@ -244,7 +272,7 @@ fn exec_codegen(
         if !Path::new(&format!("{}/Cargo.toml", src_path_str)).is_file() {
             fs::write(
                 format!("{}/Cargo.toml", src_path_str),
-                root_cargo_toml(is_exist_accessors_folder),
+                root_cargo_toml(is_exist_bindings_folder, is_exist_accessors_folder),
             )?;
         } else {
             info!(
@@ -304,44 +332,37 @@ fn exec_codegen(
             );
         }
 
-        // canister
-        let canister_pj_path_str = &paths::canisters_path_str(src_path_str, &id);
+        // Generate /canisters/(component)
+        let canister_path_str = &paths::canisters_path_str(src_path_str, &id);
         let GeneratedCodes { lib, types } =
             data.generate_codes(interface_contract).map_err(|err| {
                 anyhow::anyhow!(r#"[{}] Failed to generate canister code by: {}"#, id, err)
             })?;
+        let src = if let Some(types) = types {
+            CargoProjectSrc::new_with_mods(BTreeMap::from([
+                ("lib".to_string(), lib),
+                ("types".to_string(), types.to_string()),
+            ]))
+        } else {
+            CargoProjectSrc::new(lib)
+        };
         create_cargo_project(
-            canister_pj_path_str,
-            Some(&canister_project_cargo_toml(&id)),
-            Some(CargoProjectSrc {
-                lib,
-                types: types.map(|t| t.to_string()),
-            }),
+            canister_path_str,
+            Some(&canister_project_cargo_toml(&id, !bindings.is_empty())),
+            Some(src),
         )
         .map_err(|err| {
             anyhow::anyhow!(r#"[{}] Failed to create canister project by: {}"#, id, err)
         })?;
 
-        // generate dummy bindings to be able to run cargo test
-        let bindings_path_str = &paths::bindings_path_str(src_path_str, &id);
-        create_cargo_project(bindings_path_str, Some(&bindings_cargo_toml(&id)), None).map_err(
-            |err| anyhow::anyhow!(r#"[{}] Failed to create bindings project by: {}"#, id, err),
-        )?;
-    }
-
-    // generate canister bindings
-    let action = "Generate interfaces (.did files)";
-    info!(log, "{}...", action);
-    for data in component_data {
-        let id = data.id().unwrap();
-        let canisters_path_str = paths::canisters_path_str(src_path_str, &id);
-
+        // generate canister's .did files
+        let action = "Generate interfaces (.did files)";
+        info!(log, r#"[{}] {} ..."#, id, action);
         let output = Command::new("cargo")
-            .current_dir(canisters_path_str)
+            .current_dir(canister_path_str)
             .args(["test"])
             .output()
             .expect("failed to execute: cargo test");
-
         if output.status.success() {
             debug!(
                 log,
@@ -357,17 +378,6 @@ fn exec_codegen(
                 std::str::from_utf8(&output.stderr).unwrap_or("failed to parse stdout")
             ));
         }
-
-        // TODO handle errors
-        let bindings = generate_rs_bindings(src_path_str, data.as_ref())?;
-        fs::write(
-            Path::new(&format!(
-                "{}/src/lib.rs",
-                paths::bindings_path_str(src_path_str, &id)
-            )),
-            bindings,
-        )
-        .expect("failed to execute: write bindings");
     }
 
     anyhow::Ok(())
@@ -382,10 +392,21 @@ fn builtin_interface(name: &str) -> Option<&'static str> {
     Some(interface)
 }
 
-struct CargoProjectSrc {
-    pub lib: String,
-    pub types: Option<String>,
+struct CargoProjectSrc(BTreeMap<String, String>);
+impl CargoProjectSrc {
+    fn empty() -> Self {
+        Self(BTreeMap::new())
+    }
+
+    fn new(src: String) -> Self {
+        Self(BTreeMap::from([("lib".to_string(), src)]))
+    }
+
+    fn new_with_mods(mods: BTreeMap<String, String>) -> Self {
+        Self(mods)
+    }
 }
+
 fn create_cargo_project(
     path_str: &str,
     manifest: Option<&str>,
@@ -396,11 +417,13 @@ fn create_cargo_project(
         Path::new(&format!("{}/Cargo.toml", path_str)),
         manifest.unwrap_or_default(),
     )?;
-    if let Some(CargoProjectSrc { lib, types }) = src {
-        fs::write(Path::new(&format!("{}/src/lib.rs", path_str)), lib)?;
-        if let Some(types) = types {
-            fs::write(Path::new(&format!("{}/src/types.rs", path_str)), types)?
-        };
+    if let Some(CargoProjectSrc(modules)) = src {
+        for module in modules.iter() {
+            fs::write(
+                Path::new(&format!("{}/src/{}.rs", path_str, module.0)),
+                module.1,
+            )?;
+        }
     } else {
         File::create(Path::new(&format!("{}/src/lib.rs", path_str)))?;
     }

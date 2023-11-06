@@ -1,6 +1,12 @@
-use std::{collections::HashMap, fs::OpenOptions, io::Read, path::Path};
+use std::{
+    collections::{BTreeMap, HashMap},
+    fs::OpenOptions,
+    io::Read,
+    path::Path,
+};
 
 use anyhow::bail;
+use chainsight_cdk::convert::candid::CanisterMethodIdentifier;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -252,6 +258,11 @@ pub trait ComponentManifest: std::fmt::Debug {
     /// Sources of data provided by this component
     fn get_sources(&self) -> Sources;
 
+    /// Generate bindings with candid files
+    fn generate_bindings(&self) -> anyhow::Result<BTreeMap<String, String>> {
+        Ok(BTreeMap::new())
+    }
+
     /// Label of this component on which the component depends
     /// NOTE: only used by alhorithm_lens
     fn dependencies(&self) -> Vec<String> {
@@ -289,4 +300,28 @@ impl ComponentTypeInManifest {
         let data = Self::load(component_manifest_path)?;
         Ok(data.metadata.type_)
     }
+}
+
+// Generate types.rs code using the type information in bindings
+pub fn generate_types_from_bindings(id: &str, identifier: &str) -> anyhow::Result<String> {
+    let identifier = CanisterMethodIdentifier::new(identifier)?;
+    let (args_ty, _) = identifier.get_types();
+
+    let mut codes = format!(
+        r#"use {}_bindings as bindings;
+pub type {} = bindings::{};
+"#,
+        id,
+        CanisterMethodIdentifier::RESPONSE_TYPE_NAME,
+        CanisterMethodIdentifier::RESPONSE_TYPE_NAME
+    );
+    if args_ty.is_some() {
+        codes += &format!(
+            r#"pub type {} = bindings::{};"#,
+            CanisterMethodIdentifier::REQUEST_ARGS_TYPE_NAME,
+            CanisterMethodIdentifier::REQUEST_ARGS_TYPE_NAME
+        );
+    }
+
+    Ok(codes)
 }
