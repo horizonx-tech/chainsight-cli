@@ -394,10 +394,6 @@ fn builtin_interface(name: &str) -> Option<&'static str> {
 
 struct CargoProjectSrc(BTreeMap<String, String>);
 impl CargoProjectSrc {
-    fn empty() -> Self {
-        Self(BTreeMap::new())
-    }
-
     fn new(src: String) -> Self {
         Self(BTreeMap::from([("lib".to_string(), src)]))
     }
