@@ -1,0 +1,26 @@
+---
+source: src/commands/tests/mod.rs
+expression: "format!(\"{:#?}\", & metadata)"
+---
+[
+    (
+        "chainsight:component_type",
+        "algorithm_lens",
+    ),
+    (
+        "chainsight:description",
+        "",
+    ),
+    (
+        "chainsight:label",
+        "Sample Algorithm Lens",
+    ),
+    (
+        "chainsight:sources",
+        "[{\"source_type\":\"chainsight\",\"source\":\"2vxsx-fae\",\"attributes\":{}}]",
+    ),
+    (
+        "chainsight:tags",
+        "[\"Ethereum\",\"Account\"]",
+    ),
+]
