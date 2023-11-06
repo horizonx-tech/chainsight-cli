@@ -294,17 +294,27 @@ interval: 3600
             interval: 3600,
         };
 
+        let snap_prefix = "snapshot__snapshot_indexer_evm";
         let abi = File::open("resources/ERC20.json").unwrap();
         let generated_codes = manifest
             .generate_codes(Option::Some(ethabi::Contract::load(abi).unwrap()))
             .unwrap();
-        assert_display_snapshot!(SrcString::from(generated_codes.lib));
+        assert_display_snapshot!(
+            format!("{}__canisters_lib", &snap_prefix),
+            SrcString::from(generated_codes.lib)
+        );
         assert!(generated_codes.types.is_none());
 
         let generated_user_impl_template = manifest.generate_user_impl_template().unwrap();
-        assert_display_snapshot!(SrcString::from(generated_user_impl_template.lib));
+        assert_display_snapshot!(
+            format!("{}__logics_lib", &snap_prefix),
+            SrcString::from(generated_user_impl_template.lib)
+        );
         assert!(generated_user_impl_template.types.is_none());
 
-        assert_display_snapshot!(&manifest.generate_scripts(Network::Local).unwrap());
+        assert_display_snapshot!(
+            format!("{}__scripts", &snap_prefix),
+            &manifest.generate_scripts(Network::Local).unwrap()
+        );
     }
 }
