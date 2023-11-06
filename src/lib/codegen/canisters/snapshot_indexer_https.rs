@@ -1,7 +1,5 @@
-use std::collections::HashMap;
-
 use anyhow::ensure;
-use chainsight_cdk::config::components::SnapshotIndexerHTTPSConfig;
+use chainsight_cdk::{config::components::SnapshotIndexerHTTPSConfig, web2::build_url};
 use quote::quote;
 
 use crate::{
@@ -45,17 +43,4 @@ pub fn generate_app(manifest: &SnapshotIndexerHTTPSComponentManifest) -> anyhow:
     let use_declares = "use candid::{Decode, Encode};\n";
 
     Ok(comments + use_declares + &codes)
-}
-
-// NOTE: Duplicate with sdk (chainsight-cdk/src/web2/web2.rs)
-fn build_url(url: &str, queries: HashMap<String, String>) -> String {
-    let mut url = url.to_string();
-    if !queries.is_empty() {
-        url.push('?');
-        for (k, v) in queries {
-            url.push_str(&format!("{}={}&", k, v));
-        }
-        url.pop();
-    }
-    url
 }
