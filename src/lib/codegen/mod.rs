@@ -1,4 +1,3 @@
-pub mod bindings;
 pub mod canisters;
 pub mod components;
 pub mod oracle;

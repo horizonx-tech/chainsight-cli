@@ -1,11 +1,13 @@
 use crate::lib::utils::paths;
 
-pub fn root_cargo_toml(with_accessors: bool) -> String {
-    let members = if with_accessors {
-        vec!["bindings", "canisters", "logics", "accessors"]
-    } else {
-        vec!["bindings", "canisters", "logics"]
-    };
+pub fn root_cargo_toml(with_bindings: bool, with_accessors: bool) -> String {
+    let mut members = vec!["canisters", "logics"];
+    if with_bindings {
+        members.push("bindings");
+    }
+    if with_accessors {
+        members.push("accessors");
+    }
 
     format!(
         r#"[workspace]
@@ -38,7 +40,11 @@ chainsight-cdk = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git",
     )
 }
 
-pub fn logic_cargo_toml(project_name: &str, dependencies: Vec<String>) -> String {
+pub fn logic_cargo_toml(
+    project_name: &str,
+    with_bindings: bool,
+    dependencies: Vec<String>,
+) -> String {
     let txt = format!(
         r#"[package]
 name = "{}"
@@ -64,8 +70,14 @@ chainsight-cdk-macros.workspace = true
 chainsight-cdk.workspace = true
 
 {}
+{}
 "#,
         project_name,
+        if with_bindings {
+            paths::bindings_dependency(project_name)
+        } else {
+            "".to_string()
+        },
         if dependencies.is_empty() {
             "".to_string()
         } else {
@@ -114,7 +126,7 @@ chainsight-cdk.workspace = true
     txt
 }
 
-pub fn canister_project_cargo_toml(project_name: &str) -> String {
+pub fn canister_project_cargo_toml(project_name: &str, with_bindings: bool) -> String {
     format!(
         r#"[package]
 name = "{}"
@@ -140,9 +152,15 @@ chainsight-cdk-macros.workspace = true
 chainsight-cdk.workspace = true
 
 {}
+{}
 "#,
         paths::canister_name(project_name),
         paths::logic_dependency(project_name),
+        if with_bindings {
+            paths::bindings_dependency(project_name)
+        } else {
+            "".to_string()
+        }
     )
 }
 
@@ -159,6 +177,7 @@ crate-type = ["rlib"]
 [dependencies]
 candid.workspace = true
 ic-cdk.workspace = true
+ic-stable-structures.workspace = true
 serde.workspace = true
 serde_bytes.workspace = true
 
@@ -234,18 +253,23 @@ mod tests {
 
     #[test]
     fn test_snapshot_root_cargo_toml() {
-        assert_display_snapshot!(root_cargo_toml(false))
+        assert_display_snapshot!(root_cargo_toml(false, false))
+    }
+
+    #[test]
+    fn test_snapshot_root_cargo_toml_with_bindings() {
+        assert_display_snapshot!(root_cargo_toml(true, false))
     }
 
     #[test]
     fn test_snapshot_root_cargo_toml_with_accessors() {
-        assert_display_snapshot!(root_cargo_toml(true))
+        assert_display_snapshot!(root_cargo_toml(true, true))
     }
 
     #[test]
     fn test_snapshot_logic_cargo_toml() {
         let dependencies = vec!["sample_snapshot".to_string(), "sample_lens".to_string()];
-        assert_display_snapshot!(logic_cargo_toml(PROJECT_NAME, dependencies))
+        assert_display_snapshot!(logic_cargo_toml(PROJECT_NAME, false, dependencies))
     }
 
     #[test]
@@ -256,7 +280,7 @@ mod tests {
 
     #[test]
     fn test_snapshot_canister_cargo_toml() {
-        assert_display_snapshot!(canister_project_cargo_toml(PROJECT_NAME))
+        assert_display_snapshot!(canister_project_cargo_toml(PROJECT_NAME, false))
     }
 
     #[test]
