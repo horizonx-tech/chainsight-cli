@@ -9,7 +9,7 @@ use crate::{
 };
 
 fn script_contents(manifest: &AlgorithmLensComponentManifest, network: Network) -> String {
-    let init_in_env_task = init_in_env_task(&network, &manifest.id().unwrap());
+    let init_in_env_task = init_in_env_task(&network, &manifest.id().unwrap(), &manifest.cycles);
 
     format!(
         r#"#!/bin/bash

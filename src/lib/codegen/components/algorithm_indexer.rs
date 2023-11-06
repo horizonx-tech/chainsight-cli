@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 
-use chainsight_cdk::config::components::{
-    AlgorithmIndexerConfig, AlgorithmInputType, CommonConfig,
+use chainsight_cdk::{
+    config::components::{AlgorithmIndexerConfig, AlgorithmInputType, CommonConfig},
+    initializer::CycleManagements,
 };
 use serde::{Deserialize, Serialize};
 
@@ -26,6 +27,7 @@ pub struct AlgorithmIndexerComponentManifest {
     pub datasource: AlgorithmIndexerDatasource,
     pub output: Vec<AlgorithmIndexerOutput>,
     pub interval: u32,
+    pub cycles: Option<CycleManagements>,
 }
 
 impl From<AlgorithmIndexerComponentManifest>
@@ -72,6 +74,7 @@ impl AlgorithmIndexerComponentManifest {
             datasource,
             output,
             interval,
+            cycles: Some(CycleManagements::default()),
         }
     }
 }
@@ -146,6 +149,9 @@ impl ComponentManifest for AlgorithmIndexerComponentManifest {
         let (interval_key, interval_val) = custom_tags_interval_sec(self.interval);
         res.insert(interval_key, interval_val);
         res
+    }
+    fn cycle_managements(&self) -> Option<CycleManagements> {
+        self.cycles.clone()
     }
 }
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -299,7 +305,8 @@ interval: 3600
                     ]),
                     output_type: AlgorithmOutputType::KeyValue
                 }),
-                interval: 3600
+                interval: 3600,
+                cycles: Some(CycleManagements::default()),
             }
         );
         let schema = serde_json::from_str(include_str!(
@@ -347,6 +354,7 @@ interval: 3600
                 output_type: AlgorithmOutputType::KeyValue,
             }],
             interval: 3600,
+            cycles: Some(CycleManagements::default()),
         };
 
         let snap_prefix = "snapshot__algorithm_indexer";

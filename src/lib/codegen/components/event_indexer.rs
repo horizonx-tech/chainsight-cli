@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use anyhow::bail;
+use chainsight_cdk::initializer::CycleManagements;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -23,6 +24,7 @@ pub struct EventIndexerComponentManifest {
     pub metadata: ComponentMetadata,
     pub datasource: EventIndexerDatasource,
     pub interval: u32,
+    pub cycles: Option<CycleManagements>,
 }
 
 impl From<EventIndexerComponentManifest>
@@ -69,6 +71,7 @@ impl EventIndexerComponentManifest {
             },
             datasource,
             interval,
+            cycles: Some(CycleManagements::default()),
         }
     }
 }
@@ -165,6 +168,9 @@ impl ComponentManifest for EventIndexerComponentManifest {
         let (interval_key, interval_val) = custom_tags_interval_sec(self.interval);
         res.insert(interval_key, interval_val);
         res
+    }
+    fn cycle_managements(&self) -> Option<CycleManagements> {
+        self.cycles.clone()
     }
 }
 
@@ -297,7 +303,8 @@ interval: 3600
                     from: 17660942,
                     contract_type: Some("ERC20".to_string())
                 },
-                interval: 3600
+                interval: 3600,
+                cycles: Some(CycleManagements::default()),
             }
         );
         let schema = serde_json::from_str(include_str!(
@@ -340,6 +347,7 @@ interval: 3600
                 contract_type: Some("ERC20".to_string()),
             },
             interval: 3600,
+            cycles: Some(CycleManagements::default()),
         };
 
         let snap_prefix = "snapshot__event_indexer";

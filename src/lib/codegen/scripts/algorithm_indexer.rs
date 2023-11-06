@@ -44,7 +44,7 @@ fn script_contents(manifest: &AlgorithmIndexerComponentManifest, network: Networ
         manifest.interval,
         10, // temp: fixed value, todo: make it configurable
     );
-    let init_in_env_task = init_in_env_task(&network, &id);
+    let init_in_env_task = init_in_env_task(&network, &id, &manifest.cycles);
 
     format!(
         r#"#!/bin/bash

@@ -1,6 +1,7 @@
 use std::{collections::HashMap, fs::OpenOptions, io::Read, path::Path};
 
 use anyhow::bail;
+use chainsight_cdk::initializer::CycleManagements;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -260,6 +261,9 @@ pub trait ComponentManifest: std::fmt::Debug {
     fn generate_dependency_accessors(&self) -> anyhow::Result<GeneratedCodes> {
         bail!("not implemented")
     }
+
+    /// Get the Component's cycle management settings
+    fn cycle_managements(&self) -> Option<CycleManagements>;
 }
 
 pub fn custom_tags_interval_sec(interval_sec: u32) -> (String, String) {

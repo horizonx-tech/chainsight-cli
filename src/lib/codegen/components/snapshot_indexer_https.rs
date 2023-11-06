@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, HashMap};
 
-use chainsight_cdk::config::components::CommonConfig;
+use chainsight_cdk::{config::components::CommonConfig, initializer::CycleManagements};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -49,6 +49,7 @@ pub struct SnapshotIndexerHTTPSComponentManifest {
     pub datasource: SnapshotIndexerHTTPSDataSource,
     pub storage: SnapshotStorage,
     pub interval: u32,
+    pub cycles: Option<CycleManagements>,
 }
 
 impl SnapshotIndexerHTTPSComponentManifest {
@@ -77,6 +78,7 @@ impl SnapshotIndexerHTTPSComponentManifest {
             datasource,
             storage,
             interval,
+            cycles: Some(CycleManagements::default()),
         }
     }
 }
@@ -168,6 +170,9 @@ impl ComponentManifest for SnapshotIndexerHTTPSComponentManifest {
         res.insert(interval_key, interval_val);
         res
     }
+    fn cycle_managements(&self) -> Option<CycleManagements> {
+        self.cycles.clone()
+    }
 }
 
 #[cfg(test)]
@@ -237,7 +242,8 @@ interval: 3600
                 storage: SnapshotStorage {
                     with_timestamp: true,
                 },
-                interval: 3600
+                interval: 3600,
+                cycles: Some(CycleManagements::default()),
             }
         );
         let schema = serde_json::from_str(include_str!(
@@ -281,6 +287,7 @@ interval: 3600
                 with_timestamp: true,
             },
             interval: 3600,
+            cycles: Some(CycleManagements::default()),
         };
 
         let snap_prefix = "snapshot__snapshot_indexer_https";

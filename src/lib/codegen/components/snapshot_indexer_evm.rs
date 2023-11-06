@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 
-use chainsight_cdk::config::components::{CommonConfig, LensTargets};
+use chainsight_cdk::{
+    config::components::{CommonConfig, LensTargets},
+    initializer::CycleManagements,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -25,6 +28,7 @@ pub struct SnapshotIndexerEVMComponentManifest {
     pub storage: SnapshotStorage,
     pub interval: u32,
     pub lens_targets: Option<LensTargets>,
+    pub cycles: Option<CycleManagements>,
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -59,6 +63,7 @@ impl SnapshotIndexerEVMComponentManifest {
             storage,
             interval,
             lens_targets: None,
+            cycles: Some(CycleManagements::default()),
         }
     }
 }
@@ -170,6 +175,9 @@ impl ComponentManifest for SnapshotIndexerEVMComponentManifest {
         res.insert(interval_key, interval_val);
         res
     }
+    fn cycle_managements(&self) -> Option<CycleManagements> {
+        self.cycles.clone()
+    }
 }
 
 fn yaml_to_json(yaml_value: serde_yaml::Value) -> serde_json::Value {
@@ -250,7 +258,8 @@ interval: 3600
                     with_timestamp: true,
                 },
                 lens_targets: None,
-                interval: 3600
+                interval: 3600,
+                cycles: Some(CycleManagements::default()),
             }
         );
 
@@ -292,6 +301,7 @@ interval: 3600
             },
             lens_targets: None,
             interval: 3600,
+            cycles: Some(CycleManagements::default()),
         };
 
         let snap_prefix = "snapshot__snapshot_indexer_evm";

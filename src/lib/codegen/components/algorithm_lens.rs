@@ -1,7 +1,10 @@
 use std::collections::HashMap;
 
 use candid::Principal;
-use chainsight_cdk::{config::components::CommonConfig, convert::candid::CanisterMethodIdentifier};
+use chainsight_cdk::{
+    config::components::CommonConfig, convert::candid::CanisterMethodIdentifier,
+    initializer::CycleManagements,
+};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -19,6 +22,7 @@ pub struct AlgorithmLensComponentManifest {
     pub version: String,
     pub metadata: ComponentMetadata,
     pub datasource: AlgorithmLensDataSource,
+    pub cycles: Option<CycleManagements>,
 }
 
 impl AlgorithmLensComponentManifest {
@@ -39,6 +43,7 @@ impl AlgorithmLensComponentManifest {
                 tags: Some(vec!["Ethereum".to_string(), "Account".to_string()]),
             },
             datasource,
+            cycles: Some(CycleManagements::default()),
         }
     }
 }
@@ -141,6 +146,9 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
             lib,
             types: Some(types),
         })
+    }
+    fn cycle_managements(&self) -> Option<CycleManagements> {
+        self.cycles.clone()
     }
 }
 
@@ -266,6 +274,7 @@ output:
                         candid_file_path: "interfaces/sample.did".to_string(),
                     }],
                 },
+                cycles: Some(CycleManagements::default()),
             }
         );
         let schema = serde_json::from_str(include_str!(
@@ -326,6 +335,7 @@ datasource:
                     candid_file_path: "interfaces/sample.did".to_string(),
                 }],
             },
+            cycles: Some(CycleManagements::default()),
         };
 
         let snap_prefix = "snapshot__algorithm_lens";

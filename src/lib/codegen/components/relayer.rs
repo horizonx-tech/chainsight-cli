@@ -4,6 +4,7 @@ use anyhow::Ok;
 use chainsight_cdk::{
     config::components::{CommonConfig, LensTargets},
     convert::candid::CanisterMethodIdentifier,
+    initializer::CycleManagements,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -34,6 +35,7 @@ pub struct RelayerComponentManifest {
     pub destination: DestinationField, // TODO: multiple destinations
     pub interval: u32,
     pub lens_targets: Option<LensTargets>,
+    pub cycles: Option<CycleManagements>,
 }
 
 impl RelayerComponentManifest {
@@ -59,6 +61,7 @@ impl RelayerComponentManifest {
             destination,
             lens_targets: None,
             interval,
+            cycles: Some(CycleManagements::default()),
         }
     }
 }
@@ -199,6 +202,9 @@ impl ComponentManifest for RelayerComponentManifest {
         res.insert(interval_key, interval_val);
         res
     }
+    fn cycle_managements(&self) -> Option<CycleManagements> {
+        self.cycles.clone()
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -279,6 +285,7 @@ mod tests {
             },
             lens_targets: None,
             interval: 3600,
+            cycles: Some(CycleManagements::default()),
         }
     }
 
@@ -343,7 +350,8 @@ interval: 3600
                         .to_string(),
                 },
                 lens_targets: None,
-                interval: 3600
+                interval: 3600,
+                cycles: Some(CycleManagements::default()),
             }
         );
         let schema =
