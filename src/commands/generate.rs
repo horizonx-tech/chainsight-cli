@@ -157,9 +157,11 @@ fn exec_codegen(
     fs::create_dir_all(src_path_str).expect("failed to create dir: src");
 
     // remove generated files
+    // NOTE: not remove `logics` to remain user's logic
     let _ = fs::remove_dir_all(format!("{}/__interfaces", src_path_str));
     let _ = fs::remove_dir_all(format!("{}/bindings", src_path_str));
     let _ = fs::remove_dir_all(format!("{}/canisters", src_path_str));
+    let _ = fs::remove_dir_all(format!("{}/accessors", src_path_str));
 
     // generate /artifacts/__interfaces
     let interfaces_path_str = format!("{}/__interfaces", src_path_str);
@@ -170,6 +172,7 @@ fn exec_codegen(
     }
 
     // generate canister projects
+    let mut generated_component_ids = vec![];
     let mut is_exist_accessors_folder = false;
     let mut is_exist_bindings_folder = false;
     for data in component_data {
@@ -269,17 +272,15 @@ fn exec_codegen(
         }
 
         // Generate Cargo.toml that configure the entire workspace
-        if !Path::new(&format!("{}/Cargo.toml", src_path_str)).is_file() {
-            fs::write(
-                format!("{}/Cargo.toml", src_path_str),
-                root_cargo_toml(is_exist_bindings_folder, is_exist_accessors_folder),
-            )?;
-        } else {
-            info!(
-                log,
-                r#"Skip creating workspace: '{}/Cargo.toml' already exists"#, src_path_str
-            )
-        }
+        generated_component_ids.push(id.to_string());
+        fs::write(
+            format!("{}/Cargo.toml", src_path_str),
+            root_cargo_toml(
+                generated_component_ids.clone(),
+                is_exist_bindings_folder,
+                is_exist_accessors_folder,
+            ),
+        )?;
 
         // Processes about interface
         // - copy and move any necessary interfaces to canister

@@ -1,12 +1,19 @@
 use crate::lib::utils::paths;
 
-pub fn root_cargo_toml(with_bindings: bool, with_accessors: bool) -> String {
-    let mut members = vec!["canisters", "logics"];
+pub fn root_cargo_toml(
+    component_ids: Vec<String>,
+    with_bindings: bool,
+    with_accessors: bool,
+) -> String {
+    let mut members = component_ids
+        .iter()
+        .flat_map(|x| vec![format!("canisters/{}", x), format!("logics/{}", x)])
+        .collect::<Vec<String>>();
     if with_bindings {
-        members.push("bindings");
+        members.push("bindings/*".to_string());
     }
     if with_accessors {
-        members.push("accessors");
+        members.push("accessors/*".to_string());
     }
 
     format!(
@@ -34,7 +41,7 @@ chainsight-cdk = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git",
 "#,
         members
             .iter()
-            .map(|x| format!(r#""{}/*""#, x))
+            .map(|x| format!(r#""{}""#, x))
             .collect::<Vec<String>>()
             .join(", ")
     )
@@ -253,17 +260,17 @@ mod tests {
 
     #[test]
     fn test_snapshot_root_cargo_toml() {
-        assert_display_snapshot!(root_cargo_toml(false, false))
+        assert_display_snapshot!(root_cargo_toml(vec![], false, false))
     }
 
     #[test]
     fn test_snapshot_root_cargo_toml_with_bindings() {
-        assert_display_snapshot!(root_cargo_toml(true, false))
+        assert_display_snapshot!(root_cargo_toml(vec![], true, false))
     }
 
     #[test]
     fn test_snapshot_root_cargo_toml_with_accessors() {
-        assert_display_snapshot!(root_cargo_toml(true, true))
+        assert_display_snapshot!(root_cargo_toml(vec![], true, true))
     }
 
     #[test]
