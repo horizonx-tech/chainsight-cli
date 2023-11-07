@@ -25,5 +25,4 @@ datasource:
 storage:
   with_timestamp: true
 interval: 3600
-lens_targets: null
 

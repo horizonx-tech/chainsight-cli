@@ -24,7 +24,6 @@ pub struct SnapshotIndexerEVMComponentManifest {
     pub datasource: Datasource,
     pub storage: SnapshotStorage,
     pub interval: u32,
-    pub lens_targets: Option<LensTargets>,
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -58,7 +57,6 @@ impl SnapshotIndexerEVMComponentManifest {
             datasource,
             storage,
             interval,
-            lens_targets: None,
         }
     }
 }
@@ -150,10 +148,6 @@ impl ComponentManifest for SnapshotIndexerEVMComponentManifest {
                 .to_string()
                 .replace(' ', "")
                 .replace("()", "");
-        }
-        if self.lens_targets.is_some() {
-            let targets = self.lens_targets.clone().unwrap().identifiers;
-            attr.insert("sources".to_string(), json!(targets));
         }
 
         attr.insert("function_name".to_string(), json!(method_identifier));
@@ -249,7 +243,6 @@ interval: 3600
                 storage: SnapshotStorage {
                     with_timestamp: true,
                 },
-                lens_targets: None,
                 interval: 3600
             }
         );
@@ -290,7 +283,6 @@ interval: 3600
             storage: SnapshotStorage {
                 with_timestamp: true,
             },
-            lens_targets: None,
             interval: 3600,
         };
 
