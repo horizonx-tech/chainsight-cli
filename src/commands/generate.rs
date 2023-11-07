@@ -415,10 +415,10 @@ fn create_cargo_project(
         manifest.unwrap_or_default(),
     )?;
     if let Some(CargoProjectSrc(modules)) = src {
-        for module in modules.iter() {
+        for (module_name, codes) in modules.iter() {
             fs::write(
-                Path::new(&format!("{}/src/{}.rs", path_str, module.0)),
-                module.1,
+                Path::new(&format!("{}/src/{}.rs", path_str, module_name)),
+                codes,
             )?;
         }
     } else {
