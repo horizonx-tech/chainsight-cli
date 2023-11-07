@@ -126,6 +126,35 @@
         }
       }
     },
+    "lens_targets": {
+      "$id": "#/properties/lens_targets",
+      "type": "object",
+      "title": "lens targets",
+      "description": "targets for the lens. Only used when the datasource canister is a algorithm_lens",
+      "required": ["identifiers"],
+      "properties": {
+        "identifiers": {
+          "$id": "#/properties/lens_targets/properties/identifiers",
+          "type": "array",
+          "title": "identifiers",
+          "description": "canister ids of the lens targets. If the canister calls an algorithm_lens and the lens calls 3 canisters, you must set 3 canister ids here",
+          "examples": [
+            [
+              "bw4dl-smaaa-aaaaa-qaacq-cai",
+              "bw4dl-smaaa-aaaaa-qaacq-cai",
+              "bw4dl-smaaa-aaaaa-qaacq-cai"
+            ],
+            ["bw4dl-smaaa-aaaaa-qaacq-cai"]
+          ],
+          "items": {
+            "$id": "#/properties/lens_targets/properties/identifiers/items",
+            "type": "string",
+            "examples": ["bw4dl-smaaa-aaaaa-qaacq-cai"],
+            "pattern": "^[a-z0-9_-]+$"
+          }
+        }
+      }
+    },
     "storage": {
       "$id": "#/properties/storage",
       "title": "storage",

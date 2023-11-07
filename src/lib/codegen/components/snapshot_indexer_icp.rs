@@ -28,9 +28,9 @@ pub struct SnapshotIndexerICPComponentManifest {
     pub version: String,
     pub metadata: ComponentMetadata,
     pub datasource: Datasource,
+    pub lens_targets: Option<LensTargets>,
     pub storage: SnapshotStorage,
     pub interval: u32,
-    pub lens_targets: Option<LensTargets>,
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -259,10 +259,10 @@ interval: 3600
                         args: vec![]
                     }
                 },
+                lens_targets: None,
                 storage: SnapshotStorage {
                     with_timestamp: true,
                 },
-                lens_targets: None,
                 interval: 3600
             }
         );
@@ -297,10 +297,10 @@ interval: 3600
                     args: vec![],
                 },
             },
+            lens_targets: None,
             storage: SnapshotStorage {
                 with_timestamp: true,
             },
-            lens_targets: None,
             interval: 3600,
         };
 

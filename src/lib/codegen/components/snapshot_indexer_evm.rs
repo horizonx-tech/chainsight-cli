@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use chainsight_cdk::config::components::{CommonConfig, LensTargets};
+use chainsight_cdk::config::components::CommonConfig;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
