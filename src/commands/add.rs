@@ -17,7 +17,7 @@ use crate::{
                     AlgorithmIndexerOutput,
                 },
                 algorithm_lens::{AlgorithmLensComponentManifest, AlgorithmLensDataSource},
-                common::{ComponentManifest, Datasource, SnapshotStorage},
+                common::{ComponentManifest, Datasource},
                 event_indexer::{
                     EventIndexerComponentManifest, EventIndexerDatasource,
                     EventIndexerEventDefinition, SourceNetwork,
@@ -203,7 +203,6 @@ fn template_snapshot_indexer_icp_manifest(
         "",
         PROJECT_MANIFEST_VERSION,
         Datasource::new_canister("function_identifier()".to_string(), None, None),
-        SnapshotStorage::default(),
         3600,
     )
 }
@@ -217,7 +216,6 @@ fn template_snapshot_indexer_evm_manifest(
         "",
         PROJECT_MANIFEST_VERSION,
         Datasource::new_contract("functionIdentifier()".to_string(), None, None),
-        SnapshotStorage::default(),
         3600,
     )
 }
@@ -252,7 +250,6 @@ fn template_snapshot_indexer_https_manifest(
         "",
         PROJECT_MANIFEST_VERSION,
         SnapshotIndexerHTTPSDataSource::default(),
-        SnapshotStorage::default(),
         3600,
     )
 }

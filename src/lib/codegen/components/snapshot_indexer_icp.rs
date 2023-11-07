@@ -15,7 +15,7 @@ use crate::{
 use super::{
     common::{
         custom_tags_interval_sec, ComponentManifest, ComponentMetadata, Datasource,
-        DestinationType, GeneratedCodes, SnapshotStorage, Sources, DEFAULT_MONITOR_DURATION_SECS,
+        DestinationType, GeneratedCodes, Sources, DEFAULT_MONITOR_DURATION_SECS,
     },
     utils::generate_types_from_bindings,
 };
@@ -29,7 +29,6 @@ pub struct SnapshotIndexerICPComponentManifest {
     pub metadata: ComponentMetadata,
     pub datasource: Datasource,
     pub lens_targets: Option<LensTargets>,
-    pub storage: SnapshotStorage,
     pub interval: u32,
 }
 
@@ -45,7 +44,6 @@ impl SnapshotIndexerICPComponentManifest {
         description: &str,
         version: &str,
         datasource: Datasource,
-        storage: SnapshotStorage,
         interval: u32,
     ) -> Self {
         Self {
@@ -62,7 +60,6 @@ impl SnapshotIndexerICPComponentManifest {
                 ]),
             },
             datasource,
-            storage,
             interval,
             lens_targets: None,
         }
@@ -260,9 +257,6 @@ interval: 3600
                     }
                 },
                 lens_targets: None,
-                storage: SnapshotStorage {
-                    with_timestamp: true,
-                },
                 interval: 3600
             }
         );
@@ -298,9 +292,6 @@ interval: 3600
                 },
             },
             lens_targets: None,
-            storage: SnapshotStorage {
-                with_timestamp: true,
-            },
             interval: 3600,
         };
 

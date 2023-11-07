@@ -11,7 +11,7 @@ use crate::{
 
 use super::common::{
     custom_tags_interval_sec, ComponentManifest, ComponentMetadata, Datasource, DestinationType,
-    GeneratedCodes, SnapshotStorage, Sources, DEFAULT_MONITOR_DURATION_SECS,
+    GeneratedCodes, Sources, DEFAULT_MONITOR_DURATION_SECS,
 };
 
 /// Component Manifest: Snapshot Indexer EVM
@@ -22,7 +22,6 @@ pub struct SnapshotIndexerEVMComponentManifest {
     pub version: String,
     pub metadata: ComponentMetadata,
     pub datasource: Datasource,
-    pub storage: SnapshotStorage,
     pub interval: u32,
 }
 
@@ -38,7 +37,6 @@ impl SnapshotIndexerEVMComponentManifest {
         description: &str,
         version: &str,
         datasource: Datasource,
-        storage: SnapshotStorage,
         interval: u32,
     ) -> Self {
         Self {
@@ -55,7 +53,6 @@ impl SnapshotIndexerEVMComponentManifest {
                 ]),
             },
             datasource,
-            storage,
             interval,
         }
     }
@@ -209,8 +206,6 @@ datasource:
         identifier: totalSupply():(uint256)
         interface: ERC20.json
         args: []
-storage:
-    with_timestamp: true
 interval: 3600
         "#;
 
@@ -239,9 +234,6 @@ interval: 3600
                         interface: Some("ERC20.json".to_string()),
                         args: vec![]
                     }
-                },
-                storage: SnapshotStorage {
-                    with_timestamp: true,
                 },
                 interval: 3600
             }
@@ -279,9 +271,6 @@ interval: 3600
                     interface: Some("ERC20.json".to_string()),
                     args: vec![],
                 },
-            },
-            storage: SnapshotStorage {
-                with_timestamp: true,
             },
             interval: 3600,
         };
