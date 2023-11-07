@@ -1,10 +1,10 @@
-use std::{
-    collections::{BTreeMap, HashMap},
-    fs,
-};
+use std::collections::{BTreeMap, HashMap};
 
 use candid::Principal;
-use chainsight_cdk::{config::components::CommonConfig, convert::candid::CanisterMethodIdentifier};
+use chainsight_cdk::{
+    config::components::CommonConfig,
+    convert::candid::{read_did_to_string_without_service, CanisterMethodIdentifier},
+};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -142,7 +142,7 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
                 let identifier = CanisterMethodIdentifier::new(&method.identifier)?;
                 identifier.compile()
             } else {
-                let did_str = fs::read_to_string(&method.candid_file_path)?;
+                let did_str = read_did_to_string_without_service(&method.candid_file_path)?;
                 let identifier =
                     CanisterMethodIdentifier::new_with_did(&method.identifier, did_str)?;
                 identifier.compile()

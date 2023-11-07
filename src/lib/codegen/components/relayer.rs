@@ -1,12 +1,9 @@
-use std::{
-    collections::{BTreeMap, HashMap},
-    fs,
-};
+use std::collections::{BTreeMap, HashMap};
 
 use anyhow::Ok;
 use chainsight_cdk::{
     config::components::{CommonConfig, LensTargets},
-    convert::candid::CanisterMethodIdentifier,
+    convert::candid::{read_did_to_string_without_service, CanisterMethodIdentifier},
 };
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -21,9 +18,12 @@ use crate::{
     types::{ComponentType, Network},
 };
 
-use super::common::{
-    generate_types_from_bindings, ComponentManifest, ComponentMetadata, Datasource,
-    DestinationType, GeneratedCodes, SourceType, Sources, DEFAULT_MONITOR_DURATION_SECS,
+use super::{
+    common::{
+        ComponentManifest, ComponentMetadata, Datasource, DestinationType, GeneratedCodes,
+        SourceType, Sources, DEFAULT_MONITOR_DURATION_SECS,
+    },
+    utils::generate_types_from_bindings,
 };
 
 /// Component Manifest: Relayer
@@ -145,7 +145,7 @@ impl ComponentManifest for RelayerComponentManifest {
     }
 
     fn required_interface(&self) -> Option<String> {
-        self.datasource.method.interface.clone()
+        None
     }
 
     fn get_sources(&self) -> Sources {
@@ -219,7 +219,7 @@ impl ComponentManifest for RelayerComponentManifest {
         } = self;
         let interface = method.interface.clone();
         let lib = if let Some(path) = interface {
-            let did_str = fs::read_to_string(path)?;
+            let did_str = read_did_to_string_without_service(path)?;
             let identifier = CanisterMethodIdentifier::new_with_did(&method.identifier, did_str)?;
             identifier.compile()
         } else {
