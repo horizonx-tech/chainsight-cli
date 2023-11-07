@@ -138,13 +138,13 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
         let mut bindings: BTreeMap<String, String> = BTreeMap::new();
         for method in methods {
             let mod_name = method.id.to_string();
-            let codes = if method.candid_file_path.is_empty() {
-                let identifier = CanisterMethodIdentifier::new(&method.identifier)?;
-                identifier.compile()
-            } else {
-                let did_str = read_did_to_string_without_service(&method.candid_file_path)?;
+            let codes = if let Some(path) = &method.candid_file_path {
+                let did_str = read_did_to_string_without_service(path)?;
                 let identifier =
                     CanisterMethodIdentifier::new_with_did(&method.identifier, did_str)?;
+                identifier.compile()
+            } else {
+                let identifier = CanisterMethodIdentifier::new(&method.identifier)?;
                 identifier.compile()
             };
             bindings.insert(mod_name, codes);
@@ -190,7 +190,7 @@ pub struct AlgorithmLensDataSource {
 pub struct AlgorithmLensDataSourceMethod {
     pub id: String,
     pub identifier: String,
-    pub candid_file_path: String, // TODO: to Optional
+    pub candid_file_path: Option<String>,
 }
 
 impl Default for AlgorithmLensDataSource {
@@ -198,8 +198,10 @@ impl Default for AlgorithmLensDataSource {
         Self {
             methods: vec![AlgorithmLensDataSourceMethod {
                 id: "sample_snapshot_indexer_icp".to_string(),
-                identifier: "get_last_snapshot : () -> (Snapshot)".to_string(),
-                candid_file_path: "interfaces/sample.did".to_string(),
+                identifier:
+                    "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"
+                        .to_string(),
+                candid_file_path: None,
             }],
         }
     }
@@ -259,7 +261,7 @@ output:
                     methods: vec![AlgorithmLensDataSourceMethod {
                         id: "last_snapshot".to_string(),
                         identifier: "get_last_snapshot : () -> (Snapshot)".to_string(),
-                        candid_file_path: "interfaces/sample.did".to_string(),
+                        candid_file_path: Some("interfaces/sample.did".to_string()),
                     }],
                 },
             }
@@ -319,7 +321,7 @@ datasource:
                     identifier:
                         "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"
                             .to_string(),
-                    candid_file_path: "interfaces/sample.did".to_string(),
+                    candid_file_path: Some("interfaces/sample.did".to_string()),
                 }],
             },
         };
