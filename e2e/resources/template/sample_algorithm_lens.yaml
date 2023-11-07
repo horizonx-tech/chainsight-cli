@@ -11,4 +11,4 @@ datasource:
   methods:
   - id: sample_snapshot_indexer_icp
     identifier: 'get_last_snapshot : () -> (record { value : text; timestamp : nat64 })'
-    candid_file_path: null
+    candid_file_path: ""

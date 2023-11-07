@@ -1,4 +1,9 @@
-use std::{collections::HashMap, fs::OpenOptions, io::Read, path::Path};
+use std::{
+    collections::{BTreeMap, HashMap},
+    fs::OpenOptions,
+    io::Read,
+    path::Path,
+};
 
 use anyhow::bail;
 use serde::{Deserialize, Serialize};
@@ -251,6 +256,11 @@ pub trait ComponentManifest: std::fmt::Debug {
 
     /// Sources of data provided by this component
     fn get_sources(&self) -> Sources;
+
+    /// Generate bindings with candid files
+    fn generate_bindings(&self) -> anyhow::Result<BTreeMap<String, String>> {
+        Ok(BTreeMap::new())
+    }
 
     /// Label of this component on which the component depends
     /// NOTE: only used by alhorithm_lens
