@@ -260,17 +260,23 @@ mod tests {
 
     #[test]
     fn test_snapshot_root_cargo_toml() {
-        assert_display_snapshot!(root_cargo_toml(vec![], false, false))
-    }
-
-    #[test]
-    fn test_snapshot_root_cargo_toml_with_bindings() {
-        assert_display_snapshot!(root_cargo_toml(vec![], true, false))
-    }
-
-    #[test]
-    fn test_snapshot_root_cargo_toml_with_accessors() {
-        assert_display_snapshot!(root_cargo_toml(vec![], true, true))
+        let project_ids = vec![
+            "sample_snapshot".to_string(),
+            "sample_lens".to_string(),
+            "sample_relayer".to_string(),
+        ];
+        assert_display_snapshot!(
+            "snapshot_root_cargo_toml",
+            root_cargo_toml(project_ids.clone(), false, false)
+        );
+        assert_display_snapshot!(
+            "snapshot_root_cargo_toml_with_bindings",
+            root_cargo_toml(project_ids.clone(), true, false)
+        );
+        assert_display_snapshot!(
+            "snapshot_root_cargo_toml_with_accessors",
+            root_cargo_toml(project_ids.clone(), true, true)
+        );
     }
 
     #[test]

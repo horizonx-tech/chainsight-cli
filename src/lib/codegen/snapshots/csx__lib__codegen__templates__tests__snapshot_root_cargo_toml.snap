@@ -1,9 +1,9 @@
 ---
 source: src/lib/codegen/templates.rs
-expression: root_cargo_toml(false)
+expression: "root_cargo_toml(project_ids.clone(), false, false)"
 ---
 [workspace]
-members = ["bindings/*", "canisters/*", "logics/*"]
+members = ["canisters/sample_snapshot", "logics/sample_snapshot", "canisters/sample_lens", "logics/sample_lens", "canisters/sample_relayer", "logics/sample_relayer"]
 
 [workspace.package]
 version = "0.1.0"
