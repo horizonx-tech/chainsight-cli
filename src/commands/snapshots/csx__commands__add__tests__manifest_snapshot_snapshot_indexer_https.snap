@@ -19,7 +19,5 @@ datasource:
   queries:
     ids: dai
     vs_currencies: usd
-storage:
-  with_timestamp: true
 interval: 3600
 
