@@ -20,7 +20,5 @@ datasource:
     interface: null
     args: []
 lens_targets: null
-storage:
-  with_timestamp: true
 interval: 3600
 
