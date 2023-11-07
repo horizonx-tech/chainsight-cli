@@ -221,10 +221,10 @@ impl ComponentManifest for RelayerComponentManifest {
         let lib = if let Some(path) = interface {
             let did_str = read_did_to_string_without_service(path)?;
             let identifier = CanisterMethodIdentifier::new_with_did(&method.identifier, did_str)?;
-            identifier.compile()
+            identifier.compile()?
         } else {
             let identifier = CanisterMethodIdentifier::new(&method.identifier)?;
-            identifier.compile()
+            identifier.compile()?
         };
 
         Ok(BTreeMap::from([("lib".to_string(), lib)]))
