@@ -18,9 +18,7 @@
     - [3.2.1. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > datasource > method > identifier`](#datasource_method_identifier)
     - [3.2.2. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > datasource > method > interface`](#datasource_method_interface)
     - [3.2.3. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > datasource > method > args`](#datasource_method_args)
-- [4. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > storage`](#storage)
-  - [4.1. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > storage > with_timestamp`](#storage_with_timestamp)
-- [5. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > interval`](#interval)
+- [4. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > interval`](#interval)
 
 **Title:** Chainsight EVM Compatible Chain Snapshot Indexer specification
 
@@ -37,7 +35,6 @@
 | + [version](#version )       | No      | string | No         | -          | specification version of the canister |
 | + [metadata](#metadata )     | No      | object | No         | -          | metadata                              |
 | + [datasource](#datasource ) | No      | object | No         | -          | -                                     |
-| + [storage](#storage )       | No      | object | No         | -          | storage                               |
 | + [interval](#interval )     | No      | number | No         | -          | interval                              |
 
 ## <a name="version"></a>1. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > version`
@@ -448,40 +445,7 @@ Must be one of:
 | **Additional items** | False              |
 | **Tuple validation** | N/A                |
 
-## <a name="storage"></a>4. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > storage`
-
-**Title:** storage
-
-|                           |                                                                           |
-| ------------------------- | ------------------------------------------------------------------------- |
-| **Type**                  | `object`                                                                  |
-| **Required**              | Yes                                                                       |
-| **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
-
-**Description:** storage properties for the canister
-
-| Property                                     | Pattern | Type    | Deprecated | Definition | Title/Description  |
-| -------------------------------------------- | ------- | ------- | ---------- | ---------- | ------------------ |
-| + [with_timestamp](#storage_with_timestamp ) | No      | boolean | No         | -          | with_timestamptamp |
-
-### <a name="storage_with_timestamp"></a>4.1. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > storage > with_timestamp`
-
-**Title:** with_timestamptamp
-
-|              |           |
-| ------------ | --------- |
-| **Type**     | `boolean` |
-| **Required** | Yes       |
-
-**Description:** whether to store the data with timestamp
-
-**Example:** 
-
-```json
-true
-```
-
-## <a name="interval"></a>5. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > interval`
+## <a name="interval"></a>4. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > interval`
 
 **Title:** interval
 
@@ -499,4 +463,4 @@ true
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-11-07 at 12:13:08 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-11-07 at 12:43:34 +0000
