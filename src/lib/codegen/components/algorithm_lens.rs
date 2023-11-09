@@ -13,7 +13,10 @@ use crate::{
     types::{ComponentType, Network},
 };
 
-use super::common::{ComponentManifest, ComponentMetadata, GeneratedCodes, SourceType, Sources};
+use super::common::{
+    ComponentManifest, ComponentMetadata, CycleManagementsManifest, GeneratedCodes, SourceType,
+    Sources,
+};
 
 /// Component Manifest: Algorithm Lens
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -23,7 +26,7 @@ pub struct AlgorithmLensComponentManifest {
     pub version: String,
     pub metadata: ComponentMetadata,
     pub datasource: AlgorithmLensDataSource,
-    pub cycles: Option<CycleManagements>,
+    pub cycles: Option<CycleManagementsManifest>,
 }
 
 impl AlgorithmLensComponentManifest {
@@ -174,8 +177,8 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
         let lib = canisters::algorithm_lens::generate_dependencies_accessor(self)?;
         Ok(GeneratedCodes { lib, types: None })
     }
-    fn cycle_managements(&self) -> Option<CycleManagements> {
-        self.cycles.clone()
+    fn cycle_managements(&self) -> CycleManagements {
+        self.cycles.clone().unwrap_or_default().into()
     }
 }
 

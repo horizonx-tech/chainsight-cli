@@ -21,8 +21,8 @@ use crate::{
 
 use super::{
     common::{
-        ComponentManifest, ComponentMetadata, Datasource, DestinationType, GeneratedCodes,
-        SourceType, Sources, DEFAULT_MONITOR_DURATION_SECS,
+        ComponentManifest, ComponentMetadata, CycleManagementsManifest, Datasource,
+        DestinationType, GeneratedCodes, SourceType, Sources, DEFAULT_MONITOR_DURATION_SECS,
     },
     utils::generate_types_from_bindings,
 };
@@ -38,7 +38,7 @@ pub struct RelayerComponentManifest {
     pub destination: DestinationField, // TODO: multiple destinations
     pub interval: u32,
     pub lens_targets: Option<LensTargets>,
-    pub cycles: Option<CycleManagements>,
+    pub cycles: Option<CycleManagementsManifest>,
 }
 
 impl RelayerComponentManifest {
@@ -231,8 +231,8 @@ impl ComponentManifest for RelayerComponentManifest {
 
         Ok(BTreeMap::from([("lib".to_string(), lib)]))
     }
-    fn cycle_managements(&self) -> Option<CycleManagements> {
-        self.cycles.clone()
+    fn cycle_managements(&self) -> CycleManagements {
+        self.cycles.clone().unwrap_or_default().into()
     }
 }
 

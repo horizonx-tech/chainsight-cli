@@ -25,29 +25,24 @@ pub fn generate_command_to_set_task(
     )
 }
 
-pub fn init_in_env_task(network: &Network, id: &str, cycles: &Option<CycleManagements>) -> String {
-    let cycles = cycles.unwrap_or_default();
-    let total_cycles = cycles.vault_intial_supply
-        + cycles.indexer.initial_value
-        + cycles.db.initial_value
-        + cycles.proxy.initial_value;
+pub fn init_in_env_task(network: &Network, id: &str, cycles: &CycleManagements) -> String {
     format!(
         r#"dfx canister {} call {} init_in '(variant {{ "{}" }}, record {{
                 refueling_interval = {}: nat64;
                 vault_intial_supply = {}: nat;
                 indexer = record {{ 
-                    initial_value = {}: nat;
-                    refueling_value = {}: nat;
+                    initial_supply = {}: nat;
+                    refueling_amount = {}: nat;
                     refueling_threshold = {}: nat;
                 }};
                 db = record {{ 
-                    initial_value = {}: nat;
-                    refueling_value = {}: nat;
+                    initial_supply = {}: nat;
+                    refueling_amount = {}: nat;
                     refueling_threshold = {}: nat;
                 }};
                 proxy = record {{ 
-                    initial_value = {}: nat;
-                    refueling_value = {}: nat;
+                    initial_supply = {}: nat;
+                    refueling_amount = {}: nat;
                     refueling_threshold = {}: nat;
                 }};
         }})' --with-cycles {} --wallet $(dfx identity get-wallet {})"#,
@@ -59,16 +54,16 @@ pub fn init_in_env_task(network: &Network, id: &str, cycles: &Option<CycleManage
         },
         cycles.refueling_interval,
         cycles.vault_intial_supply,
-        cycles.indexer.initial_value,
-        cycles.indexer.refueling_value,
+        cycles.indexer.initial_supply,
+        cycles.indexer.refueling_amount,
         cycles.indexer.refueling_threshold,
-        cycles.db.initial_value,
-        cycles.db.refueling_value,
+        cycles.db.initial_supply,
+        cycles.db.refueling_amount,
         cycles.db.refueling_threshold,
-        cycles.proxy.initial_value,
-        cycles.proxy.refueling_value,
+        cycles.proxy.initial_supply,
+        cycles.proxy.refueling_amount,
         cycles.proxy.refueling_threshold,
-        total_cycles,
+        cycles.initial_supply(),
         network_param(network),
     )
 }

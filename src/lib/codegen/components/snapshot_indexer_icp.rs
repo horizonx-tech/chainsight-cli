@@ -15,8 +15,8 @@ use crate::{
 
 use super::{
     common::{
-        custom_tags_interval_sec, ComponentManifest, ComponentMetadata, Datasource,
-        DestinationType, GeneratedCodes, Sources, DEFAULT_MONITOR_DURATION_SECS,
+        custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
+        Datasource, DestinationType, GeneratedCodes, Sources, DEFAULT_MONITOR_DURATION_SECS,
     },
     utils::generate_types_from_bindings,
 };
@@ -31,7 +31,7 @@ pub struct SnapshotIndexerICPComponentManifest {
     pub datasource: Datasource,
     pub lens_targets: Option<LensTargets>,
     pub interval: u32,
-    pub cycles: Option<CycleManagements>,
+    pub cycles: Option<CycleManagementsManifest>,
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -196,8 +196,8 @@ impl ComponentManifest for SnapshotIndexerICPComponentManifest {
 
         Ok(BTreeMap::from([("lib".to_string(), lib)]))
     }
-    fn cycle_managements(&self) -> Option<CycleManagements> {
-        self.cycles.clone()
+    fn cycle_managements(&self) -> CycleManagements {
+        self.cycles.clone().unwrap_or_default().into()
     }
 }
 

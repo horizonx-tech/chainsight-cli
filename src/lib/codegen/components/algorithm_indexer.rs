@@ -13,8 +13,8 @@ use crate::{
 };
 
 use super::common::{
-    custom_tags_interval_sec, ComponentManifest, ComponentMetadata, GeneratedCodes, SourceType,
-    Sources, DEFAULT_MONITOR_DURATION_SECS,
+    custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
+    GeneratedCodes, SourceType, Sources, DEFAULT_MONITOR_DURATION_SECS,
 };
 
 /// Component Manifest: Algorithm Indexer
@@ -27,7 +27,7 @@ pub struct AlgorithmIndexerComponentManifest {
     pub datasource: AlgorithmIndexerDatasource,
     pub output: Vec<AlgorithmIndexerOutput>,
     pub interval: u32,
-    pub cycles: Option<CycleManagements>,
+    pub cycles: Option<CycleManagementsManifest>,
 }
 
 impl From<AlgorithmIndexerComponentManifest>
@@ -150,8 +150,8 @@ impl ComponentManifest for AlgorithmIndexerComponentManifest {
         res.insert(interval_key, interval_val);
         res
     }
-    fn cycle_managements(&self) -> Option<CycleManagements> {
-        self.cycles.clone()
+    fn cycle_managements(&self) -> CycleManagements {
+        self.cycles.clone().unwrap_or_default().into()
     }
 }
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]

@@ -10,8 +10,8 @@ use crate::{
 };
 
 use super::common::{
-    custom_tags_interval_sec, ComponentManifest, ComponentMetadata, Datasource, DestinationType,
-    GeneratedCodes, Sources, DEFAULT_MONITOR_DURATION_SECS,
+    custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
+    Datasource, DestinationType, GeneratedCodes, Sources, DEFAULT_MONITOR_DURATION_SECS,
 };
 
 /// Component Manifest: Snapshot Indexer EVM
@@ -23,7 +23,7 @@ pub struct SnapshotIndexerEVMComponentManifest {
     pub metadata: ComponentMetadata,
     pub datasource: Datasource,
     pub interval: u32,
-    pub cycles: Option<CycleManagements>,
+    pub cycles: Option<CycleManagementsManifest>,
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -163,8 +163,8 @@ impl ComponentManifest for SnapshotIndexerEVMComponentManifest {
         res.insert(interval_key, interval_val);
         res
     }
-    fn cycle_managements(&self) -> Option<CycleManagements> {
-        self.cycles.clone()
+    fn cycle_managements(&self) -> CycleManagements {
+        self.cycles.clone().unwrap_or_default().into()
     }
 }
 

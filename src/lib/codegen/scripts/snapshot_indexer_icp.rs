@@ -36,7 +36,7 @@ fn script_contents(manifest: &SnapshotIndexerICPComponentManifest, network: Netw
         manifest.interval,
         5, // temp: fixed value, todo: make it configurable
     );
-    let init_in_env_task = init_in_env_task(&network, &id, &manifest.cycles);
+    let init_in_env_task = init_in_env_task(&network, &id, &manifest.cycle_managements());
 
     format!(
         r#"#!/bin/bash
