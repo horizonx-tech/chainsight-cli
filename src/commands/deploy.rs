@@ -93,8 +93,9 @@ fn check_before_deployment(
         },
     )?;
 
-    let exec =
-        |args: Vec<&str>| -> anyhow::Result<()> { exec_command(log, "dfx", artifacts_path, args) };
+    let exec = |args: Vec<&str>| -> anyhow::Result<String> {
+        exec_command(log, "dfx", artifacts_path, args)
+    };
     let args_builder = DfxArgsBuilder::new_only_network(network);
     exec(args_builder.generate(vec!["identity", "whoami"]))?;
     exec(args_builder.generate(vec!["identity", "get-principal"]))?;
@@ -111,8 +112,9 @@ fn execute_deployment(
 ) -> anyhow::Result<()> {
     let artifacts_path = Path::new(&artifacts_path_str);
 
-    let exec =
-        |args: Vec<&str>| -> anyhow::Result<()> { exec_command(log, "dfx", artifacts_path, args) };
+    let exec = |args: Vec<&str>| -> anyhow::Result<String> {
+        exec_command(log, "dfx", artifacts_path, args)
+    };
     let args_builder = DfxArgsBuilder::new(network.clone(), component.clone());
 
     // Check before deployments
@@ -159,20 +161,17 @@ fn exec_command(
     cmd: &str,
     execution_dir: &Path,
     args: Vec<&str>,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<String> {
     let cmd_string = format!("{} {}", cmd, args.join(" "));
     info!(log, "Running command: '{}'", cmd_string);
 
     let output = output_by_exec_cmd(cmd, execution_dir, args)
         .unwrap_or_else(|_| panic!("failed to execute process: {}", cmd_string));
     if output.status.success() {
-        debug!(
-            log,
-            "{}",
-            std::str::from_utf8(&output.stdout).unwrap_or("failed to parse stdout")
-        );
+        let stdout = std::str::from_utf8(&output.stdout);
+        debug!(log, "{}", stdout.unwrap_or("failed to parse stdout"));
         info!(log, "Suceeded: {}", cmd_string);
-        anyhow::Ok(())
+        anyhow::Ok(stdout.unwrap_or_default().to_string())
     } else {
         bail!(format!(
             "Failed: {} by: {} ",
