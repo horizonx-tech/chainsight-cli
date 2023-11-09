@@ -289,14 +289,14 @@ impl ComponentTypeInManifest {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct CycleManagementManifest {
     pub initial_supply: Option<u128>,
     pub refueling_amount: Option<u128>,
     pub refueling_threshold: Option<u128>,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct CycleManagementsManifest {
     pub refueling_interval: Option<u64>,
     pub vault_intial_supply: Option<u128>,
@@ -328,27 +328,6 @@ impl Into<CycleManagements> for CycleManagementsManifest {
                 refueling_amount: proxy.refueling_amount.unwrap_or(100_000_000_000),
                 refueling_threshold: proxy.refueling_threshold.unwrap_or(100_000_000_000),
             },
-        }
-    }
-}
-
-impl Default for CycleManagementsManifest {
-    fn default() -> Self {
-        Self {
-            refueling_interval: None,
-            vault_intial_supply: None,
-            indexer: None,
-            db: None,
-            proxy: None,
-        }
-    }
-}
-impl Default for CycleManagementManifest {
-    fn default() -> Self {
-        Self {
-            initial_supply: None,
-            refueling_amount: None,
-            refueling_threshold: None,
         }
     }
 }
