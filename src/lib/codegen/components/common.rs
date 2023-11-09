@@ -305,14 +305,14 @@ pub struct CycleManagementsManifest {
     pub proxy: Option<CycleManagementManifest>,
 }
 
-impl Into<CycleManagements> for CycleManagementsManifest {
-    fn into(self) -> CycleManagements {
-        let indexer = self.indexer.unwrap_or_default();
-        let db = self.db.unwrap_or_default();
-        let proxy = self.proxy.unwrap_or_default();
+impl From<CycleManagementsManifest> for CycleManagements {
+    fn from(val: CycleManagementsManifest) -> CycleManagements {
+        let indexer = val.indexer.unwrap_or_default();
+        let db = val.db.unwrap_or_default();
+        let proxy = val.proxy.unwrap_or_default();
         CycleManagements {
-            refueling_interval: self.refueling_interval.unwrap_or(86400),
-            vault_intial_supply: self.vault_intial_supply.unwrap_or(1_000_000_000_000),
+            refueling_interval: val.refueling_interval.unwrap_or(86400),
+            vault_intial_supply: val.vault_intial_supply.unwrap_or(1_000_000_000_000),
             indexer: CycleManagement {
                 initial_supply: indexer.initial_supply.unwrap_or(0),
                 refueling_amount: indexer.refueling_amount.unwrap_or(1_000_000_000_000),

@@ -164,7 +164,7 @@ fn execute_deployment(
             "canister",
             "update-settings",
             "--add-controller",
-            &canister_id.replace("\n", ""),
+            &canister_id.replace('\n', ""),
         ]))?;
     }
 
