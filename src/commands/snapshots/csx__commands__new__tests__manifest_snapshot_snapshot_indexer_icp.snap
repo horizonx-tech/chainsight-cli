@@ -19,8 +19,6 @@ datasource:
     identifier: 'get_last_snapshot : () -> (record { value : text; timestamp : nat64 })'
     interface: null
     args: []
-storage:
-  with_timestamp: true
-interval: 3600
 lens_targets: null
+interval: 3600
 

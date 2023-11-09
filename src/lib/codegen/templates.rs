@@ -1,11 +1,20 @@
 use crate::lib::utils::paths;
 
-pub fn root_cargo_toml(with_accessors: bool) -> String {
-    let members = if with_accessors {
-        vec!["bindings", "canisters", "logics", "accessors"]
-    } else {
-        vec!["bindings", "canisters", "logics"]
-    };
+pub fn root_cargo_toml(
+    component_ids: Vec<String>,
+    with_bindings: bool,
+    with_accessors: bool,
+) -> String {
+    let mut members = component_ids
+        .iter()
+        .flat_map(|x| vec![format!("canisters/{}", x), format!("logics/{}", x)])
+        .collect::<Vec<String>>();
+    if with_bindings {
+        members.push("bindings/*".to_string());
+    }
+    if with_accessors {
+        members.push("accessors/*".to_string());
+    }
 
     format!(
         r#"[workspace]
@@ -27,18 +36,22 @@ hex = "0.4.3"
 
 ic-web3-rs = {{ version = "0.1.2" }}
 ic-solidity-bindgen = {{ version = "0.1.8" }}
-chainsight-cdk-macros = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "c833e6d4f8ab3eed7150bf9503e4c705b0dcbc32" }}
-chainsight-cdk = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "c833e6d4f8ab3eed7150bf9503e4c705b0dcbc32" }}
+chainsight-cdk-macros = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "824e14bce4385b7049ffe35a60ad699806bf0eac" }}
+chainsight-cdk = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "824e14bce4385b7049ffe35a60ad699806bf0eac" }}
 "#,
         members
             .iter()
-            .map(|x| format!(r#""{}/*""#, x))
+            .map(|x| format!(r#""{}""#, x))
             .collect::<Vec<String>>()
             .join(", ")
     )
 }
 
-pub fn logic_cargo_toml(project_name: &str, dependencies: Vec<String>) -> String {
+pub fn logic_cargo_toml(
+    project_name: &str,
+    with_bindings: bool,
+    dependencies: Vec<String>,
+) -> String {
     let txt = format!(
         r#"[package]
 name = "{}"
@@ -64,8 +77,14 @@ chainsight-cdk-macros.workspace = true
 chainsight-cdk.workspace = true
 
 {}
+{}
 "#,
         project_name,
+        if with_bindings {
+            paths::bindings_dependency(project_name)
+        } else {
+            "".to_string()
+        },
         if dependencies.is_empty() {
             "".to_string()
         } else {
@@ -114,7 +133,7 @@ chainsight-cdk.workspace = true
     txt
 }
 
-pub fn canister_project_cargo_toml(project_name: &str) -> String {
+pub fn canister_project_cargo_toml(project_name: &str, with_bindings: bool) -> String {
     format!(
         r#"[package]
 name = "{}"
@@ -140,9 +159,15 @@ chainsight-cdk-macros.workspace = true
 chainsight-cdk.workspace = true
 
 {}
+{}
 "#,
         paths::canister_name(project_name),
         paths::logic_dependency(project_name),
+        if with_bindings {
+            paths::bindings_dependency(project_name)
+        } else {
+            "".to_string()
+        }
     )
 }
 
@@ -159,6 +184,7 @@ crate-type = ["rlib"]
 [dependencies]
 candid.workspace = true
 ic-cdk.workspace = true
+ic-stable-structures.workspace = true
 serde.workspace = true
 serde_bytes.workspace = true
 
@@ -234,18 +260,29 @@ mod tests {
 
     #[test]
     fn test_snapshot_root_cargo_toml() {
-        assert_display_snapshot!(root_cargo_toml(false))
-    }
-
-    #[test]
-    fn test_snapshot_root_cargo_toml_with_accessors() {
-        assert_display_snapshot!(root_cargo_toml(true))
+        let project_ids = vec![
+            "sample_snapshot".to_string(),
+            "sample_lens".to_string(),
+            "sample_relayer".to_string(),
+        ];
+        assert_display_snapshot!(
+            "snapshot_root_cargo_toml",
+            root_cargo_toml(project_ids.clone(), false, false)
+        );
+        assert_display_snapshot!(
+            "snapshot_root_cargo_toml_with_bindings",
+            root_cargo_toml(project_ids.clone(), true, false)
+        );
+        assert_display_snapshot!(
+            "snapshot_root_cargo_toml_with_accessors",
+            root_cargo_toml(project_ids.clone(), true, true)
+        );
     }
 
     #[test]
     fn test_snapshot_logic_cargo_toml() {
         let dependencies = vec!["sample_snapshot".to_string(), "sample_lens".to_string()];
-        assert_display_snapshot!(logic_cargo_toml(PROJECT_NAME, dependencies))
+        assert_display_snapshot!(logic_cargo_toml(PROJECT_NAME, false, dependencies))
     }
 
     #[test]
@@ -256,7 +293,7 @@ mod tests {
 
     #[test]
     fn test_snapshot_canister_cargo_toml() {
-        assert_display_snapshot!(canister_project_cargo_toml(PROJECT_NAME))
+        assert_display_snapshot!(canister_project_cargo_toml(PROJECT_NAME, false))
     }
 
     #[test]

@@ -1,8 +1,8 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 use chainsight_cdk::{
     config::components::{CommonConfig, LensTargets},
-    convert::candid::CanisterMethodIdentifier,
+    convert::candid::{read_did_to_string_without_service, CanisterMethodIdentifier},
     initializer::CycleManagements,
 };
 use serde::{Deserialize, Serialize};
@@ -13,9 +13,12 @@ use crate::{
     types::{ComponentType, Network},
 };
 
-use super::common::{
-    custom_tags_interval_sec, ComponentManifest, ComponentMetadata, Datasource, DestinationType,
-    GeneratedCodes, SnapshotStorage, Sources, DEFAULT_MONITOR_DURATION_SECS,
+use super::{
+    common::{
+        custom_tags_interval_sec, ComponentManifest, ComponentMetadata, Datasource,
+        DestinationType, GeneratedCodes, Sources, DEFAULT_MONITOR_DURATION_SECS,
+    },
+    utils::generate_types_from_bindings,
 };
 
 /// Component Manifest: Snapshot Indexer ICP
@@ -26,9 +29,8 @@ pub struct SnapshotIndexerICPComponentManifest {
     pub version: String,
     pub metadata: ComponentMetadata,
     pub datasource: Datasource,
-    pub storage: SnapshotStorage,
-    pub interval: u32,
     pub lens_targets: Option<LensTargets>,
+    pub interval: u32,
     pub cycles: Option<CycleManagements>,
 }
 
@@ -44,7 +46,6 @@ impl SnapshotIndexerICPComponentManifest {
         description: &str,
         version: &str,
         datasource: Datasource,
-        storage: SnapshotStorage,
         interval: u32,
     ) -> Self {
         Self {
@@ -61,7 +62,6 @@ impl SnapshotIndexerICPComponentManifest {
                 ]),
             },
             datasource,
-            storage,
             interval,
             lens_targets: None,
             cycles: Some(CycleManagements::default()),
@@ -112,11 +112,10 @@ impl ComponentManifest for SnapshotIndexerICPComponentManifest {
     ) -> anyhow::Result<GeneratedCodes> {
         let lib = canisters::snapshot_indexer_icp::generate_codes(self)?;
 
-        // NOTE/TODO: Duplicate types.rs in /logics
-        let types = {
-            let identifier = CanisterMethodIdentifier::new(&self.datasource.method.identifier)?;
-            identifier.compile()
-        };
+        let types = generate_types_from_bindings(
+            &self.id.clone().unwrap(),
+            &self.datasource.method.identifier,
+        )?;
 
         Ok(GeneratedCodes {
             lib,
@@ -145,21 +144,13 @@ impl ComponentManifest for SnapshotIndexerICPComponentManifest {
     }
 
     fn required_interface(&self) -> Option<String> {
-        self.datasource.method.interface.clone()
+        None
     }
 
     fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
         let lib = canisters::snapshot_indexer_icp::generate_app(self)?;
 
-        let types = {
-            let identifier = CanisterMethodIdentifier::new(&self.datasource.method.identifier)?;
-            identifier.compile()
-        };
-
-        Ok(GeneratedCodes {
-            lib,
-            types: Some(types),
-        })
+        Ok(GeneratedCodes { lib, types: None })
     }
     fn get_sources(&self) -> Sources {
         let mut attr = HashMap::new();
@@ -187,6 +178,23 @@ impl ComponentManifest for SnapshotIndexerICPComponentManifest {
         let (interval_key, interval_val) = custom_tags_interval_sec(self.interval);
         res.insert(interval_key, interval_val);
         res
+    }
+    fn generate_bindings(&self) -> anyhow::Result<BTreeMap<String, String>> {
+        let SnapshotIndexerICPComponentManifest {
+            datasource: Datasource { method, .. },
+            ..
+        } = self;
+        let interface = method.interface.clone();
+        let lib = if let Some(path) = interface {
+            let did_str = read_did_to_string_without_service(path)?;
+            let identifier = CanisterMethodIdentifier::new_with_did(&method.identifier, did_str)?;
+            identifier.compile()?
+        } else {
+            let identifier = CanisterMethodIdentifier::new(&method.identifier)?;
+            identifier.compile()?
+        };
+
+        Ok(BTreeMap::from([("lib".to_string(), lib)]))
     }
     fn cycle_managements(&self) -> Option<CycleManagements> {
         self.cycles.clone()
@@ -253,9 +261,6 @@ interval: 3600
                         args: vec![]
                     }
                 },
-                storage: SnapshotStorage {
-                    with_timestamp: true,
-                },
                 lens_targets: None,
                 interval: 3600,
                 cycles: Some(CycleManagements::default()),
@@ -292,9 +297,6 @@ interval: 3600
                     args: vec![],
                 },
             },
-            storage: SnapshotStorage {
-                with_timestamp: true,
-            },
             lens_targets: None,
             interval: 3600,
             cycles: Some(CycleManagements::default()),
@@ -312,14 +314,12 @@ interval: 3600
         );
 
         let generated_user_impl_template = manifest.generate_user_impl_template().unwrap();
+
         assert_display_snapshot!(
             format!("{}__logics_lib", &snap_prefix),
             SrcString::from(generated_user_impl_template.lib)
         );
-        assert_display_snapshot!(
-            format!("{}__logics_types", &snap_prefix),
-            generated_user_impl_template.types.unwrap()
-        );
+        assert!(generated_user_impl_template.types.is_none());
 
         assert_display_snapshot!(
             format!("{}__scripts", &snap_prefix),

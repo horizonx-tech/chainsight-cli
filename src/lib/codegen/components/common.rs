@@ -1,4 +1,9 @@
-use std::{collections::HashMap, fs::OpenOptions, io::Read, path::Path};
+use std::{
+    collections::{BTreeMap, HashMap},
+    fs::OpenOptions,
+    io::Read,
+    path::Path,
+};
 
 use anyhow::bail;
 use chainsight_cdk::initializer::CycleManagements;
@@ -76,11 +81,6 @@ pub struct DatasourceMethod {
     pub identifier: String,
     pub interface: Option<String>,
     pub args: Vec<serde_yaml::Value>,
-}
-
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-pub struct SnapshotStorage {
-    pub with_timestamp: bool,
 }
 
 impl Datasource {
@@ -163,17 +163,6 @@ impl DatasourceLocation {
     }
 }
 
-impl SnapshotStorage {
-    pub fn new(with_timestamp: bool) -> Self {
-        Self { with_timestamp }
-    }
-}
-impl Default for SnapshotStorage {
-    fn default() -> Self {
-        Self::new(true)
-    }
-}
-
 pub struct GeneratedCodes {
     pub lib: String,
     pub types: Option<String>,
@@ -252,6 +241,11 @@ pub trait ComponentManifest: std::fmt::Debug {
 
     /// Sources of data provided by this component
     fn get_sources(&self) -> Sources;
+
+    /// Generate bindings with candid files
+    fn generate_bindings(&self) -> anyhow::Result<BTreeMap<String, String>> {
+        Ok(BTreeMap::new())
+    }
 
     /// Label of this component on which the component depends
     /// NOTE: only used by alhorithm_lens

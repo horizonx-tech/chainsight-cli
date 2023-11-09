@@ -5,7 +5,7 @@
   "$comment": "Chainsight HTTPS Snapshot Indexer specification",
   "description": "Chainsight HTTPS Snapshot Indexer specification",
   "type": "object",
-  "required": ["version", "metadata", "datasource", "storage", "interval"],
+  "required": ["version", "metadata", "datasource", "interval"],
   "properties": {
     "version": {
       "$id": "#/properties/version",
@@ -110,21 +110,6 @@
               "precision": 18
             }
           ]
-        }
-      }
-    },
-    "storage": {
-      "$id": "#/properties/storage",
-      "title": "storage",
-      "description": "storage properties for the canister",
-      "type": "object",
-      "required": ["with_timestamp"],
-      "properties": {
-        "with_timestamp": {
-          "type": "boolean",
-          "title": "with_timestamptamp",
-          "description": "whether to store the data with timestamp",
-          "examples": [true]
         }
       }
     },

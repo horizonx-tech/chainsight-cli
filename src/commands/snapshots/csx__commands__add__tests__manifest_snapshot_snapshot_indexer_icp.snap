@@ -19,8 +19,6 @@ datasource:
     identifier: function_identifier()
     interface: null
     args: []
-storage:
-  with_timestamp: true
-interval: 3600
 lens_targets: null
+interval: 3600
 

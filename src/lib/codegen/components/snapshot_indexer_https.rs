@@ -11,7 +11,7 @@ use crate::{
 
 use super::common::{
     custom_tags_interval_sec, ComponentManifest, ComponentMetadata, DestinationType,
-    GeneratedCodes, SnapshotStorage, Sources, DEFAULT_MONITOR_DURATION_SECS,
+    GeneratedCodes, Sources, DEFAULT_MONITOR_DURATION_SECS,
 };
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 
@@ -47,7 +47,6 @@ pub struct SnapshotIndexerHTTPSComponentManifest {
     pub version: String,
     pub metadata: ComponentMetadata,
     pub datasource: SnapshotIndexerHTTPSDataSource,
-    pub storage: SnapshotStorage,
     pub interval: u32,
     pub cycles: Option<CycleManagements>,
 }
@@ -59,7 +58,6 @@ impl SnapshotIndexerHTTPSComponentManifest {
         description: &str,
         version: &str,
         datasource: SnapshotIndexerHTTPSDataSource,
-        storage: SnapshotStorage,
         interval: u32,
     ) -> Self {
         Self {
@@ -76,7 +74,6 @@ impl SnapshotIndexerHTTPSComponentManifest {
                 ]),
             },
             datasource,
-            storage,
             interval,
             cycles: Some(CycleManagements::default()),
         }
@@ -239,9 +236,6 @@ interval: 3600
                     .into_iter()
                     .collect(),
                 },
-                storage: SnapshotStorage {
-                    with_timestamp: true,
-                },
                 interval: 3600,
                 cycles: Some(CycleManagements::default()),
             }
@@ -282,9 +276,6 @@ interval: 3600
                 ]
                 .into_iter()
                 .collect(),
-            },
-            storage: SnapshotStorage {
-                with_timestamp: true,
             },
             interval: 3600,
             cycles: Some(CycleManagements::default()),

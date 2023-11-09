@@ -1,6 +1,6 @@
 ---
 source: src/lib/codegen/templates.rs
-expression: "logic_cargo_toml(PROJECT_NAME, dependencies)"
+expression: "logic_cargo_toml(PROJECT_NAME, false, dependencies)"
 ---
 [package]
 name = "sample"
@@ -24,6 +24,7 @@ ic-web3-rs.workspace = true
 ic-solidity-bindgen.workspace = true
 chainsight-cdk-macros.workspace = true
 chainsight-cdk.workspace = true
+
 
 sample_accessors = { path = "../../accessors/sample_accessors" }
 

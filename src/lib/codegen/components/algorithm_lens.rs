@@ -1,8 +1,9 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 use candid::Principal;
 use chainsight_cdk::{
-    config::components::CommonConfig, convert::candid::CanisterMethodIdentifier,
+    config::components::CommonConfig,
+    convert::candid::{read_did_to_string_without_service, CanisterMethodIdentifier},
     initializer::CycleManagements,
 };
 use serde::{Deserialize, Serialize};
@@ -123,12 +124,43 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
     fn get_sources(&self) -> Sources {
         Sources {
             source_type: SourceType::Chainsight,
-            source: Principal::anonymous().to_string(),
+            source: Principal::anonymous().to_string(), // TEMP?
             attributes: HashMap::new(),
         }
     }
     fn custom_tags(&self) -> HashMap<String, String> {
         HashMap::new()
+    }
+
+    fn generate_bindings(&self) -> anyhow::Result<BTreeMap<String, String>> {
+        let AlgorithmLensComponentManifest {
+            datasource: AlgorithmLensDataSource { methods, .. },
+            ..
+        } = self;
+
+        let mut bindings: BTreeMap<String, String> = BTreeMap::new();
+        for method in methods {
+            let mod_name = method.id.to_string();
+            let codes = if let Some(path) = &method.candid_file_path {
+                let did_str = read_did_to_string_without_service(path)?;
+                let identifier =
+                    CanisterMethodIdentifier::new_with_did(&method.identifier, did_str)?;
+                identifier.compile()?
+            } else {
+                let identifier = CanisterMethodIdentifier::new(&method.identifier)?;
+                identifier.compile()?
+            };
+            bindings.insert(mod_name, codes);
+        }
+
+        let lib = bindings
+            .keys()
+            .map(|v| format!(r#"pub mod {};"#, v))
+            .collect::<Vec<String>>()
+            .join("\n");
+        bindings.insert("lib".to_string(), lib);
+
+        Ok(bindings)
     }
 
     fn dependencies(&self) -> Vec<String> {
@@ -140,49 +172,11 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
     }
     fn generate_dependency_accessors(&self) -> anyhow::Result<GeneratedCodes> {
         let lib = canisters::algorithm_lens::generate_dependencies_accessor(self)?;
-        let types = generate_accessors_types(&self.datasource.methods)?;
-
-        Ok(GeneratedCodes {
-            lib,
-            types: Some(types),
-        })
+        Ok(GeneratedCodes { lib, types: None })
     }
     fn cycle_managements(&self) -> Option<CycleManagements> {
         self.cycles.clone()
     }
-}
-
-fn generate_accessors_types(
-    methods: &Vec<AlgorithmLensDataSourceMethod>,
-) -> anyhow::Result<String> {
-    // OPTIMIZE: this logics
-    let mut types: Vec<String> = vec![];
-    let req_ty = CanisterMethodIdentifier::REQUEST_ARGS_TYPE_NAME;
-    let res_ty = CanisterMethodIdentifier::RESPONSE_TYPE_NAME;
-    types.push("#![allow(dead_code, unused_imports)]".to_string());
-    types.push(
-        "use candid::{self, CandidType, Deserialize, Principal, Encode, Decode};".to_string(),
-    );
-    for method in methods {
-        let method_identifier = CanisterMethodIdentifier::new(&method.identifier)
-            .expect("method_identifier parse error");
-        let contents = method_identifier
-            .compile()
-            .lines()
-            .skip(2)
-            .map(|line| {
-                if line.contains(req_ty) {
-                    return line.replace(req_ty, &format!("{}__{}", req_ty, method.id));
-                }
-                if line.contains(res_ty) {
-                    return line.replace(res_ty, &format!("{}__{}", res_ty, method.id));
-                }
-                line.to_string()
-            })
-            .collect::<Vec<_>>();
-        types.extend(contents)
-    }
-    Ok(types.join("\n"))
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -202,7 +196,7 @@ pub struct AlgorithmLensDataSource {
 pub struct AlgorithmLensDataSourceMethod {
     pub id: String,
     pub identifier: String,
-    pub candid_file_path: String,
+    pub candid_file_path: Option<String>,
 }
 
 impl Default for AlgorithmLensDataSource {
@@ -210,8 +204,10 @@ impl Default for AlgorithmLensDataSource {
         Self {
             methods: vec![AlgorithmLensDataSourceMethod {
                 id: "sample_snapshot_indexer_icp".to_string(),
-                identifier: "get_last_snapshot : () -> (Snapshot)".to_string(),
-                candid_file_path: "interfaces/sample.did".to_string(),
+                identifier:
+                    "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"
+                        .to_string(),
+                candid_file_path: None,
             }],
         }
     }
@@ -271,7 +267,7 @@ output:
                     methods: vec![AlgorithmLensDataSourceMethod {
                         id: "last_snapshot".to_string(),
                         identifier: "get_last_snapshot : () -> (Snapshot)".to_string(),
-                        candid_file_path: "interfaces/sample.did".to_string(),
+                        candid_file_path: Some("interfaces/sample.did".to_string()),
                     }],
                 },
                 cycles: Some(CycleManagements::default()),
@@ -332,7 +328,7 @@ datasource:
                     identifier:
                         "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"
                             .to_string(),
-                    candid_file_path: "interfaces/sample.did".to_string(),
+                    candid_file_path: Some("interfaces/sample.did".to_string()),
                 }],
             },
             cycles: Some(CycleManagements::default()),

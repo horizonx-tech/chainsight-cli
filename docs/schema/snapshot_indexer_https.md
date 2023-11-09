@@ -12,9 +12,7 @@
   - [3.2. Property `Chainsight HTTPS Snapshot Indexer specification > datasource > headers`](#datasource_headers)
     - [3.2.1. Pattern Property `Chainsight HTTPS Snapshot Indexer specification > datasource > headers > ^[a-zA-Z0-9_\-]+$`](#datasource_headers_pattern1)
   - [3.3. Property `Chainsight HTTPS Snapshot Indexer specification > datasource > queries`](#datasource_queries)
-- [4. Property `Chainsight HTTPS Snapshot Indexer specification > storage`](#storage)
-  - [4.1. Property `Chainsight HTTPS Snapshot Indexer specification > storage > with_timestamp`](#storage_with_timestamp)
-- [5. Property `Chainsight HTTPS Snapshot Indexer specification > interval`](#interval)
+- [4. Property `Chainsight HTTPS Snapshot Indexer specification > interval`](#interval)
 
 **Title:** Chainsight HTTPS Snapshot Indexer specification
 
@@ -31,7 +29,6 @@
 | + [version](#version )       | No      | string | No         | -          | specification version of the canister |
 | + [metadata](#metadata )     | No      | object | No         | -          | metadata                              |
 | + [datasource](#datasource ) | No      | object | No         | -          | -                                     |
-| + [storage](#storage )       | No      | object | No         | -          | storage                               |
 | + [interval](#interval )     | No      | number | No         | -          | interval                              |
 
 ## <a name="version"></a>1. Property `Chainsight HTTPS Snapshot Indexer specification > version`
@@ -302,40 +299,7 @@ must respect the following conditions
 }
 ```
 
-## <a name="storage"></a>4. Property `Chainsight HTTPS Snapshot Indexer specification > storage`
-
-**Title:** storage
-
-|                           |                                                                           |
-| ------------------------- | ------------------------------------------------------------------------- |
-| **Type**                  | `object`                                                                  |
-| **Required**              | Yes                                                                       |
-| **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
-
-**Description:** storage properties for the canister
-
-| Property                                     | Pattern | Type    | Deprecated | Definition | Title/Description  |
-| -------------------------------------------- | ------- | ------- | ---------- | ---------- | ------------------ |
-| + [with_timestamp](#storage_with_timestamp ) | No      | boolean | No         | -          | with_timestamptamp |
-
-### <a name="storage_with_timestamp"></a>4.1. Property `Chainsight HTTPS Snapshot Indexer specification > storage > with_timestamp`
-
-**Title:** with_timestamptamp
-
-|              |           |
-| ------------ | --------- |
-| **Type**     | `boolean` |
-| **Required** | Yes       |
-
-**Description:** whether to store the data with timestamp
-
-**Example:** 
-
-```json
-true
-```
-
-## <a name="interval"></a>5. Property `Chainsight HTTPS Snapshot Indexer specification > interval`
+## <a name="interval"></a>4. Property `Chainsight HTTPS Snapshot Indexer specification > interval`
 
 **Title:** interval
 
@@ -353,4 +317,4 @@ true
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-10-30 at 13:46:44 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-11-07 at 12:43:34 +0000

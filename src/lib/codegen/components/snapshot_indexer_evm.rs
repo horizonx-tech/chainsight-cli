@@ -1,9 +1,6 @@
 use std::collections::HashMap;
 
-use chainsight_cdk::{
-    config::components::{CommonConfig, LensTargets},
-    initializer::CycleManagements,
-};
+use chainsight_cdk::{config::components::CommonConfig, initializer::CycleManagements};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -14,7 +11,7 @@ use crate::{
 
 use super::common::{
     custom_tags_interval_sec, ComponentManifest, ComponentMetadata, Datasource, DestinationType,
-    GeneratedCodes, SnapshotStorage, Sources, DEFAULT_MONITOR_DURATION_SECS,
+    GeneratedCodes, Sources, DEFAULT_MONITOR_DURATION_SECS,
 };
 
 /// Component Manifest: Snapshot Indexer EVM
@@ -25,9 +22,7 @@ pub struct SnapshotIndexerEVMComponentManifest {
     pub version: String,
     pub metadata: ComponentMetadata,
     pub datasource: Datasource,
-    pub storage: SnapshotStorage,
     pub interval: u32,
-    pub lens_targets: Option<LensTargets>,
     pub cycles: Option<CycleManagements>,
 }
 
@@ -43,7 +38,6 @@ impl SnapshotIndexerEVMComponentManifest {
         description: &str,
         version: &str,
         datasource: Datasource,
-        storage: SnapshotStorage,
         interval: u32,
     ) -> Self {
         Self {
@@ -60,9 +54,7 @@ impl SnapshotIndexerEVMComponentManifest {
                 ]),
             },
             datasource,
-            storage,
             interval,
-            lens_targets: None,
             cycles: Some(CycleManagements::default()),
         }
     }
@@ -156,10 +148,6 @@ impl ComponentManifest for SnapshotIndexerEVMComponentManifest {
                 .replace(' ', "")
                 .replace("()", "");
         }
-        if self.lens_targets.is_some() {
-            let targets = self.lens_targets.clone().unwrap().identifiers;
-            attr.insert("sources".to_string(), json!(targets));
-        }
 
         attr.insert("function_name".to_string(), json!(method_identifier));
         Sources {
@@ -223,8 +211,6 @@ datasource:
         identifier: totalSupply():(uint256)
         interface: ERC20.json
         args: []
-storage:
-    with_timestamp: true
 interval: 3600
         "#;
 
@@ -254,10 +240,6 @@ interval: 3600
                         args: vec![]
                     }
                 },
-                storage: SnapshotStorage {
-                    with_timestamp: true,
-                },
-                lens_targets: None,
                 interval: 3600,
                 cycles: Some(CycleManagements::default()),
             }
@@ -296,10 +278,6 @@ interval: 3600
                     args: vec![],
                 },
             },
-            storage: SnapshotStorage {
-                with_timestamp: true,
-            },
-            lens_targets: None,
             interval: 3600,
             cycles: Some(CycleManagements::default()),
         };

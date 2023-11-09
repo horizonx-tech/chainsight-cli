@@ -10,7 +10,7 @@ Inflector = "0.11.4"
 anstyle = "1.0.1"
 anyhow = "1.0.71"
 candid = { version = "0.9.0", features = ["parser"] }
-chainsight-cdk = { git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "c833e6d4f8ab3eed7150bf9503e4c705b0dcbc32" }
+chainsight-cdk = { git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "824e14bce4385b7049ffe35a60ad699806bf0eac" }
 clap = { version = "4.3.0", features = ["derive", "env", "unstable-styles", "wrap_help"] }
 dialoguer = "0.11.0"
 dotenvy = "0.15.7"

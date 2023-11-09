@@ -5,7 +5,7 @@
   "$comment": "Chainsight ICP Snapshot Indexer specification",
   "description": "Chainsight ICP Snapshot Indexer specification",
   "type": "object",
-  "required": ["version", "metadata", "datasource", "storage", "interval"],
+  "required": ["version", "metadata", "datasource", "interval"],
   "properties": {
     "version": {
       "$id": "#/properties/version",
@@ -126,19 +126,32 @@
         }
       }
     },
-    "storage": {
-      "$id": "#/properties/storage",
-      "title": "storage",
-      "description": "storage properties for the canister",
+    "lens_targets": {
+      "$id": "#/properties/lens_targets",
       "type": "object",
-      "required": ["with_timestamp"],
+      "title": "lens targets",
+      "description": "targets for the lens. Only used when the datasource canister is a algorithm_lens",
+      "required": ["identifiers"],
       "properties": {
-        "with_timestamp": {
-          "$id": "#/properties/storage/properties/with_timestamp",
-          "type": "boolean",
-          "title": "with_timestamptamp",
-          "description": "whether to store the data with timestamp",
-          "examples": [true]
+        "identifiers": {
+          "$id": "#/properties/lens_targets/properties/identifiers",
+          "type": "array",
+          "title": "identifiers",
+          "description": "canister ids of the lens targets. If the canister calls an algorithm_lens and the lens calls 3 canisters, you must set 3 canister ids here",
+          "examples": [
+            [
+              "bw4dl-smaaa-aaaaa-qaacq-cai",
+              "bw4dl-smaaa-aaaaa-qaacq-cai",
+              "bw4dl-smaaa-aaaaa-qaacq-cai"
+            ],
+            ["bw4dl-smaaa-aaaaa-qaacq-cai"]
+          ],
+          "items": {
+            "$id": "#/properties/lens_targets/properties/identifiers/items",
+            "type": "string",
+            "examples": ["bw4dl-smaaa-aaaaa-qaacq-cai"],
+            "pattern": "^[a-z0-9_-]+$"
+          }
         }
       }
     },

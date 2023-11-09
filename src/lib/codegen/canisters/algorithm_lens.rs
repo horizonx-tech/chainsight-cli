@@ -88,9 +88,9 @@ pub fn generate_dependencies_accessor(
         .iter()
         .map(|m| generate_query_call(&m.id, &m.identifier));
 
+    let bindings_ident = format_ident!("{}", paths::bindings_name(&manifest.id().unwrap()));
     let code = quote! {
-        mod types;
-        pub use types::*;
+        use #bindings_ident as bindings;
         #(#call_funcs)*
         #call_func_dependencies
     };
@@ -124,25 +124,19 @@ fn generate_query_call(label: &str, method_identifier: &str) -> TokenStream {
         CanisterMethodIdentifier::new(method_identifier).expect("method_identifier parse error");
     let proxy_func_to_call = format!("proxy_{}", &method_identifier.identifier);
 
-    let suffix = label;
-    let response_type_idents = format_ident!(
-        "{}__{}",
-        CanisterMethodIdentifier::RESPONSE_TYPE_NAME,
-        &suffix
-    );
+    let crate_name_ident = format_ident!("bindings");
+    let module_name_ident = format_ident!("{}", label);
+    let response_type_idents = format_ident!("{}", CanisterMethodIdentifier::RESPONSE_TYPE_NAME);
     let (request_args_type, _) = method_identifier.get_types();
     if request_args_type.is_some() {
-        let request_args_type_idents = format_ident!(
-            "{}__{}",
-            CanisterMethodIdentifier::REQUEST_ARGS_TYPE_NAME,
-            &suffix
-        );
+        let request_args_type_idents =
+            format_ident!("{}", CanisterMethodIdentifier::REQUEST_ARGS_TYPE_NAME,);
         quote! {
             algorithm_lens_finder!(
                 #label,
                 #proxy_func_to_call,
-                #response_type_idents,
-                #request_args_type_idents
+                #crate_name_ident::#module_name_ident::#response_type_idents,
+                #crate_name_ident::#module_name_ident::#request_args_type_idents
             );
         }
     } else {
@@ -150,7 +144,7 @@ fn generate_query_call(label: &str, method_identifier: &str) -> TokenStream {
             algorithm_lens_finder!(
                 #label,
                 #proxy_func_to_call,
-                #response_type_idents
+                #crate_name_ident::#module_name_ident::#response_type_idents
             );
         }
     }
