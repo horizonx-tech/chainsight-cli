@@ -2,6 +2,19 @@ use std::{fs::OpenOptions, io::Read, path::Path};
 
 use serde::{Deserialize, Serialize};
 
+use crate::types::ComponentType;
+
+use super::components::{
+    algorithm_indexer::AlgorithmIndexerComponentManifest,
+    algorithm_lens::AlgorithmLensComponentManifest,
+    common::{ComponentManifest, ComponentTypeInManifest},
+    event_indexer::EventIndexerComponentManifest,
+    relayer::RelayerComponentManifest,
+    snapshot_indexer_evm::SnapshotIndexerEVMComponentManifest,
+    snapshot_indexer_https::SnapshotIndexerHTTPSComponentManifest,
+    snapshot_indexer_icp::SnapshotIndexerICPComponentManifest,
+};
+
 /// Manifest to express Chainsight Project
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct ProjectManifestData {
@@ -49,6 +62,17 @@ impl ProjectManifestData {
         }
         Ok(())
     }
+
+    pub fn load_component_manifests(
+        &self,
+        project_path: &str,
+    ) -> anyhow::Result<Vec<Box<dyn ComponentManifest>>> {
+        let mut manifests = vec![];
+        for component in self.components.iter() {
+            manifests.push(component.load_manifest(project_path)?);
+        }
+        Ok(manifests)
+    }
 }
 
 impl ProjectManifestComponentField {
@@ -57,5 +81,44 @@ impl ProjectManifestComponentField {
             component_path: component_path.to_owned(),
             // canister_id // NOTE: Currently not in use
         }
+    }
+
+    pub fn load_manifest(&self, project_path: &str) -> anyhow::Result<Box<dyn ComponentManifest>> {
+        let relative_component_path = &self.component_path;
+        let component_path = format!("{}/{}", project_path, relative_component_path);
+        let component_type = ComponentTypeInManifest::determine_type(&component_path)?;
+
+        let id = Path::new(&component_path)
+            .file_stem()
+            .unwrap()
+            .to_str()
+            .unwrap();
+
+        let manifest: Box<dyn ComponentManifest> =
+            match component_type {
+                ComponentType::EventIndexer => Box::new(
+                    EventIndexerComponentManifest::load_with_id(&component_path, id)?,
+                ),
+                ComponentType::AlgorithmIndexer => Box::new(
+                    AlgorithmIndexerComponentManifest::load_with_id(&component_path, id)?,
+                ),
+                ComponentType::SnapshotIndexerICP => Box::new(
+                    SnapshotIndexerICPComponentManifest::load_with_id(&component_path, id)?,
+                ),
+                ComponentType::SnapshotIndexerEVM => Box::new(
+                    SnapshotIndexerEVMComponentManifest::load_with_id(&component_path, id)?,
+                ),
+                ComponentType::Relayer => {
+                    Box::new(RelayerComponentManifest::load_with_id(&component_path, id)?)
+                }
+                ComponentType::AlgorithmLens => Box::new(
+                    AlgorithmLensComponentManifest::load_with_id(&component_path, id)?,
+                ),
+                ComponentType::SnapshotIndexerHTTPS => Box::new(
+                    SnapshotIndexerHTTPSComponentManifest::load_with_id(&component_path, id)?,
+                ),
+            };
+
+        Ok(manifest)
     }
 }
