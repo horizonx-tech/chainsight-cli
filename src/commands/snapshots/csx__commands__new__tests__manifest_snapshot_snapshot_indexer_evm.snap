@@ -23,4 +23,5 @@ datasource:
     interface: ERC20.json
     args: []
 interval: 3600
+cycles: null
 

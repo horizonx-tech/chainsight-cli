@@ -20,4 +20,5 @@ datasource:
     ids: dai
     vs_currencies: usd
 interval: 3600
+cycles: null
 

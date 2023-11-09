@@ -23,4 +23,5 @@ datasource:
     interface: null
     args: []
 interval: 3600
+cycles: null
 

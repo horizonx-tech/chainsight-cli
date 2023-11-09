@@ -75,7 +75,7 @@ impl SnapshotIndexerHTTPSComponentManifest {
             },
             datasource,
             interval,
-            cycles: Some(CycleManagements::default()),
+            cycles: None,
         }
     }
 }
@@ -237,7 +237,7 @@ interval: 3600
                     .collect(),
                 },
                 interval: 3600,
-                cycles: Some(CycleManagements::default()),
+                cycles: None,
             }
         );
         let schema = serde_json::from_str(include_str!(
@@ -278,7 +278,7 @@ interval: 3600
                 .collect(),
             },
             interval: 3600,
-            cycles: Some(CycleManagements::default()),
+            cycles: None,
         };
 
         let snap_prefix = "snapshot__snapshot_indexer_https";

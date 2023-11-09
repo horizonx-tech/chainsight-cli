@@ -55,7 +55,7 @@ impl SnapshotIndexerEVMComponentManifest {
             },
             datasource,
             interval,
-            cycles: Some(CycleManagements::default()),
+            cycles: None,
         }
     }
 }
@@ -241,7 +241,7 @@ interval: 3600
                     }
                 },
                 interval: 3600,
-                cycles: Some(CycleManagements::default()),
+                cycles: None,
             }
         );
 
@@ -279,7 +279,7 @@ interval: 3600
                 },
             },
             interval: 3600,
-            cycles: Some(CycleManagements::default()),
+            cycles: None,
         };
 
         let snap_prefix = "snapshot__snapshot_indexer_evm";

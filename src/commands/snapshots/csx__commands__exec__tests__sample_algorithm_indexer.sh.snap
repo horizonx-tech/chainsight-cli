@@ -4,7 +4,25 @@ expression: "fs::read_to_string(component_sh_path).unwrap()"
 ---
 #!/bin/bash
 # init
-dfx canister  call sample_algorithm_indexer init_in '(variant { "LocalDevelopment" })'
+dfx canister  call sample_algorithm_indexer init_in '(variant { "LocalDevelopment" }, record {
+                refueling_interval = 86400: nat64;
+                vault_intial_supply = 1000000000000: nat;
+                indexer = record { 
+                    initial_value = 0: nat;
+                    refueling_value = 1000000000000: nat;
+                    refueling_threshold = 500000000000: nat;
+                };
+                db = record { 
+                    initial_value = 2000000000000: nat;
+                    refueling_value = 100000000000: nat;
+                    refueling_threshold = 1000000000000: nat;
+                };
+                proxy = record { 
+                    initial_value = 2000000000: nat;
+                    refueling_value = 1000000000: nat;
+                    refueling_threshold = 1000000000: nat;
+                };
+        })' --with-cycles 3002000000000 --wallet $(dfx identity get-wallet )
 # setup
 dfx canister  call sample_algorithm_indexer setup "(
     \"be2us-64aaa-aaaaa-qaabq-cai\",

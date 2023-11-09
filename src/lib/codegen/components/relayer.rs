@@ -64,7 +64,7 @@ impl RelayerComponentManifest {
             destination,
             lens_targets: None,
             interval,
-            cycles: Some(CycleManagements::default()),
+            cycles: None,
         }
     }
 }
@@ -314,7 +314,7 @@ mod tests {
             },
             lens_targets: None,
             interval: 3600,
-            cycles: Some(CycleManagements::default()),
+            cycles: None,
         }
     }
 
@@ -380,7 +380,7 @@ interval: 3600
                 },
                 lens_targets: None,
                 interval: 3600,
-                cycles: Some(CycleManagements::default()),
+                cycles: None,
             }
         );
         let schema =

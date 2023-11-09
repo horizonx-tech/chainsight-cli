@@ -44,7 +44,7 @@ impl AlgorithmLensComponentManifest {
                 tags: Some(vec!["Ethereum".to_string(), "Account".to_string()]),
             },
             datasource,
-            cycles: Some(CycleManagements::default()),
+            cycles: None,
         }
     }
 }
@@ -270,7 +270,7 @@ output:
                         candid_file_path: Some("interfaces/sample.did".to_string()),
                     }],
                 },
-                cycles: Some(CycleManagements::default()),
+                cycles: None,
             }
         );
         let schema = serde_json::from_str(include_str!(
@@ -331,7 +331,7 @@ datasource:
                     candid_file_path: Some("interfaces/sample.did".to_string()),
                 }],
             },
-            cycles: Some(CycleManagements::default()),
+            cycles: None,
         };
 
         let snap_prefix = "snapshot__algorithm_lens";
