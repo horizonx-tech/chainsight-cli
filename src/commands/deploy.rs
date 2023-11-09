@@ -13,7 +13,7 @@ use slog::{debug, info, Logger};
 
 use crate::{
     lib::{
-        codegen::project::ProjectManifestData,
+        codegen::{components::common::ComponentManifest, project::ProjectManifestData},
         environment::EnvironmentImpl,
         utils::{ARTIFACTS_DIR, PROJECT_MANIFEST_FILENAME},
     },
@@ -66,7 +66,13 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
         log,
         r#"Start deploying project '{}'..."#, project_manifest.label
     );
-    execute_deployment(log, &artifacts_path_str, opts.component, network)?;
+    execute_deployment(
+        log,
+        &artifacts_path_str,
+        project_manifest.load_component_manifests(&project_path_str)?,
+        opts.component,
+        network,
+    )?;
     info!(
         log,
         r#"Project '{}' deployed successfully"#, project_manifest.label
@@ -107,6 +113,7 @@ fn check_before_deployment(
 fn execute_deployment(
     log: &Logger,
     artifacts_path_str: &str,
+    component_manifests: Vec<Box<dyn ComponentManifest>>,
     component: Option<String>,
     network: Network,
 ) -> anyhow::Result<()> {
@@ -148,6 +155,18 @@ fn execute_deployment(
     exec(args_builder.generate(vec!["canister", "create"]))?;
     exec(args_builder.generate(vec!["build"]))?;
     exec(args_builder.generate(vec!["canister", "install"]))?;
+
+    for manifest in component_manifests.iter() {
+        let id = manifest.id().unwrap();
+        let builder = DfxArgsBuilder::new(network.clone(), Some(id.clone()));
+        let canister_id = exec(builder.generate(vec!["canister", "id"]))?;
+        exec(builder.generate(vec![
+            "canister",
+            "update-settings",
+            "--add-controller",
+            &canister_id.replace("\n", ""),
+        ]))?;
+    }
 
     // Check after deployments
     let canister_info = get_canister_info(log, artifacts_path_str, network.clone())?;
