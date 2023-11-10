@@ -25,6 +25,9 @@ pub struct AlgorithmLensComponentManifest {
 }
 
 impl AlgorithmLensComponentManifest {
+    // type name with argument information except canister ids
+    pub const CALCULATE_ARGS_STRUCT_NAME: &'static str = "CalculateArgs";
+
     pub fn new(
         id: &str,
         label: &str,
@@ -49,13 +52,19 @@ impl From<AlgorithmLensComponentManifest>
     for chainsight_cdk::config::components::AlgorithmLensConfig
 {
     fn from(val: AlgorithmLensComponentManifest) -> Self {
+        let args_type = if val.datasource.with_args {
+            Some(AlgorithmLensComponentManifest::CALCULATE_ARGS_STRUCT_NAME.to_string())
+        } else {
+            None
+        };
+
         Self {
             common: CommonConfig {
                 canister_name: val.id.clone().unwrap(),
                 monitor_duration: 60,
             },
             target_count: val.datasource.methods.len(),
-            args_type: None, // TEMP/TODO: use this by manifest for generate Args type
+            args_type,
         }
     }
 }
