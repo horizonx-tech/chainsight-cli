@@ -255,11 +255,11 @@ datasource:
     method: proxy_call
     source_type: event_indexer
 output:
-    - name: SampleOutput
-      output_type: key_value
-      fields:
-        result: String
-        value: String
+- name: SampleOutput
+  output_type: key_value
+  fields:
+    result: String
+    value: String
 interval: 3600
 "#;
 

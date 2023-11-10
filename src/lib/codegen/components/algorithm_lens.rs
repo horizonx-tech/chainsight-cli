@@ -245,15 +245,10 @@ datasource:
       identifier: 'get_last_snapshot : () -> (Snapshot)'
       candid_file_path: "interfaces/sample.did"
     with_args: true
-output:
-    name: SampleOutput
-    type: struct
-    fields:
-      result: String
-      value: String
 "#;
 
         let result = serde_yaml::from_str::<AlgorithmLensComponentManifest>(yaml);
+        assert!(result.is_ok());
         let component = result.unwrap();
         let mut output_types = HashMap::new();
         output_types.insert("result".to_string(), "String".to_string());

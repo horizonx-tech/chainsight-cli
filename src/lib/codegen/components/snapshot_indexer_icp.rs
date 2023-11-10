@@ -51,7 +51,7 @@ impl SnapshotIndexerICPComponentManifest {
             version: version.to_owned(),
             metadata: ComponentMetadata {
                 label: label.to_owned(),
-                type_: ComponentType::SnapshotIndexerICP, // temp
+                type_: ComponentType::SnapshotIndexerICP,
                 description: description.to_owned(),
                 tags: Some(vec![
                     "ERC-20".to_string(),
@@ -225,8 +225,6 @@ datasource:
     method:
         identifier: 'get_last_snapshot : () -> (record { value : text; timestamp : nat64 })'
         args: []
-storage:
-    with_timestamp: true
 interval: 3600
         "#;
 

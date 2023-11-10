@@ -16,11 +16,11 @@
 
 **Title:** Chainsight HTTPS Snapshot Indexer specification
 
-|                           |                                                                           |
-| ------------------------- | ------------------------------------------------------------------------- |
-| **Type**                  | `object`                                                                  |
-| **Required**              | No                                                                        |
-| **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
+|                           |                                                         |
+| ------------------------- | ------------------------------------------------------- |
+| **Type**                  | `object`                                                |
+| **Required**              | No                                                      |
+| **Additional properties** | [[Not allowed]](# "Additional Properties not allowed.") |
 
 **Description:** Chainsight HTTPS Snapshot Indexer specification
 
@@ -54,11 +54,11 @@
 
 **Title:** metadata
 
-|                           |                                                                           |
-| ------------------------- | ------------------------------------------------------------------------- |
-| **Type**                  | `object`                                                                  |
-| **Required**              | Yes                                                                       |
-| **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
+|                           |                                                         |
+| ------------------------- | ------------------------------------------------------- |
+| **Type**                  | `object`                                                |
+| **Required**              | Yes                                                     |
+| **Additional properties** | [[Not allowed]](# "Additional Properties not allowed.") |
 
 | Property                                | Pattern | Type            | Deprecated | Definition | Title/Description           |
 | --------------------------------------- | ------- | --------------- | ---------- | ---------- | --------------------------- |
@@ -81,10 +81,6 @@
 ```json
 "relayer_ethusd"
 ```
-
-| Restrictions                      |                                                                                                               |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| **Must match regular expression** | ```^[a-z0-9_]+$``` [Test](https://regex101.com/?regex=%5E%5Ba-z0-9_%5D%2B%24&testString=%22relayer_ethusd%22) |
 
 ### <a name="metadata_type"></a>2.2. Property `Chainsight HTTPS Snapshot Indexer specification > metadata > type`
 
@@ -196,11 +192,11 @@
 
 ## <a name="datasource"></a>3. Property `Chainsight HTTPS Snapshot Indexer specification > datasource`
 
-|                           |                                                                           |
-| ------------------------- | ------------------------------------------------------------------------- |
-| **Type**                  | `object`                                                                  |
-| **Required**              | Yes                                                                       |
-| **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
+|                           |                                                         |
+| ------------------------- | ------------------------------------------------------- |
+| **Type**                  | `object`                                                |
+| **Required**              | Yes                                                     |
+| **Additional properties** | [[Not allowed]](# "Additional Properties not allowed.") |
 
 | Property                          | Pattern | Type   | Deprecated | Definition | Title/Description                       |
 | --------------------------------- | ------- | ------ | ---------- | ---------- | --------------------------------------- |
@@ -317,4 +313,4 @@ must respect the following conditions
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-11-07 at 12:43:34 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-11-10 at 12:51:43 +0000
