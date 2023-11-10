@@ -13,6 +13,7 @@
       - [3.1.1.1. Property `Chainsight Algorithm Lens specification > datasource > methods > method > id`](#datasource_methods_items_id)
       - [3.1.1.2. Property `Chainsight Algorithm Lens specification > datasource > methods > method > identifier`](#datasource_methods_items_identifier)
       - [3.1.1.3. Property `Chainsight Algorithm Lens specification > datasource > methods > method > candid_file_path`](#datasource_methods_items_candid_file_path)
+  - [3.2. Property `Chainsight Algorithm Lens specification > datasource > with_args`](#datasource_with_args)
 
 **Title:** Chainsight Algorithm Lens specification
 
@@ -201,9 +202,10 @@
 | **Required**              | Yes                                                     |
 | **Additional properties** | [[Not allowed]](# "Additional Properties not allowed.") |
 
-| Property                          | Pattern | Type            | Deprecated | Definition | Title/Description |
-| --------------------------------- | ------- | --------------- | ---------- | ---------- | ----------------- |
-| + [methods](#datasource_methods ) | No      | array of object | No         | -          | methods           |
+| Property                              | Pattern | Type            | Deprecated | Definition | Title/Description |
+| ------------------------------------- | ------- | --------------- | ---------- | ---------- | ----------------- |
+| + [methods](#datasource_methods )     | No      | array of object | No         | -          | methods           |
+| + [with_args](#datasource_with_args ) | No      | boolean         | No         | -          | with_args         |
 
 ### <a name="datasource_methods"></a>3.1. Property `Chainsight Algorithm Lens specification > datasource > methods`
 
@@ -305,5 +307,16 @@
 "artifacts/chainlink/src/chainlink.did"
 ```
 
+### <a name="datasource_with_args"></a>3.2. Property `Chainsight Algorithm Lens specification > datasource > with_args`
+
+**Title:** with_args
+
+|              |           |
+| ------------ | --------- |
+| **Type**     | `boolean` |
+| **Required** | Yes       |
+
+**Description:** Flag indicating whether to add arguments for parameters to the calculation logic to be published
+
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-11-10 at 12:51:43 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-11-10 at 13:37:50 +0000
