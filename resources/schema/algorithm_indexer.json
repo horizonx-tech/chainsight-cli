@@ -6,6 +6,7 @@
   "description": "Chainsight Algorithm Indexer specification",
   "type": "object",
   "required": ["version", "metadata", "datasource", "output", "interval"],
+  "additionalProperties": false,
   "properties": {
     "version": {
       "$id": "#/properties/version",
@@ -20,6 +21,7 @@
       "title": "metadata for the canister",
       "type": "object",
       "required": ["label", "type"],
+      "additionalProperties": false,
       "properties": {
         "label": {
           "$id": "#/properties/metadata/properties/label",
@@ -69,6 +71,7 @@
       "type": "object",
       "title": "datasource",
       "required": ["principal", "input", "method", "from", "source_type"],
+      "additionalProperties": false,
       "properties": {
         "principal": {
           "$id": "#/properties/datasource/properties/principal",
@@ -86,6 +89,7 @@
           "description": "struct retrived from the source canister",
           "type": "object",
           "required": ["name", "fields"],
+          "additionalProperties": false,
           "properties": {
             "name": {
               "$id": "#/properties/datasource/properties/input/properties/name",
@@ -142,6 +146,7 @@
         "type": "object",
         "title": "output struct",
         "required": ["name", "fields", "output_type"],
+        "additionalProperties": false,
         "properties": {
           "name": {
             "$id": "#/properties/output/items/properties/name",

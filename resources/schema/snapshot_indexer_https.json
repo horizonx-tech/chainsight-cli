@@ -6,6 +6,7 @@
   "description": "Chainsight HTTPS Snapshot Indexer specification",
   "type": "object",
   "required": ["version", "metadata", "datasource", "interval"],
+  "additionalProperties": false,
   "properties": {
     "version": {
       "$id": "#/properties/version",
@@ -20,6 +21,7 @@
       "$comment": "metadata for the canister",
       "type": "object",
       "required": ["label", "type"],
+      "additionalProperties": false,
       "properties": {
         "label": {
           "$id": "#/properties/metadata/properties/label",
@@ -67,6 +69,7 @@
     "datasource": {
       "type": "object",
       "required": ["url"],
+      "additionalProperties": false,
       "properties": {
         "url": {
           "$id": "#/properties/datasource/properties/url",

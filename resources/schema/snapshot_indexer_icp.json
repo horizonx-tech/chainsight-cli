@@ -6,6 +6,7 @@
   "description": "Chainsight ICP Snapshot Indexer specification",
   "type": "object",
   "required": ["version", "metadata", "datasource", "interval"],
+  "additionalProperties": false,
   "properties": {
     "version": {
       "$id": "#/properties/version",
@@ -20,6 +21,7 @@
       "$comment": "metadata for the canister",
       "type": "object",
       "required": ["label", "type"],
+      "additionalProperties": false,
       "properties": {
         "label": {
           "$id": "#/properties/metadata/properties/label",
@@ -68,6 +70,7 @@
       "type": "object",
       "$id": "#/properties/datasource",
       "required": ["location", "method"],
+      "additionalProperties": false,
       "properties": {
         "location": {
           "$id": "#/properties/datasource/properties/location",
@@ -75,6 +78,7 @@
           "title": "location of the datasource",
           "description": "location of the datasource. For contract, it is the contract address. For canister, it is the canister id or canister name defined in dfx.json.",
           "required": ["id"],
+          "additionalProperties": false,
           "properties": {
             "id": {
               "$id": "#/properties/datasource/properties/location/properties/id",
@@ -96,6 +100,7 @@
           "description": "method of the datasource. The canister will call this method to get data.",
           "type": "object",
           "required": ["identifier"],
+          "additionalProperties": false,
           "properties": {
             "identifier": {
               "$id": "#/properties/datasource/properties/method/properties/identifier",
@@ -132,6 +137,7 @@
       "title": "lens targets",
       "description": "targets for the lens. Only used when the datasource canister is a algorithm_lens",
       "required": ["identifiers"],
+      "additionalProperties": false,
       "properties": {
         "identifiers": {
           "$id": "#/properties/lens_targets/properties/identifiers",

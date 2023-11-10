@@ -6,6 +6,7 @@
   "description": "Chainsight Event Indexer specification",
   "type": "object",
   "required": ["version", "metadata", "datasource", "interval"],
+  "additionalProperties": false,
   "properties": {
     "version": {
       "$id": "#/properties/version",
@@ -20,6 +21,7 @@
       "$comment": "metadata for the canister",
       "type": "object",
       "required": ["label", "type"],
+      "additionalProperties": false,
       "properties": {
         "label": {
           "$id": "#/properties/metadata/properties/label",
@@ -69,6 +71,7 @@
       "$id": "#/properties/datasource",
       "type": "object",
       "required": ["id", "event", "network", "from"],
+      "additionalProperties": false,
       "properties": {
         "id": {
           "title": "id",
@@ -83,6 +86,7 @@
           "description": "event identifier to save",
           "type": "object",
           "required": ["identifier", "interface"],
+          "additionalProperties": false,
           "properties": {
             "identifier": {
               "$id": "#/properties/datasource/properties/event/properties/identifier",
@@ -115,6 +119,7 @@
           "description": "chain id and rpc url",
           "type": "object",
           "required": ["chain_id", "rpc_url"],
+          "additionalProperties": false,
           "properties": {
             "chain_id": {
               "$id": "#/properties/datasource/properties/network/properties/chain_id",
