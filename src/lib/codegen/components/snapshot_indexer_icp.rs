@@ -225,8 +225,6 @@ datasource:
     method:
         identifier: 'get_last_snapshot : () -> (record { value : text; timestamp : nat64 })'
         args: []
-storage:
-    with_timestamp: true
 interval: 3600
         "#;
 
