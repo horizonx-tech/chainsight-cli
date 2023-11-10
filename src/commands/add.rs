@@ -288,7 +288,6 @@ fn select_component_type(interaction: &mut impl UserInteraction) -> ComponentTyp
 
 #[cfg(test)]
 mod tests {
-    use core::panic;
     use std::{collections::HashMap, path::Path};
 
     use insta::assert_display_snapshot;
