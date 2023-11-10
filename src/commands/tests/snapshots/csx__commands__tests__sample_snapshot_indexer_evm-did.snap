@@ -1,9 +1,20 @@
 ---
 source: src/commands/tests/mod.rs
-assertion_line: 113
 expression: "fs::read_to_string(&did_path).unwrap()"
 ---
 type CanisterMetricsSnapshot = record { cycles : nat; timestamp : nat64 };
+type CycleManagement = record {
+  refueling_amount : nat;
+  initial_supply : nat;
+  refueling_threshold : nat;
+};
+type CycleManagements = record {
+  db : CycleManagement;
+  vault_intial_supply : nat;
+  refueling_interval : nat64;
+  proxy : CycleManagement;
+  indexer : CycleManagement;
+};
 type Env = variant { Production; Test; LocalDevelopment };
 type HttpHeader = record { value : text; name : text };
 type HttpResponse = record {
@@ -49,7 +60,7 @@ service : {
   get_top_snapshot_values : (nat64) -> (vec text) query;
   get_top_snapshots : (nat64) -> (vec Snapshot) query;
   index : () -> ();
-  init_in : (Env) -> (Result);
+  init_in : (Env, CycleManagements) -> (Result);
   metric : () -> (CanisterMetricsSnapshot) query;
   metrics : (nat64) -> (vec CanisterMetricsSnapshot) query;
   proxy_canister_metrics_snapshots_len : (vec nat8) -> (vec nat8);

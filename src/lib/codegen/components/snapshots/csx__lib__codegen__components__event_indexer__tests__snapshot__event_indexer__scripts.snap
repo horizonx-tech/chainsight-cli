@@ -13,7 +13,7 @@ dfx canister  call sample_event_indexer init_in '(variant { "LocalDevelopment" }
                     refueling_threshold = 500000000000: nat;
                 };
                 db = record { 
-                    initial_supply = 1000000000: nat;
+                    initial_supply = 1500000000000: nat;
                     refueling_amount = 1000000000000: nat;
                     refueling_threshold = 500000000000: nat;
                 };
@@ -22,7 +22,7 @@ dfx canister  call sample_event_indexer init_in '(variant { "LocalDevelopment" }
                     refueling_amount = 100000000000: nat;
                     refueling_threshold = 100000000000: nat;
                 };
-        })' --with-cycles 1301000000000 --wallet $(dfx identity get-wallet )
+        })' --with-cycles 2800000000000 --wallet $(dfx identity get-wallet )
 # setup
 dfx canister  call sample_event_indexer setup "(
     \"0x6B175474E89094C44Da98b954EedeAC495271d0F\",

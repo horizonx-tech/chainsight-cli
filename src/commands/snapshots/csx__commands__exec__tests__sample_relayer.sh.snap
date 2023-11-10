@@ -13,7 +13,7 @@ dfx canister  call sample_relayer init_in '(variant { "LocalDevelopment" }, reco
                     refueling_threshold = 500000000000: nat;
                 };
                 db = record { 
-                    initial_supply = 1000000000: nat;
+                    initial_supply = 1500000000000: nat;
                     refueling_amount = 1000000000000: nat;
                     refueling_threshold = 500000000000: nat;
                 };
@@ -22,7 +22,7 @@ dfx canister  call sample_relayer init_in '(variant { "LocalDevelopment" }, reco
                     refueling_amount = 100000000000: nat;
                     refueling_threshold = 100000000000: nat;
                 };
-        })' --with-cycles 1301000000000 --wallet $(dfx identity get-wallet )
+        })' --with-cycles 2800000000000 --wallet $(dfx identity get-wallet )
 # setup
 dfx canister  call sample_relayer setup "(
     \"0539a0EF8e5E60891fFf0958A059E049e43020d9\",
