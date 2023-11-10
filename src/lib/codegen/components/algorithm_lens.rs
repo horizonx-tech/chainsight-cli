@@ -185,6 +185,7 @@ pub enum AlgorithmLensOutputType {
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct AlgorithmLensDataSource {
     pub methods: Vec<AlgorithmLensDataSourceMethod>,
+    pub with_args: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -204,6 +205,7 @@ impl Default for AlgorithmLensDataSource {
                         .to_string(),
                 candid_file_path: None,
             }],
+            with_args: false,
         }
     }
 }
@@ -233,6 +235,7 @@ datasource:
     - id: last_snapshot
       identifier: 'get_last_snapshot : () -> (Snapshot)'
       candid_file_path: "interfaces/sample.did"
+    with_args: true
 output:
     name: SampleOutput
     type: struct
@@ -264,6 +267,7 @@ output:
                         identifier: "get_last_snapshot : () -> (Snapshot)".to_string(),
                         candid_file_path: Some("interfaces/sample.did".to_string()),
                     }],
+                    with_args: true,
                 },
             }
         );
@@ -296,6 +300,7 @@ datasource:
     - id: last_snapshot
       identifier: 'get_last_snapshot_2 : () -> (text)'
       candid_file_path: "interfaces/sample_2.did"
+    with_args: true
 "#;
         let result = serde_yaml::from_str::<AlgorithmLensComponentManifest>(yaml).unwrap();
         let err = result.validate_manifest().unwrap_err();
@@ -324,6 +329,7 @@ datasource:
                             .to_string(),
                     candid_file_path: Some("interfaces/sample.did".to_string()),
                 }],
+                with_args: false,
             },
         };
 
