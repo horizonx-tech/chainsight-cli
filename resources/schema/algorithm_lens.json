@@ -68,7 +68,7 @@
     "datasource": {
       "$id": "#/properties/datasource",
       "type": "object",
-      "required": ["methods"],
+      "required": ["methods", "with_args"],
       "additionalProperties": false,
       "properties": {
         "methods": {
@@ -111,6 +111,12 @@
               }
             }
           }
+        },
+        "with_args": {
+          "$id": "#/properties/datasource/properties/with_args",
+          "description": "Flag indicating whether to add arguments for parameters to the calculation logic to be published",
+          "title": "with_args",
+          "type": "boolean"
         }
       }
     }

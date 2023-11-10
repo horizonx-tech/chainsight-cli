@@ -1,7 +1,8 @@
 use crate::{
     lib::{
         codegen::components::{
-            algorithm_lens::AlgorithmLensComponentManifest, common::ComponentManifest,
+            algorithm_lens::{AlgorithmLensComponentManifest, AlgorithmLensDataSource},
+            common::ComponentManifest,
         },
         utils::{find_duplicates, paths},
     },
@@ -35,7 +36,12 @@ pub fn generate_codes(manifest: &AlgorithmLensComponentManifest) -> anyhow::Resu
 
 pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result<String> {
     let id = manifest.id().ok_or(anyhow::anyhow!("id is required"))?;
-    let methods = manifest.datasource.methods.clone();
+    let AlgorithmLensComponentManifest {
+        datasource: AlgorithmLensDataSource {
+            methods, with_args, ..
+        },
+        ..
+    } = manifest;
 
     let call_func_templates = methods.iter().enumerate().map(|(i, m)| {
         let getter = format_ident!("get_{}", &m.id);
@@ -54,17 +60,46 @@ pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result
 
     let output_type_ident = format_ident!("{}", "LensValue");
     let accessors_ident = format_ident!("{}", paths::accessors_name(&id));
-    let code = quote! {
-        use #accessors_ident::*;
 
-        #[derive(Clone, Debug,  Default, candid::CandidType, serde::Deserialize, serde::Serialize)]
-        pub struct #output_type_ident {
-            pub dummy: u64
-        }
+    let code = {
+        let base_quote = quote! {
+            use #accessors_ident::*;
 
-        pub async fn calculate(targets: Vec<String>, ) -> #output_type_ident {
-            #(#call_func_templates)*
-            todo!()
+            #[derive(Clone, Debug,  Default, candid::CandidType, serde::Deserialize, serde::Serialize)]
+            pub struct #output_type_ident {
+                pub dummy: u64
+            }
+        };
+
+        if *with_args {
+            // add argument type that is implemented fields by user
+            let args_type_ident = format_ident!(
+                "{}",
+                AlgorithmLensComponentManifest::CALCULATE_ARGS_STRUCT_NAME
+            );
+
+            quote! {
+                #base_quote
+
+                #[derive(Clone, Debug,  Default, candid::CandidType, serde::Deserialize, serde::Serialize)]
+                pub struct #args_type_ident {
+                    pub dummy: u64
+                }
+
+                pub async fn calculate(targets: Vec<String>, args: #args_type_ident) -> #output_type_ident {
+                    #(#call_func_templates)*
+                    todo!()
+                }
+            }
+        } else {
+            quote! {
+                #base_quote
+
+                pub async fn calculate(targets: Vec<String>) -> #output_type_ident {
+                    #(#call_func_templates)*
+                    todo!()
+                }
+            }
         }
     };
 
