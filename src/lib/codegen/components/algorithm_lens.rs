@@ -61,6 +61,7 @@ impl From<AlgorithmLensComponentManifest>
                 monitor_duration: 60,
             },
             target_count: val.datasource.methods.len(),
+            args_type: None, // TEMP/TODO: use this by manifest for generate Args type
         }
     }
 }
