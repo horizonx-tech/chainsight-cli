@@ -2,6 +2,7 @@
 source: src/commands/tests/mod.rs
 expression: "fs::read_to_string(&did_path).unwrap()"
 ---
+type CalculateArgs = record { dummy : nat64 };
 type CanisterMetricsSnapshot = record { cycles : nat; timestamp : nat64 };
 type Env = variant { Production; Test; LocalDevelopment };
 type InitError = variant {
@@ -21,7 +22,7 @@ type Sources = record {
 };
 service : {
   get_proxy : () -> (principal);
-  get_result : (vec text) -> (LensValue);
+  get_result : (vec text, CalculateArgs) -> (LensValue);
   get_sources : () -> (vec Sources) query;
   init_in : (Env) -> (Result);
   metric : () -> (CanisterMetricsSnapshot) query;
