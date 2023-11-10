@@ -13,8 +13,8 @@ use super::common::{
     custom_tags_interval_sec, ComponentManifest, ComponentMetadata, DestinationType,
     GeneratedCodes, Sources, DEFAULT_MONITOR_DURATION_SECS,
 };
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct SnapshotIndexerHTTPSDataSource {
     pub url: String,
     #[serde(serialize_with = "ordered_map")]
@@ -196,8 +196,6 @@ datasource:
     queries:
         ids: dai
         vs_currencies: usd
-storage:
-    with_timestamp: true
 interval: 3600
         "#;
 
