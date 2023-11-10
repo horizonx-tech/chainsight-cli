@@ -319,7 +319,7 @@ impl From<CycleManagementsManifest> for CycleManagements {
                 refueling_threshold: indexer.refueling_threshold.unwrap_or(500_000_000_000),
             },
             db: CycleManagement {
-                initial_supply: db.initial_supply.unwrap_or(1_000_000_000),
+                initial_supply: db.initial_supply.unwrap_or(1_500_000_000_000),
                 refueling_amount: db.refueling_amount.unwrap_or(1_000_000_000_000),
                 refueling_threshold: db.refueling_threshold.unwrap_or(500_000_000_000),
             },
