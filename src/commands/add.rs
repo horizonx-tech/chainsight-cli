@@ -288,9 +288,11 @@ fn select_component_type(interaction: &mut impl UserInteraction) -> ComponentTyp
 
 #[cfg(test)]
 mod tests {
+    use core::panic;
     use std::{collections::HashMap, path::Path};
 
     use insta::assert_display_snapshot;
+    use jsonschema::JSONSchema;
 
     use super::*;
     use crate::{
@@ -405,11 +407,37 @@ mod tests {
         })
     }
 
+    fn validate_manifest_with_schema<T>(manifest: T, schema_path: &str)
+    where
+        T: serde::Serialize,
+    {
+        let manifest_str = serde_json::to_string(&manifest).unwrap();
+        let manifest_json = serde_json::from_str(&manifest_str).unwrap();
+        let schema = JSONSchema::compile(&serde_json::from_str(schema_path).unwrap()).unwrap();
+        assert!(schema.validate(&manifest_json).is_ok());
+    }
+
+    #[test]
+    fn test_manifest_validate_with_schema_event_indexer() {
+        validate_manifest_with_schema(
+            template_event_indexer_manifest(COMPONENT_NAME),
+            include_str!("../../resources/schema/event_indexer.json"),
+        );
+    }
+
     #[test]
     fn test_manifest_snapshot_event_indexer() {
         assert_display_snapshot!(template_event_indexer_manifest(COMPONENT_NAME)
             .to_str_as_yaml()
             .unwrap());
+    }
+
+    #[test]
+    fn test_manifest_validate_with_schema_snapshot_indexer_evm() {
+        validate_manifest_with_schema(
+            template_snapshot_indexer_evm_manifest(COMPONENT_NAME),
+            include_str!("../../resources/schema/snapshot_indexer_evm.json"),
+        );
     }
 
     #[test]
@@ -420,10 +448,26 @@ mod tests {
     }
 
     #[test]
+    fn test_manifest_validate_with_schema_snapshot_indexer_icp() {
+        validate_manifest_with_schema(
+            template_snapshot_indexer_icp_manifest(COMPONENT_NAME),
+            include_str!("../../resources/schema/snapshot_indexer_icp.json"),
+        );
+    }
+
+    #[test]
     fn test_manifest_snapshot_snapshot_indexer_icp() {
         assert_display_snapshot!(template_snapshot_indexer_icp_manifest(COMPONENT_NAME)
             .to_str_as_yaml()
             .unwrap());
+    }
+
+    #[test]
+    fn test_manifest_validate_with_schema_snapshot_indexer_https() {
+        validate_manifest_with_schema(
+            template_snapshot_indexer_https_manifest(COMPONENT_NAME),
+            include_str!("../../resources/schema/snapshot_indexer_https.json"),
+        );
     }
 
     #[test]
@@ -434,6 +478,14 @@ mod tests {
     }
 
     #[test]
+    fn test_manifest_validate_with_schema_algorithm_indexer() {
+        validate_manifest_with_schema(
+            template_algorithm_indexer_manifest(COMPONENT_NAME),
+            include_str!("../../resources/schema/algorithm_indexer.json"),
+        );
+    }
+
+    #[test]
     fn test_manifest_snapshot_algorithm_indexer() {
         assert_display_snapshot!(template_algorithm_indexer_manifest(COMPONENT_NAME)
             .to_str_as_yaml()
@@ -441,10 +493,26 @@ mod tests {
     }
 
     #[test]
+    fn test_manifest_validate_with_schema_algorithm_lens() {
+        validate_manifest_with_schema(
+            template_algorithm_lens_manifest(COMPONENT_NAME),
+            include_str!("../../resources/schema/algorithm_lens.json"),
+        );
+    }
+
+    #[test]
     fn test_manifest_snapshot_algorithm_lens() {
         assert_display_snapshot!(template_algorithm_lens_manifest(COMPONENT_NAME)
             .to_str_as_yaml()
             .unwrap());
+    }
+
+    #[test]
+    fn test_manifest_validate_with_schema_relayer() {
+        validate_manifest_with_schema(
+            template_relayer_manifest(COMPONENT_NAME),
+            include_str!("../../resources/schema/relayer.json"),
+        );
     }
 
     #[test]

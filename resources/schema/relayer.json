@@ -27,8 +27,7 @@
           "$id": "#/properties/metadata/properties/label",
           "type": "string",
           "title": "label for the canister",
-          "examples": ["relayer_ethusd"],
-          "pattern": "^[a-z0-9_]+$"
+          "examples": ["relayer_ethusd"]
         },
         "type": {
           "$id": "#/properties/metadata/properties/type",
@@ -128,7 +127,7 @@
     },
     "lens_targets": {
       "$id": "#/properties/lens_targets",
-      "type": "object",
+      "type": ["object", "null"],
       "title": "lens targets",
       "description": "targets for the lens. Only used when the datasource canister is a algorithm_lens",
       "required": ["identifiers"],

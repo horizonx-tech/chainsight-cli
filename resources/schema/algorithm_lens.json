@@ -27,8 +27,7 @@
           "$id": "#/properties/metadata/properties/label",
           "type": "string",
           "title": "label for the canister",
-          "examples": ["relayer_ethusd"],
-          "pattern": "^[a-z0-9_]+$"
+          "examples": ["relayer_ethusd"]
         },
         "type": {
           "$id": "#/properties/metadata/properties/type",
@@ -82,7 +81,7 @@
             "type": "object",
             "title": "method",
             "description": "method to call on the callee canister",
-            "required": ["id", "identifier", "candid_file_path"],
+            "required": ["id", "identifier"],
             "additionalProperties": false,
             "properties": {
               "id": {
@@ -108,7 +107,7 @@
                 "title": "candid_file_path",
                 "description": "path to the candid file of the canister to call",
                 "examples": ["artifacts/chainlink/src/chainlink.did"],
-                "type": "string"
+                "type": ["string", "null"]
               }
             }
           }

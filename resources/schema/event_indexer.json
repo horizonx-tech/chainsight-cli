@@ -27,8 +27,7 @@
           "$id": "#/properties/metadata/properties/label",
           "type": "string",
           "title": "label for the canister",
-          "examples": ["relayer_ethusd"],
-          "pattern": "^[a-z0-9_]+$"
+          "examples": ["relayer_ethusd"]
         },
         "type": {
           "$id": "#/properties/metadata/properties/type",
@@ -100,7 +99,7 @@
               "$id": "#/properties/datasource/properties/event/properties/interface",
               "title": "interface",
               "description": "abi json file. It must be in ./interfaces folder",
-              "type": "string",
+              "type": ["string", "null"],
               "examples": ["IERC20.json"],
               "pattern": "^[a-zA-Z0-9_-]+\\.json$"
             }

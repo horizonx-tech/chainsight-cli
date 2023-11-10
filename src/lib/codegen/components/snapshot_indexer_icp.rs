@@ -51,7 +51,7 @@ impl SnapshotIndexerICPComponentManifest {
             version: version.to_owned(),
             metadata: ComponentMetadata {
                 label: label.to_owned(),
-                type_: ComponentType::SnapshotIndexerICP, // temp
+                type_: ComponentType::SnapshotIndexerICP,
                 description: description.to_owned(),
                 tags: Some(vec![
                     "ERC-20".to_string(),
