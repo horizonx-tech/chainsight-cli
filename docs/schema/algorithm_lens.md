@@ -16,11 +16,11 @@
 
 **Title:** Chainsight Algorithm Lens specification
 
-|                           |                                                                           |
-| ------------------------- | ------------------------------------------------------------------------- |
-| **Type**                  | `object`                                                                  |
-| **Required**              | No                                                                        |
-| **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
+|                           |                                                         |
+| ------------------------- | ------------------------------------------------------- |
+| **Type**                  | `object`                                                |
+| **Required**              | No                                                      |
+| **Additional properties** | [[Not allowed]](# "Additional Properties not allowed.") |
 
 **Description:** Chainsight Algorithm Lens specification
 
@@ -53,11 +53,11 @@
 
 **Title:** metadata
 
-|                           |                                                                           |
-| ------------------------- | ------------------------------------------------------------------------- |
-| **Type**                  | `object`                                                                  |
-| **Required**              | Yes                                                                       |
-| **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
+|                           |                                                         |
+| ------------------------- | ------------------------------------------------------- |
+| **Type**                  | `object`                                                |
+| **Required**              | Yes                                                     |
+| **Additional properties** | [[Not allowed]](# "Additional Properties not allowed.") |
 
 | Property                                | Pattern | Type            | Deprecated | Definition | Title/Description           |
 | --------------------------------------- | ------- | --------------- | ---------- | ---------- | --------------------------- |
@@ -80,10 +80,6 @@
 ```json
 "relayer_ethusd"
 ```
-
-| Restrictions                      |                                                                                                               |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| **Must match regular expression** | ```^[a-z0-9_]+$``` [Test](https://regex101.com/?regex=%5E%5Ba-z0-9_%5D%2B%24&testString=%22relayer_ethusd%22) |
 
 ### <a name="metadata_type"></a>2.2. Property `Chainsight Algorithm Lens specification > metadata > type`
 
@@ -199,11 +195,11 @@
 
 ## <a name="datasource"></a>3. Property `Chainsight Algorithm Lens specification > datasource`
 
-|                           |                                                                           |
-| ------------------------- | ------------------------------------------------------------------------- |
-| **Type**                  | `object`                                                                  |
-| **Required**              | Yes                                                                       |
-| **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
+|                           |                                                         |
+| ------------------------- | ------------------------------------------------------- |
+| **Type**                  | `object`                                                |
+| **Required**              | Yes                                                     |
+| **Additional properties** | [[Not allowed]](# "Additional Properties not allowed.") |
 
 | Property                          | Pattern | Type            | Deprecated | Definition | Title/Description |
 | --------------------------------- | ------- | --------------- | ---------- | ---------- | ----------------- |
@@ -236,19 +232,19 @@
 
 **Title:** method
 
-|                           |                                                                           |
-| ------------------------- | ------------------------------------------------------------------------- |
-| **Type**                  | `object`                                                                  |
-| **Required**              | No                                                                        |
-| **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
+|                           |                                                         |
+| ------------------------- | ------------------------------------------------------- |
+| **Type**                  | `object`                                                |
+| **Required**              | No                                                      |
+| **Additional properties** | [[Not allowed]](# "Additional Properties not allowed.") |
 
 **Description:** method to call on the callee canister
 
-| Property                                                          | Pattern | Type   | Deprecated | Definition | Title/Description |
-| ----------------------------------------------------------------- | ------- | ------ | ---------- | ---------- | ----------------- |
-| + [id](#datasource_methods_items_id )                             | No      | string | No         | -          | id                |
-| + [identifier](#datasource_methods_items_identifier )             | No      | string | No         | -          | identifier        |
-| + [candid_file_path](#datasource_methods_items_candid_file_path ) | No      | string | No         | -          | candid_file_path  |
+| Property                                                          | Pattern | Type           | Deprecated | Definition | Title/Description |
+| ----------------------------------------------------------------- | ------- | -------------- | ---------- | ---------- | ----------------- |
+| + [id](#datasource_methods_items_id )                             | No      | string         | No         | -          | id                |
+| + [identifier](#datasource_methods_items_identifier )             | No      | string         | No         | -          | identifier        |
+| - [candid_file_path](#datasource_methods_items_candid_file_path ) | No      | string or null | No         | -          | candid_file_path  |
 
 ##### <a name="datasource_methods_items_id"></a>3.1.1.1. Property `Chainsight Algorithm Lens specification > datasource > methods > method > id`
 
@@ -296,10 +292,10 @@
 
 **Title:** candid_file_path
 
-|              |          |
-| ------------ | -------- |
-| **Type**     | `string` |
-| **Required** | Yes      |
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `string or null` |
+| **Required** | No               |
 
 **Description:** path to the candid file of the canister to call
 
@@ -310,4 +306,4 @@
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-11-07 at 12:43:34 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-11-10 at 12:51:43 +0000

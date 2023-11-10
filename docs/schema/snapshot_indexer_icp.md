@@ -21,21 +21,21 @@
 
 **Title:** Chainsight ICP Snapshot Indexer specification
 
-|                           |                                                                           |
-| ------------------------- | ------------------------------------------------------------------------- |
-| **Type**                  | `object`                                                                  |
-| **Required**              | No                                                                        |
-| **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
+|                           |                                                         |
+| ------------------------- | ------------------------------------------------------- |
+| **Type**                  | `object`                                                |
+| **Required**              | No                                                      |
+| **Additional properties** | [[Not allowed]](# "Additional Properties not allowed.") |
 
 **Description:** Chainsight ICP Snapshot Indexer specification
 
-| Property                         | Pattern | Type   | Deprecated | Definition | Title/Description                     |
-| -------------------------------- | ------- | ------ | ---------- | ---------- | ------------------------------------- |
-| + [version](#version )           | No      | string | No         | -          | specification version of the canister |
-| + [metadata](#metadata )         | No      | object | No         | -          | metadata                              |
-| + [datasource](#datasource )     | No      | object | No         | -          | -                                     |
-| - [lens_targets](#lens_targets ) | No      | object | No         | -          | lens targets                          |
-| + [interval](#interval )         | No      | number | No         | -          | interval                              |
+| Property                         | Pattern | Type           | Deprecated | Definition | Title/Description                     |
+| -------------------------------- | ------- | -------------- | ---------- | ---------- | ------------------------------------- |
+| + [version](#version )           | No      | string         | No         | -          | specification version of the canister |
+| + [metadata](#metadata )         | No      | object         | No         | -          | metadata                              |
+| + [datasource](#datasource )     | No      | object         | No         | -          | -                                     |
+| - [lens_targets](#lens_targets ) | No      | object or null | No         | -          | lens targets                          |
+| + [interval](#interval )         | No      | number         | No         | -          | interval                              |
 
 ## <a name="version"></a>1. Property `Chainsight ICP Snapshot Indexer specification > version`
 
@@ -60,11 +60,11 @@
 
 **Title:** metadata
 
-|                           |                                                                           |
-| ------------------------- | ------------------------------------------------------------------------- |
-| **Type**                  | `object`                                                                  |
-| **Required**              | Yes                                                                       |
-| **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
+|                           |                                                         |
+| ------------------------- | ------------------------------------------------------- |
+| **Type**                  | `object`                                                |
+| **Required**              | Yes                                                     |
+| **Additional properties** | [[Not allowed]](# "Additional Properties not allowed.") |
 
 | Property                                | Pattern | Type            | Deprecated | Definition | Title/Description           |
 | --------------------------------------- | ------- | --------------- | ---------- | ---------- | --------------------------- |
@@ -87,10 +87,6 @@
 ```json
 "relayer_ethusd"
 ```
-
-| Restrictions                      |                                                                                                               |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| **Must match regular expression** | ```^[a-z0-9_]+$``` [Test](https://regex101.com/?regex=%5E%5Ba-z0-9_%5D%2B%24&testString=%22relayer_ethusd%22) |
 
 ### <a name="metadata_type"></a>2.2. Property `Chainsight ICP Snapshot Indexer specification > metadata > type`
 
@@ -202,11 +198,11 @@
 
 ## <a name="datasource"></a>3. Property `Chainsight ICP Snapshot Indexer specification > datasource`
 
-|                           |                                                                           |
-| ------------------------- | ------------------------------------------------------------------------- |
-| **Type**                  | `object`                                                                  |
-| **Required**              | Yes                                                                       |
-| **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
+|                           |                                                         |
+| ------------------------- | ------------------------------------------------------- |
+| **Type**                  | `object`                                                |
+| **Required**              | Yes                                                     |
+| **Additional properties** | [[Not allowed]](# "Additional Properties not allowed.") |
 
 | Property                            | Pattern | Type   | Deprecated | Definition | Title/Description          |
 | ----------------------------------- | ------- | ------ | ---------- | ---------- | -------------------------- |
@@ -217,11 +213,11 @@
 
 **Title:** location of the datasource
 
-|                           |                                                                           |
-| ------------------------- | ------------------------------------------------------------------------- |
-| **Type**                  | `object`                                                                  |
-| **Required**              | Yes                                                                       |
-| **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
+|                           |                                                         |
+| ------------------------- | ------------------------------------------------------- |
+| **Type**                  | `object`                                                |
+| **Required**              | Yes                                                     |
+| **Additional properties** | [[Not allowed]](# "Additional Properties not allowed.") |
 
 **Description:** location of the datasource. For contract, it is the contract address. For canister, it is the canister id or canister name defined in dfx.json.
 
@@ -262,19 +258,19 @@
 
 **Title:** method
 
-|                           |                                                                           |
-| ------------------------- | ------------------------------------------------------------------------- |
-| **Type**                  | `object`                                                                  |
-| **Required**              | Yes                                                                       |
-| **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
+|                           |                                                         |
+| ------------------------- | ------------------------------------------------------- |
+| **Type**                  | `object`                                                |
+| **Required**              | Yes                                                     |
+| **Additional properties** | [[Not allowed]](# "Additional Properties not allowed.") |
 
 **Description:** method of the datasource. The canister will call this method to get data.
 
-| Property                                       | Pattern | Type   | Deprecated | Definition | Title/Description        |
-| ---------------------------------------------- | ------- | ------ | ---------- | ---------- | ------------------------ |
-| + [identifier](#datasource_method_identifier ) | No      | string | No         | -          | identifier of the method |
-| - [interface](#datasource_method_interface )   | No      | string | No         | -          | interface                |
-| - [args](#datasource_method_args )             | No      | array  | No         | -          | args                     |
+| Property                                       | Pattern | Type           | Deprecated | Definition | Title/Description        |
+| ---------------------------------------------- | ------- | -------------- | ---------- | ---------- | ------------------------ |
+| + [identifier](#datasource_method_identifier ) | No      | string         | No         | -          | identifier of the method |
+| - [interface](#datasource_method_interface )   | No      | string or null | No         | -          | interface                |
+| - [args](#datasource_method_args )             | No      | array          | No         | -          | args                     |
 
 #### <a name="datasource_method_identifier"></a>3.2.1. Property `Chainsight ICP Snapshot Indexer specification > datasource > method > identifier`
 
@@ -305,10 +301,10 @@
 
 **Title:** interface
 
-|              |          |
-| ------------ | -------- |
-| **Type**     | `string` |
-| **Required** | No       |
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `string or null` |
+| **Required** | No               |
 
 **Description:** abi json file to use. This file must be in ./interfaces folder. It is required if type is contract.
 
@@ -355,11 +351,10 @@
 
 **Title:** lens targets
 
-|                           |                                                                           |
-| ------------------------- | ------------------------------------------------------------------------- |
-| **Type**                  | `object`                                                                  |
-| **Required**              | No                                                                        |
-| **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `object or null` |
+| **Required** | No               |
 
 **Description:** targets for the lens. Only used when the datasource canister is a algorithm_lens
 
@@ -441,4 +436,4 @@
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-11-07 at 12:43:34 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-11-10 at 12:51:43 +0000
