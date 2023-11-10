@@ -10,7 +10,7 @@ use crate::{
     types::ComponentType,
 };
 
-// TODO: remove this. see: https://github.com/horizonx-tech/chainsight-sdk/blob/824e14bce4385b7049ffe35a60ad699806bf0eac/chainsight-cdk-macros/src/canisters/algorithm_indexer.rs#L39
+// TODO: remove this. see: https://github.com/horizonx-tech/chainsight-sdk/blob/7e57e5ce9e32c2c9c029b13c3ebc47309c3bf7ac/chainsight-cdk-macros/src/canisters/algorithm_indexer.rs#L39
 fn input_type_ident(manifest: &AlgorithmIndexerComponentManifest) -> TokenStream {
     let event_struct = format_ident!("{}", &manifest.datasource.input.name);
     let source_type = manifest.datasource.source_type.clone();

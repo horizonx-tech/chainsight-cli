@@ -6,6 +6,6 @@ use chainsight_cdk_macros::def_algorithm_lens_canister;
 def_algorithm_lens_canister!("{
 \"common\":{
 \"monitor_duration\":60, \"canister_name\":\"sample_algorithm_lens\"
-}, \"target_count\":1
+}, \"target_count\":1, \"args_type\":null
 }");
 
