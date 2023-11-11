@@ -4,6 +4,7 @@ use candid::Principal;
 use chainsight_cdk::{
     config::components::CommonConfig,
     convert::candid::{read_did_to_string_without_service, CanisterMethodIdentifier},
+    initializer::CycleManagements,
 };
 use serde::{Deserialize, Serialize};
 
@@ -12,7 +13,10 @@ use crate::{
     types::{ComponentType, Network},
 };
 
-use super::common::{ComponentManifest, ComponentMetadata, GeneratedCodes, SourceType, Sources};
+use super::common::{
+    ComponentManifest, ComponentMetadata, CycleManagementsManifest, GeneratedCodes, SourceType,
+    Sources,
+};
 
 /// Component Manifest: Algorithm Lens
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -24,6 +28,7 @@ pub struct AlgorithmLensComponentManifest {
     pub datasource: AlgorithmLensDataSource,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub with_args: Option<bool>,
+    pub cycles: Option<CycleManagementsManifest>,
 }
 
 impl AlgorithmLensComponentManifest {
@@ -48,6 +53,7 @@ impl AlgorithmLensComponentManifest {
             },
             datasource,
             with_args: None,
+            cycles: None,
         }
     }
 }
@@ -64,7 +70,6 @@ impl From<AlgorithmLensComponentManifest>
         Self {
             common: CommonConfig {
                 canister_name: val.id.clone().unwrap(),
-                monitor_duration: 60,
             },
             target_count: val.datasource.methods.len(),
             args_type,
@@ -184,6 +189,9 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
         let lib = canisters::algorithm_lens::generate_dependencies_accessor(self)?;
         Ok(GeneratedCodes { lib, types: None })
     }
+    fn cycle_managements(&self) -> CycleManagements {
+        self.cycles.clone().unwrap_or_default().into()
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -274,6 +282,7 @@ with_args: true
                     }],
                 },
                 with_args: Some(true),
+                cycles: None,
             }
         );
         let schema = serde_json::from_str(include_str!(
@@ -336,6 +345,7 @@ with_args: true
                 }],
             },
             with_args: Some(false),
+            cycles: None,
         };
 
         let snap_prefix = "snapshot__algorithm_lens";

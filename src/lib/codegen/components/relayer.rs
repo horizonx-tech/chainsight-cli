@@ -4,6 +4,7 @@ use anyhow::Ok;
 use chainsight_cdk::{
     config::components::{CommonConfig, LensTargets},
     convert::candid::{read_did_to_string_without_service, CanisterMethodIdentifier},
+    initializer::CycleManagements,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -20,8 +21,8 @@ use crate::{
 
 use super::{
     common::{
-        ComponentManifest, ComponentMetadata, Datasource, DestinationType, GeneratedCodes,
-        SourceType, Sources, DEFAULT_MONITOR_DURATION_SECS,
+        ComponentManifest, ComponentMetadata, CycleManagementsManifest, Datasource,
+        DestinationType, GeneratedCodes, SourceType, Sources,
     },
     utils::generate_types_from_bindings,
 };
@@ -37,6 +38,7 @@ pub struct RelayerComponentManifest {
     pub destination: DestinationField, // TODO: multiple destinations
     pub interval: u32,
     pub lens_targets: Option<LensTargets>,
+    pub cycles: Option<CycleManagementsManifest>,
 }
 
 impl RelayerComponentManifest {
@@ -62,6 +64,7 @@ impl RelayerComponentManifest {
             destination,
             lens_targets: None,
             interval,
+            cycles: None,
         }
     }
 }
@@ -78,7 +81,6 @@ impl From<RelayerComponentManifest> for chainsight_cdk::config::components::Rela
         Self {
             common: CommonConfig {
                 canister_name: val.id.clone().unwrap(),
-                monitor_duration: DEFAULT_MONITOR_DURATION_SECS,
             },
             destination: val.destination.oracle_address,
             method_identifier: val.datasource.method.identifier,
@@ -211,7 +213,6 @@ impl ComponentManifest for RelayerComponentManifest {
         res.insert(interval_key, interval_val);
         res
     }
-
     fn generate_bindings(&self) -> anyhow::Result<BTreeMap<String, String>> {
         let RelayerComponentManifest {
             datasource: Datasource { method, .. },
@@ -228,6 +229,9 @@ impl ComponentManifest for RelayerComponentManifest {
         };
 
         Ok(BTreeMap::from([("lib".to_string(), lib)]))
+    }
+    fn cycle_managements(&self) -> CycleManagements {
+        self.cycles.clone().unwrap_or_default().into()
     }
 }
 
@@ -309,6 +313,7 @@ mod tests {
             },
             lens_targets: None,
             interval: 3600,
+            cycles: None,
         }
     }
 
@@ -372,7 +377,8 @@ interval: 3600
                         .to_string(),
                 },
                 lens_targets: None,
-                interval: 3600
+                interval: 3600,
+                cycles: None,
             }
         );
         let schema =

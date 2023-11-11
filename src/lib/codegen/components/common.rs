@@ -6,6 +6,7 @@ use std::{
 };
 
 use anyhow::bail;
+use chainsight_cdk::initializer::{CycleManagement, CycleManagements};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -13,8 +14,6 @@ use crate::{
     lib::utils::{env::load_env, serializer::ordered_map},
     types::{ComponentType, Network},
 };
-
-pub const DEFAULT_MONITOR_DURATION_SECS: u32 = 3600;
 
 #[allow(clippy::enum_variant_names)]
 #[derive(Deserialize, Serialize, Clone, Copy, Debug, PartialEq, clap::ValueEnum)]
@@ -254,6 +253,9 @@ pub trait ComponentManifest: std::fmt::Debug {
     fn generate_dependency_accessors(&self) -> anyhow::Result<GeneratedCodes> {
         bail!("not implemented")
     }
+
+    /// Get the Component's cycle management settings
+    fn cycle_managements(&self) -> CycleManagements;
 }
 
 pub fn custom_tags_interval_sec(interval_sec: u32) -> (String, String) {
@@ -282,5 +284,48 @@ impl ComponentTypeInManifest {
     pub fn determine_type(component_manifest_path: &str) -> anyhow::Result<ComponentType> {
         let data = Self::load(component_manifest_path)?;
         Ok(data.metadata.type_)
+    }
+}
+
+#[derive(Default, Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct CycleManagementManifest {
+    pub initial_supply: Option<u128>,
+    pub refueling_amount: Option<u128>,
+    pub refueling_threshold: Option<u128>,
+}
+
+#[derive(Default, Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct CycleManagementsManifest {
+    pub refueling_interval: Option<u64>,
+    pub vault_intial_supply: Option<u128>,
+    pub indexer: Option<CycleManagementManifest>,
+    pub db: Option<CycleManagementManifest>,
+    pub proxy: Option<CycleManagementManifest>,
+}
+
+impl From<CycleManagementsManifest> for CycleManagements {
+    fn from(val: CycleManagementsManifest) -> CycleManagements {
+        let indexer = val.indexer.unwrap_or_default();
+        let db = val.db.unwrap_or_default();
+        let proxy = val.proxy.unwrap_or_default();
+        CycleManagements {
+            refueling_interval: val.refueling_interval.unwrap_or(86400),
+            vault_intial_supply: val.vault_intial_supply.unwrap_or(1_000_000_000_000),
+            indexer: CycleManagement {
+                initial_supply: indexer.initial_supply.unwrap_or(0),
+                refueling_amount: indexer.refueling_amount.unwrap_or(1_000_000_000_000),
+                refueling_threshold: indexer.refueling_threshold.unwrap_or(500_000_000_000),
+            },
+            db: CycleManagement {
+                initial_supply: db.initial_supply.unwrap_or(1_500_000_000_000),
+                refueling_amount: db.refueling_amount.unwrap_or(1_000_000_000_000),
+                refueling_threshold: db.refueling_threshold.unwrap_or(500_000_000_000),
+            },
+            proxy: CycleManagement {
+                initial_supply: proxy.initial_supply.unwrap_or(300_000_000_000),
+                refueling_amount: proxy.refueling_amount.unwrap_or(100_000_000_000),
+                refueling_threshold: proxy.refueling_threshold.unwrap_or(100_000_000_000),
+            },
+        }
     }
 }

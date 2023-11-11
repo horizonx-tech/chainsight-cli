@@ -2,7 +2,18 @@
 source: src/commands/tests/mod.rs
 expression: "fs::read_to_string(&did_path).unwrap()"
 ---
-type CanisterMetricsSnapshot = record { cycles : nat; timestamp : nat64 };
+type CycleManagement = record {
+  refueling_amount : nat;
+  initial_supply : nat;
+  refueling_threshold : nat;
+};
+type CycleManagements = record {
+  db : CycleManagement;
+  vault_intial_supply : nat;
+  refueling_interval : nat64;
+  proxy : CycleManagement;
+  indexer : CycleManagement;
+};
 type Env = variant { Production; Test; LocalDevelopment };
 type HttpHeader = record { value : text; name : text };
 type HttpResponse = record {
@@ -47,15 +58,8 @@ service : {
   get_proxy : () -> (principal);
   get_sources : () -> (vec Sources) query;
   index : () -> ();
-  init_in : (Env) -> (Result);
-  metric : () -> (CanisterMetricsSnapshot) query;
-  metrics : (nat64) -> (vec CanisterMetricsSnapshot) query;
+  init_in : (Env, CycleManagements) -> (Result);
   proxy_call : (vec nat8) -> (vec nat8);
-  proxy_canister_metrics_snapshots_len : (vec nat8) -> (vec nat8);
-  proxy_get_canister_metrics_snapshot : (vec nat8) -> (vec nat8);
-  proxy_get_canister_metrics_snapshots : (vec nat8) -> (vec nat8);
-  proxy_get_last_canister_metrics_snapshot : (vec nat8) -> (vec nat8);
-  proxy_get_top_canister_metrics_snapshots : (vec nat8) -> (vec nat8);
   set_task : (nat32, nat32) -> ();
   setup : (text, Web3CtxParam, IndexingConfig) -> (Result_1);
   transform : (TransformArgs) -> (HttpResponse) query;

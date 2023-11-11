@@ -3,6 +3,7 @@ use std::collections::{BTreeMap, HashMap};
 use chainsight_cdk::{
     config::components::{CommonConfig, LensTargets},
     convert::candid::{read_did_to_string_without_service, CanisterMethodIdentifier},
+    initializer::CycleManagements,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -14,8 +15,8 @@ use crate::{
 
 use super::{
     common::{
-        custom_tags_interval_sec, ComponentManifest, ComponentMetadata, Datasource,
-        DestinationType, GeneratedCodes, Sources, DEFAULT_MONITOR_DURATION_SECS,
+        custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
+        Datasource, DestinationType, GeneratedCodes, Sources,
     },
     utils::generate_types_from_bindings,
 };
@@ -30,6 +31,7 @@ pub struct SnapshotIndexerICPComponentManifest {
     pub datasource: Datasource,
     pub lens_targets: Option<LensTargets>,
     pub interval: u32,
+    pub cycles: Option<CycleManagementsManifest>,
 }
 
 impl SnapshotIndexerICPComponentManifest {
@@ -57,6 +59,7 @@ impl SnapshotIndexerICPComponentManifest {
             datasource,
             interval,
             lens_targets: None,
+            cycles: None,
         }
     }
 }
@@ -73,7 +76,6 @@ impl From<SnapshotIndexerICPComponentManifest>
         Self {
             common: CommonConfig {
                 canister_name: id.clone().unwrap(),
-                monitor_duration: DEFAULT_MONITOR_DURATION_SECS,
             },
             method_identifier: datasource.method.identifier,
             lens_targets,
@@ -171,7 +173,6 @@ impl ComponentManifest for SnapshotIndexerICPComponentManifest {
         res.insert(interval_key, interval_val);
         res
     }
-
     fn generate_bindings(&self) -> anyhow::Result<BTreeMap<String, String>> {
         let SnapshotIndexerICPComponentManifest {
             datasource: Datasource { method, .. },
@@ -188,6 +189,9 @@ impl ComponentManifest for SnapshotIndexerICPComponentManifest {
         };
 
         Ok(BTreeMap::from([("lib".to_string(), lib)]))
+    }
+    fn cycle_managements(&self) -> CycleManagements {
+        self.cycles.clone().unwrap_or_default().into()
     }
 }
 
@@ -250,7 +254,8 @@ interval: 3600
                     }
                 },
                 lens_targets: None,
-                interval: 3600
+                interval: 3600,
+                cycles: None,
             }
         );
         let schema = serde_json::from_str(include_str!(
@@ -286,6 +291,7 @@ interval: 3600
             },
             lens_targets: None,
             interval: 3600,
+            cycles: None,
         };
 
         let snap_prefix = "snapshot__snapshot_indexer_icp";

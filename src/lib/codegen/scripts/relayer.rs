@@ -85,7 +85,7 @@ fn script_contents(manifest: &RelayerComponentManifest, network: Network) -> Str
         manifest.interval,
         10, // temp: fixed value, todo: make it configurable
     );
-    let init_in_env_task = init_in_env_task(&network, &id);
+    let init_in_env_task = init_in_env_task(&network, &id, &manifest.cycle_managements());
 
     format!(
         r#"#!/bin/bash

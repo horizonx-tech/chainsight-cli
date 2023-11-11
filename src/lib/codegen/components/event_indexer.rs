@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use anyhow::bail;
+use chainsight_cdk::initializer::CycleManagements;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -10,8 +11,8 @@ use crate::{
 };
 
 use super::common::{
-    custom_tags_interval_sec, ComponentManifest, ComponentMetadata, GeneratedCodes, SourceType,
-    Sources, DEFAULT_MONITOR_DURATION_SECS,
+    custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
+    GeneratedCodes, SourceType, Sources,
 };
 
 /// Component Manifest: Event Indexer
@@ -23,6 +24,7 @@ pub struct EventIndexerComponentManifest {
     pub metadata: ComponentMetadata,
     pub datasource: EventIndexerDatasource,
     pub interval: u32,
+    pub cycles: Option<CycleManagementsManifest>,
 }
 
 impl From<EventIndexerComponentManifest>
@@ -32,7 +34,6 @@ impl From<EventIndexerComponentManifest>
         Self {
             common: chainsight_cdk::config::components::CommonConfig {
                 canister_name: val.id.clone().unwrap(),
-                monitor_duration: DEFAULT_MONITOR_DURATION_SECS,
             },
             def: chainsight_cdk::config::components::EventIndexerEventDefinition {
                 identifier: val.datasource.event.identifier,
@@ -69,6 +70,7 @@ impl EventIndexerComponentManifest {
             },
             datasource,
             interval,
+            cycles: None,
         }
     }
 }
@@ -165,6 +167,9 @@ impl ComponentManifest for EventIndexerComponentManifest {
         let (interval_key, interval_val) = custom_tags_interval_sec(self.interval);
         res.insert(interval_key, interval_val);
         res
+    }
+    fn cycle_managements(&self) -> CycleManagements {
+        self.cycles.clone().unwrap_or_default().into()
     }
 }
 
@@ -297,7 +302,8 @@ interval: 3600
                     from: 17660942,
                     contract_type: Some("ERC20".to_string())
                 },
-                interval: 3600
+                interval: 3600,
+                cycles: None,
             }
         );
         let schema = serde_json::from_str(include_str!(
@@ -340,6 +346,7 @@ interval: 3600
                 contract_type: Some("ERC20".to_string()),
             },
             interval: 3600,
+            cycles: None,
         };
 
         let snap_prefix = "snapshot__event_indexer";

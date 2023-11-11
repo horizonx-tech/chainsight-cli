@@ -4,27 +4,19 @@ import {IDL} from '@dfinity/candid';
 import {Principal} from '@dfinity/principal';
 import {getAgent, getMetadata} from './utils';
 
-export const assertMetric = async (canisterId: string) => {
+export const assertRespondable = async (canisterId: string) => {
   const agent = await getAgent();
   const ident = Principal.fromText(canisterId);
 
   const idl: IDL.InterfaceFactory = ({IDL}) => {
     return IDL.Service({
-      metric: IDL.Func(
-        [],
-        [IDL.Record({cycles: IDL.Nat, timestamp: IDL.Nat64})],
-        ['query']
-      ),
+      get_proxy: IDL.Func([], [IDL.Principal], ['query']),
     });
   };
 
   const actor = Actor.createActor(idl, {canisterId: ident, agent});
-  const res = (await actor.metric()) as {
-    cycles: IDL.NatClass;
-    timestamp: IDL.FixedIntClass;
-  };
-  expect(res.cycles).toBeGreaterThan(0);
-  expect(res.timestamp).toBeGreaterThan(0);
+  const res = await actor.get_proxy();
+  expect(res).toBeTruthy();
 };
 
 export const assertMetadata = async (

@@ -13,7 +13,7 @@ use slog::{debug, info, Logger};
 
 use crate::{
     lib::{
-        codegen::project::ProjectManifestData,
+        codegen::{components::common::ComponentManifest, project::ProjectManifestData},
         environment::EnvironmentImpl,
         utils::{ARTIFACTS_DIR, PROJECT_MANIFEST_FILENAME},
     },
@@ -66,7 +66,13 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
         log,
         r#"Start deploying project '{}'..."#, project_manifest.label
     );
-    execute_deployment(log, &artifacts_path_str, opts.component, network)?;
+    execute_deployment(
+        log,
+        &artifacts_path_str,
+        project_manifest.load_component_manifests(&project_path_str)?,
+        opts.component,
+        network,
+    )?;
     info!(
         log,
         r#"Project '{}' deployed successfully"#, project_manifest.label
@@ -93,8 +99,9 @@ fn check_before_deployment(
         },
     )?;
 
-    let exec =
-        |args: Vec<&str>| -> anyhow::Result<()> { exec_command(log, "dfx", artifacts_path, args) };
+    let exec = |args: Vec<&str>| -> anyhow::Result<String> {
+        exec_command(log, "dfx", artifacts_path, args)
+    };
     let args_builder = DfxArgsBuilder::new_only_network(network);
     exec(args_builder.generate(vec!["identity", "whoami"]))?;
     exec(args_builder.generate(vec!["identity", "get-principal"]))?;
@@ -106,13 +113,15 @@ fn check_before_deployment(
 fn execute_deployment(
     log: &Logger,
     artifacts_path_str: &str,
+    component_manifests: Vec<Box<dyn ComponentManifest>>,
     component: Option<String>,
     network: Network,
 ) -> anyhow::Result<()> {
     let artifacts_path = Path::new(&artifacts_path_str);
 
-    let exec =
-        |args: Vec<&str>| -> anyhow::Result<()> { exec_command(log, "dfx", artifacts_path, args) };
+    let exec = |args: Vec<&str>| -> anyhow::Result<String> {
+        exec_command(log, "dfx", artifacts_path, args)
+    };
     let args_builder = DfxArgsBuilder::new(network.clone(), component.clone());
 
     // Check before deployments
@@ -147,6 +156,18 @@ fn execute_deployment(
     exec(args_builder.generate(vec!["build"]))?;
     exec(args_builder.generate(vec!["canister", "install"]))?;
 
+    for manifest in component_manifests.iter() {
+        let id = manifest.id().unwrap();
+        let builder = DfxArgsBuilder::new(network.clone(), Some(id.clone()));
+        let canister_id = exec(builder.generate(vec!["canister", "id"]))?;
+        exec(builder.generate(vec![
+            "canister",
+            "update-settings",
+            "--add-controller",
+            &canister_id.replace('\n', ""),
+        ]))?;
+    }
+
     // Check after deployments
     let canister_info = get_canister_info(log, artifacts_path_str, network.clone())?;
     info!(log, "Current deployed status:\n{}", canister_info);
@@ -159,20 +180,17 @@ fn exec_command(
     cmd: &str,
     execution_dir: &Path,
     args: Vec<&str>,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<String> {
     let cmd_string = format!("{} {}", cmd, args.join(" "));
     info!(log, "Running command: '{}'", cmd_string);
 
     let output = output_by_exec_cmd(cmd, execution_dir, args)
         .unwrap_or_else(|_| panic!("failed to execute process: {}", cmd_string));
     if output.status.success() {
-        debug!(
-            log,
-            "{}",
-            std::str::from_utf8(&output.stdout).unwrap_or("failed to parse stdout")
-        );
+        let stdout = std::str::from_utf8(&output.stdout);
+        debug!(log, "{}", stdout.unwrap_or("failed to parse stdout"));
         info!(log, "Suceeded: {}", cmd_string);
-        anyhow::Ok(())
+        anyhow::Ok(stdout.unwrap_or_default().to_string())
     } else {
         bail!(format!(
             "Failed: {} by: {} ",

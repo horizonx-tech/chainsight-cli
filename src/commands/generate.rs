@@ -8,29 +8,17 @@ use anyhow::{bail, Ok};
 use clap::Parser;
 use slog::{debug, info, Logger};
 
-use crate::lib::codegen::components::algorithm_indexer::AlgorithmIndexerComponentManifest;
-use crate::lib::codegen::components::algorithm_lens::AlgorithmLensComponentManifest;
-use crate::lib::codegen::components::common::{
-    ComponentManifest, ComponentTypeInManifest, GeneratedCodes,
-};
-use crate::lib::codegen::components::event_indexer::EventIndexerComponentManifest;
-use crate::lib::codegen::components::relayer::RelayerComponentManifest;
-use crate::lib::codegen::components::snapshot_indexer_evm::SnapshotIndexerEVMComponentManifest;
-use crate::lib::codegen::components::snapshot_indexer_https::SnapshotIndexerHTTPSComponentManifest;
-use crate::lib::codegen::components::snapshot_indexer_icp::SnapshotIndexerICPComponentManifest;
+use crate::lib::codegen::components::common::{ComponentManifest, GeneratedCodes};
 use crate::lib::codegen::templates::{
     accessors_cargo_toml, bindings_cargo_toml, canister_project_cargo_toml, logic_cargo_toml,
     root_cargo_toml,
 };
 use crate::lib::utils::env::cache_envfile;
 use crate::lib::utils::{find_duplicates, paths, DOTENV_FILENAME};
-use crate::{
-    lib::{
-        codegen::project::ProjectManifestData,
-        environment::EnvironmentImpl,
-        utils::{is_chainsight_project, PROJECT_MANIFEST_FILENAME},
-    },
-    types::ComponentType,
+use crate::lib::{
+    codegen::project::ProjectManifestData,
+    environment::EnvironmentImpl,
+    utils::{is_chainsight_project, PROJECT_MANIFEST_FILENAME},
 };
 
 fn dummy_candid_blob() -> String {
@@ -98,45 +86,7 @@ pub fn exec(env: &EnvironmentImpl, opts: GenerateOpts) -> anyhow::Result<()> {
         }
     }
 
-    let mut component_data = vec![];
-    for component in project_manifest.components.clone() {
-        // TODO: need validations
-        let relative_component_path = component.component_path;
-        let component_path = format!("{}/{}", &project_path_str, relative_component_path);
-        let component_type = ComponentTypeInManifest::determine_type(&component_path)?;
-
-        let id = Path::new(&component_path)
-            .file_stem()
-            .unwrap()
-            .to_str()
-            .unwrap();
-        let data: Box<dyn ComponentManifest> =
-            match component_type {
-                ComponentType::EventIndexer => Box::new(
-                    EventIndexerComponentManifest::load_with_id(&component_path, id)?,
-                ),
-                ComponentType::AlgorithmIndexer => Box::new(
-                    AlgorithmIndexerComponentManifest::load_with_id(&component_path, id)?,
-                ),
-                ComponentType::SnapshotIndexerICP => Box::new(
-                    SnapshotIndexerICPComponentManifest::load_with_id(&component_path, id)?,
-                ),
-                ComponentType::SnapshotIndexerEVM => Box::new(
-                    SnapshotIndexerEVMComponentManifest::load_with_id(&component_path, id)?,
-                ),
-                ComponentType::Relayer => {
-                    Box::new(RelayerComponentManifest::load_with_id(&component_path, id)?)
-                }
-                ComponentType::AlgorithmLens => Box::new(
-                    AlgorithmLensComponentManifest::load_with_id(&component_path, id)?,
-                ),
-                ComponentType::SnapshotIndexerHTTPS => Box::new(
-                    SnapshotIndexerHTTPSComponentManifest::load_with_id(&component_path, id)?,
-                ),
-            };
-
-        component_data.push(data);
-    }
+    let component_data = project_manifest.load_component_manifests(project_path_str.as_str())?;
 
     exec_codegen(log, &project_path_str, &component_data)?;
 

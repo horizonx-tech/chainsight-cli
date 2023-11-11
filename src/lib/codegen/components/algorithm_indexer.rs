@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 
-use chainsight_cdk::config::components::{
-    AlgorithmIndexerConfig, AlgorithmInputType, CommonConfig,
+use chainsight_cdk::{
+    config::components::{AlgorithmIndexerConfig, AlgorithmInputType, CommonConfig},
+    initializer::CycleManagements,
 };
 use serde::{Deserialize, Serialize};
 
@@ -12,8 +13,8 @@ use crate::{
 };
 
 use super::common::{
-    custom_tags_interval_sec, ComponentManifest, ComponentMetadata, GeneratedCodes, SourceType,
-    Sources, DEFAULT_MONITOR_DURATION_SECS,
+    custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
+    GeneratedCodes, SourceType, Sources,
 };
 
 /// Component Manifest: Algorithm Indexer
@@ -26,6 +27,7 @@ pub struct AlgorithmIndexerComponentManifest {
     pub datasource: AlgorithmIndexerDatasource,
     pub output: Vec<AlgorithmIndexerOutput>,
     pub interval: u32,
+    pub cycles: Option<CycleManagementsManifest>,
 }
 
 impl From<AlgorithmIndexerComponentManifest>
@@ -35,7 +37,6 @@ impl From<AlgorithmIndexerComponentManifest>
         AlgorithmIndexerConfig {
             common: CommonConfig {
                 canister_name: val.id.unwrap(),
-                monitor_duration: DEFAULT_MONITOR_DURATION_SECS,
             },
             indexing: chainsight_cdk::indexer::IndexingConfig {
                 start_from: val.datasource.from,
@@ -72,6 +73,7 @@ impl AlgorithmIndexerComponentManifest {
             datasource,
             output,
             interval,
+            cycles: None,
         }
     }
 }
@@ -146,6 +148,9 @@ impl ComponentManifest for AlgorithmIndexerComponentManifest {
         let (interval_key, interval_val) = custom_tags_interval_sec(self.interval);
         res.insert(interval_key, interval_val);
         res
+    }
+    fn cycle_managements(&self) -> CycleManagements {
+        self.cycles.clone().unwrap_or_default().into()
     }
 }
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -299,7 +304,8 @@ interval: 3600
                     ]),
                     output_type: AlgorithmOutputType::KeyValue
                 }),
-                interval: 3600
+                interval: 3600,
+                cycles: None,
             }
         );
         let schema = serde_json::from_str(include_str!(
@@ -347,6 +353,7 @@ interval: 3600
                 output_type: AlgorithmOutputType::KeyValue,
             }],
             interval: 3600,
+            cycles: None,
         };
 
         let snap_prefix = "snapshot__algorithm_indexer";

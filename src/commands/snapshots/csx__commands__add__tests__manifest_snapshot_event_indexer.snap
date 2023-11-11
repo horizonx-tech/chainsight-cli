@@ -23,4 +23,5 @@ datasource:
   from: 37730337
   contract_type: ERC-20
 interval: 3600
+cycles: null
 

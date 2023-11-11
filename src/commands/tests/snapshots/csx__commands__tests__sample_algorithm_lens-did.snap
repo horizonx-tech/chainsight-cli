@@ -3,7 +3,18 @@ source: src/commands/tests/mod.rs
 expression: "fs::read_to_string(&did_path).unwrap()"
 ---
 type CalculateArgs = record { dummy : nat64 };
-type CanisterMetricsSnapshot = record { cycles : nat; timestamp : nat64 };
+type CycleManagement = record {
+  refueling_amount : nat;
+  initial_supply : nat;
+  refueling_threshold : nat;
+};
+type CycleManagements = record {
+  db : CycleManagement;
+  vault_intial_supply : nat;
+  refueling_interval : nat64;
+  proxy : CycleManagement;
+  indexer : CycleManagement;
+};
 type Env = variant { Production; Test; LocalDevelopment };
 type InitError = variant {
   InvalidDestination : text;
@@ -24,13 +35,6 @@ service : {
   get_proxy : () -> (principal);
   get_result : (vec text, CalculateArgs) -> (LensValue);
   get_sources : () -> (vec Sources) query;
-  init_in : (Env) -> (Result);
-  metric : () -> (CanisterMetricsSnapshot) query;
-  metrics : (nat64) -> (vec CanisterMetricsSnapshot) query;
-  proxy_canister_metrics_snapshots_len : (vec nat8) -> (vec nat8);
-  proxy_get_canister_metrics_snapshot : (vec nat8) -> (vec nat8);
-  proxy_get_canister_metrics_snapshots : (vec nat8) -> (vec nat8);
-  proxy_get_last_canister_metrics_snapshot : (vec nat8) -> (vec nat8);
+  init_in : (Env, CycleManagements) -> (Result);
   proxy_get_result : (vec nat8) -> (vec nat8);
-  proxy_get_top_canister_metrics_snapshots : (vec nat8) -> (vec nat8);
 }

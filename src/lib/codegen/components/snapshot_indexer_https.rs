@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, HashMap};
 
-use chainsight_cdk::config::components::CommonConfig;
+use chainsight_cdk::{config::components::CommonConfig, initializer::CycleManagements};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -10,8 +10,8 @@ use crate::{
 };
 
 use super::common::{
-    custom_tags_interval_sec, ComponentManifest, ComponentMetadata, DestinationType,
-    GeneratedCodes, Sources, DEFAULT_MONITOR_DURATION_SECS,
+    custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
+    DestinationType, GeneratedCodes, Sources,
 };
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -48,6 +48,7 @@ pub struct SnapshotIndexerHTTPSComponentManifest {
     pub metadata: ComponentMetadata,
     pub datasource: SnapshotIndexerHTTPSDataSource,
     pub interval: u32,
+    pub cycles: Option<CycleManagementsManifest>,
 }
 
 impl SnapshotIndexerHTTPSComponentManifest {
@@ -74,6 +75,7 @@ impl SnapshotIndexerHTTPSComponentManifest {
             },
             datasource,
             interval,
+            cycles: None,
         }
     }
 }
@@ -85,7 +87,6 @@ impl From<SnapshotIndexerHTTPSComponentManifest>
         Self {
             common: CommonConfig {
                 canister_name: id.clone().unwrap(),
-                monitor_duration: DEFAULT_MONITOR_DURATION_SECS,
             },
             url: datasource.url,
             headers: BTreeMap::from_iter(datasource.headers),
@@ -165,6 +166,9 @@ impl ComponentManifest for SnapshotIndexerHTTPSComponentManifest {
         res.insert(interval_key, interval_val);
         res
     }
+    fn cycle_managements(&self) -> CycleManagements {
+        self.cycles.clone().unwrap_or_default().into()
+    }
 }
 
 #[cfg(test)]
@@ -229,7 +233,8 @@ interval: 3600
                     .into_iter()
                     .collect(),
                 },
-                interval: 3600
+                interval: 3600,
+                cycles: None,
             }
         );
         let schema = serde_json::from_str(include_str!(
@@ -270,6 +275,7 @@ interval: 3600
                 .collect(),
             },
             interval: 3600,
+            cycles: None,
         };
 
         let snap_prefix = "snapshot__snapshot_indexer_https";

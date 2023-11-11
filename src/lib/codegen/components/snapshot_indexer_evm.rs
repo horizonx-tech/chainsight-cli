@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use chainsight_cdk::config::components::CommonConfig;
+use chainsight_cdk::{config::components::CommonConfig, initializer::CycleManagements};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -10,8 +10,8 @@ use crate::{
 };
 
 use super::common::{
-    custom_tags_interval_sec, ComponentManifest, ComponentMetadata, Datasource, DestinationType,
-    GeneratedCodes, Sources, DEFAULT_MONITOR_DURATION_SECS,
+    custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
+    Datasource, DestinationType, GeneratedCodes, Sources,
 };
 
 /// Component Manifest: Snapshot Indexer EVM
@@ -23,6 +23,7 @@ pub struct SnapshotIndexerEVMComponentManifest {
     pub metadata: ComponentMetadata,
     pub datasource: Datasource,
     pub interval: u32,
+    pub cycles: Option<CycleManagementsManifest>,
 }
 
 impl SnapshotIndexerEVMComponentManifest {
@@ -49,6 +50,7 @@ impl SnapshotIndexerEVMComponentManifest {
             },
             datasource,
             interval,
+            cycles: None,
         }
     }
 }
@@ -60,7 +62,6 @@ impl From<SnapshotIndexerEVMComponentManifest>
         Self {
             common: CommonConfig {
                 canister_name: id.clone().unwrap(),
-                monitor_duration: DEFAULT_MONITOR_DURATION_SECS,
             },
             method_identifier: datasource.method.identifier,
             method_args: datasource
@@ -156,6 +157,9 @@ impl ComponentManifest for SnapshotIndexerEVMComponentManifest {
         res.insert(interval_key, interval_val);
         res
     }
+    fn cycle_managements(&self) -> CycleManagements {
+        self.cycles.clone().unwrap_or_default().into()
+    }
 }
 
 fn yaml_to_json(yaml_value: serde_yaml::Value) -> serde_json::Value {
@@ -230,7 +234,8 @@ interval: 3600
                         args: vec![]
                     }
                 },
-                interval: 3600
+                interval: 3600,
+                cycles: None,
             }
         );
 
@@ -268,6 +273,7 @@ interval: 3600
                 },
             },
             interval: 3600,
+            cycles: None,
         };
 
         let snap_prefix = "snapshot__snapshot_indexer_evm";
