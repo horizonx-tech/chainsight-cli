@@ -16,7 +16,7 @@ use crate::{
 use super::{
     common::{
         custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
-        Datasource, DestinationType, GeneratedCodes, Sources, DEFAULT_MONITOR_DURATION_SECS,
+        Datasource, DestinationType, GeneratedCodes, Sources,
     },
     utils::generate_types_from_bindings,
 };
@@ -81,7 +81,6 @@ impl From<SnapshotIndexerICPComponentManifest>
         Self {
             common: CommonConfig {
                 canister_name: id.clone().unwrap(),
-                monitor_duration: DEFAULT_MONITOR_DURATION_SECS,
             },
             method_identifier: datasource.method.identifier,
             lens_targets,

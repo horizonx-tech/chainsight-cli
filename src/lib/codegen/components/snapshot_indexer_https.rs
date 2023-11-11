@@ -11,7 +11,7 @@ use crate::{
 
 use super::common::{
     custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
-    DestinationType, GeneratedCodes, Sources, DEFAULT_MONITOR_DURATION_SECS,
+    DestinationType, GeneratedCodes, Sources,
 };
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -87,7 +87,6 @@ impl From<SnapshotIndexerHTTPSComponentManifest>
         Self {
             common: CommonConfig {
                 canister_name: id.clone().unwrap(),
-                monitor_duration: DEFAULT_MONITOR_DURATION_SECS,
             },
             url: datasource.url,
             headers: BTreeMap::from_iter(datasource.headers),

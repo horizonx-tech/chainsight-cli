@@ -5,7 +5,7 @@ expression: "SrcString::from(generated_codes.lib)"
 use chainsight_cdk_macros::def_snapshot_indexer_evm_canister;
 def_snapshot_indexer_evm_canister!("{
 \"common\":{
-\"monitor_duration\":3600, \"canister_name\":\"sample_snapshot_indexer_evm\"
+\"canister_name\":\"sample_snapshot_indexer_evm\"
 }, \"method_identifier\":\"totalSupply():(uint256)\", \"method_args\":[]
 , \"abi_file_path\":\"./__interfaces/ERC20.json\"
 }");
