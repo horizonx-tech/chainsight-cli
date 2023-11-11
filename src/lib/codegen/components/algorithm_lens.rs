@@ -22,6 +22,8 @@ pub struct AlgorithmLensComponentManifest {
     pub version: String,
     pub metadata: ComponentMetadata,
     pub datasource: AlgorithmLensDataSource,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub with_args: Option<bool>,
 }
 
 impl AlgorithmLensComponentManifest {
@@ -45,6 +47,7 @@ impl AlgorithmLensComponentManifest {
                 tags: Some(vec!["Ethereum".to_string(), "Account".to_string()]),
             },
             datasource,
+            with_args: None,
         }
     }
 }
@@ -52,7 +55,7 @@ impl From<AlgorithmLensComponentManifest>
     for chainsight_cdk::config::components::AlgorithmLensConfig
 {
     fn from(val: AlgorithmLensComponentManifest) -> Self {
-        let args_type = if val.datasource.with_args.is_some() && val.datasource.with_args.unwrap() {
+        let args_type = if val.with_args.is_some() && val.with_args.unwrap() {
             Some(AlgorithmLensComponentManifest::CALCULATE_ARGS_STRUCT_NAME.to_string())
         } else {
             None
@@ -194,8 +197,6 @@ pub enum AlgorithmLensOutputType {
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct AlgorithmLensDataSource {
     pub methods: Vec<AlgorithmLensDataSourceMethod>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub with_args: Option<bool>,
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -215,7 +216,6 @@ impl Default for AlgorithmLensDataSource {
                         .to_string(),
                 candid_file_path: None,
             }],
-            with_args: Some(false),
         }
     }
 }
@@ -245,7 +245,7 @@ datasource:
     - id: last_snapshot
       identifier: 'get_last_snapshot : () -> (Snapshot)'
       candid_file_path: "interfaces/sample.did"
-    with_args: true
+with_args: true
 "#;
 
         let result = serde_yaml::from_str::<AlgorithmLensComponentManifest>(yaml);
@@ -272,8 +272,8 @@ datasource:
                         identifier: "get_last_snapshot : () -> (Snapshot)".to_string(),
                         candid_file_path: Some("interfaces/sample.did".to_string()),
                     }],
-                    with_args: Some(true),
                 },
+                with_args: Some(true),
             }
         );
         let schema = serde_json::from_str(include_str!(
@@ -305,7 +305,7 @@ datasource:
     - id: last_snapshot
       identifier: 'get_last_snapshot_2 : () -> (text)'
       candid_file_path: "interfaces/sample_2.did"
-    with_args: true
+with_args: true
 "#;
         let result = serde_yaml::from_str::<AlgorithmLensComponentManifest>(yaml).unwrap();
         let err = result.validate_manifest().unwrap_err();
@@ -334,8 +334,8 @@ datasource:
                             .to_string(),
                     candid_file_path: Some("interfaces/sample.did".to_string()),
                 }],
-                with_args: Some(false),
             },
+            with_args: Some(false),
         };
 
         let snap_prefix = "snapshot__algorithm_lens";
