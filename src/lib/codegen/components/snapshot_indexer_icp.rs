@@ -32,11 +32,6 @@ pub struct SnapshotIndexerICPComponentManifest {
     pub interval: u32,
 }
 
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-pub struct LensTarget {
-    pub identifiers: Vec<String>,
-}
-
 impl SnapshotIndexerICPComponentManifest {
     pub fn new(
         id: &str,

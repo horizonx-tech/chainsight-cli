@@ -25,11 +25,6 @@ pub struct SnapshotIndexerEVMComponentManifest {
     pub interval: u32,
 }
 
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-pub struct LensTarget {
-    pub identifiers: Vec<String>,
-}
-
 impl SnapshotIndexerEVMComponentManifest {
     pub fn new(
         id: &str,
