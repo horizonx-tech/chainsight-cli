@@ -37,9 +37,8 @@ pub fn generate_codes(manifest: &AlgorithmLensComponentManifest) -> anyhow::Resu
 pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result<String> {
     let id = manifest.id().ok_or(anyhow::anyhow!("id is required"))?;
     let AlgorithmLensComponentManifest {
-        datasource: AlgorithmLensDataSource {
-            methods, with_args, ..
-        },
+        datasource: AlgorithmLensDataSource { methods, .. },
+        with_args,
         ..
     } = manifest;
 

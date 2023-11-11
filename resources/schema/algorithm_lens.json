@@ -68,7 +68,7 @@
     "datasource": {
       "$id": "#/properties/datasource",
       "type": "object",
-      "required": ["methods", "with_args"],
+      "required": ["methods"],
       "additionalProperties": false,
       "properties": {
         "methods": {
@@ -111,14 +111,14 @@
               }
             }
           }
-        },
-        "with_args": {
-          "$id": "#/properties/datasource/properties/with_args",
-          "description": "Flag indicating whether to add arguments for parameters to the calculation logic to be published",
-          "title": "with_args",
-          "type": "boolean"
         }
       }
+    },
+    "with_args": {
+      "$id": "#/properties/datasource/properties/with_args",
+      "description": "Flag indicating whether to add arguments for parameters to the calculation logic to be published",
+      "title": "with_args",
+      "type": "boolean"
     },
     "cycles": {
       "$id": "#/properties/cycles",
