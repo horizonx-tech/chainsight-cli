@@ -58,7 +58,7 @@ impl From<AlgorithmLensComponentManifest>
     for chainsight_cdk::config::components::AlgorithmLensConfig
 {
     fn from(val: AlgorithmLensComponentManifest) -> Self {
-        let args_type = if val.datasource.with_args {
+        let args_type = if val.datasource.with_args.is_some() && val.datasource.with_args.unwrap() {
             Some(AlgorithmLensComponentManifest::CALCULATE_ARGS_STRUCT_NAME.to_string())
         } else {
             None
@@ -202,7 +202,8 @@ pub enum AlgorithmLensOutputType {
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct AlgorithmLensDataSource {
     pub methods: Vec<AlgorithmLensDataSourceMethod>,
-    pub with_args: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub with_args: Option<bool>,
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -222,7 +223,7 @@ impl Default for AlgorithmLensDataSource {
                         .to_string(),
                 candid_file_path: None,
             }],
-            with_args: false,
+            with_args: Some(false),
         }
     }
 }
@@ -279,7 +280,7 @@ datasource:
                         identifier: "get_last_snapshot : () -> (Snapshot)".to_string(),
                         candid_file_path: Some("interfaces/sample.did".to_string()),
                     }],
-                    with_args: true,
+                    with_args: Some(true),
                 },
                 cycles: None,
             }
@@ -342,7 +343,7 @@ datasource:
                             .to_string(),
                     candid_file_path: Some("interfaces/sample.did".to_string()),
                 }],
-                with_args: false,
+                with_args: Some(false),
             },
             cycles: None,
         };

@@ -34,11 +34,6 @@ pub struct SnapshotIndexerICPComponentManifest {
     pub cycles: Option<CycleManagementsManifest>,
 }
 
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-pub struct LensTarget {
-    pub identifiers: Vec<String>,
-}
-
 impl SnapshotIndexerICPComponentManifest {
     pub fn new(
         id: &str,
