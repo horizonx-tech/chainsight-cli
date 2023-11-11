@@ -71,7 +71,7 @@ pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result
             }
         };
 
-        if *with_args {
+        if with_args.is_some() && with_args.unwrap() {
             // add argument type that is implemented fields by user
             let args_type_ident = format_ident!(
                 "{}",
