@@ -6,6 +6,7 @@
   "description": "Chainsight Relayer specification",
   "type": "object",
   "required": ["version", "metadata", "datasource", "destination", "interval"],
+  "additionalProperties": false,
   "properties": {
     "version": {
       "$id": "#/properties/version",
@@ -19,14 +20,14 @@
       "title": "metadata",
       "$comment": "metadata for the canister",
       "type": "object",
-      "required": ["label", "type"],
+      "required": ["label", "type", "description"],
+      "additionalProperties": false,
       "properties": {
         "label": {
           "$id": "#/properties/metadata/properties/label",
           "type": "string",
           "title": "label for the canister",
-          "examples": ["relayer_ethusd"],
-          "pattern": "^[a-z0-9_]+$"
+          "examples": ["relayer_ethusd"]
         },
         "type": {
           "$id": "#/properties/metadata/properties/type",
@@ -66,21 +67,15 @@
     "datasource": {
       "$id": "#/properties/datasource",
       "type": "object",
-      "required": ["type", "location", "method"],
+      "required": ["location", "method"],
+      "additionalProperties": false,
       "properties": {
-        "type": {
-          "$id": "#/properties/datasource/properties/type",
-          "type": "string",
-          "title": "type of the datasource",
-          "description": "currently only supports 'canister'",
-          "examples": ["canister"],
-          "pattern": "^(canister)$"
-        },
         "location": {
           "$id": "#/properties/datasource/properties/location",
           "type": "object",
           "title": "datasource location",
           "required": ["id"],
+          "additionalProperties": false,
           "properties": {
             "id": {
               "$id": "#/properties/datasource/properties/location/properties/id",
@@ -101,6 +96,7 @@
           "title": "datasource method",
           "description": "method to call on the canister",
           "required": ["identifier", "args"],
+          "additionalProperties": false,
           "properties": {
             "identifier": {
               "$id": "#/properties/datasource/properties/method/properties/identifier",
@@ -110,6 +106,13 @@
               "examples": [
                 "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"
               ]
+            },
+            "interface": {
+              "$id": "#/properties/datasource/properties/method/properties/interface",
+              "type": ["string", "null"],
+              "title": "interface",
+              "description": "did file to use. This file must be in ./interfaces folder.",
+              "examples": ["relayer.did"]
             },
             "args": {
               "$id": "#/properties/datasource/properties/method/properties/args",
@@ -124,10 +127,11 @@
     },
     "lens_targets": {
       "$id": "#/properties/lens_targets",
-      "type": "object",
+      "type": ["object", "null"],
       "title": "lens targets",
       "description": "targets for the lens. Only used when the datasource canister is a algorithm_lens",
       "required": ["identifiers"],
+      "additionalProperties": false,
       "properties": {
         "identifiers": {
           "$id": "#/properties/lens_targets/properties/identifiers",
@@ -157,6 +161,7 @@
       "title": "destination",
       "description": "destination evm network and contract for the data.",
       "required": ["network_id", "type", "oracle_address", "rpc_url"],
+      "additionalProperties": false,
       "properties": {
         "network_id": {
           "$id": "#/properties/destination/properties/network_id",

@@ -330,7 +330,6 @@ metadata:
     - Oracle
     - snapshot
 datasource:
-    type: canister
     location:
         id: datasource_canister_id
     method:

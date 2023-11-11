@@ -13,7 +13,6 @@
     - [3.1.2. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > datasource > location > args`](#datasource_location_args)
       - [3.1.2.1. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > datasource > location > args > network_id`](#datasource_location_args_network_id)
       - [3.1.2.2. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > datasource > location > args > rpc_url`](#datasource_location_args_rpc_url)
-      - [3.1.2.3. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > datasource > location > args > id_type`](#datasource_location_args_id_type)
   - [3.2. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > datasource > method`](#datasource_method)
     - [3.2.1. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > datasource > method > identifier`](#datasource_method_identifier)
     - [3.2.2. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > datasource > method > interface`](#datasource_method_interface)
@@ -22,11 +21,11 @@
 
 **Title:** Chainsight EVM Compatible Chain Snapshot Indexer specification
 
-|                           |                                                                           |
-| ------------------------- | ------------------------------------------------------------------------- |
-| **Type**                  | `object`                                                                  |
-| **Required**              | No                                                                        |
-| **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
+|                           |                                                         |
+| ------------------------- | ------------------------------------------------------- |
+| **Type**                  | `object`                                                |
+| **Required**              | No                                                      |
+| **Additional properties** | [[Not allowed]](# "Additional Properties not allowed.") |
 
 **Description:** Chainsight EVM Compatible Chain Snapshot Indexer specification
 
@@ -60,11 +59,11 @@
 
 **Title:** metadata
 
-|                           |                                                                           |
-| ------------------------- | ------------------------------------------------------------------------- |
-| **Type**                  | `object`                                                                  |
-| **Required**              | Yes                                                                       |
-| **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
+|                           |                                                         |
+| ------------------------- | ------------------------------------------------------- |
+| **Type**                  | `object`                                                |
+| **Required**              | Yes                                                     |
+| **Additional properties** | [[Not allowed]](# "Additional Properties not allowed.") |
 
 | Property                                | Pattern | Type            | Deprecated | Definition | Title/Description           |
 | --------------------------------------- | ------- | --------------- | ---------- | ---------- | --------------------------- |
@@ -87,10 +86,6 @@
 ```json
 "relayer_ethusd"
 ```
-
-| Restrictions                      |                                                                                                               |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| **Must match regular expression** | ```^[a-z0-9_]+$``` [Test](https://regex101.com/?regex=%5E%5Ba-z0-9_%5D%2B%24&testString=%22relayer_ethusd%22) |
 
 ### <a name="metadata_type"></a>2.2. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > metadata > type`
 
@@ -202,11 +197,11 @@
 
 ## <a name="datasource"></a>3. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > datasource`
 
-|                           |                                                                           |
-| ------------------------- | ------------------------------------------------------------------------- |
-| **Type**                  | `object`                                                                  |
-| **Required**              | Yes                                                                       |
-| **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
+|                           |                                                         |
+| ------------------------- | ------------------------------------------------------- |
+| **Type**                  | `object`                                                |
+| **Required**              | Yes                                                     |
+| **Additional properties** | [[Not allowed]](# "Additional Properties not allowed.") |
 
 | Property                            | Pattern | Type   | Deprecated | Definition | Title/Description          |
 | ----------------------------------- | ------- | ------ | ---------- | ---------- | -------------------------- |
@@ -217,11 +212,11 @@
 
 **Title:** location of the datasource
 
-|                           |                                                                           |
-| ------------------------- | ------------------------------------------------------------------------- |
-| **Type**                  | `object`                                                                  |
-| **Required**              | Yes                                                                       |
-| **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
+|                           |                                                         |
+| ------------------------- | ------------------------------------------------------- |
+| **Type**                  | `object`                                                |
+| **Required**              | Yes                                                     |
+| **Additional properties** | [[Not allowed]](# "Additional Properties not allowed.") |
 
 **Description:** location of the datasource. For contract, it is the contract address. For canister, it is the canister id or canister name defined in dfx.json.
 
@@ -271,11 +266,10 @@
 
 **Description:** args for the datasource.
 
-| Property                                              | Pattern | Type             | Deprecated | Definition | Title/Description |
-| ----------------------------------------------------- | ------- | ---------------- | ---------- | ---------- | ----------------- |
-| - [network_id](#datasource_location_args_network_id ) | No      | integer          | No         | -          | network id        |
-| - [rpc_url](#datasource_location_args_rpc_url )       | No      | string           | No         | -          | rpc url           |
-| - [id_type](#datasource_location_args_id_type )       | No      | enum (of string) | No         | -          | id type           |
+| Property                                              | Pattern | Type    | Deprecated | Definition | Title/Description |
+| ----------------------------------------------------- | ------- | ------- | ---------- | ---------- | ----------------- |
+| - [network_id](#datasource_location_args_network_id ) | No      | integer | No         | -          | network id        |
+| - [rpc_url](#datasource_location_args_rpc_url )       | No      | string  | No         | -          | rpc url           |
 
 ##### <a name="datasource_location_args_network_id"></a>3.1.2.1. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > datasource > location > args > network_id`
 
@@ -323,52 +317,23 @@
 | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Must match regular expression** | ```^(http\|https)://``` [Test](https://regex101.com/?regex=%5E%28http%7Chttps%29%3A%2F%2F&testString=%22https%3A%2F%2Fmainnet.infura.io%2Fv3%2FYOUR_API_KEY%22) |
 
-##### <a name="datasource_location_args_id_type"></a>3.1.2.3. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > datasource > location > args > id_type`
-
-**Title:** id type
-
-|              |                    |
-| ------------ | ------------------ |
-| **Type**     | `enum (of string)` |
-| **Required** | No                 |
-
-**Description:** type of the id. It is required if type is canister.
-
-**Examples:** 
-
-```json
-"canister_id"
-```
-
-```json
-"canister_name"
-```
-
-Must be one of:
-* "canister_id"
-* "canister_name"
-
-| Restrictions                      |                                                                                                                                               |
-| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Must match regular expression** | ```^(canister_id\|canister_name)$``` [Test](https://regex101.com/?regex=%5E%28canister_id%7Ccanister_name%29%24&testString=%22canister_id%22) |
-
 ### <a name="datasource_method"></a>3.2. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > datasource > method`
 
 **Title:** method
 
-|                           |                                                                           |
-| ------------------------- | ------------------------------------------------------------------------- |
-| **Type**                  | `object`                                                                  |
-| **Required**              | Yes                                                                       |
-| **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
+|                           |                                                         |
+| ------------------------- | ------------------------------------------------------- |
+| **Type**                  | `object`                                                |
+| **Required**              | Yes                                                     |
+| **Additional properties** | [[Not allowed]](# "Additional Properties not allowed.") |
 
 **Description:** method of the datasource. The canister will call this method to get data.
 
-| Property                                       | Pattern | Type   | Deprecated | Definition | Title/Description        |
-| ---------------------------------------------- | ------- | ------ | ---------- | ---------- | ------------------------ |
-| + [identifier](#datasource_method_identifier ) | No      | string | No         | -          | identifier of the method |
-| - [interface](#datasource_method_interface )   | No      | string | No         | -          | interface                |
-| - [args](#datasource_method_args )             | No      | array  | No         | -          | args                     |
+| Property                                       | Pattern | Type           | Deprecated | Definition | Title/Description        |
+| ---------------------------------------------- | ------- | -------------- | ---------- | ---------- | ------------------------ |
+| + [identifier](#datasource_method_identifier ) | No      | string         | No         | -          | identifier of the method |
+| - [interface](#datasource_method_interface )   | No      | string or null | No         | -          | interface                |
+| - [args](#datasource_method_args )             | No      | array          | No         | -          | args                     |
 
 #### <a name="datasource_method_identifier"></a>3.2.1. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > datasource > method > identifier`
 
@@ -399,10 +364,10 @@ Must be one of:
 
 **Title:** interface
 
-|              |          |
-| ------------ | -------- |
-| **Type**     | `string` |
-| **Required** | No       |
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `string or null` |
+| **Required** | No               |
 
 **Description:** abi json file to use. This file must be in ./interfaces folder. It is required if type is contract.
 
@@ -463,4 +428,4 @@ Must be one of:
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-11-07 at 12:43:34 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-11-10 at 13:37:50 +0000

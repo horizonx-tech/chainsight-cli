@@ -30,6 +30,9 @@ pub struct AlgorithmLensComponentManifest {
 }
 
 impl AlgorithmLensComponentManifest {
+    // type name with argument information except canister ids
+    pub const CALCULATE_ARGS_STRUCT_NAME: &'static str = "CalculateArgs";
+
     pub fn new(
         id: &str,
         label: &str,
@@ -55,13 +58,19 @@ impl From<AlgorithmLensComponentManifest>
     for chainsight_cdk::config::components::AlgorithmLensConfig
 {
     fn from(val: AlgorithmLensComponentManifest) -> Self {
+        let args_type = if val.datasource.with_args {
+            Some(AlgorithmLensComponentManifest::CALCULATE_ARGS_STRUCT_NAME.to_string())
+        } else {
+            None
+        };
+
         Self {
             common: CommonConfig {
                 canister_name: val.id.clone().unwrap(),
                 monitor_duration: 60,
             },
             target_count: val.datasource.methods.len(),
-            args_type: None, // TEMP/TODO: use this by manifest for generate Args type
+            args_type,
         }
     }
 }
@@ -194,6 +203,7 @@ pub enum AlgorithmLensOutputType {
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct AlgorithmLensDataSource {
     pub methods: Vec<AlgorithmLensDataSourceMethod>,
+    pub with_args: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -213,6 +223,7 @@ impl Default for AlgorithmLensDataSource {
                         .to_string(),
                 candid_file_path: None,
             }],
+            with_args: false,
         }
     }
 }
@@ -242,15 +253,11 @@ datasource:
     - id: last_snapshot
       identifier: 'get_last_snapshot : () -> (Snapshot)'
       candid_file_path: "interfaces/sample.did"
-output:
-    name: SampleOutput
-    type: struct
-    fields:
-      result: String
-      value: String
+    with_args: true
 "#;
 
         let result = serde_yaml::from_str::<AlgorithmLensComponentManifest>(yaml);
+        assert!(result.is_ok());
         let component = result.unwrap();
         let mut output_types = HashMap::new();
         output_types.insert("result".to_string(), "String".to_string());
@@ -273,6 +280,7 @@ output:
                         identifier: "get_last_snapshot : () -> (Snapshot)".to_string(),
                         candid_file_path: Some("interfaces/sample.did".to_string()),
                     }],
+                    with_args: true,
                 },
                 cycles: None,
             }
@@ -306,6 +314,7 @@ datasource:
     - id: last_snapshot
       identifier: 'get_last_snapshot_2 : () -> (text)'
       candid_file_path: "interfaces/sample_2.did"
+    with_args: true
 "#;
         let result = serde_yaml::from_str::<AlgorithmLensComponentManifest>(yaml).unwrap();
         let err = result.validate_manifest().unwrap_err();
@@ -334,6 +343,7 @@ datasource:
                             .to_string(),
                     candid_file_path: Some("interfaces/sample.did".to_string()),
                 }],
+                with_args: false,
             },
             cycles: None,
         };
