@@ -5,6 +5,7 @@ use chainsight_cdk::{
     config::components::CommonConfig,
     convert::candid::{read_did_to_string_without_service, CanisterMethodIdentifier},
 };
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -157,7 +158,11 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
                 let identifier = CanisterMethodIdentifier::new(&method.identifier)?;
                 identifier.compile()?
             };
-            bindings.insert(mod_name, codes);
+            let re = Regex::new(r"[^{](?:pub )*(\w+): ").unwrap();
+            let codes = re.replace_all(&codes, " pub ${1}: ");
+            let re = Regex::new(r"(?:pub )*enum").unwrap();
+            let codes = re.replace_all(&codes, "pub enum");
+            bindings.insert(mod_name, codes.to_string());
         }
 
         let lib = bindings
