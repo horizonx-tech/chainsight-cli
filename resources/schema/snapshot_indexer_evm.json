@@ -160,6 +160,115 @@
       "description": "interval of the canister invocation in seconds",
       "type": "number",
       "examples": [60]
+    },
+    "cycles": {
+      "$id": "#/properties/cycles",
+      "title": "cycles",
+      "description": "manage component cycles",
+      "type": ["object", "null"],
+      "properties": {
+        "refueling_interval": {
+          "$id": "#/properties/cycles/refueling_interval",
+          "title": "refueling_interval",
+          "description": "interval of the refueling to canisters in seconds",
+          "type": ["number", "null"],
+          "examples": [86400]
+        },
+        "vault_intial_supply": {
+          "$id": "#/properties/cycles/vault_intial_supply",
+          "title": "vault_intial_supply",
+          "description": "initial supply cycles to the vault canister",
+          "type": ["number", "null"],
+          "examples": [3000000000000]
+        },
+        "indexer": {
+          "$id": "#/properties/cycles/indexer",
+          "title": "indexer",
+          "description": "cycles setting of indexer canister",
+          "type": ["object", "null"],
+          "properties": {
+            "initial_supply": {
+              "$id": "#/properties/cycles/indexer/initial_supply",
+              "title": "initial_supply",
+              "description": "initial supply cycles to the indexer canister",
+              "type": ["number", "null"],
+              "examples": [1000000000000]
+            },
+            "refueling_threshold": {
+              "$id": "#/properties/cycles/indexer/refueling_threshold",
+              "title": "refueling_threshold",
+              "description": "vault refuel cycles to the canister when the cycles balance is below this value",
+              "type": ["number", "null"],
+              "examples": [500000000000]
+            },
+            "refueling_amount": {
+              "$id": "#/properties/cycles/indexer/refueling_amount",
+              "title": "refueling_amount",
+              "description": "vault refuel cycles with this value to the canister when the cycles balance is below the refueling_threshold",
+              "type": ["number", "null"],
+              "examples": [1000000000000]
+            }
+          }
+        },
+        "db": {
+          "$id": "#/properties/cycles/db",
+          "title": "db",
+          "description": "cycles setting of db canister",
+          "type": ["object", "null"],
+          "properties": {
+            "initial_supply": {
+              "$id": "#/properties/cycles/db/initial_supply",
+              "title": "initial_supply",
+              "description": "initial supply cycles to the db canister",
+              "type": ["number", "null"],
+              "examples": [150000000000]
+            },
+            "refueling_threshold": {
+              "$id": "#/properties/cycles/db/refueling_threshold",
+              "title": "refueling_threshold",
+              "description": "vault refuel cycles to the canister when the cycles balance is below this value",
+              "type": ["number", "null"],
+              "examples": [1000000000000]
+            },
+            "refueling_amount": {
+              "$id": "#/properties/cycles/db/refueling_amount",
+              "title": "refueling_amount",
+              "description": "vault refuel cycles with this value to the canister when the cycles balance is below the refueling_threshold",
+              "type": ["number", "null"],
+              "examples": [1000000000000]
+            }
+          }
+        },
+        "proxy": {
+          "$id": "#/properties/cycles/proxy",
+          "title": "proxy",
+          "description": "cycles setting of proxy canister",
+          "type": ["object", "null"],
+          "properties": {
+            "initial_supply": {
+              "$id": "#/properties/cycles/proxy/initial_supply",
+              "title": "initial_supply",
+              "description": "initial supply cycles to the proxy canister",
+              "type": ["number", "null"],
+              "examples": [300000000000]
+            },
+            "refueling_threshold": {
+              "$id": "#/properties/cycles/proxy/refueling_threshold",
+              "title": "refueling_threshold",
+              "description": "vault refuel cycles to the canister when the cycles balance is below this value",
+              "type": ["number", "null"],
+              "examples": [100000000000]
+            },
+            "refueling_amount": {
+              "$id": "#/properties/cycles/proxy/refueling_amount",
+              "title": "refueling_amount",
+              "description": "vault refuel cycles with this value to the canister when the cycles balance is below the refueling_threshold",
+              "type": ["number", "null"],
+              "examples": [1000000000000]
+            }
+          }
+        }
+      }
     }
   }
 }
