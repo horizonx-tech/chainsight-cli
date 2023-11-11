@@ -14,6 +14,21 @@
       - [3.1.1.2. Property `Chainsight Algorithm Lens specification > datasource > methods > method > identifier`](#datasource_methods_items_identifier)
       - [3.1.1.3. Property `Chainsight Algorithm Lens specification > datasource > methods > method > candid_file_path`](#datasource_methods_items_candid_file_path)
   - [3.2. Property `Chainsight Algorithm Lens specification > datasource > with_args`](#datasource_with_args)
+- [4. Property `Chainsight Algorithm Lens specification > cycles`](#cycles)
+  - [4.1. Property `Chainsight Algorithm Lens specification > cycles > refueling_interval`](#cycles_refueling_interval)
+  - [4.2. Property `Chainsight Algorithm Lens specification > cycles > vault_intial_supply`](#cycles_vault_intial_supply)
+  - [4.3. Property `Chainsight Algorithm Lens specification > cycles > indexer`](#cycles_indexer)
+    - [4.3.1. Property `Chainsight Algorithm Lens specification > cycles > indexer > initial_supply`](#cycles_indexer_initial_supply)
+    - [4.3.2. Property `Chainsight Algorithm Lens specification > cycles > indexer > refueling_threshold`](#cycles_indexer_refueling_threshold)
+    - [4.3.3. Property `Chainsight Algorithm Lens specification > cycles > indexer > refueling_amount`](#cycles_indexer_refueling_amount)
+  - [4.4. Property `Chainsight Algorithm Lens specification > cycles > db`](#cycles_db)
+    - [4.4.1. Property `Chainsight Algorithm Lens specification > cycles > db > initial_supply`](#cycles_db_initial_supply)
+    - [4.4.2. Property `Chainsight Algorithm Lens specification > cycles > db > refueling_threshold`](#cycles_db_refueling_threshold)
+    - [4.4.3. Property `Chainsight Algorithm Lens specification > cycles > db > refueling_amount`](#cycles_db_refueling_amount)
+  - [4.5. Property `Chainsight Algorithm Lens specification > cycles > proxy`](#cycles_proxy)
+    - [4.5.1. Property `Chainsight Algorithm Lens specification > cycles > proxy > initial_supply`](#cycles_proxy_initial_supply)
+    - [4.5.2. Property `Chainsight Algorithm Lens specification > cycles > proxy > refueling_threshold`](#cycles_proxy_refueling_threshold)
+    - [4.5.3. Property `Chainsight Algorithm Lens specification > cycles > proxy > refueling_amount`](#cycles_proxy_refueling_amount)
 
 **Title:** Chainsight Algorithm Lens specification
 
@@ -25,11 +40,12 @@
 
 **Description:** Chainsight Algorithm Lens specification
 
-| Property                     | Pattern | Type   | Deprecated | Definition | Title/Description                     |
-| ---------------------------- | ------- | ------ | ---------- | ---------- | ------------------------------------- |
-| + [version](#version )       | No      | string | No         | -          | specification version of the canister |
-| + [metadata](#metadata )     | No      | object | No         | -          | metadata                              |
-| + [datasource](#datasource ) | No      | object | No         | -          | -                                     |
+| Property                     | Pattern | Type           | Deprecated | Definition | Title/Description                     |
+| ---------------------------- | ------- | -------------- | ---------- | ---------- | ------------------------------------- |
+| + [version](#version )       | No      | string         | No         | -          | specification version of the canister |
+| + [metadata](#metadata )     | No      | object         | No         | -          | metadata                              |
+| + [datasource](#datasource ) | No      | object         | No         | -          | -                                     |
+| - [cycles](#cycles )         | No      | object or null | No         | -          | cycles                                |
 
 ## <a name="version"></a>1. Property `Chainsight Algorithm Lens specification > version`
 
@@ -318,5 +334,262 @@
 
 **Description:** Flag indicating whether to add arguments for parameters to the calculation logic to be published
 
+## <a name="cycles"></a>4. Property `Chainsight Algorithm Lens specification > cycles`
+
+**Title:** cycles
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `object or null` |
+| **Required** | No               |
+
+**Description:** manage component cycles
+
+| Property                                              | Pattern | Type           | Deprecated | Definition | Title/Description   |
+| ----------------------------------------------------- | ------- | -------------- | ---------- | ---------- | ------------------- |
+| - [refueling_interval](#cycles_refueling_interval )   | No      | number or null | No         | -          | refueling_interval  |
+| - [vault_intial_supply](#cycles_vault_intial_supply ) | No      | number or null | No         | -          | vault_intial_supply |
+| - [indexer](#cycles_indexer )                         | No      | object or null | No         | -          | indexer             |
+| - [db](#cycles_db )                                   | No      | object or null | No         | -          | db                  |
+| - [proxy](#cycles_proxy )                             | No      | object or null | No         | -          | proxy               |
+
+### <a name="cycles_refueling_interval"></a>4.1. Property `Chainsight Algorithm Lens specification > cycles > refueling_interval`
+
+**Title:** refueling_interval
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | No               |
+
+**Description:** interval of the refueling to canisters in seconds
+
+**Example:** 
+
+```json
+86400
+```
+
+### <a name="cycles_vault_intial_supply"></a>4.2. Property `Chainsight Algorithm Lens specification > cycles > vault_intial_supply`
+
+**Title:** vault_intial_supply
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | No               |
+
+**Description:** initial supply cycles to the vault canister
+
+**Example:** 
+
+```json
+3000000000000
+```
+
+### <a name="cycles_indexer"></a>4.3. Property `Chainsight Algorithm Lens specification > cycles > indexer`
+
+**Title:** indexer
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `object or null` |
+| **Required** | No               |
+
+**Description:** cycles setting of indexer canister
+
+| Property                                                      | Pattern | Type           | Deprecated | Definition | Title/Description   |
+| ------------------------------------------------------------- | ------- | -------------- | ---------- | ---------- | ------------------- |
+| - [initial_supply](#cycles_indexer_initial_supply )           | No      | number or null | No         | -          | initial_supply      |
+| - [refueling_threshold](#cycles_indexer_refueling_threshold ) | No      | number or null | No         | -          | refueling_threshold |
+| - [refueling_amount](#cycles_indexer_refueling_amount )       | No      | number or null | No         | -          | refueling_amount    |
+
+#### <a name="cycles_indexer_initial_supply"></a>4.3.1. Property `Chainsight Algorithm Lens specification > cycles > indexer > initial_supply`
+
+**Title:** initial_supply
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | No               |
+
+**Description:** initial supply cycles to the indexer canister
+
+**Example:** 
+
+```json
+1000000000000
+```
+
+#### <a name="cycles_indexer_refueling_threshold"></a>4.3.2. Property `Chainsight Algorithm Lens specification > cycles > indexer > refueling_threshold`
+
+**Title:** refueling_threshold
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | No               |
+
+**Description:** vault refuel cycles to the canister when the cycles balance is below this value
+
+**Example:** 
+
+```json
+500000000000
+```
+
+#### <a name="cycles_indexer_refueling_amount"></a>4.3.3. Property `Chainsight Algorithm Lens specification > cycles > indexer > refueling_amount`
+
+**Title:** refueling_amount
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | No               |
+
+**Description:** vault refuel cycles with this value to the canister when the cycles balance is below the refueling_threshold
+
+**Example:** 
+
+```json
+1000000000000
+```
+
+### <a name="cycles_db"></a>4.4. Property `Chainsight Algorithm Lens specification > cycles > db`
+
+**Title:** db
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `object or null` |
+| **Required** | No               |
+
+**Description:** cycles setting of db canister
+
+| Property                                                 | Pattern | Type           | Deprecated | Definition | Title/Description   |
+| -------------------------------------------------------- | ------- | -------------- | ---------- | ---------- | ------------------- |
+| - [initial_supply](#cycles_db_initial_supply )           | No      | number or null | No         | -          | initial_supply      |
+| - [refueling_threshold](#cycles_db_refueling_threshold ) | No      | number or null | No         | -          | refueling_threshold |
+| - [refueling_amount](#cycles_db_refueling_amount )       | No      | number or null | No         | -          | refueling_amount    |
+
+#### <a name="cycles_db_initial_supply"></a>4.4.1. Property `Chainsight Algorithm Lens specification > cycles > db > initial_supply`
+
+**Title:** initial_supply
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | No               |
+
+**Description:** initial supply cycles to the db canister
+
+**Example:** 
+
+```json
+150000000000
+```
+
+#### <a name="cycles_db_refueling_threshold"></a>4.4.2. Property `Chainsight Algorithm Lens specification > cycles > db > refueling_threshold`
+
+**Title:** refueling_threshold
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | No               |
+
+**Description:** vault refuel cycles to the canister when the cycles balance is below this value
+
+**Example:** 
+
+```json
+1000000000000
+```
+
+#### <a name="cycles_db_refueling_amount"></a>4.4.3. Property `Chainsight Algorithm Lens specification > cycles > db > refueling_amount`
+
+**Title:** refueling_amount
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | No               |
+
+**Description:** vault refuel cycles with this value to the canister when the cycles balance is below the refueling_threshold
+
+**Example:** 
+
+```json
+1000000000000
+```
+
+### <a name="cycles_proxy"></a>4.5. Property `Chainsight Algorithm Lens specification > cycles > proxy`
+
+**Title:** proxy
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `object or null` |
+| **Required** | No               |
+
+**Description:** cycles setting of proxy canister
+
+| Property                                                    | Pattern | Type           | Deprecated | Definition | Title/Description   |
+| ----------------------------------------------------------- | ------- | -------------- | ---------- | ---------- | ------------------- |
+| - [initial_supply](#cycles_proxy_initial_supply )           | No      | number or null | No         | -          | initial_supply      |
+| - [refueling_threshold](#cycles_proxy_refueling_threshold ) | No      | number or null | No         | -          | refueling_threshold |
+| - [refueling_amount](#cycles_proxy_refueling_amount )       | No      | number or null | No         | -          | refueling_amount    |
+
+#### <a name="cycles_proxy_initial_supply"></a>4.5.1. Property `Chainsight Algorithm Lens specification > cycles > proxy > initial_supply`
+
+**Title:** initial_supply
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | No               |
+
+**Description:** initial supply cycles to the proxy canister
+
+**Example:** 
+
+```json
+300000000000
+```
+
+#### <a name="cycles_proxy_refueling_threshold"></a>4.5.2. Property `Chainsight Algorithm Lens specification > cycles > proxy > refueling_threshold`
+
+**Title:** refueling_threshold
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | No               |
+
+**Description:** vault refuel cycles to the canister when the cycles balance is below this value
+
+**Example:** 
+
+```json
+100000000000
+```
+
+#### <a name="cycles_proxy_refueling_amount"></a>4.5.3. Property `Chainsight Algorithm Lens specification > cycles > proxy > refueling_amount`
+
+**Title:** refueling_amount
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | No               |
+
+**Description:** vault refuel cycles with this value to the canister when the cycles balance is below the refueling_threshold
+
+**Example:** 
+
+```json
+1000000000000
+```
+
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-11-10 at 13:37:50 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-11-11 at 06:50:28 +0000
