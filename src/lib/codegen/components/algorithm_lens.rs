@@ -67,7 +67,6 @@ impl From<AlgorithmLensComponentManifest>
         Self {
             common: CommonConfig {
                 canister_name: val.id.clone().unwrap(),
-                monitor_duration: 60,
             },
             target_count: val.datasource.methods.len(),
             args_type,

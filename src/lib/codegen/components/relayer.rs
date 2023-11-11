@@ -22,7 +22,7 @@ use crate::{
 use super::{
     common::{
         ComponentManifest, ComponentMetadata, CycleManagementsManifest, Datasource,
-        DestinationType, GeneratedCodes, SourceType, Sources, DEFAULT_MONITOR_DURATION_SECS,
+        DestinationType, GeneratedCodes, SourceType, Sources,
     },
     utils::generate_types_from_bindings,
 };
@@ -81,7 +81,6 @@ impl From<RelayerComponentManifest> for chainsight_cdk::config::components::Rela
         Self {
             common: CommonConfig {
                 canister_name: val.id.clone().unwrap(),
-                monitor_duration: DEFAULT_MONITOR_DURATION_SECS,
             },
             destination: val.destination.oracle_address,
             method_identifier: val.datasource.method.identifier,

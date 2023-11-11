@@ -15,8 +15,6 @@ use crate::{
     types::{ComponentType, Network},
 };
 
-pub const DEFAULT_MONITOR_DURATION_SECS: u32 = 3600;
-
 #[allow(clippy::enum_variant_names)]
 #[derive(Deserialize, Serialize, Clone, Copy, Debug, PartialEq, clap::ValueEnum)]
 pub enum DestinationType {

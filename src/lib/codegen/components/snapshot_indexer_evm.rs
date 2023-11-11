@@ -11,7 +11,7 @@ use crate::{
 
 use super::common::{
     custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
-    Datasource, DestinationType, GeneratedCodes, Sources, DEFAULT_MONITOR_DURATION_SECS,
+    Datasource, DestinationType, GeneratedCodes, Sources,
 };
 
 /// Component Manifest: Snapshot Indexer EVM
@@ -67,7 +67,6 @@ impl From<SnapshotIndexerEVMComponentManifest>
         Self {
             common: CommonConfig {
                 canister_name: id.clone().unwrap(),
-                monitor_duration: DEFAULT_MONITOR_DURATION_SECS,
             },
             method_identifier: datasource.method.identifier,
             method_args: datasource
