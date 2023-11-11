@@ -23,6 +23,21 @@
   - [5.3. Property `Chainsight Relayer specification > destination > oracle_address`](#destination_oracle_address)
   - [5.4. Property `Chainsight Relayer specification > destination > rpc_url`](#destination_rpc_url)
 - [6. Property `Chainsight Relayer specification > interval`](#interval)
+- [7. Property `Chainsight Relayer specification > cycles`](#cycles)
+  - [7.1. Property `Chainsight Relayer specification > cycles > refueling_interval`](#cycles_refueling_interval)
+  - [7.2. Property `Chainsight Relayer specification > cycles > vault_intial_supply`](#cycles_vault_intial_supply)
+  - [7.3. Property `Chainsight Relayer specification > cycles > indexer`](#cycles_indexer)
+    - [7.3.1. Property `Chainsight Relayer specification > cycles > indexer > initial_supply`](#cycles_indexer_initial_supply)
+    - [7.3.2. Property `Chainsight Relayer specification > cycles > indexer > refueling_threshold`](#cycles_indexer_refueling_threshold)
+    - [7.3.3. Property `Chainsight Relayer specification > cycles > indexer > refueling_amount`](#cycles_indexer_refueling_amount)
+  - [7.4. Property `Chainsight Relayer specification > cycles > db`](#cycles_db)
+    - [7.4.1. Property `Chainsight Relayer specification > cycles > db > initial_supply`](#cycles_db_initial_supply)
+    - [7.4.2. Property `Chainsight Relayer specification > cycles > db > refueling_threshold`](#cycles_db_refueling_threshold)
+    - [7.4.3. Property `Chainsight Relayer specification > cycles > db > refueling_amount`](#cycles_db_refueling_amount)
+  - [7.5. Property `Chainsight Relayer specification > cycles > proxy`](#cycles_proxy)
+    - [7.5.1. Property `Chainsight Relayer specification > cycles > proxy > initial_supply`](#cycles_proxy_initial_supply)
+    - [7.5.2. Property `Chainsight Relayer specification > cycles > proxy > refueling_threshold`](#cycles_proxy_refueling_threshold)
+    - [7.5.3. Property `Chainsight Relayer specification > cycles > proxy > refueling_amount`](#cycles_proxy_refueling_amount)
 
 **Title:** Chainsight Relayer specification
 
@@ -42,6 +57,7 @@
 | - [lens_targets](#lens_targets ) | No      | object or null | No         | -          | lens targets                          |
 | + [destination](#destination )   | No      | object         | No         | -          | destination                           |
 | + [interval](#interval )         | No      | number         | No         | -          | interval                              |
+| - [cycles](#cycles )             | No      | object or null | No         | -          | cycles                                |
 
 ## <a name="version"></a>1. Property `Chainsight Relayer specification > version`
 
@@ -550,5 +566,262 @@
 60
 ```
 
+## <a name="cycles"></a>7. Property `Chainsight Relayer specification > cycles`
+
+**Title:** cycles
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `object or null` |
+| **Required** | No               |
+
+**Description:** manage component cycles
+
+| Property                                              | Pattern | Type           | Deprecated | Definition | Title/Description   |
+| ----------------------------------------------------- | ------- | -------------- | ---------- | ---------- | ------------------- |
+| - [refueling_interval](#cycles_refueling_interval )   | No      | number or null | No         | -          | refueling_interval  |
+| - [vault_intial_supply](#cycles_vault_intial_supply ) | No      | number or null | No         | -          | vault_intial_supply |
+| - [indexer](#cycles_indexer )                         | No      | object or null | No         | -          | indexer             |
+| - [db](#cycles_db )                                   | No      | object or null | No         | -          | db                  |
+| - [proxy](#cycles_proxy )                             | No      | object or null | No         | -          | proxy               |
+
+### <a name="cycles_refueling_interval"></a>7.1. Property `Chainsight Relayer specification > cycles > refueling_interval`
+
+**Title:** refueling_interval
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | No               |
+
+**Description:** interval of the refueling to canisters in seconds
+
+**Example:** 
+
+```json
+86400
+```
+
+### <a name="cycles_vault_intial_supply"></a>7.2. Property `Chainsight Relayer specification > cycles > vault_intial_supply`
+
+**Title:** vault_intial_supply
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | No               |
+
+**Description:** initial supply cycles to the vault canister
+
+**Example:** 
+
+```json
+3000000000000
+```
+
+### <a name="cycles_indexer"></a>7.3. Property `Chainsight Relayer specification > cycles > indexer`
+
+**Title:** indexer
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `object or null` |
+| **Required** | No               |
+
+**Description:** cycles setting of indexer canister
+
+| Property                                                      | Pattern | Type           | Deprecated | Definition | Title/Description   |
+| ------------------------------------------------------------- | ------- | -------------- | ---------- | ---------- | ------------------- |
+| - [initial_supply](#cycles_indexer_initial_supply )           | No      | number or null | No         | -          | initial_supply      |
+| - [refueling_threshold](#cycles_indexer_refueling_threshold ) | No      | number or null | No         | -          | refueling_threshold |
+| - [refueling_amount](#cycles_indexer_refueling_amount )       | No      | number or null | No         | -          | refueling_amount    |
+
+#### <a name="cycles_indexer_initial_supply"></a>7.3.1. Property `Chainsight Relayer specification > cycles > indexer > initial_supply`
+
+**Title:** initial_supply
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | No               |
+
+**Description:** initial supply cycles to the indexer canister
+
+**Example:** 
+
+```json
+1000000000000
+```
+
+#### <a name="cycles_indexer_refueling_threshold"></a>7.3.2. Property `Chainsight Relayer specification > cycles > indexer > refueling_threshold`
+
+**Title:** refueling_threshold
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | No               |
+
+**Description:** vault refuel cycles to the canister when the cycles balance is below this value
+
+**Example:** 
+
+```json
+500000000000
+```
+
+#### <a name="cycles_indexer_refueling_amount"></a>7.3.3. Property `Chainsight Relayer specification > cycles > indexer > refueling_amount`
+
+**Title:** refueling_amount
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | No               |
+
+**Description:** vault refuel cycles with this value to the canister when the cycles balance is below the refueling_threshold
+
+**Example:** 
+
+```json
+1000000000000
+```
+
+### <a name="cycles_db"></a>7.4. Property `Chainsight Relayer specification > cycles > db`
+
+**Title:** db
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `object or null` |
+| **Required** | No               |
+
+**Description:** cycles setting of db canister
+
+| Property                                                 | Pattern | Type           | Deprecated | Definition | Title/Description   |
+| -------------------------------------------------------- | ------- | -------------- | ---------- | ---------- | ------------------- |
+| - [initial_supply](#cycles_db_initial_supply )           | No      | number or null | No         | -          | initial_supply      |
+| - [refueling_threshold](#cycles_db_refueling_threshold ) | No      | number or null | No         | -          | refueling_threshold |
+| - [refueling_amount](#cycles_db_refueling_amount )       | No      | number or null | No         | -          | refueling_amount    |
+
+#### <a name="cycles_db_initial_supply"></a>7.4.1. Property `Chainsight Relayer specification > cycles > db > initial_supply`
+
+**Title:** initial_supply
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | No               |
+
+**Description:** initial supply cycles to the db canister
+
+**Example:** 
+
+```json
+150000000000
+```
+
+#### <a name="cycles_db_refueling_threshold"></a>7.4.2. Property `Chainsight Relayer specification > cycles > db > refueling_threshold`
+
+**Title:** refueling_threshold
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | No               |
+
+**Description:** vault refuel cycles to the canister when the cycles balance is below this value
+
+**Example:** 
+
+```json
+1000000000000
+```
+
+#### <a name="cycles_db_refueling_amount"></a>7.4.3. Property `Chainsight Relayer specification > cycles > db > refueling_amount`
+
+**Title:** refueling_amount
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | No               |
+
+**Description:** vault refuel cycles with this value to the canister when the cycles balance is below the refueling_threshold
+
+**Example:** 
+
+```json
+1000000000000
+```
+
+### <a name="cycles_proxy"></a>7.5. Property `Chainsight Relayer specification > cycles > proxy`
+
+**Title:** proxy
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `object or null` |
+| **Required** | No               |
+
+**Description:** cycles setting of proxy canister
+
+| Property                                                    | Pattern | Type           | Deprecated | Definition | Title/Description   |
+| ----------------------------------------------------------- | ------- | -------------- | ---------- | ---------- | ------------------- |
+| - [initial_supply](#cycles_proxy_initial_supply )           | No      | number or null | No         | -          | initial_supply      |
+| - [refueling_threshold](#cycles_proxy_refueling_threshold ) | No      | number or null | No         | -          | refueling_threshold |
+| - [refueling_amount](#cycles_proxy_refueling_amount )       | No      | number or null | No         | -          | refueling_amount    |
+
+#### <a name="cycles_proxy_initial_supply"></a>7.5.1. Property `Chainsight Relayer specification > cycles > proxy > initial_supply`
+
+**Title:** initial_supply
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | No               |
+
+**Description:** initial supply cycles to the proxy canister
+
+**Example:** 
+
+```json
+300000000000
+```
+
+#### <a name="cycles_proxy_refueling_threshold"></a>7.5.2. Property `Chainsight Relayer specification > cycles > proxy > refueling_threshold`
+
+**Title:** refueling_threshold
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | No               |
+
+**Description:** vault refuel cycles to the canister when the cycles balance is below this value
+
+**Example:** 
+
+```json
+100000000000
+```
+
+#### <a name="cycles_proxy_refueling_amount"></a>7.5.3. Property `Chainsight Relayer specification > cycles > proxy > refueling_amount`
+
+**Title:** refueling_amount
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | No               |
+
+**Description:** vault refuel cycles with this value to the canister when the cycles balance is below the refueling_threshold
+
+**Example:** 
+
+```json
+1000000000000
+```
+
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-11-11 at 12:17:22 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-11-11 at 13:39:31 +0000
