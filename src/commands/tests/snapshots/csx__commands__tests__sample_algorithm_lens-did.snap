@@ -22,6 +22,7 @@ type InitError = variant {
   InvalidContent : text;
   InvalidRequest : text;
 };
+type LensArgs = record { args : CalculateArgs; targets : vec text };
 type LensValue = record { dummy : nat64 };
 type Result = variant { Ok; Err : InitError };
 type SourceType = variant { evm; https; chainsight };
@@ -33,7 +34,7 @@ type Sources = record {
 };
 service : {
   get_proxy : () -> (principal);
-  get_result : (vec text, CalculateArgs) -> (LensValue);
+  get_result : (LensArgs) -> (LensValue);
   get_sources : () -> (vec Sources) query;
   init_in : (Env, CycleManagements) -> (Result);
   proxy_get_result : (vec nat8) -> (vec nat8);

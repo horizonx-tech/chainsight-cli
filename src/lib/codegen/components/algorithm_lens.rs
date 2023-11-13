@@ -6,7 +6,6 @@ use chainsight_cdk::{
     convert::candid::{read_did_to_string_without_service, CanisterMethodIdentifier},
     initializer::CycleManagements,
 };
-use regex::Regex;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -14,9 +13,12 @@ use crate::{
     types::{ComponentType, Network},
 };
 
-use super::common::{
-    ComponentManifest, ComponentMetadata, CycleManagementsManifest, GeneratedCodes, SourceType,
-    Sources,
+use super::{
+    common::{
+        ComponentManifest, ComponentMetadata, CycleManagementsManifest, GeneratedCodes, SourceType,
+        Sources,
+    },
+    utils::make_struct_fields_accessible,
 };
 
 /// Component Manifest: Algorithm Lens
@@ -166,11 +168,7 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
                 let identifier = CanisterMethodIdentifier::new(&method.identifier)?;
                 identifier.compile()?
             };
-            let re = Regex::new(r"[^{](?:pub )*(\w+): ").unwrap();
-            let codes = re.replace_all(&codes, " pub ${1}: ");
-            let re = Regex::new(r"(?:pub )*enum").unwrap();
-            let codes = re.replace_all(&codes, "pub enum");
-            bindings.insert(mod_name, codes.to_string());
+            bindings.insert(mod_name, make_struct_fields_accessible(codes));
         }
 
         let lib = bindings

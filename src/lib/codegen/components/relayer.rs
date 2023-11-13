@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, HashMap};
 
 use anyhow::Ok;
 use chainsight_cdk::{
-    config::components::{CommonConfig, LensTargets},
+    config::components::{CommonConfig, LensParameter, LensTargets},
     convert::candid::{read_did_to_string_without_service, CanisterMethodIdentifier},
     initializer::CycleManagements,
 };
@@ -24,7 +24,7 @@ use super::{
         ComponentManifest, ComponentMetadata, CycleManagementsManifest, Datasource,
         DestinationType, GeneratedCodes, SourceType, Sources,
     },
-    utils::generate_types_from_bindings,
+    utils::{generate_types_from_bindings, is_lens_with_args, make_struct_fields_accessible},
 };
 
 /// Component Manifest: Relayer
@@ -71,22 +71,47 @@ impl RelayerComponentManifest {
 
 impl From<RelayerComponentManifest> for chainsight_cdk::config::components::RelayerConfig {
     fn from(val: RelayerComponentManifest) -> Self {
-        let oracle_type = match val.destination_type() {
+        let id = val.id();
+        let destination_type = val.destination_type();
+        let RelayerComponentManifest {
+            datasource: Datasource { method, .. },
+            destination,
+            ..
+        } = val;
+
+        let oracle_type = match destination_type {
             Some(DestinationType::Uint256) => "uint256".to_string(),
             Some(DestinationType::Uint128) => "uint128".to_string(),
             Some(DestinationType::Uint64) => "uint64".to_string(),
             Some(DestinationType::String) => "string".to_string(),
             _ => panic!("Invalid oracle type"),
         };
+
+        let lens_parameter = if val.lens_targets.is_some() {
+            let identifier = if let Some(path) = method.interface {
+                let did_str = read_did_to_string_without_service(path)
+                    .unwrap_or_else(|e| panic!("{}", e.to_string()));
+                CanisterMethodIdentifier::new_with_did(&method.identifier, did_str)
+            } else {
+                CanisterMethodIdentifier::new(&method.identifier)
+            }
+            .unwrap_or_else(|e| panic!("{}", e.to_string()));
+
+            let with_args = is_lens_with_args(identifier);
+            Some(LensParameter { with_args })
+        } else {
+            None
+        };
+
         Self {
             common: CommonConfig {
-                canister_name: val.id.clone().unwrap(),
+                canister_name: id.clone().unwrap(),
             },
-            destination: val.destination.oracle_address,
-            method_identifier: val.datasource.method.identifier,
+            destination: destination.oracle_address,
+            method_identifier: method.identifier,
             oracle_type,
             abi_file_path: "__interfaces/Oracle.json".to_string(),
-            lens_targets: val.lens_targets,
+            lens_parameter,
         }
     }
 }
@@ -228,7 +253,10 @@ impl ComponentManifest for RelayerComponentManifest {
             identifier.compile()?
         };
 
-        Ok(BTreeMap::from([("lib".to_string(), lib)]))
+        Ok(BTreeMap::from([(
+            "lib".to_string(),
+            make_struct_fields_accessible(lib),
+        )]))
     }
     fn cycle_managements(&self) -> CycleManagements {
         self.cycles.clone().unwrap_or_default().into()

@@ -1,7 +1,7 @@
 use std::collections::{BTreeMap, HashMap};
 
 use chainsight_cdk::{
-    config::components::{CommonConfig, LensTargets},
+    config::components::{CommonConfig, LensParameter, LensTargets},
     convert::candid::{read_did_to_string_without_service, CanisterMethodIdentifier},
     initializer::CycleManagements,
 };
@@ -18,7 +18,7 @@ use super::{
         custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
         Datasource, DestinationType, GeneratedCodes, Sources,
     },
-    utils::generate_types_from_bindings,
+    utils::{generate_types_from_bindings, make_struct_fields_accessible},
 };
 
 /// Component Manifest: Snapshot Indexer ICP
@@ -73,12 +73,17 @@ impl From<SnapshotIndexerICPComponentManifest>
             lens_targets,
             ..
         } = val;
+        let lens_parameter = if lens_targets.is_some() {
+            Some(LensParameter { with_args: false }) // todo: consider with_args
+        } else {
+            None
+        };
         Self {
             common: CommonConfig {
                 canister_name: id.clone().unwrap(),
             },
             method_identifier: datasource.method.identifier,
-            lens_targets,
+            lens_parameter,
         }
     }
 }
@@ -188,7 +193,10 @@ impl ComponentManifest for SnapshotIndexerICPComponentManifest {
             identifier.compile()?
         };
 
-        Ok(BTreeMap::from([("lib".to_string(), lib)]))
+        Ok(BTreeMap::from([(
+            "lib".to_string(),
+            make_struct_fields_accessible(lib),
+        )]))
     }
     fn cycle_managements(&self) -> CycleManagements {
         self.cycles.clone().unwrap_or_default().into()
