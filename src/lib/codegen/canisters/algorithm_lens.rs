@@ -10,7 +10,8 @@ use crate::{
 };
 use anyhow::ensure;
 use chainsight_cdk::{
-    config::components::AlgorithmLensConfig, convert::candid::CanisterMethodIdentifier,
+    config::components::{AlgorithmLensConfig, LENS_FUNCTION_RESPONSE_TYPE},
+    convert::candid::CanisterMethodIdentifier,
 };
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
@@ -57,7 +58,7 @@ pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result
         }
     });
 
-    let output_type_ident = format_ident!("{}", "LensValue");
+    let output_type_ident = format_ident!("{}", LENS_FUNCTION_RESPONSE_TYPE);
     let accessors_ident = format_ident!("{}", paths::accessors_name(&id));
 
     let code = {
