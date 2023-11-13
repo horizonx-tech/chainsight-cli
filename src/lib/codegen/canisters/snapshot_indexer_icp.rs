@@ -1,7 +1,7 @@
 use anyhow::ensure;
 use chainsight_cdk::{
     config::components::{SnapshotIndexerICPConfig, LENS_FUNCTION_ARGS_TYPE},
-    convert::candid::{read_did_to_string_without_service, CanisterMethodIdentifier},
+    convert::candid::CanisterMethodIdentifier,
 };
 use quote::{format_ident, quote};
 
@@ -9,7 +9,8 @@ use crate::{
     lib::{
         codegen::components::{
             algorithm_lens::AlgorithmLensComponentManifest,
-            snapshot_indexer_icp::SnapshotIndexerICPComponentManifest, utils::is_lens_with_args,
+            snapshot_indexer_icp::SnapshotIndexerICPComponentManifest,
+            utils::{generate_method_identifier, is_lens_with_args},
         },
         utils::paths::bindings_name,
     },
@@ -32,13 +33,7 @@ pub fn generate_codes(manifest: &SnapshotIndexerICPComponentManifest) -> anyhow:
 
 pub fn generate_app(manifest: &SnapshotIndexerICPComponentManifest) -> anyhow::Result<String> {
     let method = manifest.datasource.method.clone();
-    let method_identifier = if let Some(path) = method.interface {
-        let did_str = read_did_to_string_without_service(path)
-            .unwrap_or_else(|e| panic!("{}", e.to_string()));
-        CanisterMethodIdentifier::new_with_did(&method.identifier, did_str)
-    } else {
-        CanisterMethodIdentifier::new(&method.identifier)
-    }?;
+    let method_identifier = generate_method_identifier(&method.identifier, &method.interface)?;
 
     if manifest.lens_targets.is_some() {
         let codes = if is_lens_with_args(method_identifier) {

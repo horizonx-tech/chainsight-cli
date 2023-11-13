@@ -1,5 +1,6 @@
 use chainsight_cdk::{
-    config::components::LENS_FUNCTION_ARGS_TYPE, convert::candid::CanisterMethodIdentifier,
+    config::components::LENS_FUNCTION_ARGS_TYPE,
+    convert::candid::{read_did_to_string_without_service, CanisterMethodIdentifier},
 };
 
 // Generate types.rs code using the type information in bindings
@@ -24,6 +25,18 @@ pub type {} = bindings::{};
     }
 
     Ok(codes)
+}
+
+pub fn generate_method_identifier(
+    identifier: &str,
+    interface: &Option<String>,
+) -> anyhow::Result<CanisterMethodIdentifier> {
+    if let Some(path) = interface {
+        let did_str = read_did_to_string_without_service(path)?;
+        CanisterMethodIdentifier::new_with_did(identifier, did_str)
+    } else {
+        CanisterMethodIdentifier::new(identifier)
+    }
 }
 
 // determine if the caller is a lens with arguments by CanisterMethodIdentifier
