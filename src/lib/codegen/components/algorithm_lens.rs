@@ -1,11 +1,7 @@
 use std::collections::{BTreeMap, HashMap};
 
 use candid::Principal;
-use chainsight_cdk::{
-    config::components::CommonConfig,
-    convert::candid::{read_did_to_string_without_service, CanisterMethodIdentifier},
-    initializer::CycleManagements,
-};
+use chainsight_cdk::{config::components::CommonConfig, initializer::CycleManagements};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -18,7 +14,7 @@ use super::{
         ComponentManifest, ComponentMetadata, CycleManagementsManifest, GeneratedCodes, SourceType,
         Sources,
     },
-    utils::make_struct_fields_accessible,
+    utils::generate_method_identifier,
 };
 
 /// Component Manifest: Algorithm Lens
@@ -159,16 +155,10 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
         let mut bindings: BTreeMap<String, String> = BTreeMap::new();
         for method in methods {
             let mod_name = method.id.to_string();
-            let codes = if let Some(path) = &method.candid_file_path {
-                let did_str = read_did_to_string_without_service(path)?;
-                let identifier =
-                    CanisterMethodIdentifier::new_with_did(&method.identifier, did_str)?;
-                identifier.compile()?
-            } else {
-                let identifier = CanisterMethodIdentifier::new(&method.identifier)?;
-                identifier.compile()?
-            };
-            bindings.insert(mod_name, make_struct_fields_accessible(codes));
+            let method_identifier =
+                generate_method_identifier(&method.identifier, &method.candid_file_path)?;
+            let codes = method_identifier.compile()?;
+            bindings.insert(mod_name, codes);
         }
 
         let lib = bindings

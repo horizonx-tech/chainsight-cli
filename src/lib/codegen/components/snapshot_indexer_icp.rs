@@ -2,7 +2,6 @@ use std::collections::{BTreeMap, HashMap};
 
 use chainsight_cdk::{
     config::components::{CommonConfig, LensParameter, LensTargets},
-    convert::candid::{read_did_to_string_without_service, CanisterMethodIdentifier},
     initializer::CycleManagements,
 };
 use serde::{Deserialize, Serialize};
@@ -18,7 +17,7 @@ use super::{
         custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
         Datasource, DestinationType, GeneratedCodes, Sources,
     },
-    utils::{generate_types_from_bindings, make_struct_fields_accessible},
+    utils::{generate_method_identifier, generate_types_from_bindings, is_lens_with_args},
 };
 
 /// Component Manifest: Snapshot Indexer ICP
@@ -69,20 +68,26 @@ impl From<SnapshotIndexerICPComponentManifest>
     fn from(val: SnapshotIndexerICPComponentManifest) -> Self {
         let SnapshotIndexerICPComponentManifest {
             id,
-            datasource,
+            datasource: Datasource { method, .. },
             lens_targets,
             ..
         } = val;
+
         let lens_parameter = if lens_targets.is_some() {
-            Some(LensParameter { with_args: false }) // todo: consider with_args
+            let identifier = generate_method_identifier(&method.identifier, &method.interface)
+                .unwrap_or_else(|e| panic!("{}", e.to_string()));
+
+            let with_args = is_lens_with_args(identifier);
+            Some(LensParameter { with_args })
         } else {
             None
         };
+
         Self {
             common: CommonConfig {
                 canister_name: id.clone().unwrap(),
             },
-            method_identifier: datasource.method.identifier,
+            method_identifier: method.identifier,
             lens_parameter,
         }
     }
@@ -183,20 +188,10 @@ impl ComponentManifest for SnapshotIndexerICPComponentManifest {
             datasource: Datasource { method, .. },
             ..
         } = self;
-        let interface = method.interface.clone();
-        let lib = if let Some(path) = interface {
-            let did_str = read_did_to_string_without_service(path)?;
-            let identifier = CanisterMethodIdentifier::new_with_did(&method.identifier, did_str)?;
-            identifier.compile()?
-        } else {
-            let identifier = CanisterMethodIdentifier::new(&method.identifier)?;
-            identifier.compile()?
-        };
+        let identifier = generate_method_identifier(&method.identifier, &method.interface)?;
+        let lib = identifier.compile()?;
 
-        Ok(BTreeMap::from([(
-            "lib".to_string(),
-            make_struct_fields_accessible(lib),
-        )]))
+        Ok(BTreeMap::from([("lib".to_string(), lib)]))
     }
     fn cycle_managements(&self) -> CycleManagements {
         self.cycles.clone().unwrap_or_default().into()

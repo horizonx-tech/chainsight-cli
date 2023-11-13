@@ -1,11 +1,19 @@
 use anyhow::ensure;
 use chainsight_cdk::{
-    config::components::SnapshotIndexerICPConfig, convert::candid::CanisterMethodIdentifier,
+    config::components::{SnapshotIndexerICPConfig, LENS_FUNCTION_ARGS_TYPE},
+    convert::candid::CanisterMethodIdentifier,
 };
 use quote::{format_ident, quote};
 
 use crate::{
-    lib::codegen::components::snapshot_indexer_icp::SnapshotIndexerICPComponentManifest,
+    lib::{
+        codegen::components::{
+            algorithm_lens::AlgorithmLensComponentManifest,
+            snapshot_indexer_icp::SnapshotIndexerICPComponentManifest,
+            utils::{generate_method_identifier, is_lens_with_args},
+        },
+        utils::paths::bindings_name,
+    },
     types::ComponentType,
 };
 
@@ -24,11 +32,33 @@ pub fn generate_codes(manifest: &SnapshotIndexerICPComponentManifest) -> anyhow:
 }
 
 pub fn generate_app(manifest: &SnapshotIndexerICPComponentManifest) -> anyhow::Result<String> {
+    let method = manifest.datasource.method.clone();
+    let method_identifier = generate_method_identifier(&method.identifier, &method.interface)?;
+
     if manifest.lens_targets.is_some() {
-        return Ok(quote! {}.to_string());
+        let codes = if is_lens_with_args(method_identifier) {
+            let id = manifest.id.clone().expect("id is not set");
+            let bindings = format_ident!("{}", bindings_name(&id));
+            let lens_args_ident = format_ident!("{}", LENS_FUNCTION_ARGS_TYPE);
+            let calculate_args_ident = format_ident!(
+                "{}",
+                AlgorithmLensComponentManifest::CALCULATE_ARGS_STRUCT_NAME
+            );
+
+            quote! {
+                pub type #calculate_args_ident = #bindings::#calculate_args_ident;
+                pub type #lens_args_ident = #bindings::#lens_args_ident;
+                pub fn call_args() -> #calculate_args_ident {
+                    todo!("generate CalculateArgs as args to call")
+                }
+            }
+        } else {
+            quote! {}
+        };
+
+        return Ok(codes.to_string());
     }
 
-    let method_identifier = CanisterMethodIdentifier::new(&manifest.datasource.method.identifier)?;
     let (args_ty, _) = method_identifier.get_types();
     let code = if args_ty.is_some() {
         let request_args_ty_name_def_ident =

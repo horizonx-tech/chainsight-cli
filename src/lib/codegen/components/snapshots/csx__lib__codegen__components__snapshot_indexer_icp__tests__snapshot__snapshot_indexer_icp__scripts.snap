@@ -25,7 +25,8 @@ dfx canister  call sample_snapshot_indexer_icp init_in '(variant { "LocalDevelop
         })' --with-cycles 2800000000000 --wallet $(dfx identity get-wallet )
 # setup
 dfx canister  call sample_snapshot_indexer_icp setup "(
-    \"$(dfx canister  id datasource_canister_id)\"
+    \"$(dfx canister  id datasource_canister_id)\",
+    
 )"
 # set_task
 dfx canister  call sample_snapshot_indexer_icp set_task '(3600, 5)'

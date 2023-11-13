@@ -1,13 +1,17 @@
 use anyhow::ensure;
 use chainsight_cdk::{
-    config::components::RelayerConfig,
-    convert::candid::{read_did_to_string_without_service, CanisterMethodIdentifier},
+    config::components::{RelayerConfig, LENS_FUNCTION_ARGS_TYPE},
+    convert::candid::CanisterMethodIdentifier,
 };
 use quote::{format_ident, quote};
 
 use crate::{
     lib::{
-        codegen::components::{relayer::RelayerComponentManifest, utils::is_lens_with_args},
+        codegen::components::{
+            algorithm_lens::AlgorithmLensComponentManifest,
+            relayer::RelayerComponentManifest,
+            utils::{generate_method_identifier, is_lens_with_args},
+        },
         utils::paths::bindings_name,
     },
     types::ComponentType,
@@ -29,21 +33,17 @@ pub fn generate_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<Str
 
 pub fn generate_app(manifest: &RelayerComponentManifest) -> anyhow::Result<String> {
     let method = manifest.datasource.method.clone();
-    let method_identifier = if let Some(path) = method.interface {
-        let did_str = read_did_to_string_without_service(path)
-            .unwrap_or_else(|e| panic!("{}", e.to_string()));
-        CanisterMethodIdentifier::new_with_did(&method.identifier, did_str)
-    } else {
-        CanisterMethodIdentifier::new(&method.identifier)
-    }?;
+    let method_identifier = generate_method_identifier(&method.identifier, &method.interface)?;
 
     let call_args_idents = if manifest.lens_targets.is_some() {
         if is_lens_with_args(method_identifier) {
-            // TODO: refactor
             let id = manifest.id.clone().expect("id is not set");
             let bindings = format_ident!("{}", bindings_name(&id));
-            let lens_args_ident = format_ident!("{}", "LensArgs");
-            let calculate_args_ident = format_ident!("{}", "CalculateArgs");
+            let lens_args_ident = format_ident!("{}", LENS_FUNCTION_ARGS_TYPE);
+            let calculate_args_ident = format_ident!(
+                "{}",
+                AlgorithmLensComponentManifest::CALCULATE_ARGS_STRUCT_NAME
+            );
             quote! {
                 pub type #calculate_args_ident = #bindings::#calculate_args_ident;
                 pub type #lens_args_ident = #bindings::#lens_args_ident;
