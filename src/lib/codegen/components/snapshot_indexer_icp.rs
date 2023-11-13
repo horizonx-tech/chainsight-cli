@@ -1,7 +1,7 @@
 use std::collections::{BTreeMap, HashMap};
 
 use chainsight_cdk::{
-    config::components::{CommonConfig, LensTargets},
+    config::components::{CommonConfig, LensParameter, LensTargets},
     convert::candid::{read_did_to_string_without_service, CanisterMethodIdentifier},
     initializer::CycleManagements,
 };
@@ -73,12 +73,17 @@ impl From<SnapshotIndexerICPComponentManifest>
             lens_targets,
             ..
         } = val;
+        let lens_parameter = if lens_targets.is_some() {
+            Some(LensParameter { with_args: false }) // todo: consider with_args
+        } else {
+            None
+        };
         Self {
             common: CommonConfig {
                 canister_name: id.clone().unwrap(),
             },
             method_identifier: datasource.method.identifier,
-            lens_targets,
+            lens_parameter,
         }
     }
 }

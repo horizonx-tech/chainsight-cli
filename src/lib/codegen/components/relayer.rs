@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, HashMap};
 
 use anyhow::Ok;
 use chainsight_cdk::{
-    config::components::{CommonConfig, LensTargets},
+    config::components::{CommonConfig, LensParameter, LensTargets},
     convert::candid::{read_did_to_string_without_service, CanisterMethodIdentifier},
     initializer::CycleManagements,
 };
@@ -78,6 +78,12 @@ impl From<RelayerComponentManifest> for chainsight_cdk::config::components::Rela
             Some(DestinationType::String) => "string".to_string(),
             _ => panic!("Invalid oracle type"),
         };
+        let lens_parameter = if val.lens_targets.is_some() {
+            Some(LensParameter { with_args: false }) // todo: consider with_args
+        } else {
+            None
+        };
+
         Self {
             common: CommonConfig {
                 canister_name: val.id.clone().unwrap(),
@@ -86,7 +92,7 @@ impl From<RelayerComponentManifest> for chainsight_cdk::config::components::Rela
             method_identifier: val.datasource.method.identifier,
             oracle_type,
             abi_file_path: "__interfaces/Oracle.json".to_string(),
-            lens_targets: val.lens_targets,
+            lens_parameter,
         }
     }
 }
