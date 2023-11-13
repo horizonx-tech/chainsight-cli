@@ -45,9 +45,10 @@ pub fn generate_app(manifest: &RelayerComponentManifest) -> anyhow::Result<Strin
             let lens_args_ident = format_ident!("{}", "LensArgs");
             let calculate_args_ident = format_ident!("{}", "CalculateArgs");
             quote! {
+                pub type #calculate_args_ident = #bindings::#calculate_args_ident;
                 pub type #lens_args_ident = #bindings::#lens_args_ident;
-                pub fn call_args() -> #bindings::#calculate_args_ident {
-                    todo!()
+                pub fn call_args() -> #calculate_args_ident {
+                    todo!("generate CalculateArgs as args to call")
                 }
             }
         } else {
