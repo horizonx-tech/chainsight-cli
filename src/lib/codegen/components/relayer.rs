@@ -24,7 +24,7 @@ use super::{
         ComponentManifest, ComponentMetadata, CycleManagementsManifest, Datasource,
         DestinationType, GeneratedCodes, SourceType, Sources,
     },
-    utils::{generate_types_from_bindings, is_lens_with_args, make_struct_fields_accessible},
+    utils::{generate_types_from_bindings, is_lens_with_args},
 };
 
 /// Component Manifest: Relayer
@@ -253,10 +253,7 @@ impl ComponentManifest for RelayerComponentManifest {
             identifier.compile()?
         };
 
-        Ok(BTreeMap::from([(
-            "lib".to_string(),
-            make_struct_fields_accessible(lib),
-        )]))
+        Ok(BTreeMap::from([("lib".to_string(), lib)]))
     }
     fn cycle_managements(&self) -> CycleManagements {
         self.cycles.clone().unwrap_or_default().into()

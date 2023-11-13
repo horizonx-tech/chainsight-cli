@@ -18,7 +18,7 @@ use super::{
         custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
         Datasource, DestinationType, GeneratedCodes, Sources,
     },
-    utils::{generate_types_from_bindings, make_struct_fields_accessible},
+    utils::generate_types_from_bindings,
 };
 
 /// Component Manifest: Snapshot Indexer ICP
@@ -193,10 +193,7 @@ impl ComponentManifest for SnapshotIndexerICPComponentManifest {
             identifier.compile()?
         };
 
-        Ok(BTreeMap::from([(
-            "lib".to_string(),
-            make_struct_fields_accessible(lib),
-        )]))
+        Ok(BTreeMap::from([("lib".to_string(), lib)]))
     }
     fn cycle_managements(&self) -> CycleManagements {
         self.cycles.clone().unwrap_or_default().into()

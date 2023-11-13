@@ -13,12 +13,9 @@ use crate::{
     types::{ComponentType, Network},
 };
 
-use super::{
-    common::{
-        ComponentManifest, ComponentMetadata, CycleManagementsManifest, GeneratedCodes, SourceType,
-        Sources,
-    },
-    utils::make_struct_fields_accessible,
+use super::common::{
+    ComponentManifest, ComponentMetadata, CycleManagementsManifest, GeneratedCodes, SourceType,
+    Sources,
 };
 
 /// Component Manifest: Algorithm Lens
@@ -168,7 +165,7 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
                 let identifier = CanisterMethodIdentifier::new(&method.identifier)?;
                 identifier.compile()?
             };
-            bindings.insert(mod_name, make_struct_fields_accessible(codes));
+            bindings.insert(mod_name, codes);
         }
 
         let lib = bindings
