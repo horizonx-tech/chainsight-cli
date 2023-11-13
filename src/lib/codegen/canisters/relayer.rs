@@ -1,10 +1,17 @@
 use anyhow::ensure;
 use chainsight_cdk::{
-    config::components::RelayerConfig, convert::candid::CanisterMethodIdentifier,
+    config::components::RelayerConfig,
+    convert::candid::{read_did_to_string_without_service, CanisterMethodIdentifier},
 };
 use quote::{format_ident, quote};
 
-use crate::{lib::codegen::components::relayer::RelayerComponentManifest, types::ComponentType};
+use crate::{
+    lib::{
+        codegen::components::{relayer::RelayerComponentManifest, utils::is_lens_with_args},
+        utils::paths::bindings_name,
+    },
+    types::ComponentType,
+};
 
 pub fn generate_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<String> {
     ensure!(
@@ -21,15 +28,38 @@ pub fn generate_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<Str
 }
 
 pub fn generate_app(manifest: &RelayerComponentManifest) -> anyhow::Result<String> {
-    let call_args_idents = if manifest.lens_targets.is_some() {
-        quote! {}
+    let method = manifest.datasource.method.clone();
+    let method_identifier = if let Some(path) = method.interface {
+        let did_str = read_did_to_string_without_service(path)
+            .unwrap_or_else(|e| panic!("{}", e.to_string()));
+        CanisterMethodIdentifier::new_with_did(&method.identifier, did_str)
     } else {
-        let method_identifier =
-            CanisterMethodIdentifier::new(&manifest.datasource.method.identifier)?;
+        CanisterMethodIdentifier::new(&method.identifier)
+    }?;
+
+    let call_args_idents = if manifest.lens_targets.is_some() {
+        if is_lens_with_args(method_identifier) {
+            // TODO: refactor
+            let id = manifest.id.clone().expect("id is not set");
+            let bindings = format_ident!("{}", bindings_name(&id));
+            let lens_args_ident = format_ident!("{}", "LensArgs");
+            let calculate_args_ident = format_ident!("{}", "CalculateArgs");
+            quote! {
+                pub type #lens_args_ident = #bindings::#lens_args_ident;
+                pub fn call_args() -> #bindings::#calculate_args_ident {
+                    todo!()
+                }
+            }
+        } else {
+            quote! {}
+        }
+    } else {
         let (request_args_type, _) = method_identifier.get_types();
+
         if request_args_type.is_some() {
             let request_args_ident =
                 format_ident!("{}", CanisterMethodIdentifier::REQUEST_ARGS_TYPE_NAME);
+
             quote! {
                 pub type CallCanisterArgs = types::#request_args_ident;
                 pub fn call_args() -> CallCanisterArgs {
