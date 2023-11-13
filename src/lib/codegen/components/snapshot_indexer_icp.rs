@@ -18,7 +18,7 @@ use super::{
         custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
         Datasource, DestinationType, GeneratedCodes, Sources,
     },
-    utils::generate_types_from_bindings,
+    utils::{generate_types_from_bindings, is_lens_with_args},
 };
 
 /// Component Manifest: Snapshot Indexer ICP
@@ -69,20 +69,32 @@ impl From<SnapshotIndexerICPComponentManifest>
     fn from(val: SnapshotIndexerICPComponentManifest) -> Self {
         let SnapshotIndexerICPComponentManifest {
             id,
-            datasource,
+            datasource: Datasource { method, .. },
             lens_targets,
             ..
         } = val;
+
         let lens_parameter = if lens_targets.is_some() {
-            Some(LensParameter { with_args: false }) // todo: consider with_args
+            let identifier = if let Some(path) = method.interface {
+                let did_str = read_did_to_string_without_service(path)
+                    .unwrap_or_else(|e| panic!("{}", e.to_string()));
+                CanisterMethodIdentifier::new_with_did(&method.identifier, did_str)
+            } else {
+                CanisterMethodIdentifier::new(&method.identifier)
+            }
+            .unwrap_or_else(|e| panic!("{}", e.to_string()));
+
+            let with_args = is_lens_with_args(identifier);
+            Some(LensParameter { with_args })
         } else {
             None
         };
+
         Self {
             common: CommonConfig {
                 canister_name: id.clone().unwrap(),
             },
-            method_identifier: datasource.method.identifier,
+            method_identifier: method.identifier,
             lens_parameter,
         }
     }

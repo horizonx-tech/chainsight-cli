@@ -1,7 +1,6 @@
 use chainsight_cdk::{
     config::components::LENS_FUNCTION_ARGS_TYPE, convert::candid::CanisterMethodIdentifier,
 };
-use regex::Regex;
 
 // Generate types.rs code using the type information in bindings
 pub fn generate_types_from_bindings(id: &str, identifier: &str) -> anyhow::Result<String> {
