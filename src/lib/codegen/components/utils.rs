@@ -1,4 +1,5 @@
 use chainsight_cdk::convert::candid::CanisterMethodIdentifier;
+use regex::Regex;
 
 // Generate types.rs code using the type information in bindings
 pub fn generate_types_from_bindings(id: &str, identifier: &str) -> anyhow::Result<String> {
@@ -33,4 +34,14 @@ pub fn is_lens_with_args(identifier: CanisterMethodIdentifier) -> bool {
     } else {
         false
     }
+}
+
+// expose all structure fields (for bindings)
+// TODO: take it back to sdk
+pub fn make_struct_fields_accessible(codes: String) -> String {
+    let re = Regex::new(r"[^{](?:pub )*(\w+): ").unwrap();
+    let codes = re.replace_all(&codes, " pub ${1}: ");
+    let re = Regex::new(r"(?:pub )*enum").unwrap();
+    let codes = re.replace_all(&codes, "pub enum");
+    codes.to_string()
 }
