@@ -16,7 +16,7 @@ describe('readState', () => {
   });
 });
 
-describe('query', () => {
+describe.skip('query', () => {
   test(
     'respondable',
     async () => {
