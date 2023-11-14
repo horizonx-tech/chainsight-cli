@@ -17,13 +17,15 @@ use crate::{
                     AlgorithmIndexerOutput,
                 },
                 algorithm_lens::{AlgorithmLensComponentManifest, AlgorithmLensDataSource},
-                common::{ComponentManifest, Datasource},
+                common::{ComponentManifest, DatasourceForCanister},
                 event_indexer::{
                     EventIndexerComponentManifest, EventIndexerDatasource,
                     EventIndexerEventDefinition, SourceNetwork,
                 },
                 relayer::{DestinationField, RelayerComponentManifest},
-                snapshot_indexer_evm::SnapshotIndexerEVMComponentManifest,
+                snapshot_indexer_evm::{
+                    SnapshotIndexerEVMComponentManifest, SnapshotIndexerEVMDatasource,
+                },
                 snapshot_indexer_https::{
                     SnapshotIndexerHTTPSComponentManifest, SnapshotIndexerHTTPSDataSource,
                 },
@@ -202,7 +204,7 @@ fn template_snapshot_indexer_icp_manifest(
         &to_title_case(component_name),
         "",
         PROJECT_MANIFEST_VERSION,
-        Datasource::new_canister("function_identifier()".to_string(), None, None),
+        DatasourceForCanister::default(),
         3600,
     )
 }
@@ -215,7 +217,7 @@ fn template_snapshot_indexer_evm_manifest(
         &to_title_case(component_name),
         "",
         PROJECT_MANIFEST_VERSION,
-        Datasource::new_contract("functionIdentifier()".to_string(), None, None),
+        SnapshotIndexerEVMDatasource::default(),
         3600,
     )
 }
@@ -226,7 +228,7 @@ fn template_relayer_manifest(component_name: &str) -> RelayerComponentManifest {
         &to_title_case(component_name),
         "",
         PROJECT_MANIFEST_VERSION,
-        Datasource::new_canister("function_identifier()".to_string(), None, None),
+        DatasourceForCanister::default(),
         DestinationField::default(),
         3600,
     )

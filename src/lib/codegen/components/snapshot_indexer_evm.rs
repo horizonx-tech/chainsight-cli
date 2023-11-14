@@ -11,8 +11,52 @@ use crate::{
 
 use super::common::{
     custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
-    Datasource, DestinationType, GeneratedCodes, Sources,
+    DatasourceMethod, DestinationType, GeneratedCodes, Sources,
 };
+
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+pub struct SnapshotIndexerEVMDatasource {
+    pub location: SnapshotIndexerEVMDatasourceLocation,
+    pub method: DatasourceMethod,
+}
+impl Default for SnapshotIndexerEVMDatasource {
+    fn default() -> Self {
+        SnapshotIndexerEVMDatasource {
+            location: SnapshotIndexerEVMDatasourceLocation::new(
+                "6b175474e89094c44da98b954eedeac495271d0f".to_string(), // DAI token
+                1,
+                "https://mainnet.infura.io/v3/${INFURA_MAINNET_RPC_URL_KEY}".to_string(),
+            ),
+            method: DatasourceMethod {
+                identifier: "totalSupply():(uint256)".to_string(),
+                interface: Some("ERC20.json".to_string()),
+                args: vec![],
+            },
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+pub struct SnapshotIndexerEVMDatasourceLocation {
+    pub id: String,
+    pub args: SnapshotIndexerEVMDatasourceLocationArgs,
+}
+impl SnapshotIndexerEVMDatasourceLocation {
+    pub fn new(id: String, network_id: u32, rpc_url: String) -> Self {
+        Self {
+            id,
+            args: SnapshotIndexerEVMDatasourceLocationArgs {
+                network_id,
+                rpc_url,
+            },
+        }
+    }
+}
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+pub struct SnapshotIndexerEVMDatasourceLocationArgs {
+    pub network_id: u32,
+    pub rpc_url: String,
+}
 
 /// Component Manifest: Snapshot Indexer EVM
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -21,7 +65,7 @@ pub struct SnapshotIndexerEVMComponentManifest {
     pub id: Option<String>,
     pub version: String,
     pub metadata: ComponentMetadata,
-    pub datasource: Datasource,
+    pub datasource: SnapshotIndexerEVMDatasource,
     pub interval: u32,
     pub cycles: Option<CycleManagementsManifest>,
 }
@@ -32,7 +76,7 @@ impl SnapshotIndexerEVMComponentManifest {
         label: &str,
         description: &str,
         version: &str,
-        datasource: Datasource,
+        datasource: SnapshotIndexerEVMDatasource,
         interval: u32,
     ) -> Self {
         Self {
@@ -177,10 +221,7 @@ mod tests {
     use insta::assert_display_snapshot;
     use jsonschema::JSONSchema;
 
-    use crate::lib::{
-        codegen::components::common::{DatasourceLocation, DatasourceMethod},
-        test_utils::SrcString,
-    };
+    use crate::lib::{codegen::components::common::DatasourceMethod, test_utils::SrcString};
 
     use super::*;
 
@@ -222,12 +263,15 @@ interval: 3600
                     description: "Description".to_string(),
                     tags: Some(vec!["ERC-20".to_string(), "Ethereum".to_string()])
                 },
-                datasource: Datasource {
-                    location: DatasourceLocation::new_contract(
-                        "6b175474e89094c44da98b954eedeac495271d0f".to_string(),
-                        1,
-                        "https://mainnet.infura.io/v3/${INFURA_MAINNET_RPC_URL_KEY}".to_string(),
-                    ),
+                datasource: SnapshotIndexerEVMDatasource {
+                    location: SnapshotIndexerEVMDatasourceLocation {
+                        id: "6b175474e89094c44da98b954eedeac495271d0f".to_string(),
+                        args: SnapshotIndexerEVMDatasourceLocationArgs {
+                            network_id: 1,
+                            rpc_url: "https://mainnet.infura.io/v3/${INFURA_MAINNET_RPC_URL_KEY}"
+                                .to_string(),
+                        }
+                    },
                     method: DatasourceMethod {
                         identifier: "totalSupply():(uint256)".to_owned(),
                         interface: Some("ERC20.json".to_string()),
@@ -260,12 +304,15 @@ interval: 3600
                 description: "Description".to_string(),
                 tags: Some(vec!["ERC-20".to_string(), "Ethereum".to_string()]),
             },
-            datasource: Datasource {
-                location: DatasourceLocation::new_contract(
-                    "6b175474e89094c44da98b954eedeac495271d0f".to_string(),
-                    1,
-                    "https://mainnet.infura.io/v3/${INFURA_MAINNET_RPC_URL_KEY}".to_string(),
-                ),
+            datasource: SnapshotIndexerEVMDatasource {
+                location: SnapshotIndexerEVMDatasourceLocation {
+                    id: "6b175474e89094c44da98b954eedeac495271d0f".to_string(),
+                    args: SnapshotIndexerEVMDatasourceLocationArgs {
+                        network_id: 1,
+                        rpc_url: "https://mainnet.infura.io/v3/${INFURA_MAINNET_RPC_URL_KEY}"
+                            .to_string(),
+                    },
+                },
                 method: DatasourceMethod {
                     identifier: "totalSupply():(uint256)".to_owned(),
                     interface: Some("ERC20.json".to_string()),

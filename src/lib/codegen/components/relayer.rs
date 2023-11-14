@@ -20,7 +20,7 @@ use crate::{
 
 use super::{
     common::{
-        ComponentManifest, ComponentMetadata, CycleManagementsManifest, Datasource,
+        ComponentManifest, ComponentMetadata, CycleManagementsManifest, DatasourceForCanister,
         DestinationType, GeneratedCodes, SourceType, Sources,
     },
     utils::{generate_method_identifier, generate_types_from_bindings, is_lens_with_args},
@@ -33,7 +33,7 @@ pub struct RelayerComponentManifest {
     pub id: Option<String>,
     pub version: String,
     pub metadata: ComponentMetadata,
-    pub datasource: Datasource,
+    pub datasource: DatasourceForCanister,
     pub destination: DestinationField, // TODO: multiple destinations
     pub interval: u32,
     pub lens_targets: Option<LensTargets>,
@@ -46,7 +46,7 @@ impl RelayerComponentManifest {
         label: &str,
         description: &str,
         version: &str,
-        datasource: Datasource,
+        datasource: DatasourceForCanister,
         destination: DestinationField,
         interval: u32,
     ) -> Self {
@@ -73,7 +73,7 @@ impl From<RelayerComponentManifest> for chainsight_cdk::config::components::Rela
         let id = val.id();
         let destination_type = val.destination_type();
         let RelayerComponentManifest {
-            datasource: Datasource { method, .. },
+            datasource: DatasourceForCanister { method, .. },
             destination,
             ..
         } = val;
@@ -232,7 +232,7 @@ impl ComponentManifest for RelayerComponentManifest {
     }
     fn generate_bindings(&self) -> anyhow::Result<BTreeMap<String, String>> {
         let RelayerComponentManifest {
-            datasource: Datasource { method, .. },
+            datasource: DatasourceForCanister { method, .. },
             ..
         } = self;
         let identifier = generate_method_identifier(&method.identifier, &method.interface)?;
@@ -287,7 +287,9 @@ mod tests {
     use jsonschema::JSONSchema;
 
     use crate::lib::{
-        codegen::components::common::{DatasourceLocation, DatasourceMethod},
+        codegen::components::common::{
+            DatasourceForCanister, DatasourceLocationForCanister, DatasourceMethod,
+        },
         test_utils::SrcString,
     };
 
@@ -303,8 +305,10 @@ mod tests {
                 description: "Description".to_string(),
                 tags: Some(vec!["Oracle".to_string(), "snapshot".to_string()]),
             },
-            datasource: Datasource {
-                location: DatasourceLocation::new_canister("datasource_canister_id".to_string()),
+            datasource: DatasourceForCanister {
+                location: DatasourceLocationForCanister {
+                    id: "datasource_canister_id".to_string(),
+                },
                 method: DatasourceMethod {
                     identifier:
                         "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"
@@ -366,10 +370,10 @@ interval: 3600
                     description: "Description".to_string(),
                     tags: Some(vec!["Oracle".to_string(), "snapshot".to_string()])
                 },
-                datasource: Datasource {
-                    location: DatasourceLocation::new_canister(
-                        "datasource_canister_id".to_string(),
-                    ),
+                datasource: DatasourceForCanister {
+                    location: DatasourceLocationForCanister {
+                        id: "datasource_canister_id".to_string(),
+                    },
                     method: DatasourceMethod {
                         identifier:
                             "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"

@@ -15,7 +15,7 @@ use crate::{
 use super::{
     common::{
         custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
-        Datasource, DestinationType, GeneratedCodes, Sources,
+        DatasourceForCanister, DestinationType, GeneratedCodes, Sources,
     },
     utils::{generate_method_identifier, generate_types_from_bindings, is_lens_with_args},
 };
@@ -27,7 +27,7 @@ pub struct SnapshotIndexerICPComponentManifest {
     pub id: Option<String>,
     pub version: String,
     pub metadata: ComponentMetadata,
-    pub datasource: Datasource,
+    pub datasource: DatasourceForCanister,
     pub lens_targets: Option<LensTargets>,
     pub interval: u32,
     pub cycles: Option<CycleManagementsManifest>,
@@ -39,7 +39,7 @@ impl SnapshotIndexerICPComponentManifest {
         label: &str,
         description: &str,
         version: &str,
-        datasource: Datasource,
+        datasource: DatasourceForCanister,
         interval: u32,
     ) -> Self {
         Self {
@@ -68,7 +68,7 @@ impl From<SnapshotIndexerICPComponentManifest>
     fn from(val: SnapshotIndexerICPComponentManifest) -> Self {
         let SnapshotIndexerICPComponentManifest {
             id,
-            datasource: Datasource { method, .. },
+            datasource: DatasourceForCanister { method, .. },
             lens_targets,
             ..
         } = val;
@@ -193,7 +193,7 @@ impl ComponentManifest for SnapshotIndexerICPComponentManifest {
     }
     fn generate_bindings(&self) -> anyhow::Result<BTreeMap<String, String>> {
         let SnapshotIndexerICPComponentManifest {
-            datasource: Datasource { method, .. },
+            datasource: DatasourceForCanister { method, .. },
             ..
         } = self;
         let identifier = generate_method_identifier(&method.identifier, &method.interface)?;
@@ -212,7 +212,7 @@ mod tests {
     use jsonschema::JSONSchema;
 
     use crate::lib::{
-        codegen::components::common::{DatasourceLocation, DatasourceMethod},
+        codegen::components::common::{DatasourceLocationForCanister, DatasourceMethod},
         test_utils::SrcString,
     };
 
@@ -252,10 +252,10 @@ interval: 3600
                     description: "Description".to_string(),
                     tags: Some(vec!["ERC-20".to_string(), "Ethereum".to_string()])
                 },
-                datasource: Datasource {
-                    location: DatasourceLocation::new_canister(
-                        "datasource_canister_id".to_string(),
-                    ),
+                datasource: DatasourceForCanister {
+                    location: DatasourceLocationForCanister {
+                        id: "datasource_canister_id".to_string(),
+                    },
                     method: DatasourceMethod {
                         identifier:
                             "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"
@@ -290,8 +290,10 @@ interval: 3600
                 description: "Description".to_string(),
                 tags: Some(vec!["ERC-20".to_string(), "Ethereum".to_string()]),
             },
-            datasource: Datasource {
-                location: DatasourceLocation::new_canister("datasource_canister_id".to_string()),
+            datasource: DatasourceForCanister {
+                location: DatasourceLocationForCanister {
+                    id: "datasource_canister_id".to_string(),
+                },
                 method: DatasourceMethod {
                     identifier:
                         "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"

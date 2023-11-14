@@ -15,7 +15,7 @@ datasource:
   location:
     id: sample_snapshot_indexer_evm
   method:
-    identifier: 'get_last_snapshot_value : () -> (text)'
+    identifier: 'get_last_snapshot : () -> (record { value : text; timestamp : nat64 })'
     interface: null
     args: []
 destination:
