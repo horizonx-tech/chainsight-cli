@@ -13,10 +13,12 @@ use crate::lib::{
                 AlgorithmIndexerOutput,
             },
             algorithm_lens::{AlgorithmLensComponentManifest, AlgorithmLensDataSource},
-            common::{ComponentManifest, Datasource},
+            common::{ComponentManifest, DatasourceForCanister},
             event_indexer::{EventIndexerComponentManifest, EventIndexerDatasource},
             relayer::{DestinationField, RelayerComponentManifest},
-            snapshot_indexer_evm::SnapshotIndexerEVMComponentManifest,
+            snapshot_indexer_evm::{
+                SnapshotIndexerEVMComponentManifest, SnapshotIndexerEVMDatasource,
+            },
             snapshot_indexer_https::{
                 SnapshotIndexerHTTPSComponentManifest, SnapshotIndexerHTTPSDataSource,
             },
@@ -204,7 +206,7 @@ fn template_snapshot_indexer_evm_manifest(id: &str) -> SnapshotIndexerEVMCompone
         &to_title_case(id),
         "",
         PROJECT_MANIFEST_VERSION,
-        Datasource::default_contract(),
+        SnapshotIndexerEVMDatasource::default(),
         3600,
     )
 }
@@ -215,7 +217,7 @@ fn template_snapshot_indexer_icp_manifest(id: &str) -> SnapshotIndexerICPCompone
         &to_title_case(id),
         "",
         PROJECT_MANIFEST_VERSION,
-        Datasource::default_canister(true),
+        DatasourceForCanister::default(),
         3600,
     )
 }
@@ -237,7 +239,7 @@ fn template_relayer_manifest(id: &str) -> RelayerComponentManifest {
         &to_title_case(id),
         "",
         PROJECT_MANIFEST_VERSION,
-        Datasource::default_canister(false),
+        DatasourceForCanister::default(),
         DestinationField::default(),
         3600,
     )

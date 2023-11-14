@@ -42,13 +42,13 @@ fn generate_command_to_setup(
 }
 fn script_contents(manifest: &SnapshotIndexerEVMComponentManifest, network: Network) -> String {
     let id = manifest.id().unwrap();
-    let datasrc_location_args = manifest.datasource.location.args.clone().unwrap(); // todo: check validation
+    let datasrc_location_args = manifest.datasource.location.args.clone(); // todo: check validation
 
     let setup_contents = generate_command_to_setup(
         &id,
         &manifest.datasource.location.id,
-        datasrc_location_args.network_id.unwrap(), // todo: check validation
-        &datasrc_location_args.rpc_url.unwrap(),   // todo: check validation
+        datasrc_location_args.network_id, // todo: check validation
+        &datasrc_location_args.rpc_url,   // todo: check validation
         &network,
     );
 
