@@ -154,7 +154,15 @@ impl ComponentManifest for SnapshotIndexerICPComponentManifest {
     fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
         let lib = canisters::snapshot_indexer_icp::generate_app(self)?;
 
-        Ok(GeneratedCodes { lib, types: None })
+        let types = generate_types_from_bindings(
+            &self.id.clone().unwrap(),
+            &self.datasource.method.identifier,
+        )?;
+
+        Ok(GeneratedCodes {
+            lib,
+            types: Some(types),
+        })
     }
     fn get_sources(&self) -> Sources {
         let mut attr = HashMap::new();
@@ -314,7 +322,10 @@ interval: 3600
             format!("{}__logics_lib", &snap_prefix),
             SrcString::from(generated_user_impl_template.lib)
         );
-        assert!(generated_user_impl_template.types.is_none());
+        assert_display_snapshot!(
+            format!("{}__logics_types", &snap_prefix),
+            generated_user_impl_template.types.unwrap()
+        );
 
         assert_display_snapshot!(
             format!("{}__scripts", &snap_prefix),
