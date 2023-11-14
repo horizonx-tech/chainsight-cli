@@ -510,11 +510,7 @@ Since `datasource` differs from contract only in the `datasource` field, only `d
 Set the function for the canister to be acquired at `datasource`.
 
 - `datasource.location` ... Specify the canister to retrieve from.
-  - `id`: String / Target canister
-    - The input format differs according to `args.id_type`
-      - If id_type = `canister_name`, Name of canister in the project.
-      - If id_type = `principal_id`, Text Format of the target canister's Principal.
-  - `args.id_type`: Enum / How to set `id`
+  - `id`: String / Target canister name or id
 - `datasource.method` ... Specify the Canister function to call.
   - `method.identifier`: String / interface of the function to be called.
     - Refer to the interface definition in the candid file and enter.
@@ -536,8 +532,6 @@ datasource:
   type: canister
   location:
     id: sample_snapshot_indexer_evm
-    args:
-      id_type: canister_name
   method:
     identifier: 'get_last_snapshot : () -> (record { value : text; timestamp : nat64 })'
     interface: null
@@ -572,8 +566,6 @@ datasource:
   type: canister
   location:
     id: sample_snapshot_indexer_evm
-    args:
-      id_type: canister_name
   method:
     identifier: 'get_last_snapshot_value : () -> (text)'
     interface: null
@@ -613,7 +605,7 @@ Users can define arbitrary logic using Lens. All data sources on Chainsight can 
 `datasource` specifies the source data source for the calculation. You can specify data sources by canister in Chainsight and their endpoints (e.g. functions). Multiple data sources can be specified.
 
 - `datasource.locations`: Array / Specifies the Canister from which the data originates.
-  - `id`, `id_type` ... These are the same as "Snapshot (datasource = canister)"
+  - `id` ... These are the same as "Snapshot (datasource = canister)"
   - `label`: String / Information used in the function name to get the canister id used by user when defining logic.
 - `datasource.methods`: Array / Specifies a function to retrieve data.
   - `label`: String / Information used in the function name to do cross-canister call used by user when defining logic.
@@ -637,8 +629,6 @@ metadata:
 datasource:
   locations:
   - id: rate_snapshot
-    id_type: canister_name
-    label: rate_snapshot
   methods:
   - label: last_snapshot_value
     identifier: 'get_last_snapshot_value : () -> (text)'
