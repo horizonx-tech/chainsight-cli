@@ -1,4 +1,7 @@
-use std::collections::{BTreeMap, HashMap};
+use std::{
+    collections::{BTreeMap, HashMap},
+    path::Path,
+};
 
 use chainsight_cdk::{
     config::components::{CommonConfig, LensParameter, LensTargets},
@@ -8,7 +11,10 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::{
-    lib::codegen::{canisters, components::common::SourceType, scripts},
+    lib::{
+        codegen::{canisters, components::common::SourceType, scripts},
+        utils::paths::canister_did_path_str,
+    },
     types::{ComponentType, Network},
 };
 
@@ -193,10 +199,25 @@ impl ComponentManifest for SnapshotIndexerICPComponentManifest {
     }
     fn generate_bindings(&self) -> anyhow::Result<BTreeMap<String, String>> {
         let SnapshotIndexerICPComponentManifest {
-            datasource: DatasourceForCanister { method, .. },
+            datasource: DatasourceForCanister {
+                location, method, ..
+            },
             ..
         } = self;
-        let identifier = generate_method_identifier(&method.identifier, &method.interface)?;
+
+        let interface = if method.interface.is_some() {
+            method.interface.clone()
+        } else {
+            //　did is automatically obtained　if the component name is in a project.
+            let component_did_path = canister_did_path_str("src", &location.id);
+            if Path::new(&component_did_path).is_file() {
+                Some(component_did_path)
+            } else {
+                None
+            }
+        };
+
+        let identifier = generate_method_identifier(&method.identifier, &interface)?;
         let lib = identifier.compile()?;
 
         Ok(BTreeMap::from([("lib".to_string(), lib)]))

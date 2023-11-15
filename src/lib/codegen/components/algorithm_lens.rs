@@ -1,11 +1,17 @@
-use std::collections::{BTreeMap, HashMap};
+use std::{
+    collections::{BTreeMap, HashMap},
+    path::Path,
+};
 
 use candid::Principal;
 use chainsight_cdk::{config::components::CommonConfig, initializer::CycleManagements};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    lib::codegen::{canisters, scripts},
+    lib::{
+        codegen::{canisters, scripts},
+        utils::paths::canister_did_path_str,
+    },
     types::{ComponentType, Network},
 };
 
@@ -155,8 +161,21 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
         let mut bindings: BTreeMap<String, String> = BTreeMap::new();
         for method in methods {
             let mod_name = method.id.to_string();
+
+            let candid_file_path = if method.candid_file_path.is_some() {
+                method.candid_file_path.clone()
+            } else {
+                //　did is automatically obtained　if the component name is in a project.
+                let component_did_path = canister_did_path_str("src", &mod_name);
+                if Path::new(&component_did_path).is_file() {
+                    Some(component_did_path)
+                } else {
+                    None
+                }
+            };
+
             let method_identifier =
-                generate_method_identifier(&method.identifier, &method.candid_file_path)?;
+                generate_method_identifier(&method.identifier, &candid_file_path)?;
             let codes = method_identifier.compile()?;
             bindings.insert(mod_name, codes);
         }

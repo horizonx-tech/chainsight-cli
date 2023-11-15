@@ -10,6 +10,10 @@ pub fn canisters_path_str(src: &str, component: &str) -> String {
     format!("{}/canisters/{}", src, component)
 }
 
+pub fn canister_did_path_str(src: &str, component: &str) -> String {
+    format!("{}/{}.did", canisters_path_str(src, component), component)
+}
+
 pub fn bindings_path_str(src: &str, component: &str) -> String {
     format!("{}/bindings/{}", src, bindings_name(component))
 }

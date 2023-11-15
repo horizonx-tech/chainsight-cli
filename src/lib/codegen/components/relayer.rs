@@ -1,4 +1,7 @@
-use std::collections::{BTreeMap, HashMap};
+use std::{
+    collections::{BTreeMap, HashMap},
+    path::Path,
+};
 
 use anyhow::Ok;
 use chainsight_cdk::{
@@ -9,11 +12,14 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::{
-    lib::codegen::{
-        canisters::{self},
-        components::common::custom_tags_interval_sec,
-        oracle::get_oracle_address,
-        scripts,
+    lib::{
+        codegen::{
+            canisters::{self},
+            components::common::custom_tags_interval_sec,
+            oracle::get_oracle_address,
+            scripts,
+        },
+        utils::paths::canister_did_path_str,
     },
     types::{ComponentType, Network},
 };
@@ -232,9 +238,24 @@ impl ComponentManifest for RelayerComponentManifest {
     }
     fn generate_bindings(&self) -> anyhow::Result<BTreeMap<String, String>> {
         let RelayerComponentManifest {
-            datasource: DatasourceForCanister { method, .. },
+            datasource: DatasourceForCanister {
+                location, method, ..
+            },
             ..
         } = self;
+
+        let interface = if method.interface.is_some() {
+            method.interface.clone()
+        } else {
+            //　did is automatically obtained　if the component name is in a project.
+            let component_did_path = canister_did_path_str("src", &location.id);
+            if Path::new(&component_did_path).is_file() {
+                Some(component_did_path)
+            } else {
+                None
+            }
+        };
+
         let identifier = generate_method_identifier(&method.identifier, &method.interface)?;
         let lib = identifier.compile()?;
         Ok(BTreeMap::from([("lib".to_string(), lib)]))
