@@ -73,6 +73,11 @@ jobs:
         uses: cb80/delrel@latest
         with:
           tag: snapshot
+      - name: Delete the tag
+        uses: julbme/gh-action-manage-tag@v1
+        with:
+          name: snapshot
+          state: absent
   publish:
     runs-on: ubuntu-latest
     needs:
