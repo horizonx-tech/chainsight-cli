@@ -33,7 +33,7 @@ pub type {} = bindings::{};
 
 // Get .did path of target component in the same project.
 pub fn get_did_by_component_id(component_id: &str) -> Option<String> {
-    let component_did_path = canister_did_path_str("src", &component_id);
+    let component_did_path = canister_did_path_str("src", component_id);
     if Path::new(&component_did_path).is_file() {
         Some(component_did_path)
     } else {
