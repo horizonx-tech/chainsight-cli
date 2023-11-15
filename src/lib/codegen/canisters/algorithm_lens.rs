@@ -122,7 +122,7 @@ pub fn generate_dependencies_accessor(
     };
     let call_funcs = methods
         .iter()
-        .map(|m| generate_query_call(&m.id, &m.identifier, None));
+        .map(|m| generate_query_call(&m.id, &m.identifier, m.func_name_alias.as_deref()));
 
     let bindings_ident = format_ident!("{}", paths::bindings_name(&manifest.id().unwrap()));
     let code = quote! {

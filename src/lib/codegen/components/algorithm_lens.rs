@@ -212,6 +212,8 @@ pub struct AlgorithmLensDataSourceMethod {
     pub id: String,
     pub identifier: String,
     pub candid_file_path: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub func_name_alias: Option<String>,
 }
 
 impl Default for AlgorithmLensDataSource {
@@ -223,6 +225,7 @@ impl Default for AlgorithmLensDataSource {
                     "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"
                         .to_string(),
                 candid_file_path: None,
+                func_name_alias: None,
             }],
         }
     }
@@ -279,6 +282,7 @@ with_args: true
                         id: "last_snapshot".to_string(),
                         identifier: "get_last_snapshot : () -> (Snapshot)".to_string(),
                         candid_file_path: Some("interfaces/sample.did".to_string()),
+                        func_name_alias: None,
                     }],
                 },
                 with_args: Some(true),
@@ -342,6 +346,7 @@ with_args: true
                         "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"
                             .to_string(),
                     candid_file_path: Some("interfaces/sample.did".to_string()),
+                    func_name_alias: None,
                 }],
             },
             with_args: Some(false),
