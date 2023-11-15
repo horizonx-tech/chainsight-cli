@@ -44,8 +44,9 @@ pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result
     } = manifest;
 
     let call_func_templates = methods.iter().enumerate().map(|(i, m)| {
-        let getter = format_ident!("get_{}", &m.id);
         let method_identifier = CanisterMethodIdentifier::new(&m.identifier).expect("method_identifier parse error");
+        // NOTE: Because prefix 'get' is added by macro
+        let getter = format_ident!("get_{}", generate_default_label_for_query_call(&method_identifier.identifier, &m.id));
         let (request_args_type, _) = method_identifier.get_types();
         if request_args_type.is_some() {
             quote! {
@@ -121,7 +122,7 @@ pub fn generate_dependencies_accessor(
     };
     let call_funcs = methods
         .iter()
-        .map(|m| generate_query_call(&m.id, &m.identifier));
+        .map(|m| generate_query_call(&m.id, &m.identifier, None));
 
     let bindings_ident = format_ident!("{}", paths::bindings_name(&manifest.id().unwrap()));
     let code = quote! {
@@ -154,13 +155,18 @@ pub fn validate_manifest(manifest: &AlgorithmLensComponentManifest) -> anyhow::R
     Ok(())
 }
 
-fn generate_query_call(label: &str, method_identifier: &str) -> TokenStream {
+fn generate_query_call(id: &str, method_identifier: &str, label: Option<&str>) -> TokenStream {
     let method_identifier =
         CanisterMethodIdentifier::new(method_identifier).expect("method_identifier parse error");
+
+    let label_str = label.map_or_else(
+        || generate_default_label_for_query_call(&method_identifier.identifier, id),
+        |v| v.to_string(),
+    );
     let proxy_func_to_call = format!("proxy_{}", &method_identifier.identifier);
 
     let crate_name_ident = format_ident!("bindings");
-    let module_name_ident = format_ident!("{}", label);
+    let module_name_ident = format_ident!("{}", id);
     let response_type_idents = format_ident!("{}", CanisterMethodIdentifier::RESPONSE_TYPE_NAME);
     let (request_args_type, _) = method_identifier.get_types();
     if request_args_type.is_some() {
@@ -168,7 +174,7 @@ fn generate_query_call(label: &str, method_identifier: &str) -> TokenStream {
             format_ident!("{}", CanisterMethodIdentifier::REQUEST_ARGS_TYPE_NAME,);
         quote! {
             algorithm_lens_finder!(
-                #label,
+                #label_str,
                 #proxy_func_to_call,
                 #crate_name_ident::#module_name_ident::#response_type_idents,
                 #crate_name_ident::#module_name_ident::#request_args_type_idents
@@ -177,10 +183,14 @@ fn generate_query_call(label: &str, method_identifier: &str) -> TokenStream {
     } else {
         quote! {
             algorithm_lens_finder!(
-                #label,
+                #label_str,
                 #proxy_func_to_call,
                 #crate_name_ident::#module_name_ident::#response_type_idents
             );
         }
     }
+}
+
+fn generate_default_label_for_query_call(method_name_to_call: &str, id: &str) -> String {
+    format!("{}_in_{}", &method_name_to_call, &id)
 }
