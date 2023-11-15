@@ -65,9 +65,19 @@ jobs:
           path: |
             ${{ env.TARBALL_FILENAME }}
             ${{ env.SHA256_FILENAME }}
-  publish:
+  delete-old-snapshot:
     runs-on: ubuntu-latest
     needs: build_cli
+    steps:
+      - name: Delete old snapshot
+        uses: cb80/delrel@latest
+        with:
+          tag: snapshot
+  publish:
+    runs-on: ubuntu-latest
+    needs:
+      - build_cli
+      - delete-old-snapshot
     strategy:
       fail-fast: false
       matrix:
@@ -77,11 +87,6 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: csx-${{ matrix.name }}
-      - name: Delete existing snapshot
-        uses: dev-drprasad/delete-tag-and-release@v1.0
-        with:
-          tag_name: snapshot
-          delete_release: true
       - name: Publish tarball and sha256
         uses: svenstaro/upload-release-action@v2
         with:
