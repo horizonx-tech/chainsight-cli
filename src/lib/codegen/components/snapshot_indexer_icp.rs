@@ -1,7 +1,4 @@
-use std::{
-    collections::{BTreeMap, HashMap},
-    path::Path,
-};
+use std::collections::{BTreeMap, HashMap};
 
 use chainsight_cdk::{
     config::components::{CommonConfig, LensParameter, LensTargets},
@@ -11,10 +8,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::{
-    lib::{
-        codegen::{canisters, components::common::SourceType, scripts},
-        utils::paths::canister_did_path_str,
-    },
+    lib::codegen::{canisters, components::common::SourceType, scripts},
     types::{ComponentType, Network},
 };
 
@@ -23,7 +17,10 @@ use super::{
         custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
         DatasourceForCanister, DestinationType, GeneratedCodes, Sources,
     },
-    utils::{generate_method_identifier, generate_types_from_bindings, is_lens_with_args},
+    utils::{
+        generate_method_identifier, generate_types_from_bindings, get_did_by_component_id,
+        is_lens_with_args,
+    },
 };
 
 /// Component Manifest: Snapshot Indexer ICP
@@ -208,13 +205,7 @@ impl ComponentManifest for SnapshotIndexerICPComponentManifest {
         let interface = if method.interface.is_some() {
             method.interface.clone()
         } else {
-            //　did is automatically obtained　if the component name is in a project.
-            let component_did_path = canister_did_path_str("src", &location.id);
-            if Path::new(&component_did_path).is_file() {
-                Some(component_did_path)
-            } else {
-                None
-            }
+            get_did_by_component_id(&location.id)
         };
 
         let identifier = generate_method_identifier(&method.identifier, &interface)?;

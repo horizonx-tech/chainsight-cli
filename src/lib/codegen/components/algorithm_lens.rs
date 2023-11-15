@@ -1,17 +1,11 @@
-use std::{
-    collections::{BTreeMap, HashMap},
-    path::Path,
-};
+use std::collections::{BTreeMap, HashMap};
 
 use candid::Principal;
 use chainsight_cdk::{config::components::CommonConfig, initializer::CycleManagements};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    lib::{
-        codegen::{canisters, scripts},
-        utils::paths::canister_did_path_str,
-    },
+    lib::codegen::{canisters, scripts},
     types::{ComponentType, Network},
 };
 
@@ -20,7 +14,7 @@ use super::{
         ComponentManifest, ComponentMetadata, CycleManagementsManifest, GeneratedCodes, SourceType,
         Sources,
     },
-    utils::generate_method_identifier,
+    utils::{generate_method_identifier, get_did_by_component_id},
 };
 
 /// Component Manifest: Algorithm Lens
@@ -165,13 +159,7 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
             let candid_file_path = if method.candid_file_path.is_some() {
                 method.candid_file_path.clone()
             } else {
-                //　did is automatically obtained　if the component name is in a project.
-                let component_did_path = canister_did_path_str("src", &mod_name);
-                if Path::new(&component_did_path).is_file() {
-                    Some(component_did_path)
-                } else {
-                    None
-                }
+                get_did_by_component_id(&mod_name)
             };
 
             let method_identifier =

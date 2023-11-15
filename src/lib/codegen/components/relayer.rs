@@ -1,7 +1,4 @@
-use std::{
-    collections::{BTreeMap, HashMap},
-    path::Path,
-};
+use std::collections::{BTreeMap, HashMap};
 
 use anyhow::Ok;
 use chainsight_cdk::{
@@ -12,14 +9,11 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::{
-    lib::{
-        codegen::{
-            canisters::{self},
-            components::common::custom_tags_interval_sec,
-            oracle::get_oracle_address,
-            scripts,
-        },
-        utils::paths::canister_did_path_str,
+    lib::codegen::{
+        canisters::{self},
+        components::common::custom_tags_interval_sec,
+        oracle::get_oracle_address,
+        scripts,
     },
     types::{ComponentType, Network},
 };
@@ -29,7 +23,10 @@ use super::{
         ComponentManifest, ComponentMetadata, CycleManagementsManifest, DatasourceForCanister,
         DestinationType, GeneratedCodes, SourceType, Sources,
     },
-    utils::{generate_method_identifier, generate_types_from_bindings, is_lens_with_args},
+    utils::{
+        generate_method_identifier, generate_types_from_bindings, get_did_by_component_id,
+        is_lens_with_args,
+    },
 };
 
 /// Component Manifest: Relayer
@@ -247,16 +244,10 @@ impl ComponentManifest for RelayerComponentManifest {
         let interface = if method.interface.is_some() {
             method.interface.clone()
         } else {
-            //　did is automatically obtained　if the component name is in a project.
-            let component_did_path = canister_did_path_str("src", &location.id);
-            if Path::new(&component_did_path).is_file() {
-                Some(component_did_path)
-            } else {
-                None
-            }
+            get_did_by_component_id(&location.id)
         };
 
-        let identifier = generate_method_identifier(&method.identifier, &method.interface)?;
+        let identifier = generate_method_identifier(&method.identifier, &interface)?;
         let lib = identifier.compile()?;
         Ok(BTreeMap::from([("lib".to_string(), lib)]))
     }
