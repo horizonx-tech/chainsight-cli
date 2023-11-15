@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - 'main'
+      - 'test/snapshot-cd'
 env:
   RUST_VERSION: 1.73.0
 jobs:
