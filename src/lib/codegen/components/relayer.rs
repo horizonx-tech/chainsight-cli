@@ -23,7 +23,10 @@ use super::{
         ComponentManifest, ComponentMetadata, CycleManagementsManifest, DatasourceForCanister,
         DestinationType, GeneratedCodes, SourceType, Sources,
     },
-    utils::{generate_method_identifier, generate_types_from_bindings, is_lens_with_args},
+    utils::{
+        generate_method_identifier, generate_types_from_bindings, get_did_by_component_id,
+        is_lens_with_args,
+    },
 };
 
 /// Component Manifest: Relayer
@@ -232,10 +235,19 @@ impl ComponentManifest for RelayerComponentManifest {
     }
     fn generate_bindings(&self) -> anyhow::Result<BTreeMap<String, String>> {
         let RelayerComponentManifest {
-            datasource: DatasourceForCanister { method, .. },
+            datasource: DatasourceForCanister {
+                location, method, ..
+            },
             ..
         } = self;
-        let identifier = generate_method_identifier(&method.identifier, &method.interface)?;
+
+        let interface = if method.interface.is_some() {
+            method.interface.clone()
+        } else {
+            get_did_by_component_id(&location.id)
+        };
+
+        let identifier = generate_method_identifier(&method.identifier, &interface)?;
         let lib = identifier.compile()?;
         Ok(BTreeMap::from([("lib".to_string(), lib)]))
     }

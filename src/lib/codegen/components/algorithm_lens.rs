@@ -14,7 +14,7 @@ use super::{
         ComponentManifest, ComponentMetadata, CycleManagementsManifest, GeneratedCodes, SourceType,
         Sources,
     },
-    utils::generate_method_identifier,
+    utils::{generate_method_identifier, get_did_by_component_id},
 };
 
 /// Component Manifest: Algorithm Lens
@@ -155,8 +155,15 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
         let mut bindings: BTreeMap<String, String> = BTreeMap::new();
         for method in methods {
             let mod_name = method.id.to_string();
+
+            let candid_file_path = if method.candid_file_path.is_some() {
+                method.candid_file_path.clone()
+            } else {
+                get_did_by_component_id(&mod_name)
+            };
+
             let method_identifier =
-                generate_method_identifier(&method.identifier, &method.candid_file_path)?;
+                generate_method_identifier(&method.identifier, &candid_file_path)?;
             let codes = method_identifier.compile()?;
             bindings.insert(mod_name, codes);
         }

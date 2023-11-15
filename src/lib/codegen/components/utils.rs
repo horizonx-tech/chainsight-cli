@@ -1,7 +1,11 @@
+use std::path::Path;
+
 use chainsight_cdk::{
     config::components::LENS_FUNCTION_ARGS_TYPE,
     convert::candid::{read_did_to_string_without_service, CanisterMethodIdentifier},
 };
+
+use crate::lib::utils::paths::canister_did_path_str;
 
 // Generate types.rs code using the type information in bindings
 pub fn generate_types_from_bindings(id: &str, identifier: &str) -> anyhow::Result<String> {
@@ -25,6 +29,16 @@ pub type {} = bindings::{};
     }
 
     Ok(codes)
+}
+
+// Get .did path of target component in the same project.
+pub fn get_did_by_component_id(component_id: &str) -> Option<String> {
+    let component_did_path = canister_did_path_str("src", component_id);
+    if Path::new(&component_did_path).is_file() {
+        Some(component_did_path)
+    } else {
+        None
+    }
 }
 
 pub fn generate_method_identifier(

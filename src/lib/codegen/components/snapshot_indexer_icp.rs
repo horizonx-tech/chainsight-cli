@@ -17,7 +17,10 @@ use super::{
         custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
         DatasourceForCanister, DestinationType, GeneratedCodes, Sources,
     },
-    utils::{generate_method_identifier, generate_types_from_bindings, is_lens_with_args},
+    utils::{
+        generate_method_identifier, generate_types_from_bindings, get_did_by_component_id,
+        is_lens_with_args,
+    },
 };
 
 /// Component Manifest: Snapshot Indexer ICP
@@ -193,10 +196,19 @@ impl ComponentManifest for SnapshotIndexerICPComponentManifest {
     }
     fn generate_bindings(&self) -> anyhow::Result<BTreeMap<String, String>> {
         let SnapshotIndexerICPComponentManifest {
-            datasource: DatasourceForCanister { method, .. },
+            datasource: DatasourceForCanister {
+                location, method, ..
+            },
             ..
         } = self;
-        let identifier = generate_method_identifier(&method.identifier, &method.interface)?;
+
+        let interface = if method.interface.is_some() {
+            method.interface.clone()
+        } else {
+            get_did_by_component_id(&location.id)
+        };
+
+        let identifier = generate_method_identifier(&method.identifier, &interface)?;
         let lib = identifier.compile()?;
 
         Ok(BTreeMap::from([("lib".to_string(), lib)]))
