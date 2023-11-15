@@ -300,35 +300,6 @@ with_args: true
     }
 
     #[test]
-    fn test_validate_manifests() {
-        let yaml = r#"
-version: v1
-metadata:
-    label: sample_algorithm_lens
-    type: algorithm_lens
-    description: Description
-    tags:
-    - Ethereum
-    - Account
-datasource:
-    methods:
-    - id: last_snapshot
-      identifier: 'get_last_snapshot_1 : () -> (Snapshot)'
-      candid_file_path: "interfaces/sample_1.did"
-    - id: last_snapshot
-      identifier: 'get_last_snapshot_2 : () -> (text)'
-      candid_file_path: "interfaces/sample_2.did"
-with_args: true
-"#;
-        let result = serde_yaml::from_str::<AlgorithmLensComponentManifest>(yaml).unwrap();
-        let err = result.validate_manifest().unwrap_err();
-        assert_eq!(
-            err.to_string(),
-            "duplicated id found in datasource.methods: last_snapshot"
-        );
-    }
-
-    #[test]
     fn test_snapshot_outputs() {
         let manifest = AlgorithmLensComponentManifest {
             id: Some("sample_algorithm_lens".to_string()),

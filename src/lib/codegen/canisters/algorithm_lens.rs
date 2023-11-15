@@ -4,7 +4,7 @@ use crate::{
             algorithm_lens::{AlgorithmLensComponentManifest, AlgorithmLensDataSource},
             common::ComponentManifest,
         },
-        utils::{find_duplicates, paths},
+        utils::paths,
     },
     types::ComponentType,
 };
@@ -46,7 +46,10 @@ pub fn generate_app(manifest: &AlgorithmLensComponentManifest) -> anyhow::Result
     let call_func_templates = methods.iter().enumerate().map(|(i, m)| {
         let method_identifier = CanisterMethodIdentifier::new(&m.identifier).expect("method_identifier parse error");
         // NOTE: Because prefix 'get' is added by macro
-        let getter = format_ident!("get_{}", generate_default_label_for_query_call(&method_identifier.identifier, &m.id));
+        let getter = format_ident!("get_{}", m.func_name_alias.as_ref().map_or_else(
+            || generate_default_label_for_query_call(&method_identifier.identifier, &m.id),
+            |v| v.to_string(),
+        ));
         let (request_args_type, _) = method_identifier.get_types();
         if request_args_type.is_some() {
             quote! {
@@ -137,19 +140,6 @@ pub fn validate_manifest(manifest: &AlgorithmLensComponentManifest) -> anyhow::R
     ensure!(
         manifest.metadata.type_ == ComponentType::AlgorithmLens,
         "type is not AlgorithmLens"
-    );
-
-    // check duplicated id in dependencies
-    let dependencies = manifest.dependencies();
-    let duplicateds = find_duplicates(&dependencies);
-    ensure!(
-        &duplicateds.is_empty(),
-        "duplicated id found in datasource.methods: {}",
-        duplicateds
-            .iter()
-            .map(|s| (**s).as_str())
-            .collect::<Vec<&str>>()
-            .join(", ")
     );
 
     Ok(())
