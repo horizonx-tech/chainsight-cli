@@ -39,15 +39,6 @@ jobs:
           toolchain: ${{ env.RUST_VERSION }}
           override: true
         if: contains(matrix.os, 'macos')
-      - name: Add snapshot version
-        run: |
-          brew install gnu-sed
-          gsed -i -z "s/name = \"csx\"\nversion = \"0.1.0\"/name = \"csx\"\nversion = \"0.1.0-$(git show --format='%h' --no-patch)\"/" Cargo*
-        if: contains(matrix.os, 'macos')
-      - name: Add snapshot version
-        run: |
-          sed -i -z "s/name = \"csx\"\nversion = \"0.1.0\"/name = \"csx\"\nversion = \"0.1.0-$(git show --format='%h' --no-patch)\"/" Cargo*
-        if: contains(matrix.os, 'ubuntu')
       - name: Build
         run: |
           cargo clean --target ${{ matrix.target }} --release
@@ -73,9 +64,20 @@ jobs:
           path: |
             ${{ env.TARBALL_FILENAME }}
             ${{ env.SHA256_FILENAME }}
-  publish:
+  delete-old-snapshot:
     runs-on: ubuntu-latest
     needs: build_cli
+    steps:
+      - name: Delete old snapshot
+        uses: dev-drprasad/delete-tag-and-release@v1.0 # PRERELEASE is v1.0 and can also be used to test and give us feedback
+        with:
+          tag_name: snapshot #(required) tag name to delete 
+          github_token: ${{ secrets.PAT }} # (required) a GitHub token with write access to the repo that needs to be modified
+  publish:
+    runs-on: ubuntu-latest
+    needs:
+      - build_cli
+      - delete-old-snapshot
     strategy:
       fail-fast: false
       matrix:
