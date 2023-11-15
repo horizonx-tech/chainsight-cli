@@ -70,14 +70,10 @@ jobs:
     needs: build_cli
     steps:
       - name: Delete old snapshot
-        uses: cb80/delrel@latest
+        uses: dev-drprasad/delete-tag-and-release@v1.0 # PRERELEASE is v1.0 and can also be used to test and give us feedback
         with:
-          tag: snapshot
-      - name: Delete the tag
-        uses: julbme/gh-action-manage-tag@v1
-        with:
-          name: snapshot
-          state: absent
+          tag_name: snapshot #(required) tag name to delete 
+          github_token: ${{ secrets.PAT }} # (required) a GitHub token with write access to the repo that needs to be modified
   publish:
     runs-on: ubuntu-latest
     needs:
