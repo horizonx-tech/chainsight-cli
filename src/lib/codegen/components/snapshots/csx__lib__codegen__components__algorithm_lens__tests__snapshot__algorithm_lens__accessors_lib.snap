@@ -3,7 +3,7 @@ source: src/lib/codegen/components/algorithm_lens.rs
 expression: "SrcString::from(manifest.generate_dependency_accessors().unwrap().lib)"
 ---
 use sample_algorithm_lens_bindings as bindings;
-algorithm_lens_finder!("last_snapshot_value", "proxy_get_last_snapshot", bindings::last_snapshot_value::ResponseType);
+algorithm_lens_finder!("get_last_snapshot_in_last_snapshot_value", "proxy_get_last_snapshot", bindings::last_snapshot_value::ResponseType);
 use chainsight_cdk::lens::LensFinder;
 use chainsight_cdk_macros::algorithm_lens_finder;
 async fn _get_target_proxy(target:candid::Principal) -> candid::Principal {

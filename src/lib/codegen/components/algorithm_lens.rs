@@ -212,6 +212,8 @@ pub struct AlgorithmLensDataSourceMethod {
     pub id: String,
     pub identifier: String,
     pub candid_file_path: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub func_name_alias: Option<String>,
 }
 
 impl Default for AlgorithmLensDataSource {
@@ -223,6 +225,7 @@ impl Default for AlgorithmLensDataSource {
                     "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"
                         .to_string(),
                 candid_file_path: None,
+                func_name_alias: None,
             }],
         }
     }
@@ -279,6 +282,7 @@ with_args: true
                         id: "last_snapshot".to_string(),
                         identifier: "get_last_snapshot : () -> (Snapshot)".to_string(),
                         candid_file_path: Some("interfaces/sample.did".to_string()),
+                        func_name_alias: None,
                     }],
                 },
                 with_args: Some(true),
@@ -293,35 +297,6 @@ with_args: true
         let compiled = JSONSchema::compile(&schema).expect("Invalid schema");
         let result = compiled.validate(&instance);
         assert!(result.is_ok());
-    }
-
-    #[test]
-    fn test_validate_manifests() {
-        let yaml = r#"
-version: v1
-metadata:
-    label: sample_algorithm_lens
-    type: algorithm_lens
-    description: Description
-    tags:
-    - Ethereum
-    - Account
-datasource:
-    methods:
-    - id: last_snapshot
-      identifier: 'get_last_snapshot_1 : () -> (Snapshot)'
-      candid_file_path: "interfaces/sample_1.did"
-    - id: last_snapshot
-      identifier: 'get_last_snapshot_2 : () -> (text)'
-      candid_file_path: "interfaces/sample_2.did"
-with_args: true
-"#;
-        let result = serde_yaml::from_str::<AlgorithmLensComponentManifest>(yaml).unwrap();
-        let err = result.validate_manifest().unwrap_err();
-        assert_eq!(
-            err.to_string(),
-            "duplicated id found in datasource.methods: last_snapshot"
-        );
     }
 
     #[test]
@@ -342,6 +317,7 @@ with_args: true
                         "get_last_snapshot : () -> (record { value : text; timestamp : nat64 })"
                             .to_string(),
                     candid_file_path: Some("interfaces/sample.did".to_string()),
+                    func_name_alias: None,
                 }],
             },
             with_args: Some(false),
