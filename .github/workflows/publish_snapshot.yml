@@ -39,15 +39,6 @@ jobs:
           toolchain: ${{ env.RUST_VERSION }}
           override: true
         if: contains(matrix.os, 'macos')
-      - name: Add snapshot version
-        run: |
-          brew install gnu-sed
-          gsed -i -z "s/name = \"csx\"\nversion = \"0.1.0\"/name = \"csx\"\nversion = \"0.1.0-$(git show --format='%h' --no-patch)\"/" Cargo*
-        if: contains(matrix.os, 'macos')
-      - name: Add snapshot version
-        run: |
-          sed -i -z "s/name = \"csx\"\nversion = \"0.1.0\"/name = \"csx\"\nversion = \"0.1.0-$(git show --format='%h' --no-patch)\"/" Cargo*
-        if: contains(matrix.os, 'ubuntu')
       - name: Build
         run: |
           cargo clean --target ${{ matrix.target }} --release
@@ -85,6 +76,11 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: csx-${{ matrix.name }}
+      - name: Delete existing snapshot
+        uses: dev-drprasad/delete-tag-and-release@v1.0
+        with:
+          tag_name: snapshot
+          delete_release: true
       - name: Publish tarball and sha256
         uses: svenstaro/upload-release-action@v2
         with:
