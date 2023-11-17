@@ -445,7 +445,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "chainsight-cdk"
 version = "0.1.0"
-source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=70295dca95cfcefdd73e093fce2ef3f97036d496#70295dca95cfcefdd73e093fce2ef3f97036d496"
+source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=ad281feb8ecefa28c6c15ecf32d531b755277bda#ad281feb8ecefa28c6c15ecf32d531b755277bda"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1709,7 +1709,7 @@ dependencies = [
 [[package]]
 name = "ic-solidity-bindgen"
 version = "0.1.9"
-source = "git+https://github.com/horizonx-tech/ic-solidity-bindgen.git?branch=topic/ic-cdk-0.11#65a0ba10a605956036e4a4b7b3677c56ec3f4c4c"
+source = "git+https://github.com/horizonx-tech/ic-solidity-bindgen.git?tag=v0.1.9#b8058b1456f9833d9afb2edba4d31bbf698d575c"
 dependencies = [
  "async-trait",
  "derive_builder",
@@ -1723,7 +1723,7 @@ dependencies = [
 [[package]]
 name = "ic-solidity-bindgen-macros"
 version = "0.1.9"
-source = "git+https://github.com/horizonx-tech/ic-solidity-bindgen.git?branch=topic/ic-cdk-0.11#65a0ba10a605956036e4a4b7b3677c56ec3f4c4c"
+source = "git+https://github.com/horizonx-tech/ic-solidity-bindgen.git?tag=v0.1.9#b8058b1456f9833d9afb2edba4d31bbf698d575c"
 dependencies = [
  "Inflector",
  "ic-web3-rs",
@@ -1785,8 +1785,8 @@ dependencies = [
 
 [[package]]
 name = "ic-web3-rs"
-version = "0.1.2"
-source = "git+https://github.com/horizonx-tech/ic-web3-rs.git?branch=topic/ic-cdk-0.11#f26b343677d36c81f51b64e4b47e66720eef49f0"
+version = "0.1.3"
+source = "git+https://github.com/horizonx-tech/ic-web3-rs.git?tag=v0.1.3#a24ecd914ea72b708c7003fb4ea0d4116f823d8c"
 dependencies = [
  "arrayvec 0.7.4",
  "candid 0.9.9",
