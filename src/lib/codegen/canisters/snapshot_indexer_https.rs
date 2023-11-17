@@ -28,7 +28,6 @@ pub fn generate_app(manifest: &SnapshotIndexerHTTPSComponentManifest) -> anyhow:
     let url = build_url(&datasource.url, datasource.queries.clone());
 
     let mut options = json_typegen_shared::Options::default();
-    options.deny_unknown_fields = true;
     options.derives = "Debug, Clone, candid::CandidType, candid::Deserialize, serde::Serialize, chainsight_cdk_macros::StableMemoryStorable".into();
     options.import_style = json_typegen_shared::ImportStyle::QualifiedPaths;
     let codes = json_typegen_shared::codegen(struct_name, &url, options)

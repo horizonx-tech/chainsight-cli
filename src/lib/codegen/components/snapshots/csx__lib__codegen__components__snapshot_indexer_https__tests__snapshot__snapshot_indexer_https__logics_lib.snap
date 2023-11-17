@@ -7,13 +7,11 @@ expression: generated_user_impl_template.lib
 // The existence of the SnapshotValue structure must be maintained.
 use candid::{Decode, Encode};
 #[derive(Debug, Clone, candid::CandidType, candid::Deserialize, serde::Serialize, chainsight_cdk_macros::StableMemoryStorable)]
-#[serde(deny_unknown_fields)]
 pub struct SnapshotValue {
     pub dai: Dai,
 }
 
 #[derive(Debug, Clone, candid::CandidType, candid::Deserialize, serde::Serialize, chainsight_cdk_macros::StableMemoryStorable)]
-#[serde(deny_unknown_fields)]
 pub struct Dai {
     pub usd: f64,
 }
