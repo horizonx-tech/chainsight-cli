@@ -25,19 +25,19 @@ version = "0.1.0"
 edition = "2021"
 
 [workspace.dependencies]
-candid = "0.8"
-ic-cdk = "0.8"
-ic-cdk-macros = "0.6.10"
-ic-cdk-timers = "0.1"
+candid = "^0.9.6"
+ic-cdk = "^0.11"
+ic-cdk-macros = "^0.8"
+ic-cdk-timers = "0.5.0"
 ic-stable-structures = "0.5.5"
 serde = "1.0.163"
 serde_bytes = "0.11.12"
 hex = "0.4.3"
 
-ic-web3-rs = {{ version = "0.1.2" }}
-ic-solidity-bindgen = {{ version = "0.1.8" }}
-chainsight-cdk-macros = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "c340e6c3de5ef89686b60db0191879e62b6a6eb3" }}
-chainsight-cdk = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "c340e6c3de5ef89686b60db0191879e62b6a6eb3" }}
+ic-web3-rs = {{ git = "https://github.com/horizonx-tech/ic-web3-rs.git", branch = "topic/ic-cdk-0.11" }}
+ic-solidity-bindgen = {{ git = "https://github.com/horizonx-tech/ic-solidity-bindgen.git", branch = "topic/ic-cdk-0.11" }}
+chainsight-cdk-macros = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "70295dca95cfcefdd73e093fce2ef3f97036d496" }}
+chainsight-cdk = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "70295dca95cfcefdd73e093fce2ef3f97036d496" }}
 "#,
         members
             .iter()
