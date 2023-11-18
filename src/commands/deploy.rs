@@ -70,7 +70,7 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
         log,
         &artifacts_path_str,
         project_manifest.load_component_manifests(&project_path_str)?,
-        opts.component,
+        &opts.component,
         network,
     )?;
     info!(
@@ -114,7 +114,7 @@ fn execute_deployment(
     log: &Logger,
     artifacts_path_str: &str,
     component_manifests: Vec<Box<dyn ComponentManifest>>,
-    component: Option<String>,
+    component: &Option<String>,
     network: Network,
 ) -> anyhow::Result<()> {
     let artifacts_path = Path::new(&artifacts_path_str);
@@ -129,7 +129,7 @@ fn execute_deployment(
         let canister_info = get_canister_info(log, artifacts_path_str, network.clone());
         if let anyhow::Result::Ok(canister_info) = canister_info {
             let target_component_names = if let Some(component) = component {
-                vec![component]
+                vec![component.to_string()]
             } else {
                 canister_names_in_dfx_json(artifacts_path_str)?
             };
@@ -158,6 +158,11 @@ fn execute_deployment(
 
     for manifest in component_manifests.iter() {
         let id = manifest.id().unwrap();
+        if let Some(target) = component {
+            if target != &id {
+                continue;
+            }
+        }
         let builder = DfxArgsBuilder::new(network.clone(), Some(id.clone()));
         let canister_id = exec(builder.generate(vec!["canister", "id"]))?;
         exec(builder.generate(vec![

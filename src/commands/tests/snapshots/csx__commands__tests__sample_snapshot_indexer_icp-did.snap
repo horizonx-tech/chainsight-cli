@@ -15,7 +15,10 @@ type CycleManagements = record {
   indexer : CycleManagement;
 };
 type Env = variant { Production; Test; LocalDevelopment };
-type ICSnapshotIndexerSourceAttrs = record { function_name : text };
+type ICSnapshotIndexerSourceAttrs = record {
+  function_name : text;
+  sources : vec text;
+};
 type InitError = variant {
   InvalidDestination : text;
   InvalidPrincipal : principal;
