@@ -445,7 +445,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "chainsight-cdk"
 version = "0.1.0"
-source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=ad281feb8ecefa28c6c15ecf32d531b755277bda#ad281feb8ecefa28c6c15ecf32d531b755277bda"
+source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=baba30833aa552143d6d9bbcaed9ab6cef27e914#baba30833aa552143d6d9bbcaed9ab6cef27e914"
 dependencies = [
  "anyhow",
  "async-trait",
