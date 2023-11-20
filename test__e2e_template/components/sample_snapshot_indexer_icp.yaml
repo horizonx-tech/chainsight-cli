@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/snapshot_indexer_icp.json
+version: v1
+metadata:
+  label: Sample Snapshot Indexer Icp
+  type: snapshot_indexer_icp
+  description: ''
+  tags:
+  - ERC-20
+  - Ethereum
+  - DAI
+datasource:
+  location:
+    id: sample_snapshot_indexer_evm
+  method:
+    identifier: 'get_last_snapshot : () -> (record { value : text; timestamp : nat64 })'
+    interface: null
+    args: []
+lens_targets: null
+interval: 3600

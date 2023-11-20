@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/horizonx-tech/chainsight-cli/main/resources/schema/snapshot_indexer_evm.json
+version: v1
+metadata:
+  label: Sample Snapshot Indexer Evm
+  type: snapshot_indexer_evm
+  description: ''
+  tags:
+  - ERC-20
+  - Ethereum
+  - DAI
+datasource:
+  location:
+    id: 6b175474e89094c44da98b954eedeac495271d0f
+    args:
+      network_id: 1
+      rpc_url: https://mainnet.infura.io/v3/${INFURA_MAINNET_RPC_URL_KEY}
+  method:
+    identifier: totalSupply():(uint256)
+    interface: ERC20.json
+    args: []
+interval: 3600

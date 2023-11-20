@@ -1,0 +1,58 @@
+type CycleManagement = record {
+  refueling_amount : nat;
+  initial_supply : nat;
+  refueling_threshold : nat;
+};
+type CycleManagements = record {
+  db : CycleManagement;
+  vault_intial_supply : nat;
+  refueling_interval : nat64;
+  proxy : CycleManagement;
+  indexer : CycleManagement;
+};
+type Env = variant { Production; Test; LocalDevelopment };
+type HttpHeader = record { value : text; name : text };
+type HttpResponse = record {
+  status : nat;
+  body : vec nat8;
+  headers : vec HttpHeader;
+};
+type InitError = variant {
+  InvalidDestination : text;
+  InvalidPrincipal : principal;
+  InvalidContent : text;
+  InvalidRequest : text;
+};
+type RelayerWithLensSourceAttrs = record {
+  function_name : text;
+  sources : vec text;
+};
+type Result = variant { Ok; Err : InitError };
+type Result_1 = variant { Ok; Err : text };
+type SourceType = variant { evm; https; chainsight };
+type Sources = record {
+  source : text;
+  interval_sec : opt nat32;
+  attributes : RelayerWithLensSourceAttrs;
+  source_type : SourceType;
+};
+type TransformArgs = record { context : vec nat8; response : HttpResponse };
+type Web3CtxParam = record {
+  env : Env;
+  url : text;
+  from : opt text;
+  chain_id : nat64;
+};
+service : {
+  get_ethereum_address : () -> (text);
+  get_proxy : () -> (principal);
+  get_sources : () -> (vec Sources) query;
+  index : () -> ();
+  init_in : (Env, CycleManagements) -> (Result);
+  set_task : (nat32, nat32) -> ();
+  setup : (text, Web3CtxParam, text) -> (Result_1);
+  transform : (TransformArgs) -> (HttpResponse) query;
+  transform_eip1559_support : (TransformArgs) -> (HttpResponse) query;
+  transform_get_filter_changes : (TransformArgs) -> (HttpResponse) query;
+  transform_send_transaction : (TransformArgs) -> (HttpResponse) query;
+}

@@ -1,7 +1,3 @@
----
-source: src/commands/tests/mod.rs
-expression: "fs::read_to_string(&did_path).unwrap()"
----
 type CycleManagement = record {
   refueling_amount : nat;
   initial_supply : nat;

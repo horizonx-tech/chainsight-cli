@@ -1,0 +1,37 @@
+type CalculateArgs = record { dummy : nat64 };
+type CycleManagement = record {
+  refueling_amount : nat;
+  initial_supply : nat;
+  refueling_threshold : nat;
+};
+type CycleManagements = record {
+  db : CycleManagement;
+  vault_intial_supply : nat;
+  refueling_interval : nat64;
+  proxy : CycleManagement;
+  indexer : CycleManagement;
+};
+type Env = variant { Production; Test; LocalDevelopment };
+type InitError = variant {
+  InvalidDestination : text;
+  InvalidPrincipal : principal;
+  InvalidContent : text;
+  InvalidRequest : text;
+};
+type LensArgs = record { args : CalculateArgs; targets : vec text };
+type LensValue = record { dummy : nat64 };
+type Result = variant { Ok; Err : InitError };
+type SourceType = variant { evm; https; chainsight };
+type Sources = record {
+  source : text;
+  interval_sec : opt nat32;
+  attributes : vec record { text; text };
+  source_type : SourceType;
+};
+service : {
+  get_proxy : () -> (principal);
+  get_result : (LensArgs) -> (LensValue);
+  get_sources : () -> (vec Sources) query;
+  init_in : (Env, CycleManagements) -> (Result);
+  proxy_get_result : (vec nat8) -> (vec nat8);
+}
