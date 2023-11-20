@@ -1,1 +1,0 @@
-use chainsight_cdk_macros :: def_relayer_canister ; def_relayer_canister ! ("{\"common\":{\"canister_name\":\"sample_relayer\"},\"destination\":\"0539a0EF8e5E60891fFf0958A059E049e43020d9\",\"oracle_type\":\"uint256\",\"method_identifier\":\"get_last_snapshot_value : () -> (text)\",\"abi_file_path\":\"__interfaces/Oracle.json\",\"lens_parameter\":null}") ;

@@ -1,1 +1,0 @@
-use chainsight_cdk_macros :: def_snapshot_indexer_evm_canister ; def_snapshot_indexer_evm_canister ! ("{\"common\":{\"canister_name\":\"sample_snapshot_indexer_evm\"},\"method_identifier\":\"totalSupply():(uint256)\",\"method_args\":[],\"abi_file_path\":\"./__interfaces/ERC20.json\"}") ;
