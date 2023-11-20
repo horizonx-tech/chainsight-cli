@@ -1,0 +1,58 @@
+type CycleManagement = record {
+  refueling_amount : nat;
+  initial_supply : nat;
+  refueling_threshold : nat;
+};
+type CycleManagements = record {
+  db : CycleManagement;
+  vault_intial_supply : nat;
+  refueling_interval : nat64;
+  proxy : CycleManagement;
+  indexer : CycleManagement;
+};
+type Env = variant { Production; Test; LocalDevelopment };
+type ICSnapshotIndexerSourceAttrs = record {
+  function_name : text;
+  sources : vec text;
+};
+type InitError = variant {
+  InvalidDestination : text;
+  InvalidPrincipal : principal;
+  InvalidContent : text;
+  InvalidRequest : text;
+};
+type ResponseType = record { value : text; timestamp : nat64 };
+type Result = variant { Ok; Err : InitError };
+type Result_1 = variant { Ok; Err : text };
+type Snapshot = record { value : ResponseType; timestamp : nat64 };
+type SourceType = variant { evm; https; chainsight };
+type Sources = record {
+  source : text;
+  interval_sec : opt nat32;
+  attributes : ICSnapshotIndexerSourceAttrs;
+  source_type : SourceType;
+};
+service : {
+  get_last_snapshot : () -> (Snapshot) query;
+  get_last_snapshot_value : () -> (ResponseType) query;
+  get_proxy : () -> (principal);
+  get_snapshot : (nat64) -> (Snapshot) query;
+  get_snapshot_value : (nat64) -> (ResponseType) query;
+  get_snapshots : () -> (vec Snapshot) query;
+  get_sources : () -> (vec Sources) query;
+  get_top_snapshot_values : (nat64) -> (vec ResponseType) query;
+  get_top_snapshots : (nat64) -> (vec Snapshot) query;
+  index : () -> ();
+  init_in : (Env, CycleManagements) -> (Result);
+  proxy_get_last_snapshot : (vec nat8) -> (vec nat8);
+  proxy_get_last_snapshot_value : (vec nat8) -> (vec nat8);
+  proxy_get_snapshot : (vec nat8) -> (vec nat8);
+  proxy_get_snapshot_value : (vec nat8) -> (vec nat8);
+  proxy_get_snapshots : (vec nat8) -> (vec nat8);
+  proxy_get_top_snapshot_values : (vec nat8) -> (vec nat8);
+  proxy_get_top_snapshots : (vec nat8) -> (vec nat8);
+  proxy_snapshots_len : (vec nat8) -> (vec nat8);
+  set_task : (nat32, nat32) -> ();
+  setup : (text) -> (Result_1);
+  snapshots_len : () -> (nat64) query;
+}

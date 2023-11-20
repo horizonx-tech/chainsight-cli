@@ -1,0 +1,1 @@
+use chainsight_cdk_macros :: def_snapshot_indexer_https_canister ; def_snapshot_indexer_https_canister ! ("{\"common\":{\"canister_name\":\"sample_snapshot_indexer_https\"},\"url\":\"https://api.coingecko.com/api/v3/simple/price\",\"headers\":{\"Content-Type\":\"application/json\"},\"queries\":{\"ids\":\"dai\",\"vs_currencies\":\"usd\"}}") ;
