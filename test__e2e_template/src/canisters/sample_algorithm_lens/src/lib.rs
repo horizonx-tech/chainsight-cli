@@ -1,1 +1,0 @@
-use chainsight_cdk_macros :: def_algorithm_lens_canister ; def_algorithm_lens_canister ! ("{\"common\":{\"canister_name\":\"sample_algorithm_lens\"},\"target_count\":1,\"args_type\":\"CalculateArgs\"}") ;

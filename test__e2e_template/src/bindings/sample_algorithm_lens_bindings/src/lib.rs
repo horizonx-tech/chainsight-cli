@@ -1,1 +1,0 @@
-pub mod sample_snapshot_indexer_icp;
