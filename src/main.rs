@@ -5,8 +5,6 @@ mod config;
 mod lib;
 mod types;
 
-use std::process::exit;
-
 use clap::{ArgAction, Parser};
 use commands::{exec, Command};
 use config::cli_version_str;
@@ -42,6 +40,7 @@ fn main() {
     let res = exec(&env, args.command);
     if let Err(msg) = res {
         error!(&logger, r#"{}"#, msg);
-        exit(1);
+        std::process::exit(1);
     }
+    std::process::exit(0);
 }
