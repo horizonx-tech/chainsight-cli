@@ -13,6 +13,7 @@
       - [3.1.1.1. Property `Chainsight Algorithm Lens specification > datasource > methods > method > id`](#datasource_methods_items_id)
       - [3.1.1.2. Property `Chainsight Algorithm Lens specification > datasource > methods > method > identifier`](#datasource_methods_items_identifier)
       - [3.1.1.3. Property `Chainsight Algorithm Lens specification > datasource > methods > method > candid_file_path`](#datasource_methods_items_candid_file_path)
+      - [3.1.1.4. Property `Chainsight Algorithm Lens specification > datasource > methods > method > func_name_alias`](#datasource_methods_items_func_name_alias)
 - [4. Property `Chainsight Algorithm Lens specification > with_args`](#with_args)
 - [5. Property `Chainsight Algorithm Lens specification > cycles`](#cycles)
   - [5.1. Property `Chainsight Algorithm Lens specification > cycles > refueling_interval`](#cycles_refueling_interval)
@@ -263,6 +264,7 @@
 | + [id](#datasource_methods_items_id )                             | No      | string         | No         | -          | id                |
 | + [identifier](#datasource_methods_items_identifier )             | No      | string         | No         | -          | identifier        |
 | - [candid_file_path](#datasource_methods_items_candid_file_path ) | No      | string or null | No         | -          | candid_file_path  |
+| - [func_name_alias](#datasource_methods_items_func_name_alias )   | No      | string or null | No         | -          | func_name_alias   |
 
 ##### <a name="datasource_methods_items_id"></a>3.1.1.1. Property `Chainsight Algorithm Lens specification > datasource > methods > method > id`
 
@@ -321,6 +323,23 @@
 
 ```json
 "artifacts/chainlink/src/chainlink.did"
+```
+
+##### <a name="datasource_methods_items_func_name_alias"></a>3.1.1.4. Property `Chainsight Algorithm Lens specification > datasource > methods > method > func_name_alias`
+
+**Title:** func_name_alias
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `string or null` |
+| **Required** | No               |
+
+**Description:** Sets alias for function names that users can use to write arbitrary logic in logics.
+
+**Example:** 
+
+```json
+"chainlink_eth"
 ```
 
 ## <a name="with_args"></a>4. Property `Chainsight Algorithm Lens specification > with_args`
@@ -592,4 +611,4 @@
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-11-11 at 15:01:38 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-11-22 at 06:27:53 +0000
