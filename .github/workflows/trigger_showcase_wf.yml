@@ -1,9 +1,9 @@
 name: Trigger Workflow of chainsight-showcase
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
-      - topic/trigger-showcase-wf
 jobs:
   trigger_showcase_wf:
     runs-on: ubuntu-latest
