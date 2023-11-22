@@ -12,7 +12,7 @@ jobs:
         with:
           owner: horizonx-tech
           repo: chainsight-showcase
-          gtihub_token: ${{ secrets.PAT }}
+          github_token: ${{ secrets.PAT }}
           workflow_file_name: check-by-cli.yml
           client_payload: '{"cli_repo_hash": "${{ github.sha }}", "dfx_version": "latest"}'
           wait_workflow: false
