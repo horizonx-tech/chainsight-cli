@@ -40,5 +40,7 @@ fn main() {
     let res = exec(&env, args.command);
     if let Err(msg) = res {
         error!(&logger, r#"{}"#, msg);
+        std::process::exit(1);
     }
+    std::process::exit(0);
 }
