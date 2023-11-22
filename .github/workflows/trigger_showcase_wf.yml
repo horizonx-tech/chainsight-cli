@@ -1,0 +1,18 @@
+name: Trigger Workflow of chainsight-showcase
+on:
+  push:
+    branches:
+      - main
+      - topic/trigger-showcase-wf
+jobs:
+  trigger_showcase_wf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: convictional/trigger-workflow-and-wait@v1.6.5
+        with:
+          owner: horizonx-tech
+          repo: chainsight-showcase
+          gtihub_token: ${{ secrets.PAT }}
+          workflow_file_name: check-by-cli.yml
+          client_payload: '{"cli_repo_hash": "${{ github.sha }}", "dfx_version": "latest"}'
+          wait_workflow: false
