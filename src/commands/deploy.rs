@@ -8,6 +8,7 @@ use std::{
 };
 
 use anyhow::{bail, Ok};
+use chainsight_cdk::core::Env;
 use clap::Parser;
 use slog::{debug, info, Logger};
 
@@ -156,6 +157,10 @@ fn execute_deployment(
     exec(args_builder.generate(vec!["build"]))?;
     exec(args_builder.generate(vec!["canister", "install"]))?;
 
+    let env = match network {
+        Network::Local => Env::LocalDevelopment,
+        Network::IC => Env::Production,
+    };
     for manifest in component_manifests.iter() {
         let id = manifest.id().unwrap();
         if let Some(target) = component {
@@ -164,12 +169,12 @@ fn execute_deployment(
             }
         }
         let builder = DfxArgsBuilder::new(network.clone(), Some(id.clone()));
-        let canister_id = exec(builder.generate(vec!["canister", "id"]))?;
+
         exec(builder.generate(vec![
             "canister",
             "update-settings",
             "--add-controller",
-            &canister_id.replace('\n', ""),
+            &env.initializer().to_string(),
         ]))?;
     }
 
