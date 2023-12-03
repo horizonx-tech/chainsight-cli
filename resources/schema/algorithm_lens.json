@@ -108,6 +108,13 @@
                 "description": "path to the candid file of the canister to call",
                 "examples": ["artifacts/chainlink/src/chainlink.did"],
                 "type": ["string", "null"]
+              },
+              "func_name_alias": {
+                "$id": "#/properties/datasource/properties/methods/items/properties/func_name_alias",
+                "title": "func_name_alias",
+                "description": "Sets alias for function names that users can use to write arbitrary logic in logics.",
+                "examples": ["chainlink_eth"],
+                "type": ["string", "null"]
               }
             }
           }

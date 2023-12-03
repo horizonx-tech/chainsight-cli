@@ -10,7 +10,7 @@ use crate::{
         codegen::components::{
             algorithm_lens::AlgorithmLensComponentManifest,
             relayer::RelayerComponentManifest,
-            utils::{generate_method_identifier, is_lens_with_args},
+            utils::{generate_method_identifier, get_did_by_component_id, is_lens_with_args},
         },
         utils::paths::bindings_name,
     },
@@ -33,7 +33,12 @@ pub fn generate_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<Str
 
 pub fn generate_app(manifest: &RelayerComponentManifest) -> anyhow::Result<String> {
     let method = manifest.datasource.method.clone();
-    let method_identifier = generate_method_identifier(&method.identifier, &method.interface)?;
+    let interface = if method.interface.is_some() {
+        method.interface.clone()
+    } else {
+        get_did_by_component_id(&manifest.datasource.location.id)
+    };
+    let method_identifier = generate_method_identifier(&method.identifier, &interface)?;
 
     let call_args_idents = if manifest.lens_targets.is_some() {
         if is_lens_with_args(method_identifier) {

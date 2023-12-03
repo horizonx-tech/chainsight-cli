@@ -76,7 +76,9 @@ impl From<RelayerComponentManifest> for chainsight_cdk::config::components::Rela
         let id = val.id();
         let destination_type = val.destination_type();
         let RelayerComponentManifest {
-            datasource: DatasourceForCanister { method, .. },
+            datasource: DatasourceForCanister {
+                method, location, ..
+            },
             destination,
             ..
         } = val;
@@ -90,7 +92,12 @@ impl From<RelayerComponentManifest> for chainsight_cdk::config::components::Rela
         };
 
         let lens_parameter = if val.lens_targets.is_some() {
-            let identifier = generate_method_identifier(&method.identifier, &method.interface)
+            let interface = if method.interface.is_some() {
+                method.interface.clone()
+            } else {
+                get_did_by_component_id(&location.id)
+            };
+            let identifier = generate_method_identifier(&method.identifier, &interface)
                 .unwrap_or_else(|e| panic!("{}", e.to_string()));
             let with_args = is_lens_with_args(identifier);
             Some(LensParameter { with_args })

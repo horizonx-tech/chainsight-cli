@@ -32,6 +32,7 @@ ic-cdk-timers = "0.5.0"
 ic-stable-structures = "0.5.5"
 serde = "1.0.163"
 serde_bytes = "0.11.12"
+serde_json = "1.0.108"
 hex = "0.4.3"
 
 ic-web3-rs = {{ git = "https://github.com/horizonx-tech/ic-web3-rs.git", tag = "v0.1.3" }}
@@ -69,6 +70,7 @@ ic-cdk-timers.workspace = true
 ic-stable-structures.workspace = true
 serde.workspace = true
 serde_bytes.workspace = true
+serde_json.workspace = true
 hex.workspace = true
 
 ic-web3-rs.workspace = true
