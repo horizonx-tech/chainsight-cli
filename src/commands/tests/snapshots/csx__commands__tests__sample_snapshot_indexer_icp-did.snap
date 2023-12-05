@@ -37,6 +37,7 @@ type Sources = record {
   source_type : SourceType;
 };
 service : {
+  call_args : () -> (null) query;
   get_last_snapshot : () -> (Snapshot) query;
   get_last_snapshot_value : () -> (ResponseType) query;
   get_proxy : () -> (principal);
