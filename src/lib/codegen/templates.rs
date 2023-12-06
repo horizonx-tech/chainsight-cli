@@ -246,7 +246,9 @@ src/accessors
 src/bindings
 src/canisters
 src/target
-artifacts
+/artifacts/*
+!/artifacts/dfx.json
+!/artifacts/canister_ids.json
 .env
 "#
     .to_string()
