@@ -445,7 +445,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "chainsight-cdk"
 version = "0.1.0"
-source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=cda59f853562bb0075b10818fa219f10bed33400#cda59f853562bb0075b10818fa219f10bed33400"
+source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=f56660a24ecfc8b60cbc34005aac5415f08cd07e#f56660a24ecfc8b60cbc34005aac5415f08cd07e"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1709,7 +1709,8 @@ dependencies = [
 [[package]]
 name = "ic-solidity-bindgen"
 version = "0.1.9"
-source = "git+https://github.com/horizonx-tech/ic-solidity-bindgen.git?tag=v0.1.9#27c2765680ffcf9d5cc9ed27d31fd7eaa47916df"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8a6c744a9b30e73b1524e1918220304a192f5aaf3ff51245e15840f5fe853d70"
 dependencies = [
  "async-trait",
  "derive_builder",
@@ -1723,7 +1724,8 @@ dependencies = [
 [[package]]
 name = "ic-solidity-bindgen-macros"
 version = "0.1.9"
-source = "git+https://github.com/horizonx-tech/ic-solidity-bindgen.git?tag=v0.1.9#27c2765680ffcf9d5cc9ed27d31fd7eaa47916df"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "48309f2d8da903805c45757bef9ab1e977d515e194c99e41ee4a5f5e81816013"
 dependencies = [
  "Inflector",
  "ic-web3-rs",
@@ -1786,7 +1788,8 @@ dependencies = [
 [[package]]
 name = "ic-web3-rs"
 version = "0.1.3"
-source = "git+https://github.com/horizonx-tech/ic-web3-rs.git?tag=v0.1.3#bcd148f68f27eb0180620fb3080705cb962dade2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1913731fd8edf367a99acb98cb09b36b65f2bd7bcd3e20e647cc3132da3edf3b"
 dependencies = [
  "arrayvec 0.7.4",
  "candid 0.9.9",
