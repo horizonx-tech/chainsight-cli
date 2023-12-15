@@ -69,27 +69,49 @@ impl RelayerComponentManifest {
             cycles: None,
         }
     }
+
+    fn abi_file_path(&self) -> String {
+        match self.destination_type() {
+            Some(DestinationType::Custom) => {
+                format!(
+                    "__interfaces/{}",
+                    self.destination
+                        .interface
+                        .clone()
+                        .expect("missing field: interface is required for custom oracle")
+                )
+            }
+            Some(_) => "__interfaces/Oracle.json".to_string(),
+            _ => panic!("missing field: destination_type is required"),
+        }
+    }
+
+    fn relay_method_name(&self) -> String {
+        match self.destination_type() {
+            Some(DestinationType::Custom) => self
+                .destination
+                .method_name
+                .clone()
+                .expect("missing field: method_name is required for custom oracle"),
+            Some(_) => "update_state".to_string(),
+            _ => panic!("missing field: destination_type is required"),
+        }
+    }
 }
 
 impl From<RelayerComponentManifest> for chainsight_cdk::config::components::RelayerConfig {
     fn from(val: RelayerComponentManifest) -> Self {
         let id = val.id();
-        let destination_type = val.destination_type();
         let RelayerComponentManifest {
-            datasource: DatasourceForCanister {
-                method, location, ..
-            },
-            destination,
+            datasource:
+                DatasourceForCanister {
+                    ref method,
+                    ref location,
+                    ..
+                },
+            ref destination,
             ..
         } = val;
-
-        let oracle_type = match destination_type {
-            Some(DestinationType::Uint256) => "uint256".to_string(),
-            Some(DestinationType::Uint128) => "uint128".to_string(),
-            Some(DestinationType::Uint64) => "uint64".to_string(),
-            Some(DestinationType::String) => "string".to_string(),
-            _ => panic!("Invalid oracle type"),
-        };
 
         let lens_parameter = if val.lens_targets.is_some() {
             let interface = if method.interface.is_some() {
@@ -109,11 +131,11 @@ impl From<RelayerComponentManifest> for chainsight_cdk::config::components::Rela
             common: CommonConfig {
                 canister_name: id.clone().unwrap(),
             },
-            destination: destination.oracle_address,
-            method_identifier: method.identifier,
-            oracle_type,
-            abi_file_path: "__interfaces/Oracle.json".to_string(),
+            destination: destination.oracle_address.clone(),
+            method_identifier: method.identifier.clone(),
+            abi_file_path: val.abi_file_path(),
             lens_parameter,
+            method_name: val.relay_method_name(),
         }
     }
 }
@@ -270,6 +292,8 @@ pub struct DestinationField {
     pub type_: DestinationType,
     pub oracle_address: String,
     pub rpc_url: String,
+    pub method_name: Option<String>,
+    pub interface: Option<String>,
 }
 
 impl DestinationField {
@@ -284,6 +308,8 @@ impl DestinationField {
             type_: destination_type,
             oracle_address,
             rpc_url,
+            method_name: None,
+            interface: None,
         }
     }
 }
@@ -342,6 +368,8 @@ mod tests {
                 oracle_address: "0x0539a0EF8e5E60891fFf0958A059E049e43020d9".to_string(),
                 rpc_url: "https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL_KEY}"
                     .to_string(),
+                method_name: None,
+                interface: None,
             },
             lens_targets: None,
             interval: 3600,
@@ -407,6 +435,8 @@ interval: 3600
                     oracle_address: "0x0539a0EF8e5E60891fFf0958A059E049e43020d9".to_string(),
                     rpc_url: "https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL_KEY}"
                         .to_string(),
+                    method_name: None,
+                    interface: None,
                 },
                 lens_targets: None,
                 interval: 3600,
