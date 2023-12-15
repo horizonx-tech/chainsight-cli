@@ -20,21 +20,39 @@ use super::common::{
 pub struct SnapshotIndexerHTTPSDataSource {
     pub url: String,
     pub headers: BTreeMap<String, String>,
-    pub queries: BTreeMap<String, String>,
+    pub queries: SnapshotIndexerHTTPSDataSourceQueries,
 }
 impl Default for SnapshotIndexerHTTPSDataSource {
     fn default() -> Self {
         Self {
             url: "https://api.coingecko.com/api/v3/simple/price".to_string(),
-            headers: vec![("Content-Type".to_string(), "application/json".to_string())]
-                .into_iter()
-                .collect(),
-            queries: vec![
+            headers: BTreeMap::from([("Content-Type".to_string(), "application/json".to_string())]),
+            queries: SnapshotIndexerHTTPSDataSourceQueries::Static(BTreeMap::from([
                 ("ids".to_string(), "dai".to_string()),
                 ("vs_currencies".to_string(), "usd".to_string()),
-            ]
-            .into_iter()
-            .collect(),
+            ])),
+        }
+    }
+}
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+#[serde(tag = "type", content = "value")]
+pub enum SnapshotIndexerHTTPSDataSourceQueries {
+    #[serde(rename = "static")]
+    Static(BTreeMap<String, String>),
+    #[serde(rename = "dynamic")]
+    Dynamic,
+}
+impl From<SnapshotIndexerHTTPSDataSourceQueries> for SnapshotIndexerHTTPSConfigQueries {
+    fn from(val: SnapshotIndexerHTTPSDataSourceQueries) -> Self {
+        match val {
+            SnapshotIndexerHTTPSDataSourceQueries::Static(queries) => {
+                SnapshotIndexerHTTPSConfigQueries::Const(queries)
+            }
+            SnapshotIndexerHTTPSDataSourceQueries::Dynamic => {
+                SnapshotIndexerHTTPSConfigQueries::Func(
+                    SnapshotIndexerHTTPSComponentManifest::QUERIES_FUNC_NAME.to_string(),
+                )
+            }
         }
     }
 }
@@ -52,6 +70,8 @@ pub struct SnapshotIndexerHTTPSComponentManifest {
 }
 
 impl SnapshotIndexerHTTPSComponentManifest {
+    pub const QUERIES_FUNC_NAME: &'static str = "get_query_parameters";
+
     pub fn new(
         id: &str,
         label: &str,
@@ -90,7 +110,7 @@ impl From<SnapshotIndexerHTTPSComponentManifest>
             },
             url: datasource.url,
             headers: datasource.headers,
-            queries: SnapshotIndexerHTTPSConfigQueries::Const(datasource.queries),
+            queries: datasource.queries.into(),
         }
     }
 }
@@ -181,9 +201,7 @@ mod tests {
 
     use super::*;
 
-    #[test]
-    fn test_to_manifest_struct() {
-        let yaml = r#"
+    const MANIFEST_YAML_STATIC_QUERIES: &str = r#"
 version: v1
 metadata:
     label: sample_snapshot_indexer_https
@@ -195,14 +213,34 @@ metadata:
     - USD
 datasource:
     url: https://api.coingecko.com/api/v3/simple/price
-    headers: 
+    headers:
         content-type: application/json
     queries:
-        ids: dai
-        vs_currencies: usd
+        type: static
+        value:
+            ids: dai
+            vs_currencies: usd
 interval: 3600
-        "#;
+    "#;
 
+    const MANIFEST_YAML_DYNAMIC_QUERIES: &str = r#"
+version: v1
+metadata:
+    label: sample_snapshot_indexer_https
+    type: snapshot_indexer_https
+    description: Description
+datasource:
+    url: https://api.coingecko.com/api/v3/simple/price
+    headers:
+        content-type: application/json
+    queries:
+        type: dynamic
+interval: 3600
+    "#;
+
+    #[test]
+    fn test_to_manifest_struct() {
+        let yaml = MANIFEST_YAML_STATIC_QUERIES;
         let result = serde_yaml::from_str::<SnapshotIndexerHTTPSComponentManifest>(yaml);
         assert!(result.is_ok());
         let component = result.unwrap();
@@ -226,22 +264,24 @@ interval: 3600
                     headers: vec![("content-type".to_string(), "application/json".to_string())]
                         .into_iter()
                         .collect(),
-                    queries: vec![
+                    queries: SnapshotIndexerHTTPSDataSourceQueries::Static(BTreeMap::from([
                         ("ids".to_string(), "dai".to_string()),
-                        ("vs_currencies".to_string(), "usd".to_string())
-                    ]
-                    .into_iter()
-                    .collect(),
+                        ("vs_currencies".to_string(), "usd".to_string()),
+                    ])),
                 },
                 interval: 3600,
                 cycles: None,
             }
         );
+    }
+
+    #[test]
+    fn test_validate_by_schema() {
         let schema = serde_json::from_str(include_str!(
             "../../../../resources/schema/snapshot_indexer_https.json"
         ))
         .expect("Invalid json");
-        let instance = serde_yaml::from_str(yaml).expect("Invalid yaml");
+        let instance = serde_yaml::from_str(MANIFEST_YAML_STATIC_QUERIES).expect("Invalid yaml");
         let compiled = JSONSchema::compile(&schema).expect("Invalid schema");
         let result = compiled.validate(&instance);
         assert!(result.is_ok());
@@ -249,36 +289,84 @@ interval: 3600
 
     #[test]
     fn test_snapshot_outputs() {
-        let manifest = SnapshotIndexerHTTPSComponentManifest {
-            id: Some("sample_snapshot_indexer_https".to_owned()),
-            version: "v1".to_owned(),
-            metadata: ComponentMetadata {
-                label: "Sample Snapshot Indexer Https".to_owned(),
-                type_: ComponentType::SnapshotIndexerHTTPS,
-                description: "Description".to_string(),
-                tags: Some(vec![
-                    "coingecko".to_string(),
-                    "DAI".to_string(),
-                    "USD".to_string(),
-                ]),
-            },
-            datasource: SnapshotIndexerHTTPSDataSource {
-                url: "https://api.coingecko.com/api/v3/simple/price".to_string(),
-                headers: vec![("content-type".to_string(), "application/json".to_string())]
-                    .into_iter()
-                    .collect(),
-                queries: vec![
-                    ("ids".to_string(), "dai".to_string()),
-                    ("vs_currencies".to_string(), "usd".to_string()),
-                ]
-                .into_iter()
-                .collect(),
-            },
-            interval: 3600,
-            cycles: None,
-        };
+        let mut manifest = serde_yaml::from_str::<SnapshotIndexerHTTPSComponentManifest>(
+            MANIFEST_YAML_STATIC_QUERIES,
+        )
+        .unwrap();
+        manifest.id = Some("sample_snapshot_indexer_https".to_string());
 
         let snap_prefix = "snapshot__snapshot_indexer_https";
+        let generated_codes = manifest.generate_codes(Option::None).unwrap();
+        assert_display_snapshot!(
+            format!("{}__canisters_lib", &snap_prefix),
+            SrcString::from(generated_codes.lib)
+        );
+        assert!(generated_codes.types.is_none());
+
+        let generated_user_impl_template = manifest.generate_user_impl_template().unwrap();
+        assert_display_snapshot!(
+            format!("{}__logics_lib", &snap_prefix),
+            generated_user_impl_template.lib
+        );
+        assert!(generated_user_impl_template.types.is_none());
+
+        assert_display_snapshot!(
+            format!("{}__scripts", &snap_prefix),
+            &manifest.generate_scripts(Network::Local).unwrap()
+        );
+    }
+
+    #[test]
+    fn test_to_manifest_struct_dynamic_queries() {
+        let yaml = MANIFEST_YAML_DYNAMIC_QUERIES;
+        let result = serde_yaml::from_str::<SnapshotIndexerHTTPSComponentManifest>(yaml);
+        assert!(result.is_ok());
+        let component = result.unwrap();
+        assert_eq!(
+            component,
+            SnapshotIndexerHTTPSComponentManifest {
+                id: None,
+                version: "v1".to_owned(),
+                metadata: ComponentMetadata {
+                    label: "sample_snapshot_indexer_https".to_owned(),
+                    type_: ComponentType::SnapshotIndexerHTTPS,
+                    description: "Description".to_string(),
+                    tags: None
+                },
+                datasource: SnapshotIndexerHTTPSDataSource {
+                    url: "https://api.coingecko.com/api/v3/simple/price".to_string(),
+                    headers: vec![("content-type".to_string(), "application/json".to_string())]
+                        .into_iter()
+                        .collect(),
+                    queries: SnapshotIndexerHTTPSDataSourceQueries::Dynamic,
+                },
+                interval: 3600,
+                cycles: None,
+            }
+        );
+    }
+
+    #[test]
+    fn test_validate_by_schema_dynamic_queries() {
+        let schema = serde_json::from_str(include_str!(
+            "../../../../resources/schema/snapshot_indexer_https.json"
+        ))
+        .expect("Invalid json");
+        let instance = serde_yaml::from_str(MANIFEST_YAML_DYNAMIC_QUERIES).expect("Invalid yaml");
+        let compiled = JSONSchema::compile(&schema).expect("Invalid schema");
+        let result = compiled.validate(&instance);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_snapshot_outputs_dynamic_queries() {
+        let mut manifest = serde_yaml::from_str::<SnapshotIndexerHTTPSComponentManifest>(
+            MANIFEST_YAML_DYNAMIC_QUERIES,
+        )
+        .unwrap();
+        manifest.id = Some("sample_snapshot_indexer_https".to_string());
+
+        let snap_prefix = "snapshot__snapshot_indexer_https_dynamic_queries";
         let generated_codes = manifest.generate_codes(Option::None).unwrap();
         assert_display_snapshot!(
             format!("{}__canisters_lib", &snap_prefix),

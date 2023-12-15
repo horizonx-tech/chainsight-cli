@@ -1,0 +1,14 @@
+---
+source: src/lib/codegen/components/snapshot_indexer_https.rs
+expression: "SrcString::from(generated_codes.lib)"
+---
+use chainsight_cdk_macros::def_snapshot_indexer_https_canister;
+def_snapshot_indexer_https_canister!("{
+\"common\":{
+\"canister_name\":\"sample_snapshot_indexer_https\"
+}, \"url\":\"https://api.coingecko.com/api/v3/simple/price\", \"headers\":{
+\"content-type\":\"application/json\"
+}, \"queries\":{
+\"Func\":\"get_query_parameters\"
+}}");
+
