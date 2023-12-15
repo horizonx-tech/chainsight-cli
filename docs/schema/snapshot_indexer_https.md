@@ -12,6 +12,8 @@
   - [3.2. Property `Chainsight HTTPS Snapshot Indexer specification > datasource > headers`](#datasource_headers)
     - [3.2.1. Pattern Property `Chainsight HTTPS Snapshot Indexer specification > datasource > headers > ^[a-zA-Z0-9_\-]+$`](#datasource_headers_pattern1)
   - [3.3. Property `Chainsight HTTPS Snapshot Indexer specification > datasource > queries`](#datasource_queries)
+    - [3.3.1. Property `Chainsight HTTPS Snapshot Indexer specification > datasource > queries > type`](#datasource_queries_type)
+    - [3.3.2. Property `Chainsight HTTPS Snapshot Indexer specification > datasource > queries > value`](#datasource_queries_value)
 - [4. Property `Chainsight HTTPS Snapshot Indexer specification > interval`](#interval)
 - [5. Property `Chainsight HTTPS Snapshot Indexer specification > cycles`](#cycles)
   - [5.1. Property `Chainsight HTTPS Snapshot Indexer specification > cycles > refueling_interval`](#cycles_refueling_interval)
@@ -277,13 +279,39 @@ must respect the following conditions
 
 **Title:** query parameters for the datasource
 
+|                           |                                                         |
+| ------------------------- | ------------------------------------------------------- |
+| **Type**                  | `object`                                                |
+| **Required**              | No                                                      |
+| **Additional properties** | [[Not allowed]](# "Additional Properties not allowed.") |
+
+| Property                              | Pattern | Type   | Deprecated | Definition | Title/Description                |
+| ------------------------------------- | ------- | ------ | ---------- | ---------- | -------------------------------- |
+| + [type](#datasource_queries_type )   | No      | string | No         | -          | queries type                     |
+| - [value](#datasource_queries_value ) | No      | object | No         | -          | query parameter names and values |
+
+#### <a name="datasource_queries_type"></a>3.3.1. Property `Chainsight HTTPS Snapshot Indexer specification > datasource > queries > type`
+
+**Title:** queries type
+
+|              |          |
+| ------------ | -------- |
+| **Type**     | `string` |
+| **Required** | Yes      |
+
+| Restrictions                      |                                                                                            |
+| --------------------------------- | ------------------------------------------------------------------------------------------ |
+| **Must match regular expression** | ```^(static\|dynamic)$``` [Test](https://regex101.com/?regex=%5E%28static%7Cdynamic%29%24) |
+
+#### <a name="datasource_queries_value"></a>3.3.2. Property `Chainsight HTTPS Snapshot Indexer specification > datasource > queries > value`
+
+**Title:** query parameter names and values
+
 |                           |                                                                           |
 | ------------------------- | ------------------------------------------------------------------------- |
 | **Type**                  | `object`                                                                  |
 | **Required**              | No                                                                        |
 | **Additional properties** | [[Any type: allowed]](# "Additional Properties of any type are allowed.") |
-
-**Description:** query parameter names and values for the datasource
 
 **Examples:** 
 
@@ -586,4 +614,4 @@ must respect the following conditions
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-12-03 at 14:09:51 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-12-15 at 10:02:37 +0000
