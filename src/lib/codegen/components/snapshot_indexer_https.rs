@@ -1,6 +1,9 @@
 use std::collections::{BTreeMap, HashMap};
 
-use chainsight_cdk::{config::components::CommonConfig, initializer::CycleManagements};
+use chainsight_cdk::{
+    config::components::{CommonConfig, SnapshotIndexerHTTPSConfigQueries},
+    initializer::CycleManagements,
+};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -90,7 +93,9 @@ impl From<SnapshotIndexerHTTPSComponentManifest>
             },
             url: datasource.url,
             headers: BTreeMap::from_iter(datasource.headers),
-            queries: BTreeMap::from_iter(datasource.queries),
+            queries: SnapshotIndexerHTTPSConfigQueries::Const(BTreeMap::from_iter(
+                datasource.queries,
+            )),
         }
     }
 }
