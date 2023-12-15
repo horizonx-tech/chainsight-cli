@@ -95,23 +95,37 @@
         },
         "queries": {
           "$id": "#/properties/datasource/properties/queries",
-          "type": "object",
           "title": "query parameters for the datasource",
-          "description": "query parameter names and values for the datasource",
-          "examples": [
-            {
-              "id": 2112
+          "type": "object",
+          "required": ["type"],
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "$id": "#/properties/datasource/properties/queries/items/properties/type",
+              "type": "string",
+              "title": "queries type",
+              "pattern": "^(static|dynamic)$"
             },
-            {
-              "vs_currencies": "usd"
-            },
-            {
-              "include_24hr_vol": true
-            },
-            {
-              "precision": 18
+            "value": {
+              "$id": "#/properties/datasource/properties/queries/items/properties/value",
+              "type": "object",
+              "title": "query parameter names and values",
+              "examples": [
+                {
+                  "id": 2112
+                },
+                {
+                  "vs_currencies": "usd"
+                },
+                {
+                  "include_24hr_vol": true
+                },
+                {
+                  "precision": 18
+                }
+              ]
             }
-          ]
+          }
         }
       }
     },

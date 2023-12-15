@@ -1,0 +1,15 @@
+---
+source: src/lib/codegen/components/snapshot_indexer_https.rs
+expression: generated_user_impl_template.lib
+---
+// Auto-generated code from manifest.
+// You can implement the function to get the query parameters.
+use std :: collections :: BTreeMap ; pub fn get_query_parameters () -> BTreeMap < String , String > { BTreeMap :: from ([("param1" . to_string () , "value1" . to_string ()) , ("param2" . to_string () , "value2" . to_string ())]) }
+// You update the structure as needed.
+// The existence of the SnapshotValue structure must be maintained.
+use candid::{Decode, Encode};
+#[derive(Debug, Clone, candid::CandidType, candid::Deserialize, serde::Serialize, chainsight_cdk_macros::StableMemoryStorable)]
+pub struct SnapshotValue {
+    pub error: String,
+}
+

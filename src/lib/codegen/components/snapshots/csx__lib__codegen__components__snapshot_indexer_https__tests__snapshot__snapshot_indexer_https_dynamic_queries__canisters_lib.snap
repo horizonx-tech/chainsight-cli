@@ -9,8 +9,6 @@ def_snapshot_indexer_https_canister!("{
 }, \"url\":\"https://api.coingecko.com/api/v3/simple/price\", \"headers\":{
 \"content-type\":\"application/json\"
 }, \"queries\":{
-\"Const\":{
-\"ids\":\"dai\", \"vs_currencies\":\"usd\"
-}}
-}");
+\"Func\":\"get_query_parameters\"
+}}");
 
