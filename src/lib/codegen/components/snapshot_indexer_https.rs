@@ -9,7 +9,6 @@ use serde::{Deserialize, Serialize};
 use crate::{
     lib::codegen::{canisters, components::common::SourceType, scripts},
     types::{ComponentType, Network},
-    utils::serializer::ordered_map,
 };
 
 use super::common::{
@@ -20,10 +19,8 @@ use super::common::{
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct SnapshotIndexerHTTPSDataSource {
     pub url: String,
-    #[serde(serialize_with = "ordered_map")]
-    pub headers: HashMap<String, String>,
-    #[serde(serialize_with = "ordered_map")]
-    pub queries: HashMap<String, String>,
+    pub headers: BTreeMap<String, String>,
+    pub queries: BTreeMap<String, String>,
 }
 impl Default for SnapshotIndexerHTTPSDataSource {
     fn default() -> Self {
@@ -92,10 +89,8 @@ impl From<SnapshotIndexerHTTPSComponentManifest>
                 canister_name: id.clone().unwrap(),
             },
             url: datasource.url,
-            headers: BTreeMap::from_iter(datasource.headers),
-            queries: SnapshotIndexerHTTPSConfigQueries::Const(BTreeMap::from_iter(
-                datasource.queries,
-            )),
+            headers: datasource.headers,
+            queries: SnapshotIndexerHTTPSConfigQueries::Const(datasource.queries),
         }
     }
 }

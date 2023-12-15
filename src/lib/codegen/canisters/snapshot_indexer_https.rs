@@ -25,7 +25,10 @@ pub fn generate_codes(manifest: &SnapshotIndexerHTTPSComponentManifest) -> anyho
 pub fn generate_app(manifest: &SnapshotIndexerHTTPSComponentManifest) -> anyhow::Result<String> {
     let SnapshotIndexerHTTPSComponentManifest { datasource, .. } = manifest;
     let struct_name = "SnapshotValue";
-    let url = build_url(&datasource.url, datasource.queries.clone());
+    let url = build_url(
+        &datasource.url,
+        datasource.queries.clone().into_iter().collect(),
+    );
 
     let mut options = json_typegen_shared::Options::default();
     options.derives = "Debug, Clone, candid::CandidType, candid::Deserialize, serde::Serialize, chainsight_cdk_macros::StableMemoryStorable".into();
