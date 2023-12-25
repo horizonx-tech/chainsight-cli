@@ -196,7 +196,10 @@ impl ComponentManifest for RelayerComponentManifest {
     }
 
     fn required_interface(&self) -> Option<String> {
-        None
+        match self.destination_type() {
+            Some(DestinationType::Custom) => self.destination.interface.clone(),
+            _ => None,
+        }
     }
 
     fn get_sources(&self) -> Sources {
