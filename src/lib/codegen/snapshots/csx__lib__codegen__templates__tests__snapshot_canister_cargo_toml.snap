@@ -1,6 +1,6 @@
 ---
 source: src/lib/codegen/templates.rs
-expression: canister_project_cargo_toml(PROJECT_NAME)
+expression: "canister_project_cargo_toml(PROJECT_NAME, false)"
 ---
 [package]
 name = "sample_canister"
@@ -25,5 +25,8 @@ ic-solidity-bindgen.workspace = true
 chainsight-cdk-macros.workspace = true
 chainsight-cdk.workspace = true
 
+ciborium = "0.2.1"
+
 sample = { path = "../../logics/sample" }
+
 
