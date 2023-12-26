@@ -3,13 +3,49 @@ source: src/commands/tests/mod.rs
 expression: "fs::read_to_string(&did_path).unwrap()"
 ---
 type Account = record { address : text };
+type CycleManagement = record {
+  refueling_amount : nat;
+  initial_supply : nat;
+  refueling_threshold : nat;
+};
+type CycleManagements = record {
+  db : CycleManagement;
+  vault_intial_supply : nat;
+  refueling_interval : nat64;
+  proxy : CycleManagement;
+  indexer : CycleManagement;
+};
+type Env = variant { Production; Test; LocalDevelopment };
+type IndexingConfig = record { start_from : nat64; chunk_size : opt nat64 };
+type InitError = variant {
+  InvalidDestination : text;
+  InvalidPrincipal : principal;
+  InvalidContent : text;
+  InvalidRequest : text;
+};
+type Result = variant { Ok; Err : InitError };
+type Result_1 = variant { Ok; Err : text };
+type SourceType = variant { evm; https; chainsight };
+type Sources = record {
+  source : text;
+  interval_sec : opt nat32;
+  attributes : vec record { text; text };
+  source_type : SourceType;
+};
 service : {
   between_account : (record { text; text }) -> (
       vec record { text; Account },
     ) query;
+  event_source : () -> (principal) query;
   get_account : (text) -> (opt Account) query;
+  get_proxy : () -> (principal);
+  get_sources : () -> (vec Sources) query;
+  index : () -> ();
+  init_in : (Env, CycleManagements) -> (Result);
   last_account : (nat64) -> (vec record { text; Account }) query;
   proxy_between_account : (vec nat8) -> (vec nat8);
   proxy_get_account : (vec nat8) -> (vec nat8);
   proxy_last_account : (vec nat8) -> (vec nat8);
+  set_task : (nat32, nat32) -> ();
+  setup : (text, IndexingConfig) -> (Result_1);
 }
