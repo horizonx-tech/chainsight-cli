@@ -1,4 +1,4 @@
-use std::{path::Path, process::Command};
+use std::path::Path;
 
 use anyhow::{bail, Context};
 use candid::{Decode, Encode, Principal};
@@ -15,16 +15,15 @@ use crate::{
 };
 
 #[derive(Debug, Parser)]
-#[command(name = "remove")]
+#[command(name = "delete")]
 /// Delete your Chainsight component. This command deletes the component with sidecars and allows you to recover the remaining cycles.
 pub struct DeleteOpts {
-    /// Specify the path of the project to be removed.
+    /// Specify the path of the project to be deleted.
     /// If not specified, the current directory is targeted.
     #[arg(long, short = 'p')]
     pub path: Option<String>,
 
-    /// Specify the component to remove.
-    /// If this option is not specified, the command will be given to all components managed by the project.
+    /// Specify the component name or canister id to delete.
     #[arg(long, short = 'c')]
     component: String,
 
@@ -46,14 +45,14 @@ pub async fn exec(env: &EnvironmentImpl, opts: DeleteOpts) -> anyhow::Result<()>
     let working_dir_str = working_dir(opts.path.clone())?;
     let working_dir = Path::new(&working_dir_str);
 
-    let url = match &opts.network {
-        Network::Local => format!("http://localhost:{}", opts.port.unwrap_or(4943)),
-        Network::IC => format!("https://ic0.app/"),
-    };
     let component_id = Principal::from_text(&opts.component).unwrap_or_else(|_| {
         canister_id_from_canister_name(working_dir, &opts.network, &opts.component)
             .expect("failed to get canister id")
     });
+    let url = match &opts.network {
+        Network::Local => format!("http://localhost:{}", opts.port.unwrap_or(4943)),
+        Network::IC => format!("https://ic0.app/"),
+    };
     let agent = agent(&url);
     if opts.network == Network::Local {
         agent.fetch_root_key().await.unwrap();
@@ -67,10 +66,10 @@ pub async fn exec(env: &EnvironmentImpl, opts: DeleteOpts) -> anyhow::Result<()>
     let db = db_from_proxy(&agent, &proxy).await;
     info!(log, "  db: {}", db.to_text());
 
-    let wallet = get_wallet(&opts.network)
+    let wallet = get_wallet(working_dir, &opts.network)
         .expect("failed to get wallet")
         .to_string();
-    info!(log, "Wallet to execute removal: {}", wallet);
+    info!(log, "Wallet to execute deletion: {}", wallet);
 
     let exec_delete = |label: &str, canister_id: String| -> bool {
         info!(log, "Deleting {} ({})", label, canister_id);
@@ -88,18 +87,18 @@ pub async fn exec(env: &EnvironmentImpl, opts: DeleteOpts) -> anyhow::Result<()>
         };
         is_succeeded
     };
-    let before_balance = get_wallet_balance(&opts.network);
+    let before_balance = get_wallet_balance(working_dir, &opts.network);
     match before_balance {
-        Ok(balance) => info!(log, "Balance before removal: {}", balance),
+        Ok(balance) => info!(log, "Balance before deletion: {}", balance),
         Err(e) => error!(log, "Failed to get balance: {}", e),
     }
     let res_db = exec_delete("db", db.to_text());
     let res_vault = exec_delete("vault", vault.to_text());
     let res_proxy = exec_delete("proxy", proxy.to_text());
     let res_component = exec_delete("component", component_id.to_text());
-    let after_balance = get_wallet_balance(&opts.network);
+    let after_balance = get_wallet_balance(working_dir, &opts.network);
     match after_balance {
-        Ok(balance) => info!(log, "Balance after removal: {}", balance),
+        Ok(balance) => info!(log, "Balance after deletion: {}", balance),
         Err(e) => error!(log, "Failed to get balance: {}", e),
     }
 
@@ -107,13 +106,13 @@ pub async fn exec(env: &EnvironmentImpl, opts: DeleteOpts) -> anyhow::Result<()>
         if res {
             "Removed".to_string()
         } else {
-            "Fail to remove".to_string()
+            "Fail to delete".to_string()
         }
     };
     info!(
         log,
         r#"Finish deleting component '{}'.
-The results of the removing are as follows.
+The results of the deleting are as follows.
   component {} {}
   proxy {} {}
   vault {} {}
@@ -211,12 +210,7 @@ fn canister_id_from_canister_name(
     let args_builder = DfxArgsBuilder::new_only_network(network.clone());
     let args = args_builder.generate(vec!["canister", "id", canister_name]);
 
-    let output = Command::new("dfx")
-        .current_dir(execution_dir)
-        .args(args)
-        .output()
-        .expect("failed to execute process");
-
+    let output = output_by_exec_cmd("dfx", execution_dir, args).expect("failed to execute process");
     if output.status.success() {
         let msg = std::str::from_utf8(&output.stdout).unwrap_or("failed to parse stdout");
         Ok(Principal::from_text(msg.replace("\n", "")).unwrap())
@@ -227,14 +221,11 @@ fn canister_id_from_canister_name(
 }
 
 // Get wallet from selected Identity
-fn get_wallet(network: &Network) -> Result<Principal, String> {
+fn get_wallet(execution_dir: &Path, network: &Network) -> Result<Principal, String> {
     let args_builder = DfxArgsBuilder::new_only_network(network.clone());
     let args = args_builder.generate(vec!["identity", "get-wallet"]);
 
-    let output = Command::new("dfx")
-        .args(args)
-        .output()
-        .expect("failed to execute process");
+    let output = output_by_exec_cmd("dfx", execution_dir, args).expect("failed to execute process");
     if output.status.success() {
         let msg = std::str::from_utf8(&output.stdout).unwrap_or("failed to parse stdout");
         Ok(Principal::from_text(msg.replace("\n", "")).unwrap())
@@ -245,14 +236,11 @@ fn get_wallet(network: &Network) -> Result<Principal, String> {
 }
 
 // Get cycle balance of the selected Identity's cycles wallet
-fn get_wallet_balance(network: &Network) -> Result<String, String> {
+fn get_wallet_balance(execution_dir: &Path, network: &Network) -> Result<String, String> {
     let args_builder = DfxArgsBuilder::new_only_network(network.clone());
     let args = args_builder.generate(vec!["wallet", "balance"]);
 
-    let output = Command::new("dfx")
-        .args(args)
-        .output()
-        .expect("failed to execute process");
+    let output = output_by_exec_cmd("dfx", execution_dir, args).expect("failed to execute process");
     if output.status.success() {
         let msg = std::str::from_utf8(&output.stdout).unwrap_or("failed to parse stdout");
         Ok(msg.to_string())
