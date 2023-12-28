@@ -59,11 +59,11 @@ pub async fn exec(env: &EnvironmentImpl, opts: DeleteOpts) -> anyhow::Result<()>
     }
 
     info!(log, "Confirm sidecars to delete");
-    let proxy = get_proxy_from_component(&agent, &component_id).await;
+    let proxy = get_proxy_from_component(&agent, &component_id).await?;
     info!(log, "  proxy: {}", proxy.to_text());
-    let vault = vault_from_proxy(&agent, &proxy).await;
+    let vault = vault_from_proxy(&agent, &proxy).await?;
     info!(log, "  vault: {}", vault.to_text());
-    let db = db_from_proxy(&agent, &proxy).await;
+    let db = db_from_proxy(&agent, &proxy).await?;
     info!(log, "  db: {}", db.to_text());
 
     let wallet = get_wallet(working_dir, &opts.network)
@@ -172,34 +172,40 @@ fn agent(url: &str) -> ic_agent::Agent {
     agent
 }
 
-async fn get_proxy_from_component(agent: &ic_agent::Agent, principal: &Principal) -> Principal {
+async fn get_proxy_from_component(
+    agent: &ic_agent::Agent,
+    principal: &Principal,
+) -> anyhow::Result<Principal> {
     let res = agent
         .update(&principal, "get_proxy")
         .with_arg(Encode!().unwrap())
         .call_and_wait()
-        .await
-        .unwrap(); // TODO: error handling
-    Decode!(res.as_slice(), Principal).unwrap()
+        .await?;
+    Ok(Decode!(res.as_slice(), Principal).unwrap())
 }
 
-async fn vault_from_proxy(agent: &ic_agent::Agent, principal: &Principal) -> Principal {
+async fn vault_from_proxy(
+    agent: &ic_agent::Agent,
+    principal: &Principal,
+) -> anyhow::Result<Principal> {
     let res = agent
         .query(&principal, "vault")
         .with_arg(Encode!().unwrap())
         .call()
-        .await
-        .unwrap(); // TODO: error handling
-    Decode!(res.as_slice(), Principal).unwrap()
+        .await?;
+    Ok(Decode!(res.as_slice(), Principal).unwrap())
 }
 
-async fn db_from_proxy(agent: &ic_agent::Agent, principal: &Principal) -> Principal {
+async fn db_from_proxy(
+    agent: &ic_agent::Agent,
+    principal: &Principal,
+) -> anyhow::Result<Principal> {
     let res = agent
         .query(&principal, "db")
         .with_arg(Encode!().unwrap())
         .call()
-        .await
-        .unwrap(); // TODO: error handling
-    Decode!(res.as_slice(), Principal).unwrap()
+        .await?;
+    Ok(Decode!(res.as_slice(), Principal).unwrap())
 }
 
 fn canister_id_from_canister_name(
