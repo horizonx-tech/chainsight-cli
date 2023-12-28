@@ -1,4 +1,5 @@
 use clap::Subcommand;
+use tokio::runtime::Runtime;
 
 use crate::lib::{environment::EnvironmentImpl, utils::interaction::RealUserInteraction};
 
@@ -6,6 +7,7 @@ mod add;
 mod auth;
 mod build;
 mod config;
+mod delete;
 mod deploy;
 mod exec;
 mod generate;
@@ -13,6 +15,7 @@ mod new;
 mod remove;
 mod test;
 mod upgrade;
+mod utils;
 
 #[cfg(feature = "integration-test")]
 mod tests;
@@ -29,6 +32,7 @@ pub enum Command {
     Deploy(deploy::DeployOpts),
     Exec(exec::ExecOpts),
     Remove(remove::RemoveOpts),
+    Delete(delete::DeleteOpts),
     // Upgrade(upgrade::UpgradeOpts),
 }
 
@@ -54,9 +58,13 @@ pub fn exec(env: &EnvironmentImpl, cmd: Command) -> anyhow::Result<()> {
         Command::Deploy(opts) => deploy::exec(env, opts),
         Command::Exec(opts) => exec::exec(env, opts),
         Command::Remove(opts) => remove::exec(env, opts, interaction),
-        // Command::Upgrade(_) => {
-        //     println!("Not implemented yet...");
-        //     Ok(())
-        // }
+        Command::Delete(opts) => {
+            let runtime = Runtime::new().expect("Unable to create a runtime");
+            runtime.block_on(delete::exec(env, opts))?;
+            Ok(())
+        } // Command::Upgrade(_) => {
+          //     println!("Not implemented yet...");
+          //     Ok(())
+          // }
     }
 }
