@@ -51,7 +51,7 @@ pub async fn exec(env: &EnvironmentImpl, opts: DeleteOpts) -> anyhow::Result<()>
     });
     let url = match &opts.network {
         Network::Local => format!("http://localhost:{}", opts.port.unwrap_or(4943)),
-        Network::IC => format!("https://ic0.app/"),
+        Network::IC => "https://ic0.app/".to_string(),
     };
     let agent = agent(&url);
     if opts.network == Network::Local {
@@ -74,7 +74,7 @@ pub async fn exec(env: &EnvironmentImpl, opts: DeleteOpts) -> anyhow::Result<()>
     let exec_delete = |label: &str, canister_id: String| -> bool {
         info!(log, "Deleting {} ({})", label, canister_id);
         let res = delete_canister(working_dir, canister_id, &wallet, &opts.network);
-        let is_succeeded = match res {
+        match res {
             Ok(msg) => {
                 info!(log, "Deleted {}", label);
                 debug!(log, "{}", msg);
@@ -84,8 +84,7 @@ pub async fn exec(env: &EnvironmentImpl, opts: DeleteOpts) -> anyhow::Result<()>
                 error!(log, "Failed to delete {}: {}", label, e);
                 false
             }
-        };
-        is_succeeded
+        }
     };
     let before_balance = get_wallet_balance(working_dir, &opts.network);
     match before_balance {
@@ -164,12 +163,11 @@ fn working_dir(project_path: Option<String>) -> anyhow::Result<String> {
 }
 
 fn agent(url: &str) -> ic_agent::Agent {
-    let agent = ic_agent::Agent::builder()
+    ic_agent::Agent::builder()
         .with_url(url)
         .with_verify_query_signatures(false)
         .build()
-        .unwrap();
-    agent
+        .unwrap()
 }
 
 async fn get_proxy_from_component(
@@ -177,7 +175,7 @@ async fn get_proxy_from_component(
     principal: &Principal,
 ) -> anyhow::Result<Principal> {
     let res = agent
-        .update(&principal, "get_proxy")
+        .update(principal, "get_proxy")
         .with_arg(Encode!().unwrap())
         .call_and_wait()
         .await?;
@@ -189,7 +187,7 @@ async fn vault_from_proxy(
     principal: &Principal,
 ) -> anyhow::Result<Principal> {
     let res = agent
-        .query(&principal, "vault")
+        .query(principal, "vault")
         .with_arg(Encode!().unwrap())
         .call()
         .await?;
@@ -201,7 +199,7 @@ async fn db_from_proxy(
     principal: &Principal,
 ) -> anyhow::Result<Principal> {
     let res = agent
-        .query(&principal, "db")
+        .query(principal, "db")
         .with_arg(Encode!().unwrap())
         .call()
         .await?;
@@ -219,7 +217,7 @@ fn canister_id_from_canister_name(
     let output = output_by_exec_cmd("dfx", execution_dir, args).expect("failed to execute process");
     if output.status.success() {
         let msg = std::str::from_utf8(&output.stdout).unwrap_or("failed to parse stdout");
-        Ok(Principal::from_text(msg.replace("\n", "")).unwrap())
+        Ok(Principal::from_text(msg.replace('\n', "")).unwrap())
     } else {
         let msg = std::str::from_utf8(&output.stderr).unwrap_or("failed to parse stderr");
         Err(msg.to_string())
@@ -234,7 +232,7 @@ fn get_wallet(execution_dir: &Path, network: &Network) -> Result<Principal, Stri
     let output = output_by_exec_cmd("dfx", execution_dir, args).expect("failed to execute process");
     if output.status.success() {
         let msg = std::str::from_utf8(&output.stdout).unwrap_or("failed to parse stdout");
-        Ok(Principal::from_text(msg.replace("\n", "")).unwrap())
+        Ok(Principal::from_text(msg.replace('\n', "")).unwrap())
     } else {
         let msg = std::str::from_utf8(&output.stderr).unwrap_or("failed to parse stderr");
         Err(msg.to_string())
