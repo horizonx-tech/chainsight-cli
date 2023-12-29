@@ -26,6 +26,8 @@ pub enum DestinationType {
     Uint64,
     #[serde(rename = "string")]
     String,
+    #[serde(rename = "custom")]
+    Custom,
 }
 #[derive(Deserialize, Serialize, Clone, Copy, Debug, PartialEq, clap::ValueEnum)]
 
