@@ -10,8 +10,8 @@ Inflector = "0.11.4"
 anstyle = "1.0.1"
 anyhow = "1.0.71"
 candid = "0.9.6"
-chainsight-cdk = { git = "https://github.com/horizonx-tech/chainsight-sdk.git", branch = "feature/anyrelayer" }
-chainsight-cdk-macros = { git = "https://github.com/horizonx-tech/chainsight-sdk.git", branch = "feature/anyrelayer" }
+chainsight-cdk = { git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "3a2d85d6cab5674a68a03ac180c50984ab4b836d" }
+chainsight-cdk-macros = { git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "3a2d85d6cab5674a68a03ac180c50984ab4b836d" }
 clap = { version = "4.3.0", features = ["derive", "env", "unstable-styles", "wrap_help"] }
 dialoguer = "0.11.0"
 dotenvy = "0.15.7"

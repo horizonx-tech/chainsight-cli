@@ -31,10 +31,6 @@ impl ContractCall {
         Self { contract_function }
     }
 
-    fn function(&self) -> &ContractFunction {
-        &self.contract_function
-    }
-
     fn call_args(&self) -> Vec<Param> {
         self.contract_function.call_args()
     }
@@ -110,8 +106,8 @@ fn custom_converter(manifest: &RelayerComponentManifest) -> TokenStream {
     let contract_function = ContractFunction::new(config.abi_file_path, config.method_name);
 
     let contract_call_args_struct_ident = match contract_function.call_args().len() {
-        0 => quote! { () },
-        1 => quote! { () },
+        0 => quote! {},
+        1 => quote! {},
         _ => {
             let call = ContractCall::new(contract_function.clone());
             let ident = call.call_args_struct();
@@ -119,8 +115,8 @@ fn custom_converter(manifest: &RelayerComponentManifest) -> TokenStream {
         }
     };
     let converter_method = match contract_function.call_args().len() {
-        0 => quote! { () },
-        1 => quote! { () },
+        0 => quote! {},
+        1 => quote! {},
         _ => quote! {
             pub fn convert(_: &CallCanisterResponse) -> #CALL_ARGS_STRUCT_NAME {
                 todo!()
@@ -189,9 +185,6 @@ pub fn generate_app(manifest: &RelayerComponentManifest) -> anyhow::Result<Strin
         pub type CallCanisterResponse = types::#response_ident;
         #call_args_idents
         #converter
-        pub fn call_args(_: &CallCanisterResponse) -> ContractCallArgs {
-            todo!()
-        }
         pub fn filter(_: &CallCanisterResponse) -> bool {
             true
         }

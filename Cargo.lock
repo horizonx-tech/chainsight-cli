@@ -446,7 +446,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "chainsight-cdk"
 version = "0.1.0"
-source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?branch=feature/anyrelayer#008a5c3ad5679a44430cfc750b9c29b06aa30e5d"
+source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=3a2d85d6cab5674a68a03ac180c50984ab4b836d#3a2d85d6cab5674a68a03ac180c50984ab4b836d"
 dependencies = [
  "Inflector",
  "anyhow",
@@ -473,7 +473,7 @@ dependencies = [
 [[package]]
 name = "chainsight-cdk-macros"
 version = "0.1.0"
-source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?branch=feature/anyrelayer#008a5c3ad5679a44430cfc750b9c29b06aa30e5d"
+source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=3a2d85d6cab5674a68a03ac180c50984ab4b836d#3a2d85d6cab5674a68a03ac180c50984ab4b836d"
 dependencies = [
  "Inflector",
  "anyhow",
