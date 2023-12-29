@@ -62,7 +62,6 @@ impl ContractCall {
                 }
             }
         }
-        .into()
     }
 
     fn kind_to_ty(p: ParamType) -> TokenStream {
@@ -105,27 +104,19 @@ fn custom_converter(manifest: &RelayerComponentManifest) -> TokenStream {
     let config: RelayerConfig = manifest.clone().into();
     let contract_function = ContractFunction::new(config.abi_file_path, config.method_name);
 
-    let contract_call_args_struct_ident = match contract_function.call_args().len() {
+    match contract_function.call_args().len() {
         0 => quote! {},
         1 => quote! {},
         _ => {
             let call = ContractCall::new(contract_function.clone());
-            let ident = call.call_args_struct();
-            quote! { #ident }
-        }
-    };
-    let converter_method = match contract_function.call_args().len() {
-        0 => quote! {},
-        1 => quote! {},
-        _ => quote! {
-            pub fn convert(_: &CallCanisterResponse) -> #CALL_ARGS_STRUCT_NAME {
-                todo!()
+            let args_struct = call.call_args_struct();
+            quote! {
+                #args_struct
+                pub fn convert(_: &CallCanisterResponse) -> #CALL_ARGS_STRUCT_NAME {
+                    todo!()
+                }
             }
-        },
-    };
-    quote! {
-        #contract_call_args_struct_ident
-        #converter_method
+        }
     }
 }
 
