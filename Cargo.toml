@@ -16,6 +16,7 @@ clap = { version = "4.3.0", features = ["derive", "env", "unstable-styles", "wra
 dialoguer = "0.11.0"
 dotenvy = "0.15.7"
 ethabi = "18.0.0"
+ic-agent = "0.30.0"
 ic-wasm = "0.6.0"
 json_typegen_shared = "0.7.0"
 lazy_static = "1.4.0"
@@ -30,6 +31,7 @@ slog = { version = "2.7.0", features = ["max_level_trace"] }
 slog-async = "2.7.0"
 slog-term = "2.9.0"
 syn = "2.0.18"
+tokio = "1.35.1"
 walrus = "0.20.1"
 
 [dev-dependencies]

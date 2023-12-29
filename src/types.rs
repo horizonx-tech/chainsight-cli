@@ -68,7 +68,7 @@ impl fmt::Display for ComponentType {
 /// Supported Network Types
 ///
 /// IC is equivalent to '--network ic' in dfx
-#[derive(Clone, Debug, clap::ValueEnum)]
+#[derive(Clone, Debug, PartialEq, clap::ValueEnum)]
 pub enum Network {
     Local,
     IC, // ref: https://internetcomputer.org/docs/current/developer-docs/setup/deploy-mainnet#step-2--check-the-current-status-of-the-ic-and-your-ability-to-connect-to-it-by-running-the-following-command-for-the-network-alias-ic

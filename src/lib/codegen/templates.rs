@@ -160,6 +160,8 @@ ic-solidity-bindgen.workspace = true
 chainsight-cdk-macros.workspace = true
 chainsight-cdk.workspace = true
 
+ciborium = "0.2.1"
+
 {}
 {}
 "#,
