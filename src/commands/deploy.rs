@@ -39,6 +39,11 @@ pub struct DeployOpts {
     /// This option is used only if the target is localhost.
     #[arg(long)]
     port: Option<u16>,
+
+    /// Specify the initial number of cycles for canister.
+    /// Used as a parameter for `dfx canister create`.
+    #[arg(long)]
+    with_cycles: Option<u64>,
 }
 
 pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
@@ -56,7 +61,6 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
     check_before_deployment(log, artifacts_path, opts.port, network.clone())?;
     info!(log, "Checking environments finished successfully");
 
-    // exec command - execution
     info!(
         log,
         r#"Start deploying project '{}'..."#, project_manifest.label
@@ -66,6 +70,7 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
         &artifacts_path_str,
         project_manifest.load_component_manifests(&project_path_str)?,
         &opts.component,
+        opts.with_cycles,
         network,
     )?;
     info!(
@@ -110,6 +115,7 @@ fn execute_deployment(
     artifacts_path_str: &str,
     component_manifests: Vec<Box<dyn ComponentManifest>>,
     component: &Option<String>,
+    with_cycles: Option<u64>,
     network: Network,
 ) -> anyhow::Result<()> {
     let artifacts_path = Path::new(&artifacts_path_str);
@@ -147,7 +153,16 @@ fn execute_deployment(
     }
 
     // Execute
-    exec(args_builder.generate(vec!["canister", "create"]))?;
+    if let Some(cycles) = with_cycles {
+        exec(args_builder.generate(vec![
+            "canister",
+            "create",
+            "--with-cycles",
+            &cycles.to_string(),
+        ]))?;
+    } else {
+        exec(args_builder.generate(vec!["canister", "create"]))?;
+    }
     exec(args_builder.generate(vec!["build"]))?;
     exec(args_builder.generate(vec!["canister", "install"]))?;
 
