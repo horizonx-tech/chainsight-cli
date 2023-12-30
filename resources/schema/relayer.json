@@ -176,8 +176,8 @@
           "type": "string",
           "title": "oracle type of the destination",
           "description": "oracle type of the destination. currently we don't suport user definined oracle types",
-          "examples": ["uint256", "uint128", "uint64", "string"],
-          "pattern": "^(uint256|uint128|uint64|string)$"
+          "examples": ["uint256", "uint128", "uint64", "string", "custom"],
+          "pattern": "^(uint256|uint128|uint64|string|custom)$"
         },
         "oracle_address": {
           "$id": "#/properties/destination/properties/oracle_address",
@@ -194,6 +194,21 @@
           "description": "rpc url of the destination evm network. only supports https",
           "examples": ["https://rinkeby.infura.io/v3/1a2b3c4d5e"],
           "pattern": "^https://.*$"
+        },
+        "method_name": {
+          "$id": "#/properties/destination/properties/method_name",
+          "type": ["string", "null"],
+          "title": "method name",
+          "description": "method name to be called on the destination oracle contract. This is only used when the destination is a custom oracle",
+          "examples": ["update_state"],
+          "pattern": "^[a-zA-Z0-9_-]+$"
+        },
+        "interface": {
+          "$id": "#/properties/destination/properties/interface",
+          "type": ["string", "null"],
+          "title": "interface",
+          "description": "abi json file to use. This file must be in ./interfaces folder. This is only used when the destination is a custom oracle",
+          "examples": ["CustomOracle.json", "IERC20.json"]
         }
       }
     },

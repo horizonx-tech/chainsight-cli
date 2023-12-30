@@ -22,6 +22,8 @@
   - [5.2. Property `Chainsight Relayer specification > destination > type`](#destination_type)
   - [5.3. Property `Chainsight Relayer specification > destination > oracle_address`](#destination_oracle_address)
   - [5.4. Property `Chainsight Relayer specification > destination > rpc_url`](#destination_rpc_url)
+  - [5.5. Property `Chainsight Relayer specification > destination > method_name`](#destination_method_name)
+  - [5.6. Property `Chainsight Relayer specification > destination > interface`](#destination_interface)
 - [6. Property `Chainsight Relayer specification > interval`](#interval)
 - [7. Property `Chainsight Relayer specification > cycles`](#cycles)
   - [7.1. Property `Chainsight Relayer specification > cycles > refueling_interval`](#cycles_refueling_interval)
@@ -438,12 +440,14 @@
 
 **Description:** destination evm network and contract for the data.
 
-| Property                                         | Pattern | Type   | Deprecated | Definition | Title/Description              |
-| ------------------------------------------------ | ------- | ------ | ---------- | ---------- | ------------------------------ |
-| + [network_id](#destination_network_id )         | No      | number | No         | -          | network id                     |
-| + [type](#destination_type )                     | No      | string | No         | -          | oracle type of the destination |
-| + [oracle_address](#destination_oracle_address ) | No      | string | No         | -          | oracle address                 |
-| + [rpc_url](#destination_rpc_url )               | No      | string | No         | -          | rpc url                        |
+| Property                                         | Pattern | Type           | Deprecated | Definition | Title/Description              |
+| ------------------------------------------------ | ------- | -------------- | ---------- | ---------- | ------------------------------ |
+| + [network_id](#destination_network_id )         | No      | number         | No         | -          | network id                     |
+| + [type](#destination_type )                     | No      | string         | No         | -          | oracle type of the destination |
+| + [oracle_address](#destination_oracle_address ) | No      | string         | No         | -          | oracle address                 |
+| + [rpc_url](#destination_rpc_url )               | No      | string         | No         | -          | rpc url                        |
+| - [method_name](#destination_method_name )       | No      | string or null | No         | -          | method name                    |
+| - [interface](#destination_interface )           | No      | string or null | No         | -          | interface                      |
 
 ### <a name="destination_network_id"></a>5.1. Property `Chainsight Relayer specification > destination > network_id`
 
@@ -503,9 +507,13 @@
 "string"
 ```
 
-| Restrictions                      |                                                                                                                                                         |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Must match regular expression** | ```^(uint256\|uint128\|uint64\|string)$``` [Test](https://regex101.com/?regex=%5E%28uint256%7Cuint128%7Cuint64%7Cstring%29%24&testString=%22uint256%22) |
+```json
+"custom"
+```
+
+| Restrictions                      |                                                                                                                                                                          |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Must match regular expression** | ```^(uint256\|uint128\|uint64\|string\|custom)$``` [Test](https://regex101.com/?regex=%5E%28uint256%7Cuint128%7Cuint64%7Cstring%7Ccustom%29%24&testString=%22uint256%22) |
 
 ### <a name="destination_oracle_address"></a>5.3. Property `Chainsight Relayer specification > destination > oracle_address`
 
@@ -548,6 +556,48 @@
 | Restrictions                      |                                                                                                                                                    |
 | --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Must match regular expression** | ```^https://.*$``` [Test](https://regex101.com/?regex=%5Ehttps%3A%2F%2F.%2A%24&testString=%22https%3A%2F%2Frinkeby.infura.io%2Fv3%2F1a2b3c4d5e%22) |
+
+### <a name="destination_method_name"></a>5.5. Property `Chainsight Relayer specification > destination > method_name`
+
+**Title:** method name
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `string or null` |
+| **Required** | No               |
+
+**Description:** method name to be called on the destination oracle contract. This is only used when the destination is a custom oracle
+
+**Example:** 
+
+```json
+"update_state"
+```
+
+| Restrictions                      |                                                                                                                     |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **Must match regular expression** | ```^[a-zA-Z0-9_-]+$``` [Test](https://regex101.com/?regex=%5E%5Ba-zA-Z0-9_-%5D%2B%24&testString=%22update_state%22) |
+
+### <a name="destination_interface"></a>5.6. Property `Chainsight Relayer specification > destination > interface`
+
+**Title:** interface
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `string or null` |
+| **Required** | No               |
+
+**Description:** abi json file to use. This file must be in ./interfaces folder. This is only used when the destination is a custom oracle
+
+**Examples:** 
+
+```json
+"CustomOracle.json"
+```
+
+```json
+"IERC20.json"
+```
 
 ## <a name="interval"></a>6. Property `Chainsight Relayer specification > interval`
 
@@ -824,4 +874,4 @@
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-12-15 at 10:02:37 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2023-12-29 at 07:56:08 +0000
