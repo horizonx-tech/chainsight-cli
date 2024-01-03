@@ -250,13 +250,7 @@ impl ComponentManifest for RelayerComponentManifest {
             "chainsight:destination".to_string(),
             serde_json::to_string(&dest).unwrap(),
         );
-        let oracle_type_str = match self.destination_type() {
-            Some(DestinationType::Uint256) => "uint256",
-            Some(DestinationType::Uint128) => "uint128",
-            Some(DestinationType::Uint64) => "uint64",
-            Some(DestinationType::String) => "string",
-            _ => panic!("Invalid oracle type"),
-        };
+        let oracle_type_str = oracle_type(self.destination_type());
         res.insert(
             "chainsight:oracleType".to_string(),
             oracle_type_str.to_string(),
@@ -285,6 +279,16 @@ impl ComponentManifest for RelayerComponentManifest {
     }
     fn cycle_managements(&self) -> CycleManagements {
         self.cycles.clone().unwrap_or_default().into()
+    }
+}
+
+fn oracle_type(t: Option<DestinationType>) -> String {
+    match t {
+        Some(t) => {
+            let ser = serde_json::to_string(&t).unwrap();
+            ser.replace("\"", "")
+        }
+        _ => panic!("Invalid oracle type"),
     }
 }
 
@@ -513,5 +517,13 @@ interval: 3600
             format!("{}__scripts", &snap_prefix),
             &manifest.generate_scripts(Network::Local).unwrap()
         );
+    }
+    #[test]
+    fn test_oracle_type() {
+        assert_eq!(oracle_type(Some(DestinationType::Uint256)), "uint256");
+        assert_eq!(oracle_type(Some(DestinationType::Uint128)), "uint128");
+        assert_eq!(oracle_type(Some(DestinationType::Uint64)), "uint64");
+        assert_eq!(oracle_type(Some(DestinationType::String)), "string");
+        assert_eq!(oracle_type(Some(DestinationType::Custom)), "custom");
     }
 }
