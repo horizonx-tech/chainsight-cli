@@ -8,12 +8,11 @@ expression: generated_user_impl_template.lib
 use candid::{Decode, Encode};
 #[derive(Debug, Clone, candid::CandidType, candid::Deserialize, serde::Serialize, chainsight_cdk_macros::StableMemoryStorable)]
 pub struct SnapshotValue {
-    pub status: Status,
+    pub dai: Dai,
 }
 
 #[derive(Debug, Clone, candid::CandidType, candid::Deserialize, serde::Serialize, chainsight_cdk_macros::StableMemoryStorable)]
-pub struct Status {
-    pub error_code: i64,
-    pub error_message: String,
+pub struct Dai {
+    pub usd: f64,
 }
 

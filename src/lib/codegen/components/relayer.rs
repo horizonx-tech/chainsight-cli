@@ -285,8 +285,8 @@ impl ComponentManifest for RelayerComponentManifest {
 fn oracle_type(t: Option<DestinationType>) -> String {
     match t {
         Some(t) => {
-            let ser = serde_json::to_string(&t).unwrap();
-            ser.replace("\"", "")
+            let val = serde_json::to_string(&t).unwrap();
+            val.trim_matches('\"').to_string()
         }
         _ => panic!("Invalid oracle type"),
     }

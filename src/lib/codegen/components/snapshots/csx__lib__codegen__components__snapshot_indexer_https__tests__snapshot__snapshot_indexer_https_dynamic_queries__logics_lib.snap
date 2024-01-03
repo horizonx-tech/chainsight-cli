@@ -10,12 +10,6 @@ use std :: collections :: BTreeMap ; pub fn get_query_parameters () -> BTreeMap 
 use candid::{Decode, Encode};
 #[derive(Debug, Clone, candid::CandidType, candid::Deserialize, serde::Serialize, chainsight_cdk_macros::StableMemoryStorable)]
 pub struct SnapshotValue {
-    pub status: Status,
-}
-
-#[derive(Debug, Clone, candid::CandidType, candid::Deserialize, serde::Serialize, chainsight_cdk_macros::StableMemoryStorable)]
-pub struct Status {
-    pub error_code: i64,
-    pub error_message: String,
+    pub error: String,
 }
 
