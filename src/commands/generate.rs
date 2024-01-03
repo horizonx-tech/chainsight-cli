@@ -133,6 +133,57 @@ fn exec_codegen(
         }
         info!(log, r#"[{}] Start processing..."#, id);
 
+        // Processes about interface
+        // - copy and move any necessary interfaces to canister
+        // - get ethabi::Contract for codegen
+        let mut interface_contract: Option<ethabi::Contract> = None;
+        if let Some(interface_file) = data.required_interface() {
+            let dst_interface_path_str = format!("{}/{}", &interfaces_path_str, &interface_file);
+            let dst_interface_path = Path::new(&dst_interface_path_str);
+
+            let user_if_file_path_str =
+                format!("{}/interfaces/{}", project_path_str, &interface_file);
+            let user_if_file_path = Path::new(&user_if_file_path_str);
+            if user_if_file_path.exists() {
+                fs::copy(user_if_file_path, dst_interface_path)?;
+                info!(
+                    log,
+                    r#"[{}] Interface file '{}' copied from user's interface"#, id, &interface_file
+                );
+                let abi_file = File::open(user_if_file_path)?;
+                interface_contract = Some(ethabi::Contract::load(abi_file)?);
+            } else if let Some(contents) = builtin_interface(&interface_file) {
+                fs::write(dst_interface_path, contents)?;
+                info!(
+                    log,
+                    r#"[{}] Interface file '{}' copied from builtin interface"#,
+                    id,
+                    &interface_file
+                );
+                let contract: ethabi::Contract = serde_json::from_str(contents)?;
+                interface_contract = Some(contract);
+            } else {
+                bail!(format!(
+                    r#"[{}] Interface file "{}" not found"#,
+                    id, &interface_file
+                ));
+            }
+        }
+
+        // copy and move oracle interface
+        if data.destination_type().is_some() {
+            let json_name = "Oracle.json";
+            let json_contents = include_str!("../../resources/Oracle.json");
+            fs::write(
+                format!("{}/{}", &interfaces_path_str, &json_name),
+                json_contents,
+            )?;
+            info!(
+                log,
+                r#"[{}] Interface file '{}' copied from builtin interface"#, id, &json_name
+            );
+        }
+
         // Generate /bindings/(component)
         let bindings = data.generate_bindings()?;
         if !bindings.is_empty() {
@@ -231,58 +282,6 @@ fn exec_codegen(
                 is_exist_accessors_folder,
             ),
         )?;
-
-        // Processes about interface
-        // - copy and move any necessary interfaces to canister
-        // - get ethabi::Contract for codegen
-        let mut interface_contract: Option<ethabi::Contract> = None;
-        if let Some(interface_file) = data.required_interface() {
-            let dst_interface_path_str = format!("{}/{}", &interfaces_path_str, &interface_file);
-            let dst_interface_path = Path::new(&dst_interface_path_str);
-
-            let user_if_file_path_str =
-                format!("{}/interfaces/{}", project_path_str, &interface_file);
-            let user_if_file_path = Path::new(&user_if_file_path_str);
-            if user_if_file_path.exists() {
-                fs::copy(user_if_file_path, dst_interface_path)?;
-                info!(
-                    log,
-                    r#"[{}] Interface file '{}' copied from user's interface"#, id, &interface_file
-                );
-                let abi_file = File::open(user_if_file_path)?;
-                interface_contract = Some(ethabi::Contract::load(abi_file)?);
-            } else if let Some(contents) = builtin_interface(&interface_file) {
-                fs::write(dst_interface_path, contents)?;
-                info!(
-                    log,
-                    r#"[{}] Interface file '{}' copied from builtin interface"#,
-                    id,
-                    &interface_file
-                );
-                let contract: ethabi::Contract = serde_json::from_str(contents)?;
-                interface_contract = Some(contract);
-            } else {
-                bail!(format!(
-                    r#"[{}] Interface file "{}" not found"#,
-                    id, &interface_file
-                ));
-            }
-        }
-
-        // copy and move oracle interface
-        if data.destination_type().is_some() {
-            let json_name = "Oracle.json";
-            let json_contents = include_str!("../../resources/Oracle.json");
-            fs::write(
-                format!("{}/{}", &interfaces_path_str, &json_name),
-                json_contents,
-            )?;
-            info!(
-                log,
-                r#"[{}] Interface file '{}' copied from builtin interface"#, id, &json_name
-            );
-        }
-
         // Generate /canisters/(component)
         let canister_path_str = &paths::canisters_path_str(src_path_str, &id);
         let GeneratedCodes { lib, types } =

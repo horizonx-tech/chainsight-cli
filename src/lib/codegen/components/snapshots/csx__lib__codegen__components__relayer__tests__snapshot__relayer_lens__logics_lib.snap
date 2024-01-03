@@ -3,6 +3,8 @@ source: src/lib/codegen/components/relayer.rs
 expression: "SrcString::from(generated_user_impl_template.lib)"
 ---
 mod types;
+use crate::ic_web3_rs::ethabi;
+use ic_web3_rs;
 pub type CallCanisterResponse = types::ResponseType;
 pub fn filter(_:& CallCanisterResponse) -> bool {
 true }

@@ -5,7 +5,7 @@ use chainsight_cdk::{
     web3::ContractFunction,
 };
 use ethabi::{Param, ParamType};
-use proc_macro2::TokenStream;
+use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote};
 
 use crate::{
@@ -36,11 +36,12 @@ impl ContractCall {
     }
 
     fn call_args_struct(&self) -> TokenStream {
-        let names: Vec<String> = self
+        let names: Vec<Ident> = self
             .call_args()
             .clone()
             .into_iter()
             .map(|arg| arg.name)
+            .map(|name| format_ident!("{}", name))
             .collect();
         let types: Vec<TokenStream> = self
             .call_args()
@@ -48,13 +49,14 @@ impl ContractCall {
             .into_iter()
             .map(|arg| Self::kind_to_ty(arg.kind))
             .collect();
-        let visibly = "pub";
+        let visibly = format_ident!("{}", "pub");
+        let struct_ident = format_ident!("{}", CALL_ARGS_STRUCT_NAME);
         quote! {
             #[derive(Clone, Debug)]
-            pub struct #CALL_ARGS_STRUCT_NAME {
+            pub struct #struct_ident {
                 #(#visibly #names: #types),*
             }
-            impl #CALL_ARGS_STRUCT_NAME {
+            impl #struct_ident {
                 pub fn new(#(#names: #types),*) -> Self {
                     Self {
                         #(#names),*
@@ -102,7 +104,11 @@ pub fn generate_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<Str
 
 fn custom_converter(manifest: &RelayerComponentManifest) -> TokenStream {
     let config: RelayerConfig = manifest.clone().into();
-    let contract_function = ContractFunction::new(config.abi_file_path, config.method_name);
+    println!("config: {:?}", config.abi_file_path);
+    let contract_function = ContractFunction::new(
+        "src/".to_owned() + &config.abi_file_path,
+        config.method_name,
+    );
 
     match contract_function.call_args().len() {
         0 => quote! {},
@@ -110,9 +116,10 @@ fn custom_converter(manifest: &RelayerComponentManifest) -> TokenStream {
         _ => {
             let call = ContractCall::new(contract_function.clone());
             let args_struct = call.call_args_struct();
+            let struct_ident = format_ident!("{}", CALL_ARGS_STRUCT_NAME);
             quote! {
                 #args_struct
-                pub fn convert(_: &CallCanisterResponse) -> #CALL_ARGS_STRUCT_NAME {
+                pub fn convert(_: &CallCanisterResponse) -> #struct_ident {
                     todo!()
                 }
             }
@@ -173,6 +180,8 @@ pub fn generate_app(manifest: &RelayerComponentManifest) -> anyhow::Result<Strin
     let response_ident = format_ident!("{}", CanisterMethodIdentifier::RESPONSE_TYPE_NAME);
     Ok(quote! {
         mod types;
+        use crate::ic_web3_rs::ethabi;
+        use ic_web3_rs;
         pub type CallCanisterResponse = types::#response_ident;
         #call_args_idents
         #converter
