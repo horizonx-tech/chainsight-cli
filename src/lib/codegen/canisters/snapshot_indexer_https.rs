@@ -11,7 +11,31 @@ use crate::{
     types::ComponentType,
 };
 
-pub fn generate_codes(manifest: &SnapshotIndexerHTTPSComponentManifest) -> anyhow::Result<String> {
+pub struct SnapshotIndexerHttpsCodeGenerator {
+    strategy: Box<dyn JsonTypeGenStrategy>,
+}
+
+impl SnapshotIndexerHttpsCodeGenerator {
+    fn new(strategy: Box<dyn JsonTypeGenStrategy>) -> Self {
+        Self { strategy }
+    }
+
+    fn generate_code(
+        &self,
+        manifest: &SnapshotIndexerHTTPSComponentManifest,
+    ) -> anyhow::Result<String> {
+        generate_codes(manifest)
+    }
+
+    fn generate_app(
+        &self,
+        manifest: &SnapshotIndexerHTTPSComponentManifest,
+    ) -> anyhow::Result<String> {
+        generate_app(manifest, self.strategy)
+    }
+}
+
+fn generate_codes(manifest: &SnapshotIndexerHTTPSComponentManifest) -> anyhow::Result<String> {
     ensure!(
         manifest.metadata.type_ == ComponentType::SnapshotIndexerHTTPS,
         "type is not SnapshotIndexerHTTPS"
@@ -25,8 +49,32 @@ pub fn generate_codes(manifest: &SnapshotIndexerHTTPSComponentManifest) -> anyho
     Ok(code.to_string())
 }
 
-// TODO: Support for typegen with sample response and json schema
-pub fn generate_app(manifest: &SnapshotIndexerHTTPSComponentManifest) -> anyhow::Result<String> {
+trait JsonTypeGenStrategy {
+    fn generate_code(
+        &self,
+        struct_name: &str,
+        url: &str,
+        options: json_typegen_shared::Options,
+    ) -> anyhow::Result<String>;
+}
+
+struct JsonTypeGenStrategyImpl;
+impl JsonTypeGenStrategy for JsonTypeGenStrategyImpl {
+    fn generate_code(
+        &self,
+        struct_name: &str,
+        url: &str,
+        options: json_typegen_shared::Options,
+    ) -> anyhow::Result<String> {
+        json_typegen_shared::codegen(struct_name, url, options)
+            .map_err(|e| anyhow::anyhow!("Failed to generate code by json_typegen_shared: {:?}", e))
+    }
+}
+
+fn generate_app(
+    manifest: &SnapshotIndexerHTTPSComponentManifest,
+    strategy: Box<dyn JsonTypeGenStrategy>,
+) -> anyhow::Result<String> {
     let SnapshotIndexerHTTPSComponentManifest { datasource, .. } = manifest;
     let struct_name = "SnapshotValue";
     let (queries, query_func) = match datasource.queries.clone() {
@@ -57,7 +105,8 @@ pub fn generate_app(manifest: &SnapshotIndexerHTTPSComponentManifest) -> anyhow:
     let mut options = json_typegen_shared::Options::default();
     options.derives = "Debug, Clone, candid::CandidType, candid::Deserialize, serde::Serialize, chainsight_cdk_macros::StableMemoryStorable".into();
     options.import_style = json_typegen_shared::ImportStyle::QualifiedPaths;
-    let codes = json_typegen_shared::codegen(struct_name, &url, options)
+    let codes = strategy
+        .generate_code(struct_name, &url, options)
         .map_err(|e| anyhow::anyhow!("Failed to generate code by json_typegen_shared: {:?}", e))?;
 
     let comments_for_typegen = r#"// You update the structure as needed.
