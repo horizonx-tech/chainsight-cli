@@ -8,14 +8,8 @@ use crate::{
     lib::{
         codegen::{
             components::{
-                algorithm_indexer::AlgorithmIndexerComponentManifest,
-                algorithm_lens::AlgorithmLensComponentManifest,
-                common::{ComponentManifest, ComponentTypeInManifest},
-                event_indexer::EventIndexerComponentManifest,
-                relayer::RelayerComponentManifest,
-                snapshot_indexer_evm::SnapshotIndexerEVMComponentManifest,
-                snapshot_indexer_https::SnapshotIndexerHTTPSComponentManifest,
-                snapshot_indexer_icp::SnapshotIndexerICPComponentManifest,
+                codegen::{generator, CodeGenerator},
+                common::ComponentTypeInManifest,
             },
             project::ProjectManifestData,
         },
@@ -24,7 +18,7 @@ use crate::{
             env::cache_envfile, is_chainsight_project, DOTENV_FILENAME, PROJECT_MANIFEST_FILENAME,
         },
     },
-    types::{ComponentType, Network},
+    types::Network,
 };
 
 #[derive(Debug, Parser)]
@@ -84,7 +78,7 @@ pub fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
         "{}/{}",
         &project_path_str, PROJECT_MANIFEST_FILENAME
     ))?;
-    let mut component_data = vec![];
+    let mut generators = vec![];
     for component in project_manifest.components.clone() {
         // TODO: need validations
         let relative_component_path = component.component_path;
@@ -96,31 +90,7 @@ pub fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
             .to_str()
             .unwrap();
 
-        let data: Box<dyn ComponentManifest> =
-            match component_type {
-                ComponentType::EventIndexer => Box::new(
-                    EventIndexerComponentManifest::load_with_id(&component_path, id)?,
-                ),
-                ComponentType::AlgorithmIndexer => Box::new(
-                    AlgorithmIndexerComponentManifest::load_with_id(&component_path, id)?,
-                ),
-                ComponentType::SnapshotIndexerICP => Box::new(
-                    SnapshotIndexerICPComponentManifest::load_with_id(&component_path, id)?,
-                ),
-                ComponentType::SnapshotIndexerEVM => Box::new(
-                    SnapshotIndexerEVMComponentManifest::load_with_id(&component_path, id)?,
-                ),
-                ComponentType::Relayer => {
-                    Box::new(RelayerComponentManifest::load_with_id(&component_path, id)?)
-                }
-                ComponentType::AlgorithmLens => Box::new(
-                    AlgorithmLensComponentManifest::load_with_id(&component_path, id)?,
-                ),
-                ComponentType::SnapshotIndexerHTTPS => Box::new(
-                    SnapshotIndexerHTTPSComponentManifest::load_with_id(&component_path, id)?,
-                ),
-            };
-        component_data.push(data);
+        generators.push(generator(component_type, &component_path, id)?);
     }
 
     let artifacts_path_str = format!("{}/artifacts", &project_path_str);
@@ -130,7 +100,7 @@ pub fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
     } else {
         // generate commands
         info!(log, r#"Start processing for commands generation..."#);
-        execute_to_generate_commands(log, &artifacts_path_str, opts.network, &component_data)?;
+        execute_to_generate_commands(log, &artifacts_path_str, opts.network, &generators)?;
     }
 
     if opts.only_generate_cmds {
@@ -152,7 +122,7 @@ fn execute_to_generate_commands(
     log: &Logger,
     built_project_path_str: &str,
     network: Network,
-    component_data: &Vec<Box<dyn ComponentManifest>>,
+    generators: &Vec<Box<dyn CodeGenerator>>,
 ) -> anyhow::Result<()> {
     // generate scripts per component (/scripts/components)
     let script_root_path_str = format!("{}/scripts", &built_project_path_str);
@@ -163,10 +133,10 @@ fn execute_to_generate_commands(
     }
     fs::create_dir_all(Path::new(&scripts_path_str))?;
 
-    for data in component_data {
-        let id = data.id().unwrap();
+    for generator in generators {
+        let id = generator.manifest().id().unwrap();
         let filepath = format!("{}/{}.sh", &scripts_path_str, &id);
-        fs::write(&filepath, data.generate_scripts(network.clone())?)?;
+        fs::write(&filepath, generator.generate_scripts(network.clone())?)?;
 
         chmod_executable(&filepath)?;
 
@@ -184,9 +154,9 @@ fn execute_to_generate_commands(
     }
     {
         let path = format!("{}/{}", &script_root_path_str, TARGETS_TEXT_FILENAME);
-        let component_ids = component_data
+        let component_ids = generators
             .iter()
-            .map(|c| c.id().unwrap())
+            .map(|g| g.manifest().id().unwrap())
             .collect::<Vec<String>>();
         fs::write(&path, targets_txt(component_ids))?;
         chmod_executable(&path)?;

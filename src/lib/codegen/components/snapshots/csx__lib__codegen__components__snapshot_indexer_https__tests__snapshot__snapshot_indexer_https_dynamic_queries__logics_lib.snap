@@ -8,8 +8,11 @@ use std :: collections :: BTreeMap ; pub fn get_query_parameters () -> BTreeMap 
 // You update the structure as needed.
 // The existence of the SnapshotValue structure must be maintained.
 use candid::{Decode, Encode};
-#[derive(Debug, Clone, candid::CandidType, candid::Deserialize, serde::Serialize, chainsight_cdk_macros::StableMemoryStorable)]
-pub struct SnapshotValue {
-    pub error: String,
-}
 
+                #[derive(Debug, Clone, candid::CandidType, candid::Deserialize, serde::Serialize, chainsight_cdk_macros::StableMemoryStorable)]
+                pub struct SnapshotValue {
+                    pub id: String,
+                    pub vs_currencies: String,
+                    pub dai: String,
+                }
+                
