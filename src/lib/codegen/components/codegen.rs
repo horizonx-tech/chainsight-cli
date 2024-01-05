@@ -33,26 +33,26 @@ pub fn generator(
 ) -> Result<Box<dyn CodeGenerator>> {
     match component_type {
         ComponentType::EventIndexer => Ok(Box::new(EventIndexerCodeGenerator::new(
-            EventIndexerComponentManifest::load_with_id(&component_path, id)?,
+            EventIndexerComponentManifest::load_with_id(component_path, id)?,
         ))),
         ComponentType::AlgorithmIndexer => Ok(Box::new(AlgorithmIndexerCodeGenerator::new(
-            AlgorithmIndexerComponentManifest::load_with_id(&component_path, id)?,
+            AlgorithmIndexerComponentManifest::load_with_id(component_path, id)?,
         ))),
         ComponentType::SnapshotIndexerICP => Ok(Box::new(SnapshotIndexerICPCodeGenerator::new(
-            SnapshotIndexerICPComponentManifest::load_with_id(&component_path, id)?,
+            SnapshotIndexerICPComponentManifest::load_with_id(component_path, id)?,
         ))),
         ComponentType::SnapshotIndexerEVM => Ok(Box::new(SnapshotIndexerEvmCodeGenerator::new(
-            SnapshotIndexerEVMComponentManifest::load_with_id(&component_path, id)?,
+            SnapshotIndexerEVMComponentManifest::load_with_id(component_path, id)?,
         ))),
         ComponentType::Relayer => Ok(Box::new(RelayerCodeGenerator::new(
-            RelayerComponentManifest::load_with_id(&component_path, id)?,
+            RelayerComponentManifest::load_with_id(component_path, id)?,
         ))),
         ComponentType::AlgorithmLens => Ok(Box::new(AlgorithmLensCodeGenerator::new(
-            AlgorithmLensComponentManifest::load_with_id(&component_path, id)?,
+            AlgorithmLensComponentManifest::load_with_id(component_path, id)?,
         ))),
         ComponentType::SnapshotIndexerHTTPS => {
             Ok(Box::new(SnapshotIndesxerHTTPSCodeGenerator::new(
-                SnapshotIndexerHTTPSComponentManifest::load_with_id(&component_path, id)?,
+                SnapshotIndexerHTTPSComponentManifest::load_with_id(component_path, id)?,
                 Box::new(JsonTypeGenStrategyImpl),
             )))
         }

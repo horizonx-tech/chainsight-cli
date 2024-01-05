@@ -151,7 +151,7 @@ impl CodeGenerator for SnapshotIndesxerHTTPSCodeGenerator {
     }
     fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
         Ok(GeneratedCodes {
-            lib: generate_app(&self.manifest, &self.strategy)?,
+            lib: generate_app(&self.manifest, self.strategy.as_ref())?,
             types: None,
         })
     }

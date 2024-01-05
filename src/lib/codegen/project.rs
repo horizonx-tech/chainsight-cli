@@ -85,6 +85,7 @@ impl ProjectManifestComponentField {
             .unwrap()
             .to_str()
             .unwrap();
-        Ok(generator(component_type, &component_path, id)?)
+        let generator = generator(component_type, &component_path, id)?;
+        Ok(generator)
     }
 }

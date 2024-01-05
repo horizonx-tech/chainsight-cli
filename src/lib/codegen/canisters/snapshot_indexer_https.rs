@@ -49,7 +49,7 @@ impl JsonTypeGenStrategy for JsonTypeGenStrategyImpl {
 
 pub fn generate_app(
     manifest: &SnapshotIndexerHTTPSComponentManifest,
-    strategy: &Box<dyn JsonTypeGenStrategy>,
+    strategy: &dyn JsonTypeGenStrategy,
 ) -> anyhow::Result<String> {
     let SnapshotIndexerHTTPSComponentManifest { datasource, .. } = manifest;
     let struct_name = "SnapshotValue";
