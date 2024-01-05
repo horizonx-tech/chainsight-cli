@@ -8,7 +8,7 @@ use slog::{debug, info, Logger};
 use crate::{
     commands::utils::{output_by_exec_cmd, DfxArgsBuilder},
     lib::{
-        codegen::{components::common::ComponentManifest, project::ProjectManifestData},
+        codegen::{components::codegen::CodeGenerator, project::ProjectManifestData},
         environment::EnvironmentImpl,
         utils::{ARTIFACTS_DIR, PROJECT_MANIFEST_FILENAME},
     },
@@ -68,7 +68,7 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
     execute_deployment(
         log,
         &artifacts_path_str,
-        project_manifest.load_component_manifests(&project_path_str)?,
+        project_manifest.load_code_generator(&project_path_str)?,
         &opts.component,
         opts.with_cycles,
         network,
@@ -113,7 +113,7 @@ fn check_before_deployment(
 fn execute_deployment(
     log: &Logger,
     artifacts_path_str: &str,
-    component_manifests: Vec<Box<dyn ComponentManifest>>,
+    generators: Vec<Box<dyn CodeGenerator>>,
     component: &Option<String>,
     with_cycles: Option<u64>,
     network: Network,
@@ -170,8 +170,8 @@ fn execute_deployment(
         Network::Local => Env::LocalDevelopment,
         Network::IC => Env::Production,
     };
-    for manifest in component_manifests.iter() {
-        let id = manifest.id().unwrap();
+    for generator in generators.iter() {
+        let id = generator.manifest().id().unwrap();
         if let Some(target) = component {
             if target != &id {
                 continue;

@@ -19,6 +19,7 @@ use crate::{
 };
 
 use super::{
+    codegen::CodeGenerator,
     common::{
         ComponentManifest, ComponentMetadata, CycleManagementsManifest, DatasourceForCanister,
         DestinationType, GeneratedCodes, SourceType, Sources,
@@ -140,6 +141,55 @@ impl From<RelayerComponentManifest> for chainsight_cdk::config::components::Rela
     }
 }
 
+pub struct RelayerCodeGenerator {
+    manifest: RelayerComponentManifest,
+}
+
+impl RelayerCodeGenerator {
+    pub fn new(manifest: RelayerComponentManifest) -> Self {
+        Self { manifest }
+    }
+}
+
+impl CodeGenerator for RelayerCodeGenerator {
+    fn generate_code(
+        &self,
+        _interface_contract: Option<ethabi::Contract>,
+    ) -> anyhow::Result<GeneratedCodes> {
+        let lib = canisters::relayer::generate_codes(&self.manifest)?;
+
+        let types = generate_types_from_bindings(
+            &self.manifest.id.clone().unwrap(),
+            &self.manifest.datasource.method.identifier,
+        )?;
+
+        Ok(GeneratedCodes {
+            lib,
+            types: Some(types),
+        })
+    }
+    fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
+        scripts::relayer::generate_scripts(&self.manifest, network)
+    }
+    fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
+        let lib = canisters::relayer::generate_app(&self.manifest)?;
+
+        let types = generate_types_from_bindings(
+            &self.manifest.id.clone().unwrap(),
+            &self.manifest.datasource.method.identifier,
+        )?;
+
+        Ok(GeneratedCodes {
+            lib,
+            types: Some(types),
+        })
+    }
+
+    fn manifest(&self) -> Box<dyn ComponentManifest> {
+        Box::new(self.manifest.clone())
+    }
+}
+
 impl ComponentManifest for RelayerComponentManifest {
     fn load_with_id(path: &str, id: &str) -> anyhow::Result<Self> {
         let manifest = Self::load(path)?;
@@ -156,27 +206,6 @@ impl ComponentManifest for RelayerComponentManifest {
 
     fn validate_manifest(&self) -> anyhow::Result<()> {
         canisters::relayer::validate_manifest(self)
-    }
-
-    fn generate_codes(
-        &self,
-        _interface_contract: Option<ethabi::Contract>,
-    ) -> anyhow::Result<GeneratedCodes> {
-        let lib = canisters::relayer::generate_codes(self)?;
-
-        let types = generate_types_from_bindings(
-            &self.id.clone().unwrap(),
-            &self.datasource.method.identifier,
-        )?;
-
-        Ok(GeneratedCodes {
-            lib,
-            types: Some(types),
-        })
-    }
-
-    fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
-        scripts::relayer::generate_scripts(self, network)
     }
 
     fn component_type(&self) -> ComponentType {
@@ -213,19 +242,6 @@ impl ComponentManifest for RelayerComponentManifest {
             source_type: SourceType::Chainsight,
             attributes,
         }
-    }
-    fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
-        let lib = canisters::relayer::generate_app(self)?;
-
-        let types = generate_types_from_bindings(
-            &self.id.clone().unwrap(),
-            &self.datasource.method.identifier,
-        )?;
-
-        Ok(GeneratedCodes {
-            lib,
-            types: Some(types),
-        })
     }
     fn custom_tags(&self) -> HashMap<String, String> {
         #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -472,11 +488,18 @@ interval: 3600
 
         assert_display_snapshot!(
             format!("{}__logics_lib", &snap_prefix),
-            SrcString::from(manifest.generate_user_impl_template().unwrap().lib)
+            SrcString::from(
+                RelayerCodeGenerator::new(manifest.clone())
+                    .generate_user_impl_template()
+                    .unwrap()
+                    .lib
+            )
         );
         assert_display_snapshot!(
             format!("{}__scripts", &snap_prefix),
-            &manifest.generate_scripts(Network::Local).unwrap()
+            &RelayerCodeGenerator::new(manifest.clone())
+                .generate_scripts(Network::Local)
+                .unwrap()
         );
     }
 
@@ -503,7 +526,9 @@ interval: 3600
         //     &manifest.generate_codes(Option::None).unwrap()
         // ));
 
-        let generated_user_impl_template = manifest.generate_user_impl_template().unwrap();
+        let generated_user_impl_template = RelayerCodeGenerator::new(manifest.clone())
+            .generate_user_impl_template()
+            .unwrap();
         assert_display_snapshot!(
             format!("{}__logics_lib", &snap_prefix),
             SrcString::from(generated_user_impl_template.lib)
@@ -515,7 +540,9 @@ interval: 3600
 
         assert_display_snapshot!(
             format!("{}__scripts", &snap_prefix),
-            &manifest.generate_scripts(Network::Local).unwrap()
+            &RelayerCodeGenerator::new(manifest)
+                .generate_scripts(Network::Local)
+                .unwrap()
         );
     }
     #[test]

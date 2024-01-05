@@ -13,6 +13,7 @@ use crate::{
 };
 
 use super::{
+    codegen::CodeGenerator,
     common::{
         custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
         DatasourceForCanister, DestinationType, GeneratedCodes, Sources,
@@ -102,6 +103,52 @@ impl From<SnapshotIndexerICPComponentManifest>
         }
     }
 }
+
+pub struct SnapshotIndexerICPCodeGenerator {
+    manifest: SnapshotIndexerICPComponentManifest,
+}
+impl SnapshotIndexerICPCodeGenerator {
+    pub fn new(manifest: SnapshotIndexerICPComponentManifest) -> Self {
+        Self { manifest }
+    }
+}
+impl CodeGenerator for SnapshotIndexerICPCodeGenerator {
+    fn generate_code(
+        &self,
+        _interface_contract: Option<ethabi::Contract>,
+    ) -> anyhow::Result<GeneratedCodes> {
+        let lib = canisters::snapshot_indexer_icp::generate_codes(&self.manifest)?;
+
+        let types = generate_types_from_bindings(
+            &self.manifest.id.clone().unwrap(),
+            &self.manifest.datasource.method.identifier,
+        )?;
+
+        Ok(GeneratedCodes {
+            lib,
+            types: Some(types),
+        })
+    }
+    fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
+        scripts::snapshot_indexer_icp::generate_scripts(&self.manifest, network)
+    }
+    fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
+        let lib = canisters::snapshot_indexer_icp::generate_app(&self.manifest)?;
+
+        let types = generate_types_from_bindings(
+            &self.manifest.id.clone().unwrap(),
+            &self.manifest.datasource.method.identifier,
+        )?;
+
+        Ok(GeneratedCodes {
+            lib,
+            types: Some(types),
+        })
+    }
+    fn manifest(&self) -> Box<dyn ComponentManifest> {
+        Box::new(self.manifest.clone())
+    }
+}
 impl ComponentManifest for SnapshotIndexerICPComponentManifest {
     fn load_with_id(path: &str, id: &str) -> anyhow::Result<Self> {
         let manifest = Self::load(path)?;
@@ -118,27 +165,6 @@ impl ComponentManifest for SnapshotIndexerICPComponentManifest {
 
     fn validate_manifest(&self) -> anyhow::Result<()> {
         canisters::snapshot_indexer_icp::validate_manifest(self)
-    }
-
-    fn generate_codes(
-        &self,
-        _interface_contract: Option<ethabi::Contract>,
-    ) -> anyhow::Result<GeneratedCodes> {
-        let lib = canisters::snapshot_indexer_icp::generate_codes(self)?;
-
-        let types = generate_types_from_bindings(
-            &self.id.clone().unwrap(),
-            &self.datasource.method.identifier,
-        )?;
-
-        Ok(GeneratedCodes {
-            lib,
-            types: Some(types),
-        })
-    }
-
-    fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
-        scripts::snapshot_indexer_icp::generate_scripts(self, network)
     }
 
     fn component_type(&self) -> ComponentType {
@@ -161,19 +187,6 @@ impl ComponentManifest for SnapshotIndexerICPComponentManifest {
         None
     }
 
-    fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
-        let lib = canisters::snapshot_indexer_icp::generate_app(self)?;
-
-        let types = generate_types_from_bindings(
-            &self.id.clone().unwrap(),
-            &self.datasource.method.identifier,
-        )?;
-
-        Ok(GeneratedCodes {
-            lib,
-            types: Some(types),
-        })
-    }
     fn get_sources(&self) -> Sources {
         let mut attr = HashMap::new();
         let mut method_identifier = self.datasource.clone().method.identifier;
@@ -327,7 +340,9 @@ interval: 3600
         };
 
         let snap_prefix = "snapshot__snapshot_indexer_icp";
-        let generated_codes = manifest.generate_codes(Option::None).unwrap();
+        let generated_codes = SnapshotIndexerICPCodeGenerator::new(manifest.clone())
+            .generate_code(Option::None)
+            .unwrap();
         assert_display_snapshot!(
             format!("{}__canisters_lib", &snap_prefix),
             SrcString::from(generated_codes.lib)
@@ -337,7 +352,9 @@ interval: 3600
             generated_codes.types.unwrap()
         );
 
-        let generated_user_impl_template = manifest.generate_user_impl_template().unwrap();
+        let generated_user_impl_template = SnapshotIndexerICPCodeGenerator::new(manifest.clone())
+            .generate_user_impl_template()
+            .unwrap();
 
         assert_display_snapshot!(
             format!("{}__logics_lib", &snap_prefix),
@@ -350,7 +367,9 @@ interval: 3600
 
         assert_display_snapshot!(
             format!("{}__scripts", &snap_prefix),
-            &manifest.generate_scripts(Network::Local).unwrap()
+            &SnapshotIndexerICPCodeGenerator::new(manifest)
+                .generate_scripts(Network::Local)
+                .unwrap()
         );
     }
 }

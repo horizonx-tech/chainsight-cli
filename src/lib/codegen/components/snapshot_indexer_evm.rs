@@ -9,9 +9,12 @@ use crate::{
     types::{ComponentType, Network},
 };
 
-use super::common::{
-    custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
-    DatasourceMethod, DestinationType, GeneratedCodes, Sources,
+use super::{
+    codegen::CodeGenerator,
+    common::{
+        custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
+        DatasourceMethod, DestinationType, GeneratedCodes, Sources,
+    },
 };
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -33,6 +36,37 @@ impl Default for SnapshotIndexerEVMDatasource {
                 args: vec![],
             },
         }
+    }
+}
+pub struct SnapshotIndexerEvmCodeGenerator {
+    manifest: SnapshotIndexerEVMComponentManifest,
+}
+impl SnapshotIndexerEvmCodeGenerator {
+    pub fn new(manifest: SnapshotIndexerEVMComponentManifest) -> Self {
+        Self { manifest }
+    }
+}
+impl CodeGenerator for SnapshotIndexerEvmCodeGenerator {
+    fn generate_code(
+        &self,
+        _interface_contract: Option<ethabi::Contract>,
+    ) -> anyhow::Result<GeneratedCodes> {
+        Ok(GeneratedCodes {
+            lib: canisters::snapshot_indexer_evm::generate_codes(&self.manifest)?,
+            types: None,
+        })
+    }
+    fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
+        scripts::snapshot_indexer_evm::generate_scripts(&self.manifest, network)
+    }
+    fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
+        Ok(GeneratedCodes {
+            lib: canisters::snapshot_indexer_evm::generate_app(&self.manifest)?,
+            types: None,
+        })
+    }
+    fn manifest(&self) -> Box<dyn ComponentManifest> {
+        Box::new(self.manifest.clone())
     }
 }
 
@@ -136,20 +170,6 @@ impl ComponentManifest for SnapshotIndexerEVMComponentManifest {
         canisters::snapshot_indexer_evm::validate_manifest(self)
     }
 
-    fn generate_codes(
-        &self,
-        _interface_contract: Option<ethabi::Contract>,
-    ) -> anyhow::Result<GeneratedCodes> {
-        Ok(GeneratedCodes {
-            lib: canisters::snapshot_indexer_evm::generate_codes(self)?,
-            types: None,
-        })
-    }
-
-    fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
-        scripts::snapshot_indexer_evm::generate_scripts(self, network)
-    }
-
     fn component_type(&self) -> ComponentType {
         ComponentType::SnapshotIndexerEVM
     }
@@ -168,13 +188,6 @@ impl ComponentManifest for SnapshotIndexerEVMComponentManifest {
 
     fn required_interface(&self) -> Option<String> {
         self.datasource.method.interface.clone()
-    }
-
-    fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
-        Ok(GeneratedCodes {
-            lib: canisters::snapshot_indexer_evm::generate_app(self)?,
-            types: None,
-        })
     }
 
     fn get_sources(&self) -> Sources {
@@ -325,8 +338,8 @@ interval: 3600
 
         let snap_prefix = "snapshot__snapshot_indexer_evm";
         let abi = File::open("resources/ERC20.json").unwrap();
-        let generated_codes = manifest
-            .generate_codes(Option::Some(ethabi::Contract::load(abi).unwrap()))
+        let generated_codes = SnapshotIndexerEvmCodeGenerator::new(manifest.clone())
+            .generate_code(Option::Some(ethabi::Contract::load(abi).unwrap()))
             .unwrap();
         assert_display_snapshot!(
             format!("{}__canisters_lib", &snap_prefix),
@@ -334,7 +347,9 @@ interval: 3600
         );
         assert!(generated_codes.types.is_none());
 
-        let generated_user_impl_template = manifest.generate_user_impl_template().unwrap();
+        let generated_user_impl_template = SnapshotIndexerEvmCodeGenerator::new(manifest.clone())
+            .generate_user_impl_template()
+            .unwrap();
         assert_display_snapshot!(
             format!("{}__logics_lib", &snap_prefix),
             SrcString::from(generated_user_impl_template.lib)
@@ -343,7 +358,9 @@ interval: 3600
 
         assert_display_snapshot!(
             format!("{}__scripts", &snap_prefix),
-            &manifest.generate_scripts(Network::Local).unwrap()
+            &SnapshotIndexerEvmCodeGenerator::new(manifest)
+                .generate_scripts(Network::Local)
+                .unwrap()
         );
     }
 }

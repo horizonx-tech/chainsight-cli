@@ -11,31 +11,7 @@ use crate::{
     types::ComponentType,
 };
 
-pub struct SnapshotIndexerHttpsCodeGenerator {
-    strategy: Box<dyn JsonTypeGenStrategy>,
-}
-
-impl SnapshotIndexerHttpsCodeGenerator {
-    fn new(strategy: Box<dyn JsonTypeGenStrategy>) -> Self {
-        Self { strategy }
-    }
-
-    fn generate_code(
-        &self,
-        manifest: &SnapshotIndexerHTTPSComponentManifest,
-    ) -> anyhow::Result<String> {
-        generate_codes(manifest)
-    }
-
-    fn generate_app(
-        &self,
-        manifest: &SnapshotIndexerHTTPSComponentManifest,
-    ) -> anyhow::Result<String> {
-        generate_app(manifest, self.strategy)
-    }
-}
-
-fn generate_codes(manifest: &SnapshotIndexerHTTPSComponentManifest) -> anyhow::Result<String> {
+pub fn generate_codes(manifest: &SnapshotIndexerHTTPSComponentManifest) -> anyhow::Result<String> {
     ensure!(
         manifest.metadata.type_ == ComponentType::SnapshotIndexerHTTPS,
         "type is not SnapshotIndexerHTTPS"
@@ -49,7 +25,7 @@ fn generate_codes(manifest: &SnapshotIndexerHTTPSComponentManifest) -> anyhow::R
     Ok(code.to_string())
 }
 
-trait JsonTypeGenStrategy {
+pub trait JsonTypeGenStrategy {
     fn generate_code(
         &self,
         struct_name: &str,
@@ -58,7 +34,7 @@ trait JsonTypeGenStrategy {
     ) -> anyhow::Result<String>;
 }
 
-struct JsonTypeGenStrategyImpl;
+pub struct JsonTypeGenStrategyImpl;
 impl JsonTypeGenStrategy for JsonTypeGenStrategyImpl {
     fn generate_code(
         &self,
@@ -71,9 +47,9 @@ impl JsonTypeGenStrategy for JsonTypeGenStrategyImpl {
     }
 }
 
-fn generate_app(
+pub fn generate_app(
     manifest: &SnapshotIndexerHTTPSComponentManifest,
-    strategy: Box<dyn JsonTypeGenStrategy>,
+    strategy: &Box<dyn JsonTypeGenStrategy>,
 ) -> anyhow::Result<String> {
     let SnapshotIndexerHTTPSComponentManifest { datasource, .. } = manifest;
     let struct_name = "SnapshotValue";

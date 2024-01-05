@@ -12,9 +12,12 @@ use crate::{
     utils::serializer::ordered_map,
 };
 
-use super::common::{
-    custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
-    GeneratedCodes, SourceType, Sources,
+use super::{
+    codegen::CodeGenerator,
+    common::{
+        custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
+        GeneratedCodes, SourceType, Sources,
+    },
 };
 
 /// Component Manifest: Algorithm Indexer
@@ -77,6 +80,39 @@ impl AlgorithmIndexerComponentManifest {
         }
     }
 }
+
+pub struct AlgorithmIndexerCodeGenerator {
+    manifest: AlgorithmIndexerComponentManifest,
+}
+impl AlgorithmIndexerCodeGenerator {
+    pub fn new(manifest: AlgorithmIndexerComponentManifest) -> Self {
+        Self { manifest }
+    }
+}
+impl CodeGenerator for AlgorithmIndexerCodeGenerator {
+    fn generate_code(
+        &self,
+        _interface_contract: Option<ethabi::Contract>,
+    ) -> anyhow::Result<GeneratedCodes> {
+        Ok(GeneratedCodes {
+            lib: canisters::algorithm_indexer::generate_codes(&self.manifest)?,
+            types: None,
+        })
+    }
+    fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
+        scripts::algorithm_indexer::generate_scripts(&self.manifest, network)
+    }
+    fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
+        Ok(GeneratedCodes {
+            lib: canisters::algorithm_indexer::generate_app(&self.manifest)?,
+            types: None,
+        })
+    }
+    fn manifest(&self) -> Box<dyn ComponentManifest> {
+        Box::new(self.manifest.clone())
+    }
+}
+
 impl ComponentManifest for AlgorithmIndexerComponentManifest {
     fn load_with_id(path: &str, id: &str) -> anyhow::Result<Self> {
         let manifest = Self::load(path)?;
@@ -93,20 +129,6 @@ impl ComponentManifest for AlgorithmIndexerComponentManifest {
 
     fn validate_manifest(&self) -> anyhow::Result<()> {
         canisters::algorithm_indexer::validate_manifest(self)
-    }
-
-    fn generate_codes(
-        &self,
-        _interface_contract: Option<ethabi::Contract>,
-    ) -> anyhow::Result<GeneratedCodes> {
-        Ok(GeneratedCodes {
-            lib: canisters::algorithm_indexer::generate_codes(self)?,
-            types: None,
-        })
-    }
-
-    fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
-        scripts::algorithm_indexer::generate_scripts(self, network)
     }
 
     fn component_type(&self) -> ComponentType {
@@ -127,13 +149,6 @@ impl ComponentManifest for AlgorithmIndexerComponentManifest {
 
     fn required_interface(&self) -> Option<String> {
         None
-    }
-
-    fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
-        Ok(GeneratedCodes {
-            lib: canisters::algorithm_indexer::generate_app(self)?,
-            types: None,
-        })
     }
 
     fn get_sources(&self) -> Sources {
@@ -357,14 +372,18 @@ interval: 3600
         };
 
         let snap_prefix = "snapshot__algorithm_indexer";
-        let generated_codes = manifest.generate_codes(Option::None).unwrap();
+        let generated_codes = AlgorithmIndexerCodeGenerator::new(manifest.clone())
+            .generate_code(Option::None)
+            .unwrap();
         assert_display_snapshot!(
             format!("{}__canisters_lib", &snap_prefix),
             SrcString::from(generated_codes.lib)
         );
         assert!(generated_codes.types.is_none());
 
-        let generated_user_impl_template = manifest.generate_user_impl_template().unwrap();
+        let generated_user_impl_template = AlgorithmIndexerCodeGenerator::new(manifest.clone())
+            .generate_user_impl_template()
+            .unwrap();
         assert_display_snapshot!(
             format!("{}__logics_lib", &snap_prefix),
             SrcString::from(generated_user_impl_template.lib)
@@ -373,7 +392,9 @@ interval: 3600
 
         assert_display_snapshot!(
             format!("{}__scripts", &snap_prefix),
-            &manifest.generate_scripts(Network::Local).unwrap()
+            &AlgorithmIndexerCodeGenerator::new(manifest)
+                .generate_scripts(Network::Local)
+                .unwrap()
         );
     }
 }

@@ -7,13 +7,20 @@ use chainsight_cdk::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    lib::codegen::{canisters, components::common::SourceType, scripts},
+    lib::codegen::{
+        canisters::snapshot_indexer_https::{generate_app, generate_codes, JsonTypeGenStrategy},
+        components::common::SourceType,
+        scripts,
+    },
     types::{ComponentType, Network},
 };
 
-use super::common::{
-    custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
-    DestinationType, GeneratedCodes, Sources,
+use super::{
+    codegen::CodeGenerator,
+    common::{
+        custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
+        DestinationType, GeneratedCodes, Sources,
+    },
 };
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -115,6 +122,44 @@ impl From<SnapshotIndexerHTTPSComponentManifest>
     }
 }
 
+pub struct SnapshotIndesxerHTTPSCodeGenerator {
+    strategy: Box<dyn JsonTypeGenStrategy>,
+    manifest: SnapshotIndexerHTTPSComponentManifest,
+}
+
+impl SnapshotIndesxerHTTPSCodeGenerator {
+    pub fn new(
+        manifest: SnapshotIndexerHTTPSComponentManifest,
+        strategy: Box<dyn JsonTypeGenStrategy>,
+    ) -> Self {
+        Self { strategy, manifest }
+    }
+}
+
+impl CodeGenerator for SnapshotIndesxerHTTPSCodeGenerator {
+    fn generate_code(
+        &self,
+        _interface_contract: Option<ethabi::Contract>,
+    ) -> anyhow::Result<GeneratedCodes> {
+        Ok(GeneratedCodes {
+            lib: generate_codes(&self.manifest)?,
+            types: None,
+        })
+    }
+    fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
+        scripts::snapshot_indexer_https::generate_scripts(&self.manifest, network)
+    }
+    fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
+        Ok(GeneratedCodes {
+            lib: generate_app(&self.manifest, &self.strategy)?,
+            types: None,
+        })
+    }
+    fn manifest(&self) -> Box<dyn ComponentManifest> {
+        Box::new(self.manifest.clone())
+    }
+}
+
 impl ComponentManifest for SnapshotIndexerHTTPSComponentManifest {
     fn load_with_id(path: &str, id: &str) -> anyhow::Result<Self> {
         let manifest = Self::load(path)?;
@@ -131,20 +176,6 @@ impl ComponentManifest for SnapshotIndexerHTTPSComponentManifest {
 
     fn validate_manifest(&self) -> anyhow::Result<()> {
         Ok(())
-    }
-
-    fn generate_codes(
-        &self,
-        _interface_contract: Option<ethabi::Contract>,
-    ) -> anyhow::Result<GeneratedCodes> {
-        Ok(GeneratedCodes {
-            lib: canisters::snapshot_indexer_https::generate_codes(self)?,
-            types: None,
-        })
-    }
-
-    fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
-        scripts::snapshot_indexer_https::generate_scripts(self, network)
     }
 
     fn component_type(&self) -> ComponentType {
@@ -165,13 +196,6 @@ impl ComponentManifest for SnapshotIndexerHTTPSComponentManifest {
 
     fn required_interface(&self) -> Option<String> {
         None
-    }
-
-    fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
-        Ok(GeneratedCodes {
-            lib: canisters::snapshot_indexer_https::generate_app(self)?,
-            types: None,
-        })
     }
     fn get_sources(&self) -> Sources {
         Sources {
@@ -198,6 +222,30 @@ mod tests {
     use jsonschema::JSONSchema;
 
     use crate::lib::test_utils::SrcString;
+
+    pub struct JsonTypeGenStrategyMock;
+
+    impl JsonTypeGenStrategy for JsonTypeGenStrategyMock {
+        fn generate_code(
+            &self,
+            struct_name: &str,
+            _url: &str,
+            _options: json_typegen_shared::Options,
+        ) -> anyhow::Result<String> {
+            let struct_str = format!(
+                r#"
+                #[derive(Debug, Clone, candid::CandidType, candid::Deserialize, serde::Serialize, chainsight_cdk_macros::StableMemoryStorable)]
+                pub struct {struct_name} {{
+                    pub id: String,
+                    pub vs_currencies: String,
+                    pub dai: String,
+                }}
+                "#,
+                struct_name = struct_name
+            );
+            Ok(struct_str)
+        }
+    }
 
     use super::*;
 
@@ -296,14 +344,23 @@ interval: 3600
         manifest.id = Some("sample_snapshot_indexer_https".to_string());
 
         let snap_prefix = "snapshot__snapshot_indexer_https";
-        let generated_codes = manifest.generate_codes(Option::None).unwrap();
+        let generator = SnapshotIndesxerHTTPSCodeGenerator::new(
+            manifest.clone(),
+            Box::new(JsonTypeGenStrategyMock),
+        );
+        let generated_codes = generator.generate_code(Option::None).unwrap();
         assert_display_snapshot!(
             format!("{}__canisters_lib", &snap_prefix),
             SrcString::from(generated_codes.lib)
         );
         assert!(generated_codes.types.is_none());
 
-        let generated_user_impl_template = manifest.generate_user_impl_template().unwrap();
+        let generated_user_impl_template = SnapshotIndesxerHTTPSCodeGenerator::new(
+            manifest.clone(),
+            Box::new(JsonTypeGenStrategyMock),
+        )
+        .generate_user_impl_template()
+        .unwrap();
         assert_display_snapshot!(
             format!("{}__logics_lib", &snap_prefix),
             generated_user_impl_template.lib
@@ -312,7 +369,12 @@ interval: 3600
 
         assert_display_snapshot!(
             format!("{}__scripts", &snap_prefix),
-            &manifest.generate_scripts(Network::Local).unwrap()
+            &SnapshotIndesxerHTTPSCodeGenerator::new(
+                manifest.clone(),
+                Box::new(JsonTypeGenStrategyMock),
+            )
+            .generate_scripts(Network::Local)
+            .unwrap()
         );
     }
 
@@ -367,14 +429,24 @@ interval: 3600
         manifest.id = Some("sample_snapshot_indexer_https".to_string());
 
         let snap_prefix = "snapshot__snapshot_indexer_https_dynamic_queries";
-        let generated_codes = manifest.generate_codes(Option::None).unwrap();
+        let generated_codes = SnapshotIndesxerHTTPSCodeGenerator::new(
+            manifest.clone(),
+            Box::new(JsonTypeGenStrategyMock),
+        )
+        .generate_code(Option::None)
+        .unwrap();
         assert_display_snapshot!(
             format!("{}__canisters_lib", &snap_prefix),
             SrcString::from(generated_codes.lib)
         );
         assert!(generated_codes.types.is_none());
 
-        let generated_user_impl_template = manifest.generate_user_impl_template().unwrap();
+        let generated_user_impl_template = SnapshotIndesxerHTTPSCodeGenerator::new(
+            manifest.clone(),
+            Box::new(JsonTypeGenStrategyMock),
+        )
+        .generate_user_impl_template()
+        .unwrap();
         assert_display_snapshot!(
             format!("{}__logics_lib", &snap_prefix),
             generated_user_impl_template.lib
@@ -383,7 +455,9 @@ interval: 3600
 
         assert_display_snapshot!(
             format!("{}__scripts", &snap_prefix),
-            &manifest.generate_scripts(Network::Local).unwrap()
+            &SnapshotIndesxerHTTPSCodeGenerator::new(manifest, Box::new(JsonTypeGenStrategyMock),)
+                .generate_scripts(Network::Local)
+                .unwrap()
         );
     }
 }

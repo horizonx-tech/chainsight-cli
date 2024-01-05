@@ -12,7 +12,7 @@ use serde_json::Value;
 
 use crate::{
     lib::utils::{env::load_env, serializer::ordered_map},
-    types::{ComponentType, Network},
+    types::ComponentType,
 };
 
 #[allow(clippy::enum_variant_names)]
@@ -134,15 +134,6 @@ pub trait ComponentManifest: std::fmt::Debug {
     /// Check Manifest format/value
     fn validate_manifest(&self) -> anyhow::Result<()>;
 
-    /// Generate canister codes representing Component from Component Manifest
-    fn generate_codes(
-        &self,
-        interface_contract: Option<ethabi::Contract>,
-    ) -> anyhow::Result<GeneratedCodes>;
-
-    /// Generate a script from Component Manifest containing commands to run the Component
-    fn generate_scripts(&self, network: Network) -> anyhow::Result<String>;
-
     /// Get the Component's Type
     fn component_type(&self) -> ComponentType;
 
@@ -163,9 +154,6 @@ pub trait ComponentManifest: std::fmt::Debug {
     /// Get the required interface for this component
     /// ex: abi (.json), candid (.candid)
     fn required_interface(&self) -> Option<String>;
-
-    /// Template code to be added/modified by user
-    fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes>;
 
     /// Sources of data provided by this component
     fn get_sources(&self) -> Sources;
