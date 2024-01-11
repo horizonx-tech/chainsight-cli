@@ -9,6 +9,6 @@ def_snapshot_indexer_icp_canister!("{
 }, \"method_identifier\":\"get_last_snapshot:() ->(record {
 value:text;
 timestamp:nat64
-})\", \"lens_parameter\":null
+})\", \"is_target_component\":true, \"lens_parameter\":null
 }");
 
