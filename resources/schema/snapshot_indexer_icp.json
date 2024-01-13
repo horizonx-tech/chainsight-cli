@@ -130,6 +130,12 @@
         }
       }
     },
+    "is_target_component": {
+      "$id": "#/properties/is_target_component",
+      "title": "is_target_component",
+      "description": "Whether the target canister of the data source is a component within the platform, default is true",
+      "type": ["boolean", "null"]
+    },
     "lens_targets": {
       "$id": "#/properties/lens_targets",
       "type": ["object", "null"],

@@ -32,6 +32,7 @@ pub struct SnapshotIndexerICPComponentManifest {
     pub version: String,
     pub metadata: ComponentMetadata,
     pub datasource: DatasourceForCanister,
+    pub is_target_component: Option<bool>,
     pub lens_targets: Option<LensTargets>,
     pub interval: u32,
     pub cycles: Option<CycleManagementsManifest>,
@@ -61,6 +62,7 @@ impl SnapshotIndexerICPComponentManifest {
             },
             datasource,
             interval,
+            is_target_component: None,
             lens_targets: None,
             cycles: None,
         }
@@ -75,6 +77,7 @@ impl From<SnapshotIndexerICPComponentManifest>
             datasource: DatasourceForCanister {
                 method, location, ..
             },
+            is_target_component,
             lens_targets,
             ..
         } = val;
@@ -99,6 +102,7 @@ impl From<SnapshotIndexerICPComponentManifest>
                 canister_name: id.clone().unwrap(),
             },
             method_identifier: method.identifier,
+            is_target_component: is_target_component.unwrap_or(true), // NOTE: default target is canister in the platform (= component)
             lens_parameter,
         }
     }
@@ -296,6 +300,7 @@ interval: 3600
                         args: vec![]
                     }
                 },
+                is_target_component: None,
                 lens_targets: None,
                 interval: 3600,
                 cycles: None,
@@ -334,6 +339,7 @@ interval: 3600
                     args: vec![],
                 },
             },
+            is_target_component: None,
             lens_targets: None,
             interval: 3600,
             cycles: None,

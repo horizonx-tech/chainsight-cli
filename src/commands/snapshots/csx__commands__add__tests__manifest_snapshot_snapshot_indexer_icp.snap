@@ -19,6 +19,7 @@ datasource:
     identifier: 'get_last_snapshot : () -> (record { value : text; timestamp : nat64 })'
     interface: null
     args: []
+is_target_component: null
 lens_targets: null
 interval: 3600
 cycles: null
