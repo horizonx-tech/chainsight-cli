@@ -3,6 +3,8 @@ source: src/lib/codegen/components/relayer.rs
 expression: "SrcString::from(manifest.generate_user_impl_template().unwrap().lib)"
 ---
 mod types;
+use crate::ic_web3_rs::ethabi;
+use ic_web3_rs;
 pub type CallCanisterResponse = types::ResponseType;
 pub type CallCanisterArgs =();
 pub fn call_args() -> CallCanisterArgs {

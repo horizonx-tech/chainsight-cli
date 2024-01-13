@@ -10,9 +10,12 @@ use crate::{
     types::{ComponentType, Network},
 };
 
-use super::common::{
-    custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
-    GeneratedCodes, SourceType, Sources,
+use super::{
+    codegen::CodeGenerator,
+    common::{
+        custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
+        GeneratedCodes, SourceType, Sources,
+    },
 };
 
 /// Component Manifest: Event Indexer
@@ -74,6 +77,35 @@ impl EventIndexerComponentManifest {
         }
     }
 }
+
+pub struct EventIndexerCodeGenerator {
+    manifest: EventIndexerComponentManifest,
+}
+impl EventIndexerCodeGenerator {
+    pub fn new(manifest: EventIndexerComponentManifest) -> Self {
+        Self { manifest }
+    }
+}
+impl CodeGenerator for EventIndexerCodeGenerator {
+    fn generate_code(
+        &self,
+        _interface_contract: Option<ethabi::Contract>,
+    ) -> anyhow::Result<GeneratedCodes> {
+        Ok(GeneratedCodes {
+            lib: canisters::event_indexer::generate_codes(&self.manifest)?,
+            types: None,
+        })
+    }
+    fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
+        scripts::event_indexer::generate_scripts(&self.manifest, network)
+    }
+    fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
+        bail!("not implemented")
+    }
+    fn manifest(&self) -> Box<dyn ComponentManifest> {
+        Box::new(self.manifest.clone())
+    }
+}
 impl ComponentManifest for EventIndexerComponentManifest {
     fn load_with_id(path: &str, id: &str) -> anyhow::Result<Self> {
         let manifest = Self::load(path)?;
@@ -90,20 +122,6 @@ impl ComponentManifest for EventIndexerComponentManifest {
 
     fn validate_manifest(&self) -> anyhow::Result<()> {
         canisters::event_indexer::validate_manifest(self)
-    }
-
-    fn generate_codes(
-        &self,
-        _interface_contract: Option<ethabi::Contract>,
-    ) -> anyhow::Result<GeneratedCodes> {
-        Ok(GeneratedCodes {
-            lib: canisters::event_indexer::generate_codes(self)?,
-            types: None,
-        })
-    }
-
-    fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
-        scripts::event_indexer::generate_scripts(self, network)
     }
 
     fn component_type(&self) -> ComponentType {
@@ -159,9 +177,6 @@ impl ComponentManifest for EventIndexerComponentManifest {
         self.datasource.event.interface.clone()
     }
 
-    fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
-        bail!("not implemented")
-    }
     fn custom_tags(&self) -> HashMap<String, String> {
         let mut res = HashMap::new();
         let (interval_key, interval_val) = custom_tags_interval_sec(self.interval);
@@ -351,8 +366,8 @@ interval: 3600
 
         let snap_prefix = "snapshot__event_indexer";
         let abi = File::open("resources/ERC20.json").unwrap();
-        let generated_codes = manifest
-            .generate_codes(Option::Some(ethabi::Contract::load(abi).unwrap()))
+        let generated_codes = EventIndexerCodeGenerator::new(manifest.clone())
+            .generate_code(Option::Some(ethabi::Contract::load(abi).unwrap()))
             .unwrap();
         assert_display_snapshot!(
             format!("{}__canisters_lib", &snap_prefix),
@@ -360,11 +375,15 @@ interval: 3600
         );
         assert!(generated_codes.types.is_none());
 
-        assert!(manifest.generate_user_impl_template().is_err());
+        assert!(EventIndexerCodeGenerator::new(manifest.clone())
+            .generate_user_impl_template()
+            .is_err());
 
         assert_display_snapshot!(
             format!("{}__scripts", &snap_prefix),
-            &manifest.generate_scripts(Network::Local).unwrap()
+            &EventIndexerCodeGenerator::new(manifest)
+                .generate_scripts(Network::Local)
+                .unwrap()
         );
     }
 }

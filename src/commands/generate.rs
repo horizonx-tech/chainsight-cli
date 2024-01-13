@@ -8,7 +8,8 @@ use anyhow::{bail, Ok};
 use clap::Parser;
 use slog::{debug, info, Logger};
 
-use crate::lib::codegen::components::common::{ComponentManifest, GeneratedCodes};
+use crate::lib::codegen::components::codegen::CodeGenerator;
+use crate::lib::codegen::components::common::GeneratedCodes;
 use crate::lib::codegen::templates::{
     accessors_cargo_toml, bindings_cargo_toml, canister_project_cargo_toml, logic_cargo_toml,
     root_cargo_toml,
@@ -86,7 +87,7 @@ pub fn exec(env: &EnvironmentImpl, opts: GenerateOpts) -> anyhow::Result<()> {
         }
     }
 
-    let component_data = project_manifest.load_component_manifests(project_path_str.as_str())?;
+    let component_data = project_manifest.load_code_generator(project_path_str.as_str())?;
 
     exec_codegen(log, &project_path_str, &component_data)?;
 
@@ -100,7 +101,7 @@ pub fn exec(env: &EnvironmentImpl, opts: GenerateOpts) -> anyhow::Result<()> {
 fn exec_codegen(
     log: &Logger,
     project_path_str: &str,
-    component_data: &Vec<Box<dyn ComponentManifest>>,
+    generators: &Vec<Box<dyn CodeGenerator>>,
 ) -> anyhow::Result<()> {
     // generate workspace
     let src_path_str = &paths::src_path_str(project_path_str);
@@ -125,16 +126,68 @@ fn exec_codegen(
     let mut generated_component_ids = vec![];
     let mut is_exist_accessors_folder = false;
     let mut is_exist_bindings_folder = false;
-    for data in component_data {
-        let id = data.id().unwrap();
+    for generator in generators {
+        let manifest = generator.manifest();
+        let id = manifest.id().unwrap();
 
-        if let Err(msg) = data.validate_manifest() {
+        if let Err(msg) = manifest.validate_manifest() {
             bail!(format!(r#"[{}] Invalid manifest: {}"#, id, msg));
         }
         info!(log, r#"[{}] Start processing..."#, id);
 
+        // Processes about interface
+        // - copy and move any necessary interfaces to canister
+        // - get ethabi::Contract for codegen
+        let mut interface_contract: Option<ethabi::Contract> = None;
+        if let Some(interface_file) = manifest.required_interface() {
+            let dst_interface_path_str = format!("{}/{}", &interfaces_path_str, &interface_file);
+            let dst_interface_path = Path::new(&dst_interface_path_str);
+
+            let user_if_file_path_str =
+                format!("{}/interfaces/{}", project_path_str, &interface_file);
+            let user_if_file_path = Path::new(&user_if_file_path_str);
+            if user_if_file_path.exists() {
+                fs::copy(user_if_file_path, dst_interface_path)?;
+                info!(
+                    log,
+                    r#"[{}] Interface file '{}' copied from user's interface"#, id, &interface_file
+                );
+                let abi_file = File::open(user_if_file_path)?;
+                interface_contract = Some(ethabi::Contract::load(abi_file)?);
+            } else if let Some(contents) = builtin_interface(&interface_file) {
+                fs::write(dst_interface_path, contents)?;
+                info!(
+                    log,
+                    r#"[{}] Interface file '{}' copied from builtin interface"#,
+                    id,
+                    &interface_file
+                );
+                let contract: ethabi::Contract = serde_json::from_str(contents)?;
+                interface_contract = Some(contract);
+            } else {
+                bail!(format!(
+                    r#"[{}] Interface file "{}" not found"#,
+                    id, &interface_file
+                ));
+            }
+        }
+
+        // copy and move oracle interface
+        if manifest.destination_type().is_some() {
+            let json_name = "Oracle.json";
+            let json_contents = include_str!("../../resources/Oracle.json");
+            fs::write(
+                format!("{}/{}", &interfaces_path_str, &json_name),
+                json_contents,
+            )?;
+            info!(
+                log,
+                r#"[{}] Interface file '{}' copied from builtin interface"#, id, &json_name
+            );
+        }
+
         // Generate /bindings/(component)
-        let bindings = data.generate_bindings()?;
+        let bindings = manifest.generate_bindings()?;
         if !bindings.is_empty() {
             // generate dummy bindings to be able to run cargo test
             let bindings_path_str = &paths::bindings_path_str(src_path_str, &id);
@@ -158,7 +211,7 @@ fn exec_codegen(
                 r#"[{}] Skip creating logic project: '{}' already exists"#, id, logic_path_str,
             );
         } else {
-            let codes = data.generate_user_impl_template();
+            let codes = generator.generate_user_impl_template();
             let src = match codes {
                 anyhow::Result::Ok(codes) => {
                     Some(CargoProjectSrc::new_with_mods(BTreeMap::from([
@@ -176,7 +229,7 @@ fn exec_codegen(
                 Option::Some(&logic_cargo_toml(
                     &id,
                     !bindings.is_empty(),
-                    data.dependencies(),
+                    manifest.dependencies(),
                 )),
                 src,
             )
@@ -191,9 +244,9 @@ fn exec_codegen(
         }
 
         // Generate /accessors/(component)
-        if !data.dependencies().is_empty() {
+        if !manifest.dependencies().is_empty() {
             let accessors_path_str = &paths::accessors_path_str(src_path_str, &id);
-            let codes = data.generate_dependency_accessors();
+            let codes = manifest.generate_dependency_accessors();
             let src = match codes {
                 anyhow::Result::Ok(codes) => {
                     Some(CargoProjectSrc::new_with_mods(BTreeMap::from([
@@ -231,62 +284,10 @@ fn exec_codegen(
                 is_exist_accessors_folder,
             ),
         )?;
-
-        // Processes about interface
-        // - copy and move any necessary interfaces to canister
-        // - get ethabi::Contract for codegen
-        let mut interface_contract: Option<ethabi::Contract> = None;
-        if let Some(interface_file) = data.required_interface() {
-            let dst_interface_path_str = format!("{}/{}", &interfaces_path_str, &interface_file);
-            let dst_interface_path = Path::new(&dst_interface_path_str);
-
-            let user_if_file_path_str =
-                format!("{}/interfaces/{}", project_path_str, &interface_file);
-            let user_if_file_path = Path::new(&user_if_file_path_str);
-            if user_if_file_path.exists() {
-                fs::copy(user_if_file_path, dst_interface_path)?;
-                info!(
-                    log,
-                    r#"[{}] Interface file '{}' copied from user's interface"#, id, &interface_file
-                );
-                let abi_file = File::open(user_if_file_path)?;
-                interface_contract = Some(ethabi::Contract::load(abi_file)?);
-            } else if let Some(contents) = builtin_interface(&interface_file) {
-                fs::write(dst_interface_path, contents)?;
-                info!(
-                    log,
-                    r#"[{}] Interface file '{}' copied from builtin interface"#,
-                    id,
-                    &interface_file
-                );
-                let contract: ethabi::Contract = serde_json::from_str(contents)?;
-                interface_contract = Some(contract);
-            } else {
-                bail!(format!(
-                    r#"[{}] Interface file "{}" not found"#,
-                    id, &interface_file
-                ));
-            }
-        }
-
-        // copy and move oracle interface
-        if data.destination_type().is_some() {
-            let json_name = "Oracle.json";
-            let json_contents = include_str!("../../resources/Oracle.json");
-            fs::write(
-                format!("{}/{}", &interfaces_path_str, &json_name),
-                json_contents,
-            )?;
-            info!(
-                log,
-                r#"[{}] Interface file '{}' copied from builtin interface"#, id, &json_name
-            );
-        }
-
         // Generate /canisters/(component)
         let canister_path_str = &paths::canisters_path_str(src_path_str, &id);
         let GeneratedCodes { lib, types } =
-            data.generate_codes(interface_contract).map_err(|err| {
+            generator.generate_code(interface_contract).map_err(|err| {
                 anyhow::anyhow!(r#"[{}] Failed to generate canister code by: {}"#, id, err)
             })?;
         let src = if let Some(types) = types {

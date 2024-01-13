@@ -10,6 +10,7 @@ use crate::{
 };
 
 use super::{
+    codegen::CodeGenerator,
     common::{
         ComponentManifest, ComponentMetadata, CycleManagementsManifest, GeneratedCodes, SourceType,
         Sources,
@@ -76,6 +77,40 @@ impl From<AlgorithmLensComponentManifest>
     }
 }
 
+pub struct AlgorithmLensCodeGenerator {
+    manifest: AlgorithmLensComponentManifest,
+}
+
+impl AlgorithmLensCodeGenerator {
+    pub fn new(manifest: AlgorithmLensComponentManifest) -> Self {
+        Self { manifest }
+    }
+}
+impl CodeGenerator for AlgorithmLensCodeGenerator {
+    fn generate_code(
+        &self,
+        _interface_contract: Option<ethabi::Contract>,
+    ) -> anyhow::Result<GeneratedCodes> {
+        Ok(GeneratedCodes {
+            lib: canisters::algorithm_lens::generate_codes(&self.manifest)?,
+            types: None,
+        })
+    }
+
+    fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
+        scripts::algorithm_lens::generate_scripts(&self.manifest, network)
+    }
+    fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
+        Ok(GeneratedCodes {
+            lib: canisters::algorithm_lens::generate_app(&self.manifest)?,
+            types: None,
+        })
+    }
+    fn manifest(&self) -> Box<dyn ComponentManifest> {
+        Box::new(self.manifest.clone())
+    }
+}
+
 impl ComponentManifest for AlgorithmLensComponentManifest {
     fn load_with_id(path: &str, id: &str) -> anyhow::Result<Self> {
         let manifest = Self::load(path)?;
@@ -92,20 +127,6 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
 
     fn validate_manifest(&self) -> anyhow::Result<()> {
         canisters::algorithm_lens::validate_manifest(self)
-    }
-
-    fn generate_codes(
-        &self,
-        _interface_contract: Option<ethabi::Contract>,
-    ) -> anyhow::Result<GeneratedCodes> {
-        Ok(GeneratedCodes {
-            lib: canisters::algorithm_lens::generate_codes(self)?,
-            types: None,
-        })
-    }
-
-    fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
-        scripts::algorithm_lens::generate_scripts(self, network)
     }
 
     fn component_type(&self) -> ComponentType {
@@ -126,13 +147,6 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
 
     fn required_interface(&self) -> Option<String> {
         None
-    }
-
-    fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
-        Ok(GeneratedCodes {
-            lib: canisters::algorithm_lens::generate_app(self)?,
-            types: None,
-        })
     }
 
     fn get_sources(&self) -> Sources {
@@ -325,14 +339,18 @@ with_args: true
         };
 
         let snap_prefix = "snapshot__algorithm_lens";
-        let generated_codes = manifest.generate_codes(Option::None).unwrap();
+        let generated_codes = AlgorithmLensCodeGenerator::new(manifest.clone())
+            .generate_code(Option::None)
+            .unwrap();
         assert_display_snapshot!(
             format!("{}__canisters_lib", &snap_prefix),
             SrcString::from(generated_codes.lib)
         );
         assert!(generated_codes.types.is_none());
 
-        let generated_user_impl_template = manifest.generate_user_impl_template().unwrap();
+        let generated_user_impl_template = AlgorithmLensCodeGenerator::new(manifest.clone())
+            .generate_user_impl_template()
+            .unwrap();
         assert_display_snapshot!(
             format!("{}__logics_lib", &snap_prefix),
             SrcString::from(generated_user_impl_template.lib)
@@ -346,7 +364,9 @@ with_args: true
 
         assert_display_snapshot!(
             format!("{}__scripts", &snap_prefix),
-            &manifest.generate_scripts(Network::Local).unwrap()
+            &AlgorithmLensCodeGenerator::new(manifest)
+                .generate_scripts(Network::Local)
+                .unwrap()
         );
     }
 }

@@ -12,6 +12,7 @@ use slog::{debug, info, Logger};
 use walrus::Module;
 
 use crate::commands::generate;
+use crate::lib::codegen::components::codegen::CodeGenerator;
 use crate::lib::codegen::components::common::ComponentManifest;
 use crate::lib::codegen::templates::dfx_json;
 use crate::lib::utils::env::cache_envfile;
@@ -81,7 +82,7 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
         }
     }
 
-    let component_data = project_manifest.load_component_manifests(project_path_str.as_str())?;
+    let component_data = project_manifest.load_code_generator(project_path_str.as_str())?;
 
     if opts.only_build {
         info!(log, r#"Skip codegen"#);
@@ -104,22 +105,22 @@ pub fn exec(env: &EnvironmentImpl, opts: BuildOpts) -> anyhow::Result<()> {
 fn execute_codebuild(
     log: &Logger,
     project_path_str: &str,
-    component_data: &Vec<Box<dyn ComponentManifest>>,
+    generators: &Vec<Box<dyn CodeGenerator>>,
 ) -> anyhow::Result<()> {
     let src_path_str: &String = &paths::src_path_str(project_path_str);
     let output_path_str = &format!("{}/{}", project_path_str, ARTIFACTS_DIR);
     if fs::metadata(output_path_str).is_err() {
         fs::create_dir_all(output_path_str)?;
     }
-    let projects = component_data
+    let projects = generators
         .iter()
-        .map(|data| data.id().unwrap())
+        .map(|generator| generator.manifest().id().unwrap())
         .collect::<Vec<String>>();
     fs::write(format!("{}/dfx.json", output_path_str), dfx_json(projects))?;
 
     // Copy .did to output dir
-    for component_datum in component_data {
-        let id = &component_datum.id().unwrap();
+    for generator in generators {
+        let id = &generator.manifest().id().unwrap();
         let did_src_path = format!("{}/{}.did", paths::canisters_path_str(src_path_str, id), id);
         let did_dst_path = format!("{}/{}.did", output_path_str, id);
         fs::copy(did_src_path, did_dst_path)?;
@@ -157,8 +158,8 @@ fn execute_codebuild(
 
     let action = "Shrink/Optimize modules";
     info!(log, "{}...", action);
-    for component_datum in component_data {
-        let id = &component_datum.id().unwrap();
+    for generator in generators {
+        let id = &generator.manifest().id().unwrap();
         let wasm_path = format!(
             "{}/target/wasm32-unknown-unknown/release/{}.wasm",
             src_path_str,
@@ -181,8 +182,8 @@ fn execute_codebuild(
 
     let action = "Add metadata to modules";
     info!(log, "{}...", action);
-    for component_datum in component_data {
-        add_metadata_to_wasm(log, output_path_str, component_datum.as_ref())?;
+    for generator in generators {
+        add_metadata_to_wasm(log, output_path_str, generator.manifest().as_ref())?;
     }
     info!(log, "Succeeded: {}", action);
 

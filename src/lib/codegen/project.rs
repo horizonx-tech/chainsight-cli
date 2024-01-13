@@ -2,17 +2,9 @@ use std::{fs::OpenOptions, io::Read, path::Path};
 
 use serde::{Deserialize, Serialize};
 
-use crate::types::ComponentType;
-
 use super::components::{
-    algorithm_indexer::AlgorithmIndexerComponentManifest,
-    algorithm_lens::AlgorithmLensComponentManifest,
-    common::{ComponentManifest, ComponentTypeInManifest},
-    event_indexer::EventIndexerComponentManifest,
-    relayer::RelayerComponentManifest,
-    snapshot_indexer_evm::SnapshotIndexerEVMComponentManifest,
-    snapshot_indexer_https::SnapshotIndexerHTTPSComponentManifest,
-    snapshot_indexer_icp::SnapshotIndexerICPComponentManifest,
+    codegen::{generator, CodeGenerator},
+    common::ComponentTypeInManifest,
 };
 
 /// Manifest to express Chainsight Project
@@ -63,15 +55,15 @@ impl ProjectManifestData {
         Ok(())
     }
 
-    pub fn load_component_manifests(
+    pub fn load_code_generator(
         &self,
         project_path: &str,
-    ) -> anyhow::Result<Vec<Box<dyn ComponentManifest>>> {
-        let mut manifests = vec![];
+    ) -> anyhow::Result<Vec<Box<dyn CodeGenerator>>> {
+        let mut gens = vec![];
         for component in self.components.iter() {
-            manifests.push(component.load_manifest(project_path)?);
+            gens.push(component.load_generator(project_path)?);
         }
-        Ok(manifests)
+        Ok(gens)
     }
 }
 
@@ -83,7 +75,7 @@ impl ProjectManifestComponentField {
         }
     }
 
-    pub fn load_manifest(&self, project_path: &str) -> anyhow::Result<Box<dyn ComponentManifest>> {
+    pub fn load_generator(&self, project_path: &str) -> anyhow::Result<Box<dyn CodeGenerator>> {
         let relative_component_path = &self.component_path;
         let component_path = format!("{}/{}", project_path, relative_component_path);
         let component_type = ComponentTypeInManifest::determine_type(&component_path)?;
@@ -93,32 +85,7 @@ impl ProjectManifestComponentField {
             .unwrap()
             .to_str()
             .unwrap();
-
-        let manifest: Box<dyn ComponentManifest> =
-            match component_type {
-                ComponentType::EventIndexer => Box::new(
-                    EventIndexerComponentManifest::load_with_id(&component_path, id)?,
-                ),
-                ComponentType::AlgorithmIndexer => Box::new(
-                    AlgorithmIndexerComponentManifest::load_with_id(&component_path, id)?,
-                ),
-                ComponentType::SnapshotIndexerICP => Box::new(
-                    SnapshotIndexerICPComponentManifest::load_with_id(&component_path, id)?,
-                ),
-                ComponentType::SnapshotIndexerEVM => Box::new(
-                    SnapshotIndexerEVMComponentManifest::load_with_id(&component_path, id)?,
-                ),
-                ComponentType::Relayer => {
-                    Box::new(RelayerComponentManifest::load_with_id(&component_path, id)?)
-                }
-                ComponentType::AlgorithmLens => Box::new(
-                    AlgorithmLensComponentManifest::load_with_id(&component_path, id)?,
-                ),
-                ComponentType::SnapshotIndexerHTTPS => Box::new(
-                    SnapshotIndexerHTTPSComponentManifest::load_with_id(&component_path, id)?,
-                ),
-            };
-
-        Ok(manifest)
+        let generator = generator(component_type, &component_path, id)?;
+        Ok(generator)
     }
 }

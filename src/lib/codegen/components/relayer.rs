@@ -19,6 +19,7 @@ use crate::{
 };
 
 use super::{
+    codegen::CodeGenerator,
     common::{
         ComponentManifest, ComponentMetadata, CycleManagementsManifest, DatasourceForCanister,
         DestinationType, GeneratedCodes, SourceType, Sources,
@@ -140,6 +141,55 @@ impl From<RelayerComponentManifest> for chainsight_cdk::config::components::Rela
     }
 }
 
+pub struct RelayerCodeGenerator {
+    manifest: RelayerComponentManifest,
+}
+
+impl RelayerCodeGenerator {
+    pub fn new(manifest: RelayerComponentManifest) -> Self {
+        Self { manifest }
+    }
+}
+
+impl CodeGenerator for RelayerCodeGenerator {
+    fn generate_code(
+        &self,
+        _interface_contract: Option<ethabi::Contract>,
+    ) -> anyhow::Result<GeneratedCodes> {
+        let lib = canisters::relayer::generate_codes(&self.manifest)?;
+
+        let types = generate_types_from_bindings(
+            &self.manifest.id.clone().unwrap(),
+            &self.manifest.datasource.method.identifier,
+        )?;
+
+        Ok(GeneratedCodes {
+            lib,
+            types: Some(types),
+        })
+    }
+    fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
+        scripts::relayer::generate_scripts(&self.manifest, network)
+    }
+    fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
+        let lib = canisters::relayer::generate_app(&self.manifest)?;
+
+        let types = generate_types_from_bindings(
+            &self.manifest.id.clone().unwrap(),
+            &self.manifest.datasource.method.identifier,
+        )?;
+
+        Ok(GeneratedCodes {
+            lib,
+            types: Some(types),
+        })
+    }
+
+    fn manifest(&self) -> Box<dyn ComponentManifest> {
+        Box::new(self.manifest.clone())
+    }
+}
+
 impl ComponentManifest for RelayerComponentManifest {
     fn load_with_id(path: &str, id: &str) -> anyhow::Result<Self> {
         let manifest = Self::load(path)?;
@@ -156,27 +206,6 @@ impl ComponentManifest for RelayerComponentManifest {
 
     fn validate_manifest(&self) -> anyhow::Result<()> {
         canisters::relayer::validate_manifest(self)
-    }
-
-    fn generate_codes(
-        &self,
-        _interface_contract: Option<ethabi::Contract>,
-    ) -> anyhow::Result<GeneratedCodes> {
-        let lib = canisters::relayer::generate_codes(self)?;
-
-        let types = generate_types_from_bindings(
-            &self.id.clone().unwrap(),
-            &self.datasource.method.identifier,
-        )?;
-
-        Ok(GeneratedCodes {
-            lib,
-            types: Some(types),
-        })
-    }
-
-    fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
-        scripts::relayer::generate_scripts(self, network)
     }
 
     fn component_type(&self) -> ComponentType {
@@ -214,19 +243,6 @@ impl ComponentManifest for RelayerComponentManifest {
             attributes,
         }
     }
-    fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
-        let lib = canisters::relayer::generate_app(self)?;
-
-        let types = generate_types_from_bindings(
-            &self.id.clone().unwrap(),
-            &self.datasource.method.identifier,
-        )?;
-
-        Ok(GeneratedCodes {
-            lib,
-            types: Some(types),
-        })
-    }
     fn custom_tags(&self) -> HashMap<String, String> {
         #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
         struct Attributes {
@@ -250,13 +266,7 @@ impl ComponentManifest for RelayerComponentManifest {
             "chainsight:destination".to_string(),
             serde_json::to_string(&dest).unwrap(),
         );
-        let oracle_type_str = match self.destination_type() {
-            Some(DestinationType::Uint256) => "uint256",
-            Some(DestinationType::Uint128) => "uint128",
-            Some(DestinationType::Uint64) => "uint64",
-            Some(DestinationType::String) => "string",
-            _ => panic!("Invalid oracle type"),
-        };
+        let oracle_type_str = oracle_type(self.destination_type());
         res.insert(
             "chainsight:oracleType".to_string(),
             oracle_type_str.to_string(),
@@ -285,6 +295,16 @@ impl ComponentManifest for RelayerComponentManifest {
     }
     fn cycle_managements(&self) -> CycleManagements {
         self.cycles.clone().unwrap_or_default().into()
+    }
+}
+
+fn oracle_type(t: Option<DestinationType>) -> String {
+    match t {
+        Some(t) => {
+            let val = serde_json::to_string(&t).unwrap();
+            val.trim_matches('\"').to_string()
+        }
+        _ => panic!("Invalid oracle type"),
     }
 }
 
@@ -468,11 +488,18 @@ interval: 3600
 
         assert_display_snapshot!(
             format!("{}__logics_lib", &snap_prefix),
-            SrcString::from(manifest.generate_user_impl_template().unwrap().lib)
+            SrcString::from(
+                RelayerCodeGenerator::new(manifest.clone())
+                    .generate_user_impl_template()
+                    .unwrap()
+                    .lib
+            )
         );
         assert_display_snapshot!(
             format!("{}__scripts", &snap_prefix),
-            &manifest.generate_scripts(Network::Local).unwrap()
+            &RelayerCodeGenerator::new(manifest.clone())
+                .generate_scripts(Network::Local)
+                .unwrap()
         );
     }
 
@@ -499,7 +526,9 @@ interval: 3600
         //     &manifest.generate_codes(Option::None).unwrap()
         // ));
 
-        let generated_user_impl_template = manifest.generate_user_impl_template().unwrap();
+        let generated_user_impl_template = RelayerCodeGenerator::new(manifest.clone())
+            .generate_user_impl_template()
+            .unwrap();
         assert_display_snapshot!(
             format!("{}__logics_lib", &snap_prefix),
             SrcString::from(generated_user_impl_template.lib)
@@ -511,7 +540,17 @@ interval: 3600
 
         assert_display_snapshot!(
             format!("{}__scripts", &snap_prefix),
-            &manifest.generate_scripts(Network::Local).unwrap()
+            &RelayerCodeGenerator::new(manifest)
+                .generate_scripts(Network::Local)
+                .unwrap()
         );
+    }
+    #[test]
+    fn test_oracle_type() {
+        assert_eq!(oracle_type(Some(DestinationType::Uint256)), "uint256");
+        assert_eq!(oracle_type(Some(DestinationType::Uint128)), "uint128");
+        assert_eq!(oracle_type(Some(DestinationType::Uint64)), "uint64");
+        assert_eq!(oracle_type(Some(DestinationType::String)), "string");
+        assert_eq!(oracle_type(Some(DestinationType::Custom)), "custom");
     }
 }
