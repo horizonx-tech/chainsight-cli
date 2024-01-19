@@ -132,11 +132,12 @@ impl From<RelayerComponentManifest> for chainsight_cdk::config::components::Rela
             common: CommonConfig {
                 canister_name: id.clone().unwrap(),
             },
-            destination: destination.oracle_address.clone(),
             method_identifier: method.identifier.clone(),
+            extracted_field: destination.specified_fields.clone(),
+            destination: destination.oracle_address.clone(),
             abi_file_path: val.abi_file_path(),
-            lens_parameter,
             method_name: val.relay_method_name(),
+            lens_parameter,
         }
     }
 }
@@ -317,6 +318,7 @@ pub struct DestinationField {
     pub rpc_url: String,
     pub method_name: Option<String>,
     pub interface: Option<String>,
+    pub specified_fields: Option<String>,
 }
 
 impl DestinationField {
@@ -333,6 +335,7 @@ impl DestinationField {
             rpc_url,
             method_name: None,
             interface: None,
+            specified_fields: None,
         }
     }
 }
@@ -393,6 +396,7 @@ mod tests {
                     .to_string(),
                 method_name: None,
                 interface: None,
+                specified_fields: None,
             },
             lens_targets: None,
             interval: 3600,
@@ -460,6 +464,7 @@ interval: 3600
                         .to_string(),
                     method_name: None,
                     interface: None,
+                    specified_fields: None,
                 },
                 lens_targets: None,
                 interval: 3600,
