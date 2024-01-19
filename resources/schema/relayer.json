@@ -209,6 +209,13 @@
           "title": "interface",
           "description": "abi json file to use. This file must be in ./interfaces folder. This is only used when the destination is a custom oracle",
           "examples": ["CustomOracle.json", "IERC20.json"]
+        },
+        "specified_fields": {
+          "$id": "#/properties/destination/properties/specified_fields",
+          "type": ["string", "null"],
+          "title": "specified fields",
+          "description": "fields to propagate extracted from the response retrieved from the data source",
+          "examples": ["dai.usd_24h_vol", "players.0.age", "chart.result[0].meta.regular_market_price"]
         }
       }
     },

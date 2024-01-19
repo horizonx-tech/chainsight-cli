@@ -104,7 +104,6 @@ pub fn generate_codes(manifest: &RelayerComponentManifest) -> anyhow::Result<Str
 
 fn custom_converter(manifest: &RelayerComponentManifest) -> TokenStream {
     let config: RelayerConfig = manifest.clone().into();
-    println!("config: {:?}", config.abi_file_path);
     let contract_function = ContractFunction::new(
         "src/".to_owned() + &config.abi_file_path,
         config.method_name,
