@@ -24,6 +24,7 @@
   - [5.4. Property `Chainsight Relayer specification > destination > rpc_url`](#destination_rpc_url)
   - [5.5. Property `Chainsight Relayer specification > destination > method_name`](#destination_method_name)
   - [5.6. Property `Chainsight Relayer specification > destination > interface`](#destination_interface)
+  - [5.7. Property `Chainsight Relayer specification > destination > specified_fields`](#destination_specified_fields)
 - [6. Property `Chainsight Relayer specification > interval`](#interval)
 - [7. Property `Chainsight Relayer specification > cycles`](#cycles)
   - [7.1. Property `Chainsight Relayer specification > cycles > refueling_interval`](#cycles_refueling_interval)
@@ -440,14 +441,15 @@
 
 **Description:** destination evm network and contract for the data.
 
-| Property                                         | Pattern | Type           | Deprecated | Definition | Title/Description              |
-| ------------------------------------------------ | ------- | -------------- | ---------- | ---------- | ------------------------------ |
-| + [network_id](#destination_network_id )         | No      | number         | No         | -          | network id                     |
-| + [type](#destination_type )                     | No      | string         | No         | -          | oracle type of the destination |
-| + [oracle_address](#destination_oracle_address ) | No      | string         | No         | -          | oracle address                 |
-| + [rpc_url](#destination_rpc_url )               | No      | string         | No         | -          | rpc url                        |
-| - [method_name](#destination_method_name )       | No      | string or null | No         | -          | method name                    |
-| - [interface](#destination_interface )           | No      | string or null | No         | -          | interface                      |
+| Property                                             | Pattern | Type           | Deprecated | Definition | Title/Description              |
+| ---------------------------------------------------- | ------- | -------------- | ---------- | ---------- | ------------------------------ |
+| + [network_id](#destination_network_id )             | No      | number         | No         | -          | network id                     |
+| + [type](#destination_type )                         | No      | string         | No         | -          | oracle type of the destination |
+| + [oracle_address](#destination_oracle_address )     | No      | string         | No         | -          | oracle address                 |
+| + [rpc_url](#destination_rpc_url )                   | No      | string         | No         | -          | rpc url                        |
+| - [method_name](#destination_method_name )           | No      | string or null | No         | -          | method name                    |
+| - [interface](#destination_interface )               | No      | string or null | No         | -          | interface                      |
+| - [specified_fields](#destination_specified_fields ) | No      | string or null | No         | -          | specified fields               |
 
 ### <a name="destination_network_id"></a>5.1. Property `Chainsight Relayer specification > destination > network_id`
 
@@ -597,6 +599,31 @@
 
 ```json
 "IERC20.json"
+```
+
+### <a name="destination_specified_fields"></a>5.7. Property `Chainsight Relayer specification > destination > specified_fields`
+
+**Title:** specified fields
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `string or null` |
+| **Required** | No               |
+
+**Description:** fields to propagate extracted from the response retrieved from the data source
+
+**Examples:** 
+
+```json
+"dai.usd_24h_vol"
+```
+
+```json
+"players.0.age"
+```
+
+```json
+"chart.result[0].meta.regular_market_price"
 ```
 
 ## <a name="interval"></a>6. Property `Chainsight Relayer specification > interval`
@@ -874,4 +901,4 @@
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-01-13 at 13:30:20 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-01-19 at 06:37:02 +0000
