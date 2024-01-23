@@ -37,8 +37,8 @@ hex = "0.4.3"
 
 ic-web3-rs = "0.1.3"
 ic-solidity-bindgen = "0.1.9"
-chainsight-cdk-macros = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev= "b283ff139fc890c54eeeed90c2b5c8a6835811f1" }}
-chainsight-cdk = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev= "b283ff139fc890c54eeeed90c2b5c8a6835811f1" }}
+chainsight-cdk-macros = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev= "3192f6b7a0faa941604be2c3363afb5b207e4559" }}
+chainsight-cdk = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev= "3192f6b7a0faa941604be2c3363afb5b207e4559" }}
 "#,
         members
             .iter()
