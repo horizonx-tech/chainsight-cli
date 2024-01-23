@@ -25,8 +25,8 @@ destination:
   rpc_url: https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL_KEY}
   method_name: null
   interface: null
-  specified_fields: null
 interval: 3600
+conversion_parameter: null
 lens_targets: null
 cycles: null
 
