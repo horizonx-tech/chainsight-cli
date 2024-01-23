@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, HashMap};
 
 use anyhow::Ok;
 use chainsight_cdk::{
-    config::components::{CommonConfig, LensParameter, LensTargets},
+    config::components::{CommonConfig, LensParameter, LensTargets, RelayerConversionParameter},
     initializer::CycleManagements,
 };
 use serde::{Deserialize, Serialize};
@@ -40,6 +40,7 @@ pub struct RelayerComponentManifest {
     pub datasource: DatasourceForCanister,
     pub destination: DestinationField, // TODO: multiple destinations
     pub interval: u32,
+    pub conversion_parameter: Option<RelayerConversionParameter>,
     pub lens_targets: Option<LensTargets>,
     pub cycles: Option<CycleManagementsManifest>,
 }
@@ -65,6 +66,7 @@ impl RelayerComponentManifest {
             },
             datasource,
             destination,
+            conversion_parameter: None,
             lens_targets: None,
             interval,
             cycles: None,
@@ -133,11 +135,11 @@ impl From<RelayerComponentManifest> for chainsight_cdk::config::components::Rela
                 canister_name: id.clone().unwrap(),
             },
             method_identifier: method.identifier.clone(),
-            extracted_field: destination.specified_fields.clone(),
             destination: destination.oracle_address.clone(),
             abi_file_path: val.abi_file_path(),
             method_name: val.relay_method_name(),
             lens_parameter,
+            conversion_parameter: val.conversion_parameter,
         }
     }
 }
@@ -318,7 +320,6 @@ pub struct DestinationField {
     pub rpc_url: String,
     pub method_name: Option<String>,
     pub interface: Option<String>,
-    pub specified_fields: Option<String>,
 }
 
 impl DestinationField {
@@ -335,7 +336,6 @@ impl DestinationField {
             rpc_url,
             method_name: None,
             interface: None,
-            specified_fields: None,
         }
     }
 }
@@ -396,9 +396,9 @@ mod tests {
                     .to_string(),
                 method_name: None,
                 interface: None,
-                specified_fields: None,
             },
             lens_targets: None,
+            conversion_parameter: None,
             interval: 3600,
             cycles: None,
         }
@@ -464,9 +464,9 @@ interval: 3600
                         .to_string(),
                     method_name: None,
                     interface: None,
-                    specified_fields: None,
                 },
                 lens_targets: None,
+                conversion_parameter: None,
                 interval: 3600,
                 cycles: None,
             }
