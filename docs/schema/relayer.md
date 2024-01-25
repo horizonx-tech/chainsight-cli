@@ -24,23 +24,26 @@
   - [5.4. Property `Chainsight Relayer specification > destination > rpc_url`](#destination_rpc_url)
   - [5.5. Property `Chainsight Relayer specification > destination > method_name`](#destination_method_name)
   - [5.6. Property `Chainsight Relayer specification > destination > interface`](#destination_interface)
-  - [5.7. Property `Chainsight Relayer specification > destination > specified_fields`](#destination_specified_fields)
 - [6. Property `Chainsight Relayer specification > interval`](#interval)
-- [7. Property `Chainsight Relayer specification > cycles`](#cycles)
-  - [7.1. Property `Chainsight Relayer specification > cycles > refueling_interval`](#cycles_refueling_interval)
-  - [7.2. Property `Chainsight Relayer specification > cycles > vault_intial_supply`](#cycles_vault_intial_supply)
-  - [7.3. Property `Chainsight Relayer specification > cycles > indexer`](#cycles_indexer)
-    - [7.3.1. Property `Chainsight Relayer specification > cycles > indexer > initial_supply`](#cycles_indexer_initial_supply)
-    - [7.3.2. Property `Chainsight Relayer specification > cycles > indexer > refueling_threshold`](#cycles_indexer_refueling_threshold)
-    - [7.3.3. Property `Chainsight Relayer specification > cycles > indexer > refueling_amount`](#cycles_indexer_refueling_amount)
-  - [7.4. Property `Chainsight Relayer specification > cycles > db`](#cycles_db)
-    - [7.4.1. Property `Chainsight Relayer specification > cycles > db > initial_supply`](#cycles_db_initial_supply)
-    - [7.4.2. Property `Chainsight Relayer specification > cycles > db > refueling_threshold`](#cycles_db_refueling_threshold)
-    - [7.4.3. Property `Chainsight Relayer specification > cycles > db > refueling_amount`](#cycles_db_refueling_amount)
-  - [7.5. Property `Chainsight Relayer specification > cycles > proxy`](#cycles_proxy)
-    - [7.5.1. Property `Chainsight Relayer specification > cycles > proxy > initial_supply`](#cycles_proxy_initial_supply)
-    - [7.5.2. Property `Chainsight Relayer specification > cycles > proxy > refueling_threshold`](#cycles_proxy_refueling_threshold)
-    - [7.5.3. Property `Chainsight Relayer specification > cycles > proxy > refueling_amount`](#cycles_proxy_refueling_amount)
+- [7. Property `Chainsight Relayer specification > conversion_parameter`](#conversion_parameter)
+  - [7.1. Property `Chainsight Relayer specification > conversion_parameter > extracted_field`](#conversion_parameter_extracted_field)
+  - [7.2. Property `Chainsight Relayer specification > conversion_parameter > destination_type_to_convert`](#conversion_parameter_destination_type_to_convert)
+  - [7.3. Property `Chainsight Relayer specification > conversion_parameter > exponent_of_power10`](#conversion_parameter_exponent_of_power10)
+- [8. Property `Chainsight Relayer specification > cycles`](#cycles)
+  - [8.1. Property `Chainsight Relayer specification > cycles > refueling_interval`](#cycles_refueling_interval)
+  - [8.2. Property `Chainsight Relayer specification > cycles > vault_intial_supply`](#cycles_vault_intial_supply)
+  - [8.3. Property `Chainsight Relayer specification > cycles > indexer`](#cycles_indexer)
+    - [8.3.1. Property `Chainsight Relayer specification > cycles > indexer > initial_supply`](#cycles_indexer_initial_supply)
+    - [8.3.2. Property `Chainsight Relayer specification > cycles > indexer > refueling_threshold`](#cycles_indexer_refueling_threshold)
+    - [8.3.3. Property `Chainsight Relayer specification > cycles > indexer > refueling_amount`](#cycles_indexer_refueling_amount)
+  - [8.4. Property `Chainsight Relayer specification > cycles > db`](#cycles_db)
+    - [8.4.1. Property `Chainsight Relayer specification > cycles > db > initial_supply`](#cycles_db_initial_supply)
+    - [8.4.2. Property `Chainsight Relayer specification > cycles > db > refueling_threshold`](#cycles_db_refueling_threshold)
+    - [8.4.3. Property `Chainsight Relayer specification > cycles > db > refueling_amount`](#cycles_db_refueling_amount)
+  - [8.5. Property `Chainsight Relayer specification > cycles > proxy`](#cycles_proxy)
+    - [8.5.1. Property `Chainsight Relayer specification > cycles > proxy > initial_supply`](#cycles_proxy_initial_supply)
+    - [8.5.2. Property `Chainsight Relayer specification > cycles > proxy > refueling_threshold`](#cycles_proxy_refueling_threshold)
+    - [8.5.3. Property `Chainsight Relayer specification > cycles > proxy > refueling_amount`](#cycles_proxy_refueling_amount)
 
 **Title:** Chainsight Relayer specification
 
@@ -52,15 +55,16 @@
 
 **Description:** Chainsight Relayer specification
 
-| Property                         | Pattern | Type           | Deprecated | Definition | Title/Description                     |
-| -------------------------------- | ------- | -------------- | ---------- | ---------- | ------------------------------------- |
-| + [version](#version )           | No      | string         | No         | -          | specification version of the canister |
-| + [metadata](#metadata )         | No      | object         | No         | -          | metadata                              |
-| + [datasource](#datasource )     | No      | object         | No         | -          | -                                     |
-| - [lens_targets](#lens_targets ) | No      | object or null | No         | -          | lens targets                          |
-| + [destination](#destination )   | No      | object         | No         | -          | destination                           |
-| + [interval](#interval )         | No      | number         | No         | -          | interval                              |
-| - [cycles](#cycles )             | No      | object or null | No         | -          | cycles                                |
+| Property                                         | Pattern | Type           | Deprecated | Definition | Title/Description                     |
+| ------------------------------------------------ | ------- | -------------- | ---------- | ---------- | ------------------------------------- |
+| + [version](#version )                           | No      | string         | No         | -          | specification version of the canister |
+| + [metadata](#metadata )                         | No      | object         | No         | -          | metadata                              |
+| + [datasource](#datasource )                     | No      | object         | No         | -          | -                                     |
+| - [lens_targets](#lens_targets )                 | No      | object or null | No         | -          | lens targets                          |
+| + [destination](#destination )                   | No      | object         | No         | -          | destination                           |
+| + [interval](#interval )                         | No      | number         | No         | -          | interval                              |
+| - [conversion_parameter](#conversion_parameter ) | No      | object or null | No         | -          | convertion parameter                  |
+| - [cycles](#cycles )                             | No      | object or null | No         | -          | cycles                                |
 
 ## <a name="version"></a>1. Property `Chainsight Relayer specification > version`
 
@@ -441,15 +445,14 @@
 
 **Description:** destination evm network and contract for the data.
 
-| Property                                             | Pattern | Type           | Deprecated | Definition | Title/Description              |
-| ---------------------------------------------------- | ------- | -------------- | ---------- | ---------- | ------------------------------ |
-| + [network_id](#destination_network_id )             | No      | number         | No         | -          | network id                     |
-| + [type](#destination_type )                         | No      | string         | No         | -          | oracle type of the destination |
-| + [oracle_address](#destination_oracle_address )     | No      | string         | No         | -          | oracle address                 |
-| + [rpc_url](#destination_rpc_url )                   | No      | string         | No         | -          | rpc url                        |
-| - [method_name](#destination_method_name )           | No      | string or null | No         | -          | method name                    |
-| - [interface](#destination_interface )               | No      | string or null | No         | -          | interface                      |
-| - [specified_fields](#destination_specified_fields ) | No      | string or null | No         | -          | specified fields               |
+| Property                                         | Pattern | Type           | Deprecated | Definition | Title/Description              |
+| ------------------------------------------------ | ------- | -------------- | ---------- | ---------- | ------------------------------ |
+| + [network_id](#destination_network_id )         | No      | number         | No         | -          | network id                     |
+| + [type](#destination_type )                     | No      | string         | No         | -          | oracle type of the destination |
+| + [oracle_address](#destination_oracle_address ) | No      | string         | No         | -          | oracle address                 |
+| + [rpc_url](#destination_rpc_url )               | No      | string         | No         | -          | rpc url                        |
+| - [method_name](#destination_method_name )       | No      | string or null | No         | -          | method name                    |
+| - [interface](#destination_interface )           | No      | string or null | No         | -          | interface                      |
 
 ### <a name="destination_network_id"></a>5.1. Property `Chainsight Relayer specification > destination > network_id`
 
@@ -601,31 +604,6 @@
 "IERC20.json"
 ```
 
-### <a name="destination_specified_fields"></a>5.7. Property `Chainsight Relayer specification > destination > specified_fields`
-
-**Title:** specified fields
-
-|              |                  |
-| ------------ | ---------------- |
-| **Type**     | `string or null` |
-| **Required** | No               |
-
-**Description:** fields to propagate extracted from the response retrieved from the data source
-
-**Examples:** 
-
-```json
-"dai.usd_24h_vol"
-```
-
-```json
-"players.0.age"
-```
-
-```json
-"chart.result[0].meta.regular_market_price"
-```
-
 ## <a name="interval"></a>6. Property `Chainsight Relayer specification > interval`
 
 **Title:** interval
@@ -643,7 +621,95 @@
 60
 ```
 
-## <a name="cycles"></a>7. Property `Chainsight Relayer specification > cycles`
+## <a name="conversion_parameter"></a>7. Property `Chainsight Relayer specification > conversion_parameter`
+
+**Title:** convertion parameter
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `object or null` |
+| **Required** | No               |
+
+**Description:** Parameters to change the type or number of digits of the value to be propagated
+
+| Property                                                                            | Pattern | Type           | Deprecated | Definition | Title/Description           |
+| ----------------------------------------------------------------------------------- | ------- | -------------- | ---------- | ---------- | --------------------------- |
+| + [extracted_field](#conversion_parameter_extracted_field )                         | No      | string or null | No         | -          | extracted fields            |
+| + [destination_type_to_convert](#conversion_parameter_destination_type_to_convert ) | No      | string or null | No         | -          | destination type to convert |
+| + [exponent_of_power10](#conversion_parameter_exponent_of_power10 )                 | No      | number or null | No         | -          | exponent of power10         |
+
+### <a name="conversion_parameter_extracted_field"></a>7.1. Property `Chainsight Relayer specification > conversion_parameter > extracted_field`
+
+**Title:** extracted fields
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `string or null` |
+| **Required** | Yes              |
+
+**Description:** fields to propagate extracted from the response retrieved from the data source
+
+**Examples:** 
+
+```json
+"dai.usd_24h_vol"
+```
+
+```json
+"players.0.age"
+```
+
+```json
+"chart.result[0].meta.regular_market_price"
+```
+
+### <a name="conversion_parameter_destination_type_to_convert"></a>7.2. Property `Chainsight Relayer specification > conversion_parameter > destination_type_to_convert`
+
+**Title:** destination type to convert
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `string or null` |
+| **Required** | Yes              |
+
+**Description:** Set the type you want to convert to synchronize the data to be propagated
+
+**Examples:** 
+
+```json
+"U256"
+```
+
+```json
+"u128"
+```
+
+```json
+"i128"
+```
+
+```json
+"f64"
+```
+
+### <a name="conversion_parameter_exponent_of_power10"></a>7.3. Property `Chainsight Relayer specification > conversion_parameter > exponent_of_power10`
+
+**Title:** exponent of power10
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | Yes              |
+
+**Description:** Set exponents to powers of 10 for digit adjustment
+
+**Example:** 
+
+```json
+18
+```
+
+## <a name="cycles"></a>8. Property `Chainsight Relayer specification > cycles`
 
 **Title:** cycles
 
@@ -662,7 +728,7 @@
 | - [db](#cycles_db )                                   | No      | object or null | No         | -          | db                  |
 | - [proxy](#cycles_proxy )                             | No      | object or null | No         | -          | proxy               |
 
-### <a name="cycles_refueling_interval"></a>7.1. Property `Chainsight Relayer specification > cycles > refueling_interval`
+### <a name="cycles_refueling_interval"></a>8.1. Property `Chainsight Relayer specification > cycles > refueling_interval`
 
 **Title:** refueling_interval
 
@@ -679,7 +745,7 @@
 86400
 ```
 
-### <a name="cycles_vault_intial_supply"></a>7.2. Property `Chainsight Relayer specification > cycles > vault_intial_supply`
+### <a name="cycles_vault_intial_supply"></a>8.2. Property `Chainsight Relayer specification > cycles > vault_intial_supply`
 
 **Title:** vault_intial_supply
 
@@ -696,7 +762,7 @@
 3000000000000
 ```
 
-### <a name="cycles_indexer"></a>7.3. Property `Chainsight Relayer specification > cycles > indexer`
+### <a name="cycles_indexer"></a>8.3. Property `Chainsight Relayer specification > cycles > indexer`
 
 **Title:** indexer
 
@@ -713,7 +779,7 @@
 | - [refueling_threshold](#cycles_indexer_refueling_threshold ) | No      | number or null | No         | -          | refueling_threshold |
 | - [refueling_amount](#cycles_indexer_refueling_amount )       | No      | number or null | No         | -          | refueling_amount    |
 
-#### <a name="cycles_indexer_initial_supply"></a>7.3.1. Property `Chainsight Relayer specification > cycles > indexer > initial_supply`
+#### <a name="cycles_indexer_initial_supply"></a>8.3.1. Property `Chainsight Relayer specification > cycles > indexer > initial_supply`
 
 **Title:** initial_supply
 
@@ -730,7 +796,7 @@
 1000000000000
 ```
 
-#### <a name="cycles_indexer_refueling_threshold"></a>7.3.2. Property `Chainsight Relayer specification > cycles > indexer > refueling_threshold`
+#### <a name="cycles_indexer_refueling_threshold"></a>8.3.2. Property `Chainsight Relayer specification > cycles > indexer > refueling_threshold`
 
 **Title:** refueling_threshold
 
@@ -747,7 +813,7 @@
 500000000000
 ```
 
-#### <a name="cycles_indexer_refueling_amount"></a>7.3.3. Property `Chainsight Relayer specification > cycles > indexer > refueling_amount`
+#### <a name="cycles_indexer_refueling_amount"></a>8.3.3. Property `Chainsight Relayer specification > cycles > indexer > refueling_amount`
 
 **Title:** refueling_amount
 
@@ -764,7 +830,7 @@
 1000000000000
 ```
 
-### <a name="cycles_db"></a>7.4. Property `Chainsight Relayer specification > cycles > db`
+### <a name="cycles_db"></a>8.4. Property `Chainsight Relayer specification > cycles > db`
 
 **Title:** db
 
@@ -781,7 +847,7 @@
 | - [refueling_threshold](#cycles_db_refueling_threshold ) | No      | number or null | No         | -          | refueling_threshold |
 | - [refueling_amount](#cycles_db_refueling_amount )       | No      | number or null | No         | -          | refueling_amount    |
 
-#### <a name="cycles_db_initial_supply"></a>7.4.1. Property `Chainsight Relayer specification > cycles > db > initial_supply`
+#### <a name="cycles_db_initial_supply"></a>8.4.1. Property `Chainsight Relayer specification > cycles > db > initial_supply`
 
 **Title:** initial_supply
 
@@ -798,7 +864,7 @@
 150000000000
 ```
 
-#### <a name="cycles_db_refueling_threshold"></a>7.4.2. Property `Chainsight Relayer specification > cycles > db > refueling_threshold`
+#### <a name="cycles_db_refueling_threshold"></a>8.4.2. Property `Chainsight Relayer specification > cycles > db > refueling_threshold`
 
 **Title:** refueling_threshold
 
@@ -815,7 +881,7 @@
 1000000000000
 ```
 
-#### <a name="cycles_db_refueling_amount"></a>7.4.3. Property `Chainsight Relayer specification > cycles > db > refueling_amount`
+#### <a name="cycles_db_refueling_amount"></a>8.4.3. Property `Chainsight Relayer specification > cycles > db > refueling_amount`
 
 **Title:** refueling_amount
 
@@ -832,7 +898,7 @@
 1000000000000
 ```
 
-### <a name="cycles_proxy"></a>7.5. Property `Chainsight Relayer specification > cycles > proxy`
+### <a name="cycles_proxy"></a>8.5. Property `Chainsight Relayer specification > cycles > proxy`
 
 **Title:** proxy
 
@@ -849,7 +915,7 @@
 | - [refueling_threshold](#cycles_proxy_refueling_threshold ) | No      | number or null | No         | -          | refueling_threshold |
 | - [refueling_amount](#cycles_proxy_refueling_amount )       | No      | number or null | No         | -          | refueling_amount    |
 
-#### <a name="cycles_proxy_initial_supply"></a>7.5.1. Property `Chainsight Relayer specification > cycles > proxy > initial_supply`
+#### <a name="cycles_proxy_initial_supply"></a>8.5.1. Property `Chainsight Relayer specification > cycles > proxy > initial_supply`
 
 **Title:** initial_supply
 
@@ -866,7 +932,7 @@
 300000000000
 ```
 
-#### <a name="cycles_proxy_refueling_threshold"></a>7.5.2. Property `Chainsight Relayer specification > cycles > proxy > refueling_threshold`
+#### <a name="cycles_proxy_refueling_threshold"></a>8.5.2. Property `Chainsight Relayer specification > cycles > proxy > refueling_threshold`
 
 **Title:** refueling_threshold
 
@@ -883,7 +949,7 @@
 100000000000
 ```
 
-#### <a name="cycles_proxy_refueling_amount"></a>7.5.3. Property `Chainsight Relayer specification > cycles > proxy > refueling_amount`
+#### <a name="cycles_proxy_refueling_amount"></a>8.5.3. Property `Chainsight Relayer specification > cycles > proxy > refueling_amount`
 
 **Title:** refueling_amount
 
@@ -901,4 +967,4 @@
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-01-19 at 06:37:02 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-01-25 at 01:41:13 +0000
