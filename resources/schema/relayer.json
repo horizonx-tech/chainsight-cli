@@ -209,13 +209,6 @@
           "title": "interface",
           "description": "abi json file to use. This file must be in ./interfaces folder. This is only used when the destination is a custom oracle",
           "examples": ["CustomOracle.json", "IERC20.json"]
-        },
-        "specified_fields": {
-          "$id": "#/properties/destination/properties/specified_fields",
-          "type": ["string", "null"],
-          "title": "specified fields",
-          "description": "fields to propagate extracted from the response retrieved from the data source",
-          "examples": ["dai.usd_24h_vol", "players.0.age", "chart.result[0].meta.regular_market_price"]
         }
       }
     },
@@ -226,6 +219,38 @@
       "type": "number",
       "examples": [60]
     },
+    "conversion_parameter": {
+      "$id": "#/properties/conversion_parameter",
+      "type": ["object", "null"],
+      "title": "convertion parameter",
+      "description": "Parameters to change the type or number of digits of the value to be propagated",
+      "required": ["extracted_field", "destination_type_to_convert", "exponent_of_power10"],
+      "additionalProperties": false,
+      "properties": {
+        "extracted_field": {
+          "$id": "#/properties/conversion_parameter/properties/extracted_field",
+          "type": ["string", "null"],
+          "title": "extracted fields",
+          "description": "fields to propagate extracted from the response retrieved from the data source",
+          "examples": ["dai.usd_24h_vol", "players.0.age", "chart.result[0].meta.regular_market_price"]
+        },
+        "destination_type_to_convert": {
+          "$id": "#/properties/conversion_parameter/properties/destination_type_to_convert",
+          "type": ["string", "null"],
+          "title": "destination type to convert",
+          "description": "Set the type you want to convert to synchronize the data to be propagated",
+          "examples": ["U256", "u128", "i128", "f64"]
+        },
+        "exponent_of_power10": {
+          "$id": "#/properties/conversion_parameter/properties/exponent_of_power10",
+          "type": ["number", "null"],
+          "title": "exponent of power10",
+          "description": "Set exponents to powers of 10 for digit adjustment",
+          "examples": [18]
+        }
+      }
+    },
+
     "cycles": {
       "$id": "#/properties/cycles",
       "title": "cycles",
