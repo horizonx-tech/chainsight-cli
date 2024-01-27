@@ -195,6 +195,7 @@ pub struct EventIndexerDatasource {
     pub network: SourceNetwork,
     pub from: u64,
     pub contract_type: Option<String>,
+    pub batch_size: Option<u64>,
 }
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct SourceNetwork {
@@ -209,6 +210,7 @@ impl EventIndexerDatasource {
         network: SourceNetwork,
         from: u64,
         contract_type: Option<String>,
+        batch_size: Option<u64>,
     ) -> Self {
         Self {
             id,
@@ -216,6 +218,7 @@ impl EventIndexerDatasource {
             network,
             from,
             contract_type,
+            batch_size,
         }
     }
 
@@ -232,6 +235,7 @@ impl EventIndexerDatasource {
             },
             from: 17660942,
             contract_type: Some("ERC-20".to_string()),
+            batch_size: None,
         }
     }
 }
@@ -315,10 +319,11 @@ interval: 3600
                         chain_id: 1,
                     },
                     from: 17660942,
-                    contract_type: Some("ERC20".to_string())
+                    contract_type: Some("ERC20".to_string()),
+                    batch_size: None,
                 },
                 interval: 3600,
-                cycles: None,
+                cycles: None
             }
         );
         let schema = serde_json::from_str(include_str!(
@@ -359,6 +364,7 @@ interval: 3600
                 },
                 from: 17660942,
                 contract_type: Some("ERC20".to_string()),
+                batch_size: None,
             },
             interval: 3600,
             cycles: None,

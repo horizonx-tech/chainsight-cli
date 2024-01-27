@@ -15,6 +15,7 @@ fn generate_command_to_setup(
     rpc_url: &str,
     chain_id: u64,
     start_from: u64,
+    chunk_size: Option<u64>,
 ) -> String {
     let env = match network {
         Network::Local => "LocalDevelopment",
@@ -30,7 +31,8 @@ fn generate_command_to_setup(
         chain_id={}        
     }},
     record{{
-        start_from={}
+        start_from={};
+        chunk_size={}
     }}
     )""#,
         network_param(network),
@@ -39,7 +41,8 @@ fn generate_command_to_setup(
         env,
         rpc_url,
         chain_id,
-        start_from
+        start_from,
+        chunk_size.unwrap_or(500)
     )
 }
 
@@ -52,6 +55,7 @@ fn script_contents(manifest: &EventIndexerComponentManifest, network: Network) -
         &manifest.datasource.network.rpc_url,
         manifest.datasource.network.chain_id,
         manifest.datasource.from,
+        manifest.datasource.batch_size,
     );
     let script_to_set_task = generate_command_to_set_task(
         &id,

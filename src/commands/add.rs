@@ -179,6 +179,7 @@ fn template_event_indexer_manifest(component_name: &str) -> EventIndexerComponen
             },
             37730337,
             Some("ERC-20".to_string()),
+            None,
         ),
         3600,
     )
