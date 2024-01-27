@@ -22,6 +22,7 @@ datasource:
     chain_id: 80001
   from: 37730337
   contract_type: ERC-20
+  batch_size: null
 interval: 3600
 cycles: null
 

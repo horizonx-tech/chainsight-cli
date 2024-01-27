@@ -17,6 +17,7 @@
     - [3.4.1. Property `Chainsight Event Indexer specification > datasource > network > chain_id`](#datasource_network_chain_id)
     - [3.4.2. Property `Chainsight Event Indexer specification > datasource > network > rpc_url`](#datasource_network_rpc_url)
   - [3.5. Property `Chainsight Event Indexer specification > datasource > contract_type`](#datasource_contract_type)
+  - [3.6. Property `Chainsight Event Indexer specification > datasource > batch_size`](#datasource_batch_size)
 - [4. Property `Chainsight Event Indexer specification > interval`](#interval)
 - [5. Property `Chainsight Event Indexer specification > cycles`](#cycles)
   - [5.1. Property `Chainsight Event Indexer specification > cycles > refueling_interval`](#cycles_refueling_interval)
@@ -230,6 +231,7 @@
 | + [from](#datasource_from )                   | No      | number | No         | -          | from              |
 | + [network](#datasource_network )             | No      | object | No         | -          | network           |
 | - [contract_type](#datasource_contract_type ) | No      | string | No         | -          | contract_type     |
+| - [batch_size](#datasource_batch_size )       | No      | number | No         | -          | batch_size        |
 
 ### <a name="datasource_id"></a>3.1. Property `Chainsight Event Indexer specification > datasource > id`
 
@@ -403,6 +405,24 @@
 
 ```json
 "DEX"
+```
+
+### <a name="datasource_batch_size"></a>3.6. Property `Chainsight Event Indexer specification > datasource > batch_size`
+
+**Title:** batch_size
+
+|              |          |
+| ------------ | -------- |
+| **Type**     | `number` |
+| **Required** | No       |
+| **Default**  | `500`    |
+
+**Description:** number of blocks to save in a single transaction. This is useful to avoid exceeding Http body size limit
+
+**Example:** 
+
+```json
+100
 ```
 
 ## <a name="interval"></a>4. Property `Chainsight Event Indexer specification > interval`
@@ -680,4 +700,4 @@
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-01-25 at 01:41:13 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-01-27 at 07:27:31 +0000
