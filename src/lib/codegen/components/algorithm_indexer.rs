@@ -220,7 +220,6 @@ pub struct AlgorithmIndexerDatasource {
     pub from: u64,
     pub method: String,
     pub source_type: AlgorithmInputType,
-    pub batch_size: Option<u64>,
 }
 
 impl Default for AlgorithmIndexerDatasource {
@@ -239,7 +238,6 @@ impl Default for AlgorithmIndexerDatasource {
             source_type: AlgorithmInputType::EventIndexer,
             method: "proxy_call".to_string(),
             from: 17660942,
-            batch_size: None,
         }
     }
 }
@@ -311,8 +309,7 @@ interval: 3600
                     principal: "ahw5u-keaaa-aaaaa-qaaha-cai".to_string(),
                     from: 17660942,
                     method: "proxy_call".to_string(),
-                    source_type: AlgorithmInputType::EventIndexer,
-                    batch_size: None,
+                    source_type: AlgorithmInputType::EventIndexer
                 },
                 output: vec!(AlgorithmIndexerOutput {
                     name: "SampleOutput".to_string(),
@@ -361,7 +358,6 @@ interval: 3600
                 from: 17660942,
                 method: "proxy_call".to_string(),
                 source_type: AlgorithmInputType::EventIndexer,
-                batch_size: None,
             },
             output: vec![AlgorithmIndexerOutput {
                 name: "SampleOutput".to_string(),

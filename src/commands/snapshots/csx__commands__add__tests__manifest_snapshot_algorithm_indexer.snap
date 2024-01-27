@@ -22,7 +22,6 @@ datasource:
   from: 17660942
   method: proxy_call
   source_type: event_indexer
-  batch_size: null
 output:
 - name: Account
   fields:

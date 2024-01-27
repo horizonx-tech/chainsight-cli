@@ -15,21 +15,18 @@ fn generate_command_to_setup(
     datasrc_id: &str,
     network: &Network,
     start_from: u64,
-    chunk_size: Option<u64>,
 ) -> String {
     format!(
         r#"dfx canister {} call {} setup "(
     \"{}\",
     record{{
-        start_from={};
-        chunk_size={}
+        start_from={}
     }}
     )""#,
         network_param(network),
         id,
         datasrc_id,
-        start_from,
-        chunk_size.unwrap_or(500)
+        start_from
     )
 }
 
@@ -40,7 +37,6 @@ fn script_contents(manifest: &AlgorithmIndexerComponentManifest, network: Networ
         &manifest.datasource.principal,
         &network,
         manifest.datasource.from,
-        manifest.datasource.batch_size,
     );
     let script_to_set_task = generate_command_to_set_task(
         &id,

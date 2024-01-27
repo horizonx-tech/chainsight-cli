@@ -1,6 +1,6 @@
 ---
 source: src/lib/codegen/components/event_indexer.rs
-expression: "&EventIndexerCodeGenerator::new(manifest).generate_scripts(Network::Local).unwrap()"
+expression: "&manifest.generate_scripts(Network::Local).unwrap()"
 ---
 #!/bin/bash
 # init
@@ -32,8 +32,7 @@ dfx canister  call sample_event_indexer setup "(
         chain_id=1        
     },
     record{
-        start_from=17660942;
-        chunk_size=500
+        start_from=17660942
     }
     )"
 # set_task

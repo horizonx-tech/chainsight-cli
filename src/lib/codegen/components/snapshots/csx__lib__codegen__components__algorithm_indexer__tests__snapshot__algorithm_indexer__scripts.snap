@@ -1,6 +1,6 @@
 ---
 source: src/lib/codegen/components/algorithm_indexer.rs
-expression: "&AlgorithmIndexerCodeGenerator::new(manifest).generate_scripts(Network::Local).unwrap()"
+expression: "&manifest.generate_scripts(Network::Local).unwrap()"
 ---
 #!/bin/bash
 # init
@@ -27,8 +27,7 @@ dfx canister  call sample_algorithm_indexer init_in '(variant { "LocalDevelopmen
 dfx canister  call sample_algorithm_indexer setup "(
     \"ahw5u-keaaa-aaaaa-qaaha-cai\",
     record{
-        start_from=17660942;
-        chunk_size=500
+        start_from=17660942
     }
     )"
 # set_task
