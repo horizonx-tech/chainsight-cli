@@ -132,6 +132,13 @@
           "type": "string",
           "examples": ["event_indexer", "key_value", "key_values"],
           "pattern": "^(event_indexer|key_value|key_values)$"
+        },
+        "batch_size": {
+          "$id": "#/properties/datasource/properties/batch_size",
+          "title": "batch_size",
+          "description": "number of records to save in a single transaction",
+          "type": "number",
+          "examples": [500]
         }
       },
       "batch_size": {
