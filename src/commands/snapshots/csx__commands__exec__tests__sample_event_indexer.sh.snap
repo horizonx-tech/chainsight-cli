@@ -32,7 +32,8 @@ dfx canister  call sample_event_indexer setup "(
         chain_id=1        
     },
     record{
-        start_from=17660942
+        start_from=17660942;
+        chunk_size=500
     }
     )"
 # set_task
