@@ -224,14 +224,14 @@
 
 **Description:** datasource for the canister
 
-| Property                                      | Pattern | Type   | Deprecated | Definition | Title/Description |
-| --------------------------------------------- | ------- | ------ | ---------- | ---------- | ----------------- |
-| + [id](#datasource_id )                       | No      | object | No         | -          | id                |
-| + [event](#datasource_event )                 | No      | object | No         | -          | event             |
-| + [from](#datasource_from )                   | No      | number | No         | -          | from              |
-| + [network](#datasource_network )             | No      | object | No         | -          | network           |
-| - [contract_type](#datasource_contract_type ) | No      | string | No         | -          | contract_type     |
-| - [batch_size](#datasource_batch_size )       | No      | number | No         | -          | batch_size        |
+| Property                                      | Pattern | Type           | Deprecated | Definition | Title/Description |
+| --------------------------------------------- | ------- | -------------- | ---------- | ---------- | ----------------- |
+| + [id](#datasource_id )                       | No      | object         | No         | -          | id                |
+| + [event](#datasource_event )                 | No      | object         | No         | -          | event             |
+| + [from](#datasource_from )                   | No      | number         | No         | -          | from              |
+| + [network](#datasource_network )             | No      | object         | No         | -          | network           |
+| - [contract_type](#datasource_contract_type ) | No      | string         | No         | -          | contract_type     |
+| - [batch_size](#datasource_batch_size )       | No      | number or null | No         | -          | batch_size        |
 
 ### <a name="datasource_id"></a>3.1. Property `Chainsight Event Indexer specification > datasource > id`
 
@@ -411,11 +411,11 @@
 
 **Title:** batch_size
 
-|              |          |
-| ------------ | -------- |
-| **Type**     | `number` |
-| **Required** | No       |
-| **Default**  | `500`    |
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | No               |
+| **Default**  | `500`            |
 
 **Description:** number of blocks to save in a single transaction. This is useful to avoid exceeding Http body size limit
 
@@ -700,4 +700,4 @@
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-01-27 at 07:27:31 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-01-28 at 09:17:30 +0000

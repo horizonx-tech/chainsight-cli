@@ -228,14 +228,14 @@
 | **Required**              | Yes                                                     |
 | **Additional properties** | [[Not allowed]](# "Additional Properties not allowed.") |
 
-| Property                                  | Pattern | Type   | Deprecated | Definition | Title/Description |
-| ----------------------------------------- | ------- | ------ | ---------- | ---------- | ----------------- |
-| + [principal](#datasource_principal )     | No      | string | No         | -          | principal         |
-| + [input](#datasource_input )             | No      | object | No         | -          | input             |
-| + [from](#datasource_from )               | No      | number | No         | -          | from              |
-| + [method](#datasource_method )           | No      | string | No         | -          | method            |
-| + [source_type](#datasource_source_type ) | No      | string | No         | -          | source_type       |
-| - [batch_size](#datasource_batch_size )   | No      | number | No         | -          | batch_size        |
+| Property                                  | Pattern | Type           | Deprecated | Definition | Title/Description |
+| ----------------------------------------- | ------- | -------------- | ---------- | ---------- | ----------------- |
+| + [principal](#datasource_principal )     | No      | string         | No         | -          | principal         |
+| + [input](#datasource_input )             | No      | object         | No         | -          | input             |
+| + [from](#datasource_from )               | No      | number         | No         | -          | from              |
+| + [method](#datasource_method )           | No      | string         | No         | -          | method            |
+| + [source_type](#datasource_source_type ) | No      | string         | No         | -          | source_type       |
+| - [batch_size](#datasource_batch_size )   | No      | number or null | No         | -          | batch_size        |
 
 ### <a name="datasource_principal"></a>3.1. Property `Chainsight Event Indexer specification > datasource > principal`
 
@@ -404,10 +404,10 @@
 
 **Title:** batch_size
 
-|              |          |
-| ------------ | -------- |
-| **Type**     | `number` |
-| **Required** | No       |
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | No               |
 
 **Description:** number of records to save in a single transaction
 
@@ -814,4 +814,4 @@
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-01-27 at 07:27:31 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-01-28 at 09:17:30 +0000
