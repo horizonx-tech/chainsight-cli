@@ -22,6 +22,12 @@ fn generate_command_to_setup(
         Network::IC => "Production",
     };
 
+    let chunk_size = if let Some(chunk_size) = chunk_size {
+        format!("opt {}", chunk_size)
+    } else {
+        "null".to_string()
+    };
+
     format!(
         r#"dfx canister {} call {} setup "(
     \"{}\",
@@ -32,7 +38,7 @@ fn generate_command_to_setup(
     }},
     record{{
         start_from={};
-        chunk_size={}
+        chunk_size={};
     }}
     )""#,
         network_param(network),
@@ -42,7 +48,7 @@ fn generate_command_to_setup(
         rpc_url,
         chain_id,
         start_from,
-        chunk_size.unwrap_or(500)
+        chunk_size
     )
 }
 
