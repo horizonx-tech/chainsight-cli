@@ -5,7 +5,7 @@ use std::{
     path::Path,
 };
 
-use anyhow::bail;
+use anyhow::{bail, Context};
 use chainsight_cdk::initializer::{CycleManagement, CycleManagements};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -191,10 +191,13 @@ impl ComponentTypeInManifest {
     pub fn load(component_manifest_path: &str) -> anyhow::Result<ComponentTypeInManifest> {
         let mut file = OpenOptions::new()
             .read(true)
-            .open(Path::new(component_manifest_path))?;
+            .open(Path::new(component_manifest_path))
+            .with_context(|| format!("Failed to open file: {}", component_manifest_path))?;
         let mut contents = String::new();
-        file.read_to_string(&mut contents)?;
-        let data: Self = serde_yaml::from_str(&contents)?;
+        file.read_to_string(&mut contents)
+            .with_context(|| format!("Failed to read file: {}", component_manifest_path))?;
+        let data: Self = serde_yaml::from_str(&contents)
+            .with_context(|| format!("Failed to parse yaml: {}", component_manifest_path))?;
         Ok(data)
     }
 
