@@ -104,11 +104,17 @@ pub trait ComponentManifest: std::fmt::Debug {
     where
         Self: Sized + serde::de::DeserializeOwned,
     {
-        let mut file = OpenOptions::new().read(true).open(Path::new(path))?;
+        let mut file = OpenOptions::new()
+            .read(true)
+            .open(Path::new(path))
+            .with_context(|| format!("Failed to open file: {}", path))?;
         let mut contents = String::new();
-        file.read_to_string(&mut contents)?;
-        let contents = load_env(&contents)?;
-        let data: Self = serde_yaml::from_str(&contents)?;
+        file.read_to_string(&mut contents)
+            .with_context(|| format!("Failed to read file: {}", path))?;
+        let contents =
+            load_env(&contents).with_context(|| format!("Failed to load env for {}", path))?;
+        let data: Self = serde_yaml::from_str(&contents)
+            .with_context(|| format!("Failed to parse yaml: {}", path))?;
         Ok(data)
     }
 
