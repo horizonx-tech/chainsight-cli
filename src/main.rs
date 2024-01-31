@@ -39,7 +39,7 @@ fn main() {
     let env = EnvironmentImpl::new().with_logger(logger.clone());
     let res = exec(&env, args.command);
     if let Err(msg) = res {
-        error!(&logger, r#"{}"#, msg);
+        error!(&logger, r#"{:#}"#, msg);
         std::process::exit(1);
     }
     std::process::exit(0);
