@@ -502,7 +502,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "chainsight-cdk"
 version = "0.1.0"
-source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=3192f6b7a0faa941604be2c3363afb5b207e4559#3192f6b7a0faa941604be2c3363afb5b207e4559"
+source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=011a2b066743870ccc3b205f34fbcb028e11e880#011a2b066743870ccc3b205f34fbcb028e11e880"
 dependencies = [
  "Inflector",
  "anyhow",
@@ -529,7 +529,7 @@ dependencies = [
 [[package]]
 name = "chainsight-cdk-macros"
 version = "0.1.0"
-source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=3192f6b7a0faa941604be2c3363afb5b207e4559#3192f6b7a0faa941604be2c3363afb5b207e4559"
+source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=011a2b066743870ccc3b205f34fbcb028e11e880#011a2b066743870ccc3b205f34fbcb028e11e880"
 dependencies = [
  "Inflector",
  "anyhow",
@@ -543,6 +543,7 @@ dependencies = [
  "ic-cdk-macros 0.8.1",
  "ic-cdk-timers",
  "ic-solidity-bindgen",
+ "ic-stable-structures",
  "ic-web3-rs",
  "proc-macro2 1.0.76",
  "quote 1.0.35",
