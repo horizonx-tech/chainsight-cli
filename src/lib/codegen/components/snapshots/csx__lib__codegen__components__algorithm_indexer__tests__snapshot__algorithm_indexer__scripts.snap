@@ -28,7 +28,7 @@ dfx canister  call sample_algorithm_indexer setup "(
     \"ahw5u-keaaa-aaaaa-qaaha-cai\",
     record{
         start_from=17660942;
-        chunk_size=500
+        chunk_size=null;
     }
     )"
 # set_task
