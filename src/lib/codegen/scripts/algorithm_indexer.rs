@@ -17,19 +17,25 @@ fn generate_command_to_setup(
     start_from: u64,
     chunk_size: Option<u64>,
 ) -> String {
+    let chunk_size = if let Some(chunk_size) = chunk_size {
+        format!("opt {}", chunk_size)
+    } else {
+        "null".to_string()
+    };
+
     format!(
         r#"dfx canister {} call {} setup "(
     \"{}\",
     record{{
         start_from={};
-        chunk_size={}
+        chunk_size={};
     }}
     )""#,
         network_param(network),
         id,
         datasrc_id,
         start_from,
-        chunk_size.unwrap_or(500)
+        chunk_size
     )
 }
 
