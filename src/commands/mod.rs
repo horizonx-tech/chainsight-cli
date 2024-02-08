@@ -34,6 +34,9 @@ pub enum Command {
     Remove(remove::RemoveOpts),
     Delete(delete::DeleteOpts),
     // Upgrade(upgrade::UpgradeOpts),
+
+    // Experimental
+    ComponentInfo,
 }
 
 pub fn exec(env: &EnvironmentImpl, cmd: Command) -> anyhow::Result<()> {
@@ -62,9 +65,14 @@ pub fn exec(env: &EnvironmentImpl, cmd: Command) -> anyhow::Result<()> {
             let runtime = Runtime::new().expect("Unable to create a runtime");
             runtime.block_on(delete::exec(env, opts))?;
             Ok(())
-        } // Command::Upgrade(_) => {
-          //     println!("Not implemented yet...");
-          //     Ok(())
-          // }
+        }
+        // Command::Upgrade(_) => {
+        //     println!("Not implemented yet...");
+        //     Ok(())
+        // }
+        Command::ComponentInfo => {
+            println!("Not implemented yet...");
+            Ok(())
+        }
     }
 }
