@@ -75,9 +75,9 @@ pub async fn exec_internal(
     agent: &ic_agent::Agent,
     component_id: &Principal,
 ) -> anyhow::Result<ComponentInfo> {
-    let proxy = get_proxy_from_component(&agent, &component_id).await?;
-    let vault = vault_from_proxy(&agent, &proxy).await?;
-    let db = db_from_proxy(&agent, &proxy).await?;
+    let proxy = get_proxy_from_component(agent, component_id).await?;
+    let vault = vault_from_proxy(agent, &proxy).await?;
+    let db = db_from_proxy(agent, &proxy).await?;
     Ok(ComponentInfo { proxy, vault, db })
 }
 
