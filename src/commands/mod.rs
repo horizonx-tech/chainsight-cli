@@ -6,6 +6,7 @@ use crate::lib::{environment::EnvironmentImpl, utils::interaction::RealUserInter
 mod add;
 mod auth;
 mod build;
+mod component_info;
 mod config;
 mod delete;
 mod deploy;
@@ -36,7 +37,7 @@ pub enum Command {
     // Upgrade(upgrade::UpgradeOpts),
 
     // Experimental
-    ComponentInfo,
+    ComponentInfo(component_info::ComponentInfoOpts),
 }
 
 pub fn exec(env: &EnvironmentImpl, cmd: Command) -> anyhow::Result<()> {
@@ -70,8 +71,9 @@ pub fn exec(env: &EnvironmentImpl, cmd: Command) -> anyhow::Result<()> {
         //     println!("Not implemented yet...");
         //     Ok(())
         // }
-        Command::ComponentInfo => {
-            println!("Not implemented yet...");
+        Command::ComponentInfo(opts) => {
+            let runtime = Runtime::new().expect("Unable to create a runtime");
+            runtime.block_on(component_info::exec(env, opts))?;
             Ok(())
         }
     }
