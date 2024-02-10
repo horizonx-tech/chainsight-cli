@@ -73,3 +73,12 @@ pub enum Network {
     Local,
     IC, // ref: https://internetcomputer.org/docs/current/developer-docs/setup/deploy-mainnet#step-2--check-the-current-status-of-the-ic-and-your-ability-to-connect-to-it-by-running-the-following-command-for-the-network-alias-ic
 }
+
+impl Network {
+    pub fn to_url(&self, port: Option<u16>) -> String {
+        match self {
+            Network::Local => format!("http://localhost:{}", port.unwrap_or(4943)),
+            Network::IC => "https://ic0.app/".to_string(),
+        }
+    }
+}
