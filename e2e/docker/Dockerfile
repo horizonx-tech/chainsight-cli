@@ -2,7 +2,7 @@ FROM --platform=linux/amd64 ubuntu:22.04
 
 ENV RUSTUP_HOME=/opt/rustup
 ENV CARGO_HOME=/opt/cargo
-ENV RUST_VERSION=1.73.0
+ENV RUST_VERSION=1.76.0
 ENV DFX_VERSION=0.14.1
 # NOTE: fail when deployment with ver >0.14.1 - ~0.15
 ENV NODE_VERSION=20.8.0
