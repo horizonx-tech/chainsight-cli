@@ -52,10 +52,7 @@ pub async fn exec(env: &EnvironmentImpl, opts: DeleteOpts) -> anyhow::Result<()>
         canister_id_from_canister_name(working_dir, &opts.network, &opts.component)
             .expect("failed to get canister id")
     });
-    let url = match &opts.network {
-        Network::Local => format!("http://localhost:{}", opts.port.unwrap_or(4943)),
-        Network::IC => "https://ic0.app/".to_string(),
-    };
+    let url = opts.network.to_url(opts.port);
     let agent = generate_agent(&url);
     if opts.network == Network::Local {
         agent.fetch_root_key().await.unwrap();
