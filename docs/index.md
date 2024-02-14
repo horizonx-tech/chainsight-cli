@@ -218,6 +218,11 @@ This command will add a Component Manifest of the specified Type and its managem
 
 If you are familiar with it, you can do manually what this command does.
 
+- `--type`: Specify the Component Type
+  - A Template Manifest will be generated for the specified Component Type.
+- `--path`: Select the path of the project to which you want to add the Component.
+  - The folder containing the `.chainsight` file will be recognized as the project.
+
 ```txt
 % csx add --help
 Generates component manifest of specified type and adds to your project
@@ -254,12 +259,9 @@ Options:
           Print help (see a summary with '-h')
 ```
 
-- `--type`: Specify the Component Type
-  - A Template Manifest will be generated for the specified Component Type.
-- `--path`: Select the path of the project to which you want to add the Component.
-  - The folder containing the `.chainsight` file will be recognized as the project.
-
 ## csx generate
+
+Generate component code from the manifest in your Chainsight project.
 
 ```txt
 % csx generate --help (or csx gen ...)
@@ -275,6 +277,9 @@ Options:
 ```
 
 ## csx build
+
+Generate a canister module that runs on the Chainsight Platform from your Chainsight project code.
+By default, it also includes `csx generate`, use the `-only-build` option if you want to generate modules only.
 
 ```txt
 % csx build --help 
@@ -301,6 +306,8 @@ It is built by wrapping the operations performed by the dfx deploy command, plus
   - Currently, you can choose between the following options.
     - local ... localhost
     - ic ... mainnet of Internet Computer
+- `--component`: Only specified components can be targeted.
+  - Without this option, all components declared in the project are executed as targets.
 
 ```txt
 % csx deploy --help
@@ -309,13 +316,14 @@ Deploy the components of your project. If you want to operate on a local network
 Usage: csx deploy [OPTIONS]
 
 Options:
-  -p, --path <PATH>            Specify the path of the project to deploy. If not specified, the current directory is targeted
-  -v, --verbose...             Displays detailed information about operations. -vv will generate a very large number of messages and can affect performance
-  -c, --component <COMPONENT>  Specify the component to deploy. If this option is not specified, the command will be given to all components managed by the project
-      --network <NETWORK>      Specify the network to execute on [default: local] [possible values: local, ic]
-  -q, --quiet...               Suppresses informational messages. -qq limits to errors only; -qqqq disables them all
-      --port <PORT>            Specifies the port to call. This option is used only if the target is localhost
-  -h, --help                   Print help
+  -p, --path <PATH>                Specify the path of the project to deploy. If not specified, the current directory is targeted
+  -v, --verbose...                 Displays detailed information about operations. -vv will generate a very large number of messages and can affect performance
+  -c, --component <COMPONENT>      Specify the component to deploy. If this option is not specified, the command will be given to all components managed by the project
+  -q, --quiet...                   Suppresses informational messages. -qq limits to errors only; -qqqq disables them all
+      --network <NETWORK>          Specify the network to execute on [default: local] [possible values: local, ic]
+      --port <PORT>                Specifies the port to call. This option is used only if the target is localhost
+      --with-cycles <WITH_CYCLES>  Specify the initial number of cycles for canister. Used as a parameter for `dfx canister create`
+  -h, --help                       Print help
 ```
 
 ## csx exec
@@ -344,9 +352,29 @@ Options:
   -h, --help                   Print help
 ```
 
+## csx delete
+
+Remove already deployed components included in the project.
+
+```bash
+% csx delete --help
+Delete your Chainsight component. This command deletes the component with sidecars and allows you to recover the remaining cycles
+
+Usage: csx delete [OPTIONS] --component <COMPONENT>
+
+Options:
+  -p, --path <PATH>            Specify the path of the project to be deleted. If not specified, the current directory is targeted
+  -v, --verbose...             Displays detailed information about operations. -vv will generate a very large number of messages and can affect performance
+  -c, --component <COMPONENT>  Specify the component name or canister id to delete
+  -q, --quiet...               Suppresses informational messages. -qq limits to errors only; -qqqq disables them all
+      --network <NETWORK>      Specify the network to execute on [default: local] [possible values: local, ic]
+      --port <PORT>            Specifies the port to call. This option is used only if the target is localhost
+  -h, --help                   Print help
+```
+
 ## csx remove
 
-Used to delete a project that has already been created.
+Used to remove resources related to a specified component from your project.
 
 > **Warning**  
 > Stopping a deployed Component (Canister) is currently not part of the process, so you will need to stop/delete the Component, canister, manually.
