@@ -22,8 +22,8 @@ Before you can deploy on your local machine, you need to deploy [chainsight-mana
   
   ```bash
     git clone https://github.com/horizonx-tech/chainsight-management-canisters.git
-    cd chainsight-management-canisters
-    make local port=${YOUR_DFX_PORT}
+    cd chainsight-management-canisters/artifacts
+    make all port=${YOUR_DFX_PORT}
   ```
 
 ## Install CLI
@@ -37,7 +37,7 @@ Once you have followed either of these steps to install, you can confirm the ins
 
 ```bash
 csx --version
-# -> csx x.y.z
+# -> csx version: x.y.z
 ```
 
 > **Warning**  
@@ -55,7 +55,7 @@ Install and path the binary file according to your terminal from the following
 Clone this repository and run cargo build.
 
 ```bash
-cd horizonx-tech/chainsight-cli && cargo build --release
+cd horizonx-tech/chainsight-cli && cargo build --release && cargo install --path .
 ```
 
 ## Quick Start for your project
@@ -94,7 +94,7 @@ When 'deploy' is complete, the 'exec' command sends the actual initialization an
 
 ```bash
 # Initialize Components / Start processing
-csx exec --path sample
+csx exec --path initial_project
 ```
 
 # Terminology
@@ -119,10 +119,10 @@ Chainsight defines several types of canisters specialized for certain applicatio
 The following Components are currently available on the CLI.
 
 - Snapshot Indexer
-  - In addition, depending on the data source, you can choose from
-    - chain: For EVM-based Other chains
-    - canister: Other canisters on Internet Computer
-    - https: using HTTPS Outcall
+  - Select the following types depending on the location of the data you wish to collect
+    - Snapshot Indexer EVM: For EVM-based Other chains
+    - Snapshot Indexer ICP: Other canisters on Internet Computer
+    - Snapshot Indexer HTTPS: Resources available on the general web
 - Event Indexer
 - Algorithm Indexer
 - Algorithm Lens
