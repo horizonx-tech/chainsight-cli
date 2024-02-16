@@ -22,8 +22,8 @@ Before you can deploy on your local machine, you need to deploy [chainsight-mana
   
   ```bash
     git clone https://github.com/horizonx-tech/chainsight-management-canisters.git
-    cd chainsight-management-canisters
-    make local port=${YOUR_DFX_PORT}
+    cd chainsight-management-canisters/artifacts
+    make all port=${YOUR_DFX_PORT}
   ```
 
 ## Install CLI
@@ -37,7 +37,7 @@ Once you have followed either of these steps to install, you can confirm the ins
 
 ```bash
 csx --version
-# -> csx x.y.z
+# -> csx version: x.y.z
 ```
 
 > **Warning**  
@@ -55,7 +55,7 @@ Install and path the binary file according to your terminal from the following
 Clone this repository and run cargo build.
 
 ```bash
-cd horizonx-tech/chainsight-cli && cargo build --release
+cd horizonx-tech/chainsight-cli && cargo build --release && cargo install --path .
 ```
 
 ## Quick Start for your project
@@ -94,7 +94,7 @@ When 'deploy' is complete, the 'exec' command sends the actual initialization an
 
 ```bash
 # Initialize Components / Start processing
-csx exec --path sample
+csx exec --path initial_project
 ```
 
 # Terminology
@@ -119,10 +119,10 @@ Chainsight defines several types of canisters specialized for certain applicatio
 The following Components are currently available on the CLI.
 
 - Snapshot Indexer
-  - In addition, depending on the data source, you can choose from
-    - chain: For EVM-based Other chains
-    - canister: Other canisters on Internet Computer
-    - https: using HTTPS Outcall
+  - Select the following types depending on the location of the data you wish to collect
+    - Snapshot Indexer EVM: For EVM-based Other chains
+    - Snapshot Indexer ICP: Other canisters on Internet Computer
+    - Snapshot Indexer HTTPS: Resources available on the general web
 - Event Indexer
 - Algorithm Indexer
 - Algorithm Lens
@@ -218,6 +218,11 @@ This command will add a Component Manifest of the specified Type and its managem
 
 If you are familiar with it, you can do manually what this command does.
 
+- `--type`: Specify the Component Type
+  - A Template Manifest will be generated for the specified Component Type.
+- `--path`: Select the path of the project to which you want to add the Component.
+  - The folder containing the `.chainsight` file will be recognized as the project.
+
 ```txt
 % csx add --help
 Generates component manifest of specified type and adds to your project
@@ -254,12 +259,9 @@ Options:
           Print help (see a summary with '-h')
 ```
 
-- `--type`: Specify the Component Type
-  - A Template Manifest will be generated for the specified Component Type.
-- `--path`: Select the path of the project to which you want to add the Component.
-  - The folder containing the `.chainsight` file will be recognized as the project.
-
 ## csx generate
+
+Generate component code from the manifest in your Chainsight project.
 
 ```txt
 % csx generate --help (or csx gen ...)
@@ -275,6 +277,9 @@ Options:
 ```
 
 ## csx build
+
+Generate a canister module that runs on the Chainsight Platform from your Chainsight project code.
+By default, it also includes `csx generate`, use the `-only-build` option if you want to generate modules only.
 
 ```txt
 % csx build --help 
@@ -301,6 +306,8 @@ It is built by wrapping the operations performed by the dfx deploy command, plus
   - Currently, you can choose between the following options.
     - local ... localhost
     - ic ... mainnet of Internet Computer
+- `--component`: Only specified components can be targeted.
+  - Without this option, all components declared in the project are executed as targets.
 
 ```txt
 % csx deploy --help
@@ -309,13 +316,14 @@ Deploy the components of your project. If you want to operate on a local network
 Usage: csx deploy [OPTIONS]
 
 Options:
-  -p, --path <PATH>            Specify the path of the project to deploy. If not specified, the current directory is targeted
-  -v, --verbose...             Displays detailed information about operations. -vv will generate a very large number of messages and can affect performance
-  -c, --component <COMPONENT>  Specify the component to deploy. If this option is not specified, the command will be given to all components managed by the project
-      --network <NETWORK>      Specify the network to execute on [default: local] [possible values: local, ic]
-  -q, --quiet...               Suppresses informational messages. -qq limits to errors only; -qqqq disables them all
-      --port <PORT>            Specifies the port to call. This option is used only if the target is localhost
-  -h, --help                   Print help
+  -p, --path <PATH>                Specify the path of the project to deploy. If not specified, the current directory is targeted
+  -v, --verbose...                 Displays detailed information about operations. -vv will generate a very large number of messages and can affect performance
+  -c, --component <COMPONENT>      Specify the component to deploy. If this option is not specified, the command will be given to all components managed by the project
+  -q, --quiet...                   Suppresses informational messages. -qq limits to errors only; -qqqq disables them all
+      --network <NETWORK>          Specify the network to execute on [default: local] [possible values: local, ic]
+      --port <PORT>                Specifies the port to call. This option is used only if the target is localhost
+      --with-cycles <WITH_CYCLES>  Specify the initial number of cycles for canister. Used as a parameter for `dfx canister create`
+  -h, --help                       Print help
 ```
 
 ## csx exec
@@ -344,9 +352,29 @@ Options:
   -h, --help                   Print help
 ```
 
+## csx delete
+
+Remove already deployed components included in the project.
+
+```bash
+% csx delete --help
+Delete your Chainsight component. This command deletes the component with sidecars and allows you to recover the remaining cycles
+
+Usage: csx delete [OPTIONS] --component <COMPONENT>
+
+Options:
+  -p, --path <PATH>            Specify the path of the project to be deleted. If not specified, the current directory is targeted
+  -v, --verbose...             Displays detailed information about operations. -vv will generate a very large number of messages and can affect performance
+  -c, --component <COMPONENT>  Specify the component name or canister id to delete
+  -q, --quiet...               Suppresses informational messages. -qq limits to errors only; -qqqq disables them all
+      --network <NETWORK>      Specify the network to execute on [default: local] [possible values: local, ic]
+      --port <PORT>            Specifies the port to call. This option is used only if the target is localhost
+  -h, --help                   Print help
+```
+
 ## csx remove
 
-Used to delete a project that has already been created.
+Used to remove resources related to a specified component from your project.
 
 > **Warning**  
 > Stopping a deployed Component (Canister) is currently not part of the process, so you will need to stop/delete the Component, canister, manually.
@@ -397,6 +425,7 @@ Of particular importance is the type, which determines the Component Type, so be
 - `label`: String / Component name
 - `type`: Enum / Component Type (ex: snapshot_indexer_icp)
 - `description`: String / Component description field
+- `tags`: Array(String) / Tags for component elements
 
 example)
 
@@ -409,6 +438,8 @@ metadata:
   tags: ...
 ...
 ```
+
+The differences between components are presented in the "Components" section below.
 
 #### Note: Working with .env
 
@@ -438,43 +469,52 @@ CHAIN_NETWORK_ID=1
 CHAIN_ALCHEMY_KEY=abcde12345
 ```
 
-#### Snapshot
+## Components
 
-As mentioned earlier, there are multiple types of Snapshot, and each datasource has different logic and external connection methods, so there are differences in the way manifest is written.
+### About Snapshot Indexer
 
-The Snapshot type is selected in `datasource.type`.
+As mentioned earlier, there are multiple types of Snapshot Indexer, and each datasource has different logic and external connection methods, so there are differences in the way manifest is written.
 
-**Snapshot (datasource = contract)**
+These Snapshot Indexer types are also specified in `metadata.type`.
+
+- snapshot_indexer_evm
+- snapshot_indexer_icp
+- snapshot_indexer_https
+
+This section also briefly introduces the manifest items that commonly exist in Snapshot Indexer.
+
+- `datasource` specifies the data source to be collected
+  - The method of description varies slightly from component to component. See individual component sections for details.
+- `interval` specifies the interval between acquiring and storing data at the destination specified by `datasource`
+  - Number / Interval between data acquisition and storage.
+  - Set in seconds.
+
+```yaml
+datasource: ...
+...
+interval: 3600
+```
+
+### Snapshot Indexer EVM
 
 Select this type if you want to build a data snapshot using HTTPS outcalls from an EVM-compliant blockchain.
 
 In `datasource`, specify the destination network, contract address, and contract function.
 
-- `datasource.type`: fixed at “contract”.
 - `datasource.location` ... Specify destination network, contract
   - `id`: String / Contract address
   - `args.network_id`: Number / chain_id of the target network
   - `args.rpc_url`: String / rpc endpoint url to connect to the target network
 - `datasource.method` ... Specify the function of the contract to be called.
-  - `method.identifier`: String / Interface of the function to be called.
+  - `identifier`: String / Interface of the function to be called.
     - Please refer to the interfaces mentioned in the repository below.
       - [rust-ethereum/ethabi: Encode and decode smart contract invocations](https://github.com/rust-ethereum/ethabi)
-  - `method.interface`: Name of the ABI file containing the interface to the above function.
+  - `interface`: Name of the ABI file containing the interface to the above function.
     - Placed under `(project folder)/interfaces`
     - ERC20.json is buildin to the CLI.
-  - `method.args`: String, Number / If the function has arguments, set their values.
+  - `args`: String, Number / If the function has arguments, set their values.
     - The value entered is always used in HTTPS outcalls as a fixed value.
       - Snapshot stores function calls with the same conditions as a Snapshot, so it is not possible to calculate the input value each time.
-
-`storage` selects how to store the retrieved values as specified in `datasource`
-
-- `storage.with_timestamp`: boolean / Determines whether to include the timestamp when saving.
-  - If this is true, the timestamp obtained using Internet Computer's API is included in the Snapshot data and stored in the historical data.
-
-`interval` specifies the interval between acquiring and storing data at the destination specified by `datasource`.
-
-- `interval`: Number / Interval between data acquisition and storage.
-  - Set in seconds.
 
 example)
 
@@ -496,16 +536,13 @@ datasource:
     identifier: totalSupply():(uint256)
     interface: ERC20.json
     args: []
-storage:
-  with_timestamp: true
 interval: 3600
+cycles: null
 ```
 
-**Snapshot (datasource = canister)**
+### Snapshot Indexer ICP
 
 Select this type if you want to use cross canister calls within Internet Computer to build a snapshot of data that can be retrieved from other canisters.
-
-Since `datasource` differs from contract only in the `datasource` field, only `datasource` is described in this section.
 
 Set the function for the canister to be acquired at `datasource`.
 
@@ -518,6 +555,11 @@ Set the function for the canister to be acquired at `datasource`.
   - `method.interface`: Current status "null" fixed.
   - `method.args`: String, Number / If the function has arguments, set their values
     - The value entered is always used in cross contract calls as a fixed value.
+
+`is_target_component` specifies whether the data source is a canister in the Chainsight Platform.
+
+- `is_target_component`: Whether the data source is a Chainsight Component or not
+  - If this is not set, the target will act as if it were a Chainsight Component.
 
 example)
 
@@ -536,16 +578,93 @@ datasource:
     identifier: 'get_last_snapshot : () -> (record { value : text; timestamp : nat64 })'
     interface: null
     args: []
-storage:
-  with_timestamp: true
+is_target_component: null
 interval: 3600
 ```
 
-#### Relayer
+### Snapshot Indexer HTTPS
+
+Select this type if you want to collect data from a general web, such as a public API server.
+
+The `datasource` specifies the data location to be collected.
+
+- `datasource.url`: String / Specify the URL from which to retrieve data
+- `datasource.headers`: Object / Specifies the request header
+- `datasource.queries`: Object / Specify request data
+  - `type`: "static" or "dynamic"
+    - "static" will set it statically in the subsequent `value` field in the manifest
+    - "dynamic", where the user writes the logic to calculate parameters in the generated component code
+  - `value`: Object / Set the request body in key-value format
+
+example)
+
+```yaml
+version: v1
+metadata:
+  label: Sample Snapshot Indexer Https
+  type: snapshot_indexer_https
+  description: ''
+  tags: ...
+datasource:
+  url: https://api.coingecko.com/api/v3/simple/price
+  headers:
+    Content-Type: application/json
+  queries:
+    type: static
+    value:
+      ids: dai
+      vs_currencies: usd
+interval: 3600
+cycles: null
+```
+
+### Event Indexer
+
+Event Indexer subscribes to Ethereum Contract events and stores them as data in the component.
+
+Specify the contract to be subscribed to and its events in `datasource`. The specification of chains and contracts is the same as in the Snapshot Indexer EVM.
+
+- `datasource.id`: String / Contract address
+- `datasource.event`: Specify the target Event
+  - `identifier`: event name / identifier
+  - `interface`: Name of the ABI file containing the interface to the above event.
+- `datasource.network`: Network to which the contract for the specified event belongs
+  - `chain_id`: Number / chain_id of the target network
+  - `rpc_url`: String / rpc endpoint url to connect to the target
+- `datasource.from`: Number / Specifies the block number to start subscribing to
+  - Block numbers before the specified number are skipped.
+- `datasource.contract_type`: String / Specify the contract type
+- `datasource.batch_size`: Optional(Number) / Specify the size of the block to be subscribed at a time.
+
+example)
+
+```yaml
+version: v1
+metadata:
+  label: Event Indexer
+  type: event_indexer
+  description: ''
+  tags: ...
+datasource:
+  id: 0x6B175474E89094C44Da98b954EedeAC495271d0F
+  event:
+    identifier: Transfer
+    interface: ERC20.json
+  network:
+    rpc_url: https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}
+    chain_id: 1
+  from: 17660942
+  contract_type: ERC-20
+  batch_size: null
+interval: 3600
+cycles: null
+```
+
+### Relayer
 
 Relayer is a component for propagating data computed and maintained by Chainsight Platform to other blockchains.
 
-Therefore, `datasource` and `interval` are the same as Snapshot for Canister, and a new `destination` must be specified to specify the propagation destination.
+Therefore, `datasource` and `interval` are the same as Snapshot Indexer ICP, and a new `destination` must be specified to specify the propagation destination.
 
 - `destination.network_id`: Number / chain_id of the target network
 - `destination.type`: Enum / Oracle Type
@@ -578,6 +697,29 @@ destination:
 interval: 3600
 ```
 
+The above description is only a minimal setup. Further customization is possible.
+
+- To change the caller's contract interface...
+  - `destination.method_name`: identifier of the function to call
+  - `destination.interface`: ABI of the contract to be called
+- `conversion_parameter` allows simple processing of the data to be propagated
+  - `extracted_field`: String / Specify the field to propagate
+  - `destination_type_to_convert`: String / Specify the type you want to convert
+  - `exponent_of_power10`: Number / Use for digit up
+
+example)
+
+```yaml
+destination:
+  ...
+  interface: IProposalSynchronizer.json
+  method_name: batchSynchronize
+conversion_parameter:
+  extracted_field: value.dai.usd
+  destination_type_to_convert: U256
+  exponent_of_power10: 2
+```
+
 **What is Oracle?**
 
 When Relayer propagates data to other blockchains, Chainsight provides Oracle Contract as the target.
@@ -590,32 +732,22 @@ The following is a tentative specification, but there is a specific code below.
 
 Currently, only EVM compatible chains are supported, so only Solidity files are placed.
 
-#### Event Indexer
+### Algorithm Lens
 
-To be updated
-
-#### Algorithm Indexer
-
-To be updated
-
-#### Algorithm Lens
-
-Users can define arbitrary logic using Lens. All data sources on Chainsight can be used as inputs for the calculations.
+Users can define arbitrary logic using Algorithm Lens. All data sources on Chainsight can be used as inputs for the calculations.
 
 `datasource` specifies the source data source for the calculation. You can specify data sources by canister in Chainsight and their endpoints (e.g. functions). Multiple data sources can be specified.
 
-- `datasource.locations`: Array / Specifies the Canister from which the data originates.
-  - `id` ... These are the same as "Snapshot (datasource = canister)"
-  - `label`: String / Information used in the function name to get the canister id used by user when defining logic.
-- `datasource.methods`: Array / Specifies a function to retrieve data.
-  - `label`: String / Information used in the function name to do cross-canister call used by user when defining logic.
-  - `identifier` ... These are the same as "Snapshot (datasource = canister)"
+- `datasource.methods`: Array / Specifies the components from which the data originates.
+  - `id`: String / Specify the Component to be the data source
+    - If in the same project, specify the "component name"
+    - Otherwise, specify the canister ID.
+      - ex: `thiw2-paaaa-aaaag-qc53a-cai`
+  - `identifier`: String / Candid format interface to call to for data source acquisition
+  - `candid_file_path`: Optional(String) / Path to the .did file that contains the function interface for the canister that will be the data source
+  - `func_name_alias`: Optional(String) / Function name generated in the logic file generated from this data source definition
 
-`output` specifies the type of calculation result to output with arbitrary logic.
-
-- `name`: String / Name of type
-- `fields`: Array / Field information for the calculation result type
-  - `(key_name)`: (Kind of Type)
+example)
 
 ```yml
 version: v1
@@ -623,17 +755,114 @@ metadata:
   label: sample_algorithm_lens
   type: algorithm_lens
   description: ''
-  tags:
-  - Ethereum
-  - Account
+  tags: ...
 datasource:
-  locations:
-  - id: rate_snapshot
   methods:
-  - label: last_snapshot_value
-    identifier: 'get_last_snapshot_value : () -> (text)'
-output:
-  name: Account
-  fields:
-    address: String
+  - id: sample_snapshot_indexer_evm
+    identifier: 'get_last_snapshot_value : () -> (record { nat; text })'
+    candid_file_path: interfaces/sample_snapshot_indexer_evm.did
+  - id: sample_snapshot_indexer_icp
+    identifier: 'get_last_snapshot_value : () -> (nat)'
+    candid_file_path: interfaces/sample_snapshot_indexer_icp.did
+cycles: null
 ```
+
+## Sources for Component Modules
+
+"csx generate" can be run to generate code for a component module from your project manifest. The codes is generated in the following configuration.
+
+```txt
+pj_root/src
+|- __interface // ABI and Candid used in the codes
+|- accessors // External communication logic
+|- bindings // Types for external communication
+|- canisters // Core canister codes
+|- logics // User-specific customization
+|- Cargo.lock
+L Cargo.toml
+```
+
+Some components can be customized by the user by editing the component-specific `lib.rs` in the `logics` folder.
+
+```txt
+logics
+|- (component_name)
+|  |- src
+|  |  L lib.rs
+|  L Cargo.toml
+...
+```
+
+### Case for Snapshot Indexer HTTPS
+
+Snapshot Indexer HTTPS allows filtering on response data that can be retrieved from a specified destination. It can be reflected by updating the field in the rust structure that represents the response data type.
+
+example)
+
+```diff
+use candid::{Decode, Encode};
+#[derive(Debug, Clone, candid::CandidType, candid::Deserialize, serde::Serialize, chainsight_cdk_macros::StableMemoryStorable)]
+pub struct SnapshotValue {
+    pub dai: Dai,
+}
+
+#[derive(Debug, Clone, candid::CandidType, candid::Deserialize, serde::Serialize, chainsight_cdk_macros::StableMemoryStorable)]
+pub struct Dai {
+    pub usd: f64,
+-    pub usd_market_cap: f64,
+-    pub usd_24h_vol: f64,
+-    pub usd_24h_change: f64,
+-    pub last_updated_at: f64
+}
+```
+
+### Case for Algorithm Lens
+
+With respect to Algorithm Lens, it is up to the user to decide how to process data from the specified data source. This logic must be implemented here.
+
+Codes is automatically generated to retrieve data from the specified data source.
+
+example)
+
+```rust
+#[derive(Clone, Debug, Default, candid :: CandidType, serde :: Deserialize, serde :: Serialize)]
+pub struct LensValue {
+    pub dummy: f64,
+}
+pub async fn calculate(targets: Vec<String>) -> LensValue {
+    let _result = get_eth_1(targets.get(0usize).unwrap().clone()).await;
+    let _result = get_eth_2(targets.get(1usize).unwrap().clone()).await;
+    let _result = get_eth_3(targets.get(2usize).unwrap().clone()).await;
+
+    todo!();
+}
+```
+
+From the template code as above, update the code as follows, taking into account your own logic. This is an example of calculating an average.
+
+example)
+
+```rust
+#[derive(Clone, Debug, Default, candid :: CandidType, serde :: Deserialize, serde :: Serialize)]
+pub struct LensValue {
+    pub value: f64,
+}
+pub async fn calculate(targets: Vec<String>) -> LensValue {
+    let eth_1 = get_eth_1(targets.get(0usize).unwrap().clone()).await.unwrap();
+    let eth_2 = get_eth_2(targets.get(1usize).unwrap().clone()).await.unwrap();
+    let eth_3 = get_eth_3(targets.get(2usize).unwrap().clone()).await.unwrap();
+
+    let prices = vec![eth_1, eth_2, eth_3];
+    LensValue { value: (prices.iter().sum::<f64>() / prices.len() as f64) }
+}
+```
+
+# References
+
+Medium's official account introduces various implementation examples and the technology behind them.
+
+[Chainsight – Medium](https://medium.com/@Chainsight_Network)
+
+The Showcase repository also publishes actual code for a variety of use case examples.
+
+[horizonx-tech/chainsight-showcase](https://github.com/horizonx-tech/chainsight-showcase)
