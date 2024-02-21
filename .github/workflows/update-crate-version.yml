@@ -1,0 +1,34 @@
+name: Update crate version
+on:
+  workflow_dispatch:
+env:
+  RUST_VERSION: 1.76.0
+  RELEASE_LEVEL: patch
+  CI_COMMIT_AUTHOR: github-actions
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the source code
+        uses: actions/checkout@v3
+      - name: Cache Cargo
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ env.RUST_VERSION }}
+      - name: Install Rust
+        run: |
+          rustup update ${{ env.RUST_VERSION }} --no-self-update
+          rustup default ${{ env.RUST_VERSION }}
+      - name: Install cargo-release
+        run: cargo install cargo-release --locked
+      - name: Run cargo release
+        run: |
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          cargo release version --execute --no-confirm ${{ env.RELEASE_LEVEL }}
+          cargo release commit --execute --no-confirm
+          git push
