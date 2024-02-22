@@ -4,10 +4,13 @@ on:
 env:
   RUST_VERSION: 1.76.0
   RELEASE_LEVEL: patch
+  BASE_BRANCH_NAME: topic/bump-version
   CI_COMMIT_AUTHOR: github-actions
 jobs:
   update:
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.PAT }}
     steps:
       - name: Checkout the source code
         uses: actions/checkout@v3
@@ -30,5 +33,10 @@ jobs:
           git config --global user.name "${GITHUB_ACTOR}"
           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
           cargo release version --execute --no-confirm ${{ env.RELEASE_LEVEL }}
+          PKG_VER=$(cargo metadata --format-version=1 --no-deps | jq ".packages[0].version" | tr -d '"')
+          git checkout -b ${{ env.BASE_BRANCH_NAME }}-$PKG_VER
+          git branch
           cargo release commit --execute --no-confirm
-          git push
+          git push -u origin HEAD
+          gh pr create --fill
+          gh pr merge --auto --merge
