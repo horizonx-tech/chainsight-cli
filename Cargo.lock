@@ -841,7 +841,7 @@ dependencies = [
 
 [[package]]
 name = "csx"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "Inflector",
  "anstyle",
