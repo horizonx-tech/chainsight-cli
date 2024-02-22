@@ -1,9 +1,13 @@
 name: Update crate version
 on:
   workflow_dispatch:
+    inputs:
+      level_or_version:
+        description: 'Parameter specifying update version, to use with `cargo release version` ex: `1.0.0`, `patch` etc'
+        type: string
 env:
   RUST_VERSION: 1.76.0
-  RELEASE_LEVEL: patch
+  DEFAULT_RELEASE_LEVEL: patch
   BASE_BRANCH_NAME: topic/bump-version
   CI_COMMIT_AUTHOR: github-actions
 jobs:
@@ -32,7 +36,7 @@ jobs:
         run: |
           git config --global user.name "${GITHUB_ACTOR}"
           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-          cargo release version --execute --no-confirm ${{ env.RELEASE_LEVEL }}
+          cargo release version --execute --no-confirm ${{ github.event.inputs.level_or_version || env.DEFAULT_RELEASE_LEVEL }}
           PKG_VER=$(cargo metadata --format-version=1 --no-deps | jq ".packages[0].version" | tr -d '"')
           git checkout -b ${{ env.BASE_BRANCH_NAME }}-$PKG_VER
           git branch
