@@ -50,6 +50,25 @@ impl From<AlgorithmIndexerComponentManifest>
                 response_type: val.datasource.input.name,
                 source_type: val.datasource.source_type,
             },
+            output: chainsight_cdk::config::components::AlgorithmIndexerOutput {
+                types: val
+                    .output
+                    .into_iter()
+                    .map(
+                        |o| chainsight_cdk::config::components::AlgorithmIndexerOutputIdentifier {
+                            name: o.name,
+                            type_: match o.output_type {
+                                AlgorithmOutputType::KeyValue => {
+                                    chainsight_cdk::config::components::AlgorithmOutputType::KeyValue
+                                }
+                                AlgorithmOutputType::KeyValues => {
+                                    chainsight_cdk::config::components::AlgorithmOutputType::KeyValues
+                                }
+                            },
+                        },
+                    )
+                    .collect(),
+            },
         }
     }
 }

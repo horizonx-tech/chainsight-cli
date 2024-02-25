@@ -15,5 +15,10 @@ def_algorithm_indexer_canister!("{
 \"start_from\":17660942, \"chunk_size\":null
 }, \"input\":{
 \"method_name\":\"proxy_call\", \"response_type\":\"Transfer\", \"source_type\":\"event_indexer\"
+}, \"output\":{
+\"types\":[{
+\"name\":\"SampleOutput\", \"type_\":\"key_value\"
+}]
+
 }}");
 
