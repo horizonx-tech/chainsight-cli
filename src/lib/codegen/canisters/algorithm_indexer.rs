@@ -44,6 +44,39 @@ fn custom_codes(
     let conf: AlgorithmIndexerConfig = (manifest.clone()).into();
     let conf_json = serde_json::to_string(&conf)?;
 
+    Ok(quote! {
+        use chainsight_cdk::storage::Data;
+        use chainsight_cdk_macros::{def_algorithm_indexer_canister, Persist};
+        #[warn(unused_imports)]
+        use chainsight_cdk_macros::{KeyValueStore, KeyValuesStore};
+        def_algorithm_indexer_canister!(#conf_json);
+    })
+}
+
+pub fn generate_codes(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Result<String> {
+    ensure!(
+        manifest.metadata.type_ == ComponentType::AlgorithmIndexer,
+        "type is not AlgorithmIndexer"
+    );
+    custom_codes(manifest).map(|code| code.to_string())
+}
+
+pub fn generate_app(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Result<String> {
+    let input_type = input_type_ident(manifest);
+    let event_struct = format_ident!("{}", &manifest.datasource.input.name);
+
+    let event_interfaces = &manifest.datasource.input.fields;
+    let mut input_field_idents: Vec<Ident> = event_interfaces
+        .iter()
+        .map(|(k, _)| format_ident!("{}", k.clone()))
+        .collect();
+    input_field_idents.sort();
+    let mut input_field_types: Vec<Ident> = event_interfaces
+        .iter()
+        .map(|(_, v)| format_ident!("{}", v.clone()))
+        .collect();
+    input_field_types.sort();
+
     let mut output_structs_quotes = Vec::new();
     let (mut key_value_count, mut key_values_count) = (0, 0);
     for i in 0..manifest.output.len() {
@@ -85,40 +118,6 @@ fn custom_codes(
         });
     }
 
-    Ok(quote! {
-        use chainsight_cdk::storage::Data;
-        use chainsight_cdk_macros::{def_algorithm_indexer_canister, Persist};
-        #[warn(unused_imports)]
-        use chainsight_cdk_macros::{KeyValueStore, KeyValuesStore};
-        def_algorithm_indexer_canister!(#conf_json);
-        #(#output_structs_quotes)*
-    })
-}
-
-pub fn generate_codes(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Result<String> {
-    ensure!(
-        manifest.metadata.type_ == ComponentType::AlgorithmIndexer,
-        "type is not AlgorithmIndexer"
-    );
-    custom_codes(manifest).map(|code| code.to_string())
-}
-
-pub fn generate_app(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Result<String> {
-    let input_type = input_type_ident(manifest);
-    let event_struct = format_ident!("{}", &manifest.datasource.input.name);
-
-    let event_interfaces = &manifest.datasource.input.fields;
-    let mut input_field_idents: Vec<Ident> = event_interfaces
-        .iter()
-        .map(|(k, _)| format_ident!("{}", k.clone()))
-        .collect();
-    input_field_idents.sort();
-    let mut input_field_types: Vec<Ident> = event_interfaces
-        .iter()
-        .map(|(_, v)| format_ident!("{}", v.clone()))
-        .collect();
-    input_field_types.sort();
-
     let code = quote! {
         use std::collections::HashMap;
 
@@ -126,6 +125,8 @@ pub fn generate_app(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Res
         pub struct #event_struct {
             #(pub #input_field_idents: #input_field_types),*
         }
+
+        #(#output_structs_quotes)*
 
         pub fn persist(elem: #input_type) {
             todo!()

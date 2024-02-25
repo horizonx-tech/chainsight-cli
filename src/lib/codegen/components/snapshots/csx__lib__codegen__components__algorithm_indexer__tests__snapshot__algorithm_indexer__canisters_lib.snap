@@ -16,7 +16,4 @@ def_algorithm_indexer_canister!("{
 }, \"input\":{
 \"method_name\":\"proxy_call\", \"response_type\":\"Transfer\", \"source_type\":\"event_indexer\"
 }}");
-#[derive(Clone, Debug, Default, CandidType, Deserialize, Serialize, Persist, KeyValueStore)]
-#[memory_id(1i32)]
-pub struct SampleOutput {
-pub result:String, pub value:String }
+

@@ -8,5 +8,11 @@ pub struct Transfer {
 pub from:String, pub to:String, pub value:String
 }
 
+#[derive(Clone, Debug, Default, CandidType, Deserialize, Serialize, Persist, KeyValueStore)]
+#[memory_id(1i32)]
+pub struct SampleOutput {
+pub result:String, pub value:String
+}
+
 pub fn persist(elem:HashMap<u64, Vec<Transfer>>) {
 todo!() }
