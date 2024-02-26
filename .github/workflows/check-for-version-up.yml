@@ -1,0 +1,35 @@
+name: Check for Version up
+on:
+  schedule:
+    - cron: '0 18 * * *'
+env:
+  INTERVEL_SEC: 86400 # same to cron interval
+  TARGET_PATH: src resources # check for updates in these files/folders
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the source code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Check for updates
+        id: check
+        run: |
+          LATEST_COMMIT_UNIX_TIME=$((git log -1 --format=%ct -- ${{ env.TARGET_PATH }}))
+          CUREENT_TIME=$(date +%s)
+          DIFF=$((CUREENT_TIME - LATEST_COMMIT_UNIX_TIME))
+          IS_EXIST_NEW_COMMIT=$(($CUREENT_TIME - ${{ env.INTERVEL_SEC }} - $LATEST_COMMIT_UNIX_TIME < 0))
+          echo "Latest: $LATEST_COMMIT_UNIX_TIME"
+          echo "Current: $CUREENT_TIME"
+          echo "is_exist_new_commit=$IS_EXIST_NEW_COMMIT" >> $GITHUB_OUTPUT
+      - name: if check flag is true, request to update
+        if: ${{ steps.check.outputs.is_exist_new_commit != '0' }}
+        uses: convictional/trigger-workflow-and-wait@v1.6.5
+        with:
+          owner: horizonx-tech
+          repo: chainsight-cli
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow_file_name: update-crate-version.yml
+
+
