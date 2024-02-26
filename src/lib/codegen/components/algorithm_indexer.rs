@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 
 use chainsight_cdk::{
-    config::components::{AlgorithmIndexerConfig, AlgorithmInputType, CommonConfig},
+    config::components::{
+        AlgorithmIndexerConfig, AlgorithmInputType, AlgorithmOutputType, CommonConfig,
+    },
     initializer::CycleManagements,
 };
 use serde::{Deserialize, Serialize};
@@ -49,6 +51,25 @@ impl From<AlgorithmIndexerComponentManifest>
                 method_name: val.datasource.method,
                 response_type: val.datasource.input.name,
                 source_type: val.datasource.source_type,
+            },
+            output: chainsight_cdk::config::components::AlgorithmIndexerOutput {
+                types: val
+                    .output
+                    .into_iter()
+                    .map(
+                        |o| chainsight_cdk::config::components::AlgorithmIndexerOutputIdentifier {
+                            name: o.name,
+                            type_: match o.output_type {
+                                AlgorithmOutputType::KeyValue => {
+                                    chainsight_cdk::config::components::AlgorithmOutputType::KeyValue
+                                }
+                                AlgorithmOutputType::KeyValues => {
+                                    chainsight_cdk::config::components::AlgorithmOutputType::KeyValues
+                                }
+                            },
+                        },
+                    )
+                    .collect(),
             },
         }
     }
@@ -191,14 +212,6 @@ pub struct AlgorithmIndexerOutput {
     #[serde(serialize_with = "ordered_map")]
     pub fields: HashMap<String, String>,
     pub output_type: AlgorithmOutputType,
-}
-
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-pub enum AlgorithmOutputType {
-    #[serde(rename = "key_values")]
-    KeyValues,
-    #[serde(rename = "key_value")]
-    KeyValue,
 }
 
 impl Default for AlgorithmIndexerOutput {

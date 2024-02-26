@@ -3,9 +3,16 @@ source: src/lib/codegen/components/algorithm_indexer.rs
 expression: "SrcString::from(generated_user_impl_template.lib)"
 ---
 use std::collections::HashMap;
+use chainsight_cdk::storage::Data;
 #[derive(Clone, Debug, Default, candid::CandidType, serde::Serialize, serde::Deserialize)]
 pub struct Transfer {
 pub from:String, pub to:String, pub value:String
+}
+
+#[derive(Clone, Debug, Default, candid::CandidType, serde::Deserialize, serde::Serialize, chainsight_cdk_macros::Persist, chainsight_cdk_macros::KeyValueStore)]
+#[memory_id(1i32)]
+pub struct SampleOutput {
+pub result:String, pub value:String
 }
 
 pub fn persist(elem:HashMap<u64, Vec<Transfer>>) {
