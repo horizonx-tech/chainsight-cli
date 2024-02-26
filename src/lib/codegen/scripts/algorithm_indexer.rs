@@ -5,7 +5,10 @@ use crate::{
         components::{
             algorithm_indexer::AlgorithmIndexerComponentManifest, common::ComponentManifest,
         },
-        scripts::common::{generate_command_to_set_task, init_in_env_task, network_param},
+        scripts::common::{
+            generate_command_to_set_task, init_in_env_task, network_param,
+            principal_or_resolver_str,
+        },
     },
     types::{ComponentType, Network},
 };
@@ -17,6 +20,7 @@ fn generate_command_to_setup(
     start_from: u64,
     chunk_size: Option<u64>,
 ) -> String {
+    let target_canister = principal_or_resolver_str(datasrc_id, network);
     let chunk_size = if let Some(chunk_size) = chunk_size {
         format!("opt {}", chunk_size)
     } else {
@@ -33,7 +37,7 @@ fn generate_command_to_setup(
     )""#,
         network_param(network),
         id,
-        datasrc_id,
+        target_canister,
         start_from,
         chunk_size
     )
