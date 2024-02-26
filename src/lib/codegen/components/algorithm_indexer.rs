@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 
 use chainsight_cdk::{
-    config::components::{AlgorithmIndexerConfig, AlgorithmInputType, CommonConfig},
+    config::components::{
+        AlgorithmIndexerConfig, AlgorithmInputType, AlgorithmOutputType, CommonConfig,
+    },
     initializer::CycleManagements,
 };
 use serde::{Deserialize, Serialize};
@@ -210,14 +212,6 @@ pub struct AlgorithmIndexerOutput {
     #[serde(serialize_with = "ordered_map")]
     pub fields: HashMap<String, String>,
     pub output_type: AlgorithmOutputType,
-}
-
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-pub enum AlgorithmOutputType {
-    #[serde(rename = "key_values")]
-    KeyValues,
-    #[serde(rename = "key_value")]
-    KeyValue,
 }
 
 impl Default for AlgorithmIndexerOutput {
