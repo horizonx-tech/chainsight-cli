@@ -110,7 +110,7 @@ pub fn generate_app(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Res
         };
 
         output_structs_quotes.push(quote! {
-            #[derive(Clone, Debug,  Default, CandidType, Deserialize, Serialize, Persist, #storage_ident)]
+            #[derive(Clone, Debug, Default, candid::CandidType, serde::Deserialize, serde::Serialize, chainsight_cdk_macros::Persist, chainsight_cdk_macros::#storage_ident)]
             #[memory_id(#idx)]
             pub struct #output_struct {
                 #(pub #output_fields_idents: #output_field_types),*
@@ -120,8 +120,9 @@ pub fn generate_app(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Res
 
     let code = quote! {
         use std::collections::HashMap;
+        use chainsight_cdk::storage::Data;
 
-        #[derive(Clone, Debug,  Default, candid::CandidType, serde::Serialize, serde::Deserialize)]
+        #[derive(Clone, Debug, Default, candid::CandidType, serde::Serialize, serde::Deserialize)]
         pub struct #event_struct {
             #(pub #input_field_idents: #input_field_types),*
         }
