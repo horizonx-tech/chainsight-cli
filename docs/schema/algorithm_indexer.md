@@ -329,9 +329,13 @@
 "u128"
 ```
 
-| Restrictions                      |                                                                                                                     |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| **Must match regular expression** | ```^[a-zA-Z0-9_<>]+$``` [Test](https://regex101.com/?regex=%5E%5Ba-zA-Z0-9_%3C%3E%5D%2B%24&testString=%22String%22) |
+```json
+"chainsight_cdk::core::U256"
+```
+
+| Restrictions                      |                                                                                                                         |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **Must match regular expression** | ```^[a-zA-Z0-9_<>:]+$``` [Test](https://regex101.com/?regex=%5E%5Ba-zA-Z0-9_%3C%3E%3A%5D%2B%24&testString=%22String%22) |
 
 ### <a name="datasource_from"></a>3.3. Property `Chainsight Event Indexer specification > datasource > from`
 
@@ -814,4 +818,4 @@
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-01-28 at 09:17:30 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-02-27 at 04:38:12 +0000
