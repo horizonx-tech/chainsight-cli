@@ -105,7 +105,7 @@
               "additionalProperties": {
                 "type": "string",
                 "title": "rust type of the field",
-                "examples": ["String", "u128", "ic_web3_rs::types::U256"],
+                "examples": ["String", "u128", "chainsight_cdk::core::U256"],
                 "pattern": "^[a-zA-Z0-9_<>:]+$"
               }
             }

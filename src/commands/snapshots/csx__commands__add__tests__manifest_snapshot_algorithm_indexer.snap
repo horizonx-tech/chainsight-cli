@@ -18,7 +18,7 @@ datasource:
     fields:
       from: String
       to: String
-      value: String
+      value: chainsight_cdk::core::U256
   from: 17660942
   method: proxy_call
   source_type: event_indexer

@@ -238,7 +238,10 @@ impl Default for AlgorithmIndexerDatasource {
         let mut sample_fields = BTreeMap::new();
         sample_fields.insert("from".to_string(), "String".to_string());
         sample_fields.insert("to".to_string(), "String".to_string());
-        sample_fields.insert("value".to_string(), "String".to_string());
+        sample_fields.insert(
+            "value".to_string(),
+            "chainsight_cdk::core::U256".to_string(),
+        );
 
         Self {
             principal: "be2us-64aaa-aaaaa-qaabq-cai".to_string(),
