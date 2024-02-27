@@ -201,13 +201,13 @@ pub enum InputType {
 
 pub struct InputStruct {
     pub name: String,
-    pub fields: BTreeMap<String, String>,
+    pub fields: Option<BTreeMap<String, String>>,
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct AlgorithmIndexerOutput {
     pub name: String,
-    pub fields: BTreeMap<String, String>,
+    pub fields: Option<BTreeMap<String, String>>,
     pub output_type: AlgorithmOutputType,
 }
 
@@ -217,7 +217,7 @@ impl Default for AlgorithmIndexerOutput {
         sample_fields.insert("address".to_string(), "String".to_string());
         Self {
             name: "Account".to_string(),
-            fields: sample_fields,
+            fields: Some(sample_fields),
             output_type: AlgorithmOutputType::KeyValue,
         }
     }
@@ -247,7 +247,7 @@ impl Default for AlgorithmIndexerDatasource {
             principal: "be2us-64aaa-aaaaa-qaabq-cai".to_string(),
             input: InputStruct {
                 name: "Transfer".to_string(),
-                fields: sample_fields,
+                fields: Some(sample_fields),
             },
             source_type: AlgorithmInputType::EventIndexer,
             method: "proxy_call".to_string(),
@@ -314,11 +314,11 @@ interval: 3600
                 datasource: AlgorithmIndexerDatasource {
                     input: InputStruct {
                         name: "Transfer".to_string(),
-                        fields: BTreeMap::from([
+                        fields: Some(BTreeMap::from([
                             ("from".to_string(), "String".to_string()),
                             ("to".to_string(), "String".to_string()),
                             ("value".to_string(), "ic_web3_rs::types::U256".to_string()),
-                        ])
+                        ]))
                     },
                     principal: "ahw5u-keaaa-aaaaa-qaaha-cai".to_string(),
                     from: 17660942,
@@ -328,10 +328,10 @@ interval: 3600
                 },
                 output: vec!(AlgorithmIndexerOutput {
                     name: "SampleOutput".to_string(),
-                    fields: BTreeMap::from([
+                    fields: Some(BTreeMap::from([
                         ("result".to_string(), "String".to_string()),
                         ("value".to_string(), "String".to_string()),
-                    ]),
+                    ])),
                     output_type: AlgorithmOutputType::KeyValue
                 }),
                 interval: 3600,
@@ -363,11 +363,11 @@ interval: 3600
             datasource: AlgorithmIndexerDatasource {
                 input: InputStruct {
                     name: "Transfer".to_string(),
-                    fields: BTreeMap::from([
+                    fields: Some(BTreeMap::from([
                         ("from".to_string(), "String".to_string()),
                         ("to".to_string(), "String".to_string()),
                         ("value".to_string(), "ic_web3_rs::types::U256".to_string()),
-                    ]),
+                    ])),
                 },
                 principal: "ahw5u-keaaa-aaaaa-qaaha-cai".to_string(),
                 from: 17660942,
@@ -377,10 +377,10 @@ interval: 3600
             },
             output: vec![AlgorithmIndexerOutput {
                 name: "SampleOutput".to_string(),
-                fields: BTreeMap::from([
+                fields: Some(BTreeMap::from([
                     ("result".to_string(), "String".to_string()),
                     ("value".to_string(), "String".to_string()),
-                ]),
+                ])),
                 output_type: AlgorithmOutputType::KeyValue,
             }],
             interval: 3600,
