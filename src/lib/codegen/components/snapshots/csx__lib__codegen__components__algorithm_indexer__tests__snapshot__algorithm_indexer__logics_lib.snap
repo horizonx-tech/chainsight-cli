@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use chainsight_cdk::storage::Data;
 #[derive(Clone, Debug, Default, candid::CandidType, serde::Serialize, serde::Deserialize)]
 pub struct Transfer {
-pub from:String, pub to:String, pub value:String
+pub from:String, pub to:String, pub value:ic_web3_rs::types::U256
 }
 
 #[derive(Clone, Debug, Default, candid::CandidType, serde::Deserialize, serde::Serialize, chainsight_cdk_macros::Persist, chainsight_cdk_macros::KeyValueStore)]
