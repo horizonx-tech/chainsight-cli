@@ -76,6 +76,7 @@ pub fn generate_app(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Res
         .collect();
 
     let mut output_structs_quotes = Vec::new();
+    let mut template_codes_for_output_struct = Vec::new();
     let (mut key_value_count, mut key_values_count) = (0, 0);
     for i in 0..manifest.output.len() {
         let output_struct = format_ident!("{}", &manifest.output[i].name.clone());
@@ -107,6 +108,14 @@ pub fn generate_app(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Res
             }
         };
 
+        template_codes_for_output_struct.push(match storage_type {
+            AlgorithmOutputType::KeyValue => {
+                quote! { #output_struct::default().put(&dummy_id); }
+            }
+            _ => {
+                quote! { #output_struct::put(&dummy_id, vec![#output_struct::default()]) }
+            }
+        });
         output_structs_quotes.push(quote! {
             #[derive(Clone, Debug, Default, candid::CandidType, serde::Deserialize, serde::Serialize, chainsight_cdk_macros::Persist, chainsight_cdk_macros::#storage_ident)]
             #[memory_id(#idx)]
@@ -128,7 +137,10 @@ pub fn generate_app(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Res
         #(#output_structs_quotes)*
 
         pub fn persist(elem: #input_type) {
-            todo!()
+            let dummy_id = "dummy";
+
+            todo!("Write your logic: Store in storage with the type you define");
+            #(#template_codes_for_output_struct)*
         }
     };
 
