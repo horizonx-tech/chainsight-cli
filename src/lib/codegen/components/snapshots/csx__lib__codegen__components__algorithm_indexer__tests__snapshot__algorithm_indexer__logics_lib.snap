@@ -16,4 +16,7 @@ pub result:String, pub value:String
 }
 
 pub fn persist(elem:HashMap<u64, Vec<Transfer>>) {
-todo!() }
+let dummy_id = "dummy";
+todo!("Write your logic: Store in storage with the type you define");
+SampleOutput::default().put(& dummy_id);
+}
