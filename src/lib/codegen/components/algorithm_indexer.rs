@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 use chainsight_cdk::{
     config::components::{
@@ -11,7 +11,6 @@ use serde::{Deserialize, Serialize};
 use crate::{
     lib::codegen::{canisters, scripts},
     types::{ComponentType, Network},
-    utils::serializer::ordered_map,
 };
 
 use super::{
@@ -202,21 +201,19 @@ pub enum InputType {
 
 pub struct InputStruct {
     pub name: String,
-    #[serde(serialize_with = "ordered_map")]
-    pub fields: HashMap<String, String>,
+    pub fields: BTreeMap<String, String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct AlgorithmIndexerOutput {
     pub name: String,
-    #[serde(serialize_with = "ordered_map")]
-    pub fields: HashMap<String, String>,
+    pub fields: BTreeMap<String, String>,
     pub output_type: AlgorithmOutputType,
 }
 
 impl Default for AlgorithmIndexerOutput {
     fn default() -> Self {
-        let mut sample_fields = HashMap::new();
+        let mut sample_fields = BTreeMap::new();
         sample_fields.insert("address".to_string(), "String".to_string());
         Self {
             name: "Account".to_string(),
@@ -238,10 +235,13 @@ pub struct AlgorithmIndexerDatasource {
 
 impl Default for AlgorithmIndexerDatasource {
     fn default() -> Self {
-        let mut sample_fields = HashMap::new();
+        let mut sample_fields = BTreeMap::new();
         sample_fields.insert("from".to_string(), "String".to_string());
         sample_fields.insert("to".to_string(), "String".to_string());
-        sample_fields.insert("value".to_string(), "String".to_string());
+        sample_fields.insert(
+            "value".to_string(),
+            "chainsight_cdk::core::U256".to_string(),
+        );
 
         Self {
             principal: "be2us-64aaa-aaaaa-qaabq-cai".to_string(),
@@ -259,7 +259,6 @@ impl Default for AlgorithmIndexerDatasource {
 
 #[cfg(test)]
 mod tests {
-
     use insta::assert_display_snapshot;
     use jsonschema::JSONSchema;
 
@@ -286,7 +285,7 @@ datasource:
         fields:
             from: String
             to: String
-            value: String
+            value: 'ic_web3_rs::types::U256'
     method: proxy_call
     source_type: event_indexer
 output:
@@ -315,10 +314,10 @@ interval: 3600
                 datasource: AlgorithmIndexerDatasource {
                     input: InputStruct {
                         name: "Transfer".to_string(),
-                        fields: HashMap::from([
+                        fields: BTreeMap::from([
                             ("from".to_string(), "String".to_string()),
                             ("to".to_string(), "String".to_string()),
-                            ("value".to_string(), "String".to_string()),
+                            ("value".to_string(), "ic_web3_rs::types::U256".to_string()),
                         ])
                     },
                     principal: "ahw5u-keaaa-aaaaa-qaaha-cai".to_string(),
@@ -329,7 +328,7 @@ interval: 3600
                 },
                 output: vec!(AlgorithmIndexerOutput {
                     name: "SampleOutput".to_string(),
-                    fields: HashMap::from([
+                    fields: BTreeMap::from([
                         ("result".to_string(), "String".to_string()),
                         ("value".to_string(), "String".to_string()),
                     ]),
@@ -364,10 +363,10 @@ interval: 3600
             datasource: AlgorithmIndexerDatasource {
                 input: InputStruct {
                     name: "Transfer".to_string(),
-                    fields: HashMap::from([
+                    fields: BTreeMap::from([
                         ("from".to_string(), "String".to_string()),
                         ("to".to_string(), "String".to_string()),
-                        ("value".to_string(), "String".to_string()),
+                        ("value".to_string(), "ic_web3_rs::types::U256".to_string()),
                     ]),
                 },
                 principal: "ahw5u-keaaa-aaaaa-qaaha-cai".to_string(),
@@ -378,7 +377,7 @@ interval: 3600
             },
             output: vec![AlgorithmIndexerOutput {
                 name: "SampleOutput".to_string(),
-                fields: HashMap::from([
+                fields: BTreeMap::from([
                     ("result".to_string(), "String".to_string()),
                     ("value".to_string(), "String".to_string()),
                 ]),

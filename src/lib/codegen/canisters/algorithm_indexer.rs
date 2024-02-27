@@ -2,7 +2,7 @@ use anyhow::{ensure, Context};
 use chainsight_cdk::config::components::{
     AlgorithmIndexerConfig, AlgorithmInputType, AlgorithmOutputType,
 };
-use proc_macro2::{Ident, TokenStream};
+use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote};
 
 use crate::{
@@ -66,16 +66,14 @@ pub fn generate_app(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Res
     let event_struct = format_ident!("{}", &manifest.datasource.input.name);
 
     let event_interfaces = &manifest.datasource.input.fields;
-    let mut input_field_idents: Vec<Ident> = event_interfaces
+    let input_field_idents: Vec<Ident> = event_interfaces
         .iter()
         .map(|(k, _)| format_ident!("{}", k.clone()))
         .collect();
-    input_field_idents.sort();
-    let mut input_field_types: Vec<Ident> = event_interfaces
+    let input_field_types: Vec<proc_macro2::TokenStream> = event_interfaces
         .iter()
-        .map(|(_, v)| format_ident!("{}", v.clone()))
+        .map(|(_, v)| convert_struct_path_to_token_stream(v))
         .collect();
-    input_field_types.sort();
 
     let mut output_structs_quotes = Vec::new();
     let (mut key_value_count, mut key_values_count) = (0, 0);
@@ -83,7 +81,7 @@ pub fn generate_app(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Res
         let output_struct = format_ident!("{}", &manifest.output[i].name.clone());
 
         let mut output_fields_idents: Vec<Ident> = Vec::new();
-        let mut output_field_types: Vec<Ident> = Vec::new();
+        let mut output_field_types: Vec<proc_macro2::TokenStream> = Vec::new();
 
         let mut keys = manifest.output[i].fields.keys().collect::<Vec<_>>();
         keys.sort();
@@ -93,7 +91,7 @@ pub fn generate_app(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Res
                 .get(key)
                 .context(format!("output.{}.fields.{} is not set", i, key))?;
             output_fields_idents.push(format_ident!("{}", key));
-            output_field_types.push(format_ident!("{}", value));
+            output_field_types.push(convert_struct_path_to_token_stream(value));
         }
         let storage_type = &manifest.output[i].output_type;
         let (storage_ident, idx) = match storage_type {
@@ -137,6 +135,15 @@ pub fn generate_app(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Res
     Ok(code.to_string())
 }
 
+fn convert_struct_path_to_token_stream(val: &str) -> proc_macro2::TokenStream {
+    let ident_strs: Vec<_> = val.split("::").collect();
+    let idents: Vec<Ident> = ident_strs
+        .iter()
+        .map(|s| Ident::new(s, Span::call_site()))
+        .collect();
+    quote! { #(#idents)::* }
+}
+
 pub fn validate_manifest(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Result<()> {
     ensure!(
         manifest.metadata.type_ == ComponentType::AlgorithmIndexer,
@@ -149,4 +156,22 @@ pub fn validate_manifest(manifest: &AlgorithmIndexerComponentManifest) -> anyhow
     );
 
     Ok(())
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_convert_struct_path_to_token_stream() {
+        assert_eq!(
+            convert_struct_path_to_token_stream(&"ethabi::Address").to_string(),
+            "ethabi :: Address"
+        );
+
+        assert_eq!(
+            convert_struct_path_to_token_stream(&"ic_web3_rs::types::U256").to_string(),
+            "ic_web3_rs :: types :: U256"
+        );
+    }
 }
