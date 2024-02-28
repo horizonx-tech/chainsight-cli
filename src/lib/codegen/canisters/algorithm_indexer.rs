@@ -180,7 +180,7 @@ pub fn validate_manifest(manifest: &AlgorithmIndexerComponentManifest) -> anyhow
     let input_fields = &manifest.datasource.input.fields;
     if let Some(fields) = input_fields {
         ensure!(
-            fields.len() > 0,
+            !fields.is_empty(),
             "datasource.input.fields is some, but empty"
         );
     }
