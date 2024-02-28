@@ -66,33 +66,49 @@ pub fn generate_app(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Res
     let event_struct = format_ident!("{}", &manifest.datasource.input.name);
 
     let event_interfaces = &manifest.datasource.input.fields;
-    let input_field_idents: Vec<Ident> = event_interfaces
-        .iter()
-        .map(|(k, _)| format_ident!("{}", k.clone()))
-        .collect();
-    let input_field_types: Vec<proc_macro2::TokenStream> = event_interfaces
-        .iter()
-        .map(|(_, v)| convert_struct_path_to_token_stream(v))
-        .collect();
+
+    let (input_field_idents, input_field_types) = if let Some(fields) = event_interfaces {
+        (
+            fields
+                .iter()
+                .map(|(k, _)| format_ident!("{}", k.clone()))
+                .collect(),
+            fields
+                .iter()
+                .map(|(_, v)| convert_struct_path_to_token_stream(v))
+                .collect(),
+        )
+    } else {
+        // If fields is not set, use dummy field
+        (vec![format_ident!("{}", "dummy")], vec![quote! { String }])
+    };
 
     let mut output_structs_quotes = Vec::new();
+    let mut template_codes_for_output_struct = Vec::new();
     let (mut key_value_count, mut key_values_count) = (0, 0);
     for i in 0..manifest.output.len() {
         let output_struct = format_ident!("{}", &manifest.output[i].name.clone());
 
-        let mut output_fields_idents: Vec<Ident> = Vec::new();
-        let mut output_field_types: Vec<proc_macro2::TokenStream> = Vec::new();
+        let (output_fields_idents, output_field_types) =
+            if let Some(fields) = manifest.output[i].fields.clone() {
+                let mut idents: Vec<Ident> = Vec::new();
+                let mut types: Vec<proc_macro2::TokenStream> = Vec::new();
 
-        let mut keys = manifest.output[i].fields.keys().collect::<Vec<_>>();
-        keys.sort();
-        for key in keys {
-            let value = manifest.output[i]
-                .fields
-                .get(key)
-                .context(format!("output.{}.fields.{} is not set", i, key))?;
-            output_fields_idents.push(format_ident!("{}", key));
-            output_field_types.push(convert_struct_path_to_token_stream(value));
-        }
+                let keys = fields.keys().collect::<Vec<_>>();
+                for key in keys {
+                    let value = fields
+                        .get(key)
+                        .context(format!("output.{}.fields.{} is not set", i, key))?;
+                    idents.push(format_ident!("{}", key));
+                    types.push(convert_struct_path_to_token_stream(value));
+                }
+
+                (idents, types)
+            } else {
+                // If fields is not set, use dummy field
+                (vec![format_ident!("{}", "dummy")], vec![quote! { String }])
+            };
+
         let storage_type = &manifest.output[i].output_type;
         let (storage_ident, idx) = match storage_type {
             AlgorithmOutputType::KeyValue => {
@@ -107,6 +123,14 @@ pub fn generate_app(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Res
             }
         };
 
+        template_codes_for_output_struct.push(match storage_type {
+            AlgorithmOutputType::KeyValue => {
+                quote! { #output_struct::default().put(&dummy_id); }
+            }
+            _ => {
+                quote! { #output_struct::put(&dummy_id, vec![#output_struct::default()]) }
+            }
+        });
         output_structs_quotes.push(quote! {
             #[derive(Clone, Debug, Default, candid::CandidType, serde::Deserialize, serde::Serialize, chainsight_cdk_macros::Persist, chainsight_cdk_macros::#storage_ident)]
             #[memory_id(#idx)]
@@ -128,7 +152,10 @@ pub fn generate_app(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Res
         #(#output_structs_quotes)*
 
         pub fn persist(elem: #input_type) {
-            todo!()
+            let dummy_id = "dummy";
+
+            todo!("Write your logic: Store in storage with the type you define");
+            #(#template_codes_for_output_struct)*
         }
     };
 
@@ -150,10 +177,13 @@ pub fn validate_manifest(manifest: &AlgorithmIndexerComponentManifest) -> anyhow
         "type is not AlgorithmIndexer"
     );
 
-    ensure!(
-        !manifest.datasource.input.fields.is_empty(),
-        "datasource.event.interface is not set"
-    );
+    let input_fields = &manifest.datasource.input.fields;
+    if let Some(fields) = input_fields {
+        ensure!(
+            !fields.is_empty(),
+            "datasource.input.fields is some, but empty"
+        );
+    }
 
     Ok(())
 }
