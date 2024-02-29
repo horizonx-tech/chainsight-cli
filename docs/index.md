@@ -660,6 +660,64 @@ interval: 3600
 cycles: null
 ```
 
+### Algorithm Indexer
+
+The Algorithm Indexer subscribes to data from the Event Indexer and other Algorithm Indexers and allows them to be processed with arbitrary logic.
+
+The `datasource` determines what data source is used as input, and the `output` determines the format of the data produced by the logic.
+
+- `datasource`: Identification of computation source information
+  - `datasource.principal`: Component to call
+  - `datasource.input`: Type of data to be collected
+    - `datasource.input.name`: String / Name of type
+    - `datasource.input.fields`: Optional(Object) / Specify the field information of the type, any key name and value type.
+      - If it is not set up, code it yourself.
+    - `datasource.method`: String / Function name to call
+    - `datasource.source_type`: String / Select the data source format
+      - `event_indexer` ... Event Indexer Component
+      - `key_value`,`key_values` ... Algorithm Indexer Component, More details to follow.
+    - The following are similar to Event Indexer
+      - `datasource.from`, `datasource.batch_size`
+- `output`: Array(Object) / Specify the format of calculation results
+  - `output[i].output_type`: Specify the type of storage where the calculation results are to be stored
+    - `key_value` ... Store one data in one key.
+    - `key_values` ... Store multiple data in one key. That is, it stores an array of data.
+  - The following is the same as for `datasource.input`
+    - `output[i].name`, `output[i].field`
+
+```yaml
+version: v1
+metadata:
+  label: Algorithm Indexer
+  type: algorithm_indexer
+  description: ''
+  tags: ...
+datasource:
+  principal: event_indexer_component
+  input:
+    name: Transfer
+    fields:
+      from: String
+      to: String
+      value: chainsight_cdk::core::U256
+  from: 17660942
+  method: proxy_call
+  source_type: event_indexer
+  batch_size: null
+output:
+- name: Account
+  fields:
+    address: String
+  output_type: key_value
+- name: AccountBalance
+  fields:
+    address: String
+    balance: u64
+  output_type: key_values
+interval: 3600
+cycles: null
+```
+
 ### Relayer
 
 Relayer is a component for propagating data computed and maintained by Chainsight Platform to other blockchains.
