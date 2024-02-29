@@ -303,7 +303,7 @@ fn create_project_by_example(
         &repo_url,
         tar_gz_filepath,
         &parent_path,
-        &example_relative_path,
+        example_relative_path,
         project_name,
     )?;
 
@@ -357,7 +357,7 @@ fn download_and_extract(
     );
     let chainsight_filepath = format!("{}/{}", project_path, CHAINSIGHT_FILENAME);
     if !Path::new(&chainsight_filepath).exists() {
-        remove_dir_all(&parent_path)?;
+        remove_dir_all(parent_path)?;
         bail!("Not project: {}", &project_path);
     }
 
