@@ -4,7 +4,7 @@ use std::{
     path::Path,
 };
 
-use anyhow::{bail, Ok};
+use anyhow::{bail, ensure, Ok};
 use clap::Parser;
 use flate2::read::GzDecoder;
 use inflector::cases::titlecase::to_title_case;
@@ -69,11 +69,12 @@ pub fn exec(env: &EnvironmentImpl, opts: NewOpts) -> anyhow::Result<()> {
     }
 
     let res = if let Some(example) = opts.example {
+        let trimmed_example = example.trim_matches('/');
         info!(
             log,
-            r#"Start creating new project '{}' by example '{}'..."#, project_name, example
+            r#"Start creating new project '{}' by example '{}'..."#, project_name, trimmed_example
         );
-        create_project_by_example(&example, &project_path.to_string_lossy())
+        create_project_by_example(trimmed_example, &project_path.to_string_lossy())
     } else {
         info!(log, r#"Start creating new project '{}'..."#, project_name);
         create_project(
@@ -309,7 +310,7 @@ fn create_project_by_example(
 
 fn download_and_extract(
     repo_url: &str,
-    temp_tar_gz_path: &Path,
+    tar_gz_path: &Path,
     parent_path: &str,
     project_path: &str,
 ) -> anyhow::Result<()> {
@@ -318,14 +319,14 @@ fn download_and_extract(
     // Download the .tar.gz archive
     let response = ureq::get(repo_url).call()?;
 
-    let mut file = File::create(temp_tar_gz_path)?;
+    let mut file = File::create(tar_gz_path)?;
     let mut reader = response.into_reader();
     let mut content = Vec::new();
     reader.read_to_end(&mut content)?;
     file.write_all(&content)?;
 
     // Decompress and extract the specified folder
-    let tar_gz = File::open(temp_tar_gz_path)?;
+    let tar_gz = File::open(tar_gz_path)?;
     let tar = GzDecoder::new(tar_gz);
     let mut archive = Archive::new(tar);
 
@@ -341,8 +342,13 @@ fn download_and_extract(
         });
 
     // Clean up
+    remove_file(tar_gz_path)?;
+    ensure!(
+        Path::new(&parent_path).exists(),
+        "Project not found in the example: {}",
+        &project_path
+    );
     rename(&extract_path, project_path)?;
-    remove_file(temp_tar_gz_path)?;
     remove_dir(parent_path)?;
 
     Ok(())
