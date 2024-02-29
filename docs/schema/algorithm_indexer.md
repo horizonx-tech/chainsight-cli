@@ -270,10 +270,10 @@
 
 **Description:** struct retrived from the source canister
 
-| Property                              | Pattern | Type   | Deprecated | Definition | Title/Description  |
-| ------------------------------------- | ------- | ------ | ---------- | ---------- | ------------------ |
-| + [name](#datasource_input_name )     | No      | string | No         | -          | name of the struct |
-| + [fields](#datasource_input_fields ) | No      | object | No         | -          | fields             |
+| Property                              | Pattern | Type           | Deprecated | Definition | Title/Description  |
+| ------------------------------------- | ------- | -------------- | ---------- | ---------- | ------------------ |
+| + [name](#datasource_input_name )     | No      | string         | No         | -          | name of the struct |
+| + [fields](#datasource_input_fields ) | No      | object or null | No         | -          | fields             |
 
 #### <a name="datasource_input_name"></a>3.2.1. Property `Chainsight Event Indexer specification > datasource > input > name`
 
@@ -298,11 +298,10 @@
 
 **Title:** fields
 
-|                           |                                                                                                                                   |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| **Type**                  | `object`                                                                                                                          |
-| **Required**              | Yes                                                                                                                               |
-| **Additional properties** | [[Should-conform]](#datasource_input_fields_additionalProperties "Each additional property must conform to the following schema") |
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `object or null` |
+| **Required** | Yes              |
 
 **Description:** field names and rust types of the struct
 
@@ -454,11 +453,11 @@
 | **Required**              | No                                                      |
 | **Additional properties** | [[Not allowed]](# "Additional Properties not allowed.") |
 
-| Property                                    | Pattern | Type   | Deprecated | Definition | Title/Description  |
-| ------------------------------------------- | ------- | ------ | ---------- | ---------- | ------------------ |
-| + [name](#output_items_name )               | No      | string | No         | -          | name of the struct |
-| + [fields](#output_items_fields )           | No      | object | No         | -          | fields             |
-| + [output_type](#output_items_output_type ) | No      | string | No         | -          | output_type        |
+| Property                                    | Pattern | Type           | Deprecated | Definition | Title/Description  |
+| ------------------------------------------- | ------- | -------------- | ---------- | ---------- | ------------------ |
+| + [name](#output_items_name )               | No      | string         | No         | -          | name of the struct |
+| + [fields](#output_items_fields )           | No      | object or null | No         | -          | fields             |
+| + [output_type](#output_items_output_type ) | No      | string         | No         | -          | output_type        |
 
 #### <a name="output_items_name"></a>4.1.1. Property `Chainsight Event Indexer specification > output > output struct > name`
 
@@ -483,11 +482,10 @@
 
 **Title:** fields
 
-|                           |                                                                                                                               |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| **Type**                  | `object`                                                                                                                      |
-| **Required**              | Yes                                                                                                                           |
-| **Additional properties** | [[Should-conform]](#output_items_fields_additionalProperties "Each additional property must conform to the following schema") |
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `object or null` |
+| **Required** | Yes              |
 
 **Description:** field names and rust types of the struct
 
@@ -818,4 +816,4 @@
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-02-27 at 04:38:12 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-02-29 at 08:04:43 +0000
