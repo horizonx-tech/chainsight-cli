@@ -1,9 +1,15 @@
-use std::{fs, path::Path};
+use std::{
+    fs::{self, remove_dir, remove_file, rename, File},
+    io::Write,
+    path::Path,
+};
 
-use anyhow::bail;
+use anyhow::{bail, Ok};
 use clap::Parser;
+use flate2::read::GzDecoder;
 use inflector::cases::titlecase::to_title_case;
 use slog::info;
+use tar::Archive;
 
 use crate::lib::{
     codegen::{
@@ -33,6 +39,9 @@ use crate::lib::{
         PROJECT_MANIFEST_VERSION,
     },
 };
+
+const EXAMPLES_REPOSITORY: &str = "chainsight-showcase";
+const EXAMPLES_REPO_BRANCH: &str = "main";
 
 #[derive(Debug, Parser)]
 #[command(name = "new")]
@@ -64,7 +73,7 @@ pub fn exec(env: &EnvironmentImpl, opts: NewOpts) -> anyhow::Result<()> {
             log,
             r#"Start creating new project '{}' by example '{}'..."#, project_name, example
         );
-        create_project_by_example(&project_path.to_string_lossy(), &example)
+        create_project_by_example(&example, &project_path.to_string_lossy())
     } else {
         info!(log, r#"Start creating new project '{}'..."#, project_name);
         create_project(
@@ -75,7 +84,7 @@ pub fn exec(env: &EnvironmentImpl, opts: NewOpts) -> anyhow::Result<()> {
     };
 
     match res {
-        Ok(_) => {
+        core::result::Result::Ok(_) => {
             info!(log, r#"Project '{}' created successfully"#, project_name);
 
             if opts.no_samples {
@@ -275,7 +284,67 @@ INFURA_MUMBAI_RPC_URL_KEY=
     .to_string()
 }
 
-fn create_project_by_example(_project_path: &str, _example: &str) -> anyhow::Result<()> {
+fn create_project_by_example(
+    example_relative_path: &str,
+    project_name: &str,
+) -> anyhow::Result<()> {
+    let tar_gz_file = format!("{}.tar.gz", EXAMPLES_REPO_BRANCH);
+    let tar_gz_filepath = Path::new(&tar_gz_file);
+    let repo_url = format!(
+        "https://github.com/horizonx-tech/{}/archive/refs/heads/{}",
+        EXAMPLES_REPOSITORY, tar_gz_file
+    );
+    let parent_path = format!("{}-{}", EXAMPLES_REPOSITORY, EXAMPLES_REPO_BRANCH);
+
+    download_and_extract(
+        &repo_url,
+        tar_gz_filepath,
+        &parent_path,
+        &example_relative_path,
+    )?;
+    rename(&example_relative_path, project_name)?;
+
+    Ok(())
+}
+
+fn download_and_extract(
+    repo_url: &str,
+    temp_tar_gz_path: &Path,
+    parent_path: &str,
+    project_path: &str,
+) -> anyhow::Result<()> {
+    let extract_path = format!("{}/{}", parent_path, project_path);
+
+    // Download the .tar.gz archive
+    let response = ureq::get(repo_url).call()?;
+
+    let mut file = File::create(temp_tar_gz_path)?;
+    let mut reader = response.into_reader();
+    let mut content = Vec::new();
+    reader.read_to_end(&mut content)?;
+    file.write_all(&content)?;
+
+    // Decompress and extract the specified folder
+    let tar_gz = File::open(temp_tar_gz_path)?;
+    let tar = GzDecoder::new(tar_gz);
+    let mut archive = Archive::new(tar);
+
+    // Extract only the specified folder
+    archive
+        .entries()?
+        .filter_map(|e| e.ok())
+        .for_each(|mut entry| {
+            let path = entry.path().ok().unwrap();
+            if path.to_string_lossy().contains(&extract_path) {
+                entry.unpack_in(".").expect("Failed to unpack");
+            }
+        });
+
+    // Clean up
+    rename(&extract_path, project_path)?;
+    remove_file(temp_tar_gz_path)?;
+    remove_dir(parent_path)?;
+
     Ok(())
 }
 
