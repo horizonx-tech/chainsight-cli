@@ -101,7 +101,7 @@
               "$id": "#/properties/datasource/properties/input/properties/fields",
               "title": "fields",
               "description": "field names and rust types of the struct",
-              "type": "object",
+              "type": ["object", "null"],
               "additionalProperties": {
                 "type": "string",
                 "title": "rust type of the field",
@@ -165,7 +165,7 @@
             "$id": "#/properties/output/items/properties/fields",
             "title": "fields",
             "description": "field names and rust types of the struct",
-            "type": "object",
+            "type": ["object", "null"],
             "additionalProperties": {
               "type": "string",
               "title": "rust type of the field",
