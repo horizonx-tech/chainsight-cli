@@ -42,6 +42,10 @@ pub struct NewOpts {
     #[arg(required = true)]
     pub project_name: String,
 
+    /// Specifies the path of the project example in chainsight-showcase to use.
+    #[arg(long)]
+    pub example: Option<String>,
+
     /// Skip generation of sample component manifests.
     #[arg(long, visible_short_alias = 'n')]
     pub no_samples: bool,
@@ -54,12 +58,22 @@ pub fn exec(env: &EnvironmentImpl, opts: NewOpts) -> anyhow::Result<()> {
     if project_path.exists() {
         bail!(format!(r#"Project '{}' already exists"#, project_name));
     }
-    info!(log, r#"Start creating new project '{}'..."#, project_name);
-    let res = create_project(
-        &project_path.to_string_lossy(),
-        project_name,
-        opts.no_samples,
-    );
+
+    let res = if let Some(example) = opts.example {
+        info!(
+            log,
+            r#"Start creating new project '{}' by example '{}'..."#, project_name, example
+        );
+        create_project_by_example(&project_path.to_string_lossy(), &example)
+    } else {
+        info!(log, r#"Start creating new project '{}'..."#, project_name);
+        create_project(
+            &project_path.to_string_lossy(),
+            project_name,
+            opts.no_samples,
+        )
+    };
+
     match res {
         Ok(_) => {
             info!(log, r#"Project '{}' created successfully"#, project_name);
@@ -261,6 +275,10 @@ INFURA_MUMBAI_RPC_URL_KEY=
     .to_string()
 }
 
+fn create_project_by_example(_project_path: &str, _example: &str) -> anyhow::Result<()> {
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use insta::assert_display_snapshot;
@@ -344,6 +362,7 @@ mod tests {
                 let env = &test_env();
                 let opts = NewOpts {
                     project_name: project_name.to_string(),
+                    example: None,
                     no_samples: false,
                 };
                 let res = exec(env, opts);

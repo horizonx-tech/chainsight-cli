@@ -304,6 +304,7 @@ mod tests {
             new::NewOpts {
                 project_name: project_name.to_string(),
                 no_samples: false,
+                example: None,
             },
         );
     }
