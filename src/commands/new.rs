@@ -1,5 +1,5 @@
 use std::{
-    fs::{self, create_dir_all, remove_dir, remove_dir_all, remove_file, rename, File},
+    fs::{self, create_dir_all, remove_dir_all, remove_file, rename, File},
     io::Write,
     path::Path,
 };
@@ -62,7 +62,6 @@ pub struct NewOpts {
 }
 
 pub fn exec(env: &EnvironmentImpl, opts: NewOpts) -> anyhow::Result<()> {
-    println!("{:?}", &opts);
     let log = env.get_logger();
 
     let project_path_str = opts
@@ -318,7 +317,10 @@ fn download_and_extract(
     project_path: &str,
     rename_to: Option<String>,
 ) -> anyhow::Result<()> {
-    let extract_path = format!("{}/{}", parent_path, project_path);
+    // Pre-processing
+    if tar_gz_path.exists() {
+        remove_file(tar_gz_path)?;
+    }
 
     // Download the .tar.gz archive
     let response = ureq::get(repo_url).call()?;
@@ -335,6 +337,7 @@ fn download_and_extract(
     let mut archive = Archive::new(tar);
 
     // Extract only the specified folder
+    let extract_path = format!("{}/{}", parent_path, project_path);
     archive
         .entries()?
         .filter_map(|e| e.ok())
@@ -352,6 +355,12 @@ fn download_and_extract(
         "Project not found in the example: {}",
         &project_path
     );
+    let chainsight_filepath = format!("{}/{}", project_path, CHAINSIGHT_FILENAME);
+    if !Path::new(&chainsight_filepath).exists() {
+        remove_dir_all(&parent_path)?;
+        bail!("Not project: {}", &project_path);
+    }
+
     let rename_to = rename_to.unwrap_or_else(|| project_path.to_string());
     if let Some(parent) = Path::new(&rename_to).parent() {
         create_dir_all(parent)?;
