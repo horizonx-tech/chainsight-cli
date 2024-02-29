@@ -302,7 +302,7 @@ mod tests {
         let _ = new::exec(
             &test_env(),
             new::NewOpts {
-                project_name: project_name.to_string(),
+                project_name: Some(project_name.to_string()),
                 no_samples: false,
                 example: None,
             },

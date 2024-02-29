@@ -1,5 +1,5 @@
 use std::{
-    fs::{self, remove_dir, remove_file, rename, File},
+    fs::{self, create_dir_all, remove_dir, remove_dir_all, remove_file, rename, File},
     io::Write,
     path::Path,
 };
@@ -42,14 +42,15 @@ use crate::lib::{
 
 const EXAMPLES_REPOSITORY: &str = "chainsight-showcase";
 const EXAMPLES_REPO_BRANCH: &str = "main";
+const IGNORED_RELATIVE_EXAMPLE_PATHS: [&str; 2] = [".vscode", "artifacts"];
 
 #[derive(Debug, Parser)]
 #[command(name = "new")]
 /// Generates Chainsight project with built-in templates.
 pub struct NewOpts {
     /// Specifies the name of the project to create.
-    #[arg(required = true)]
-    pub project_name: String,
+    #[arg(required_unless_present = "example")]
+    pub project_name: Option<String>,
 
     /// Specifies the path of the project example in chainsight-showcase to use.
     #[arg(long)]
@@ -61,10 +62,16 @@ pub struct NewOpts {
 }
 
 pub fn exec(env: &EnvironmentImpl, opts: NewOpts) -> anyhow::Result<()> {
+    println!("{:?}", &opts);
     let log = env.get_logger();
-    let project_path = Path::new(&opts.project_name);
+
+    let project_path_str = opts
+        .project_name
+        .clone()
+        .unwrap_or_else(|| opts.example.clone().unwrap());
+    let project_path = Path::new(&project_path_str);
     let project_name = project_path.file_stem().unwrap().to_str().unwrap();
-    if project_path.exists() {
+    if Path::new(&project_path).exists() {
         bail!(format!(r#"Project '{}' already exists"#, project_name));
     }
 
@@ -72,16 +79,12 @@ pub fn exec(env: &EnvironmentImpl, opts: NewOpts) -> anyhow::Result<()> {
         let trimmed_example = example.trim_matches('/');
         info!(
             log,
-            r#"Start creating new project '{}' by example '{}'..."#, project_name, trimmed_example
+            r#"Start creating new project by example '{}'..."#, trimmed_example
         );
-        create_project_by_example(trimmed_example, &project_path.to_string_lossy())
+        create_project_by_example(trimmed_example, opts.project_name)
     } else {
         info!(log, r#"Start creating new project '{}'..."#, project_name);
-        create_project(
-            &project_path.to_string_lossy(),
-            project_name,
-            opts.no_samples,
-        )
+        create_project(&project_path_str, project_name, opts.no_samples)
     };
 
     match res {
@@ -287,7 +290,7 @@ INFURA_MUMBAI_RPC_URL_KEY=
 
 fn create_project_by_example(
     example_relative_path: &str,
-    project_name: &str,
+    project_name: Option<String>,
 ) -> anyhow::Result<()> {
     let tar_gz_file = format!("{}.tar.gz", EXAMPLES_REPO_BRANCH);
     let tar_gz_filepath = Path::new(&tar_gz_file);
@@ -302,8 +305,8 @@ fn create_project_by_example(
         tar_gz_filepath,
         &parent_path,
         &example_relative_path,
+        project_name,
     )?;
-    rename(&example_relative_path, project_name)?;
 
     Ok(())
 }
@@ -313,6 +316,7 @@ fn download_and_extract(
     tar_gz_path: &Path,
     parent_path: &str,
     project_path: &str,
+    rename_to: Option<String>,
 ) -> anyhow::Result<()> {
     let extract_path = format!("{}/{}", parent_path, project_path);
 
@@ -348,8 +352,15 @@ fn download_and_extract(
         "Project not found in the example: {}",
         &project_path
     );
+    let rename_to = rename_to.unwrap_or_else(|| project_path.to_string());
+    if let Some(parent) = Path::new(&rename_to).parent() {
+        create_dir_all(parent)?;
+    }
     rename(&extract_path, project_path)?;
-    remove_dir(parent_path)?;
+    remove_dir_all(parent_path)?;
+    IGNORED_RELATIVE_EXAMPLE_PATHS.iter().for_each(|path| {
+        remove_dir_all(format!("./{}/{}", project_path, path)).unwrap_or_default();
+    });
 
     Ok(())
 }
@@ -436,7 +447,7 @@ mod tests {
             || {
                 let env = &test_env();
                 let opts = NewOpts {
-                    project_name: project_name.to_string(),
+                    project_name: Some(project_name.to_string()),
                     example: None,
                     no_samples: false,
                 };
