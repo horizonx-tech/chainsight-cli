@@ -355,7 +355,7 @@ fn download_and_extract(
         "Project not found in the example: {}",
         &project_path
     );
-    let chainsight_filepath = format!("{}/{}", project_path, CHAINSIGHT_FILENAME);
+    let chainsight_filepath = format!("{}/{}/{}", parent_path, project_path, CHAINSIGHT_FILENAME);
     if !Path::new(&chainsight_filepath).exists() {
         remove_dir_all(parent_path)?;
         bail!("Not project: {}", &project_path);
