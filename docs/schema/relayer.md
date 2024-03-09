@@ -24,7 +24,9 @@
   - [5.4. Property `Chainsight Relayer specification > destination > rpc_url`](#destination_rpc_url)
   - [5.5. Property `Chainsight Relayer specification > destination > method_name`](#destination_method_name)
   - [5.6. Property `Chainsight Relayer specification > destination > interface`](#destination_interface)
-- [6. Property `Chainsight Relayer specification > interval`](#interval)
+- [6. Property `Chainsight Relayer specification > timer_settings`](#timer_settings)
+  - [6.1. Property `Chainsight Relayer specification > timer_settings > interval_sec`](#timer_settings_interval_sec)
+  - [6.2. Property `Chainsight Relayer specification > timer_settings > delay_sec`](#timer_settings_delay_sec)
 - [7. Property `Chainsight Relayer specification > conversion_parameter`](#conversion_parameter)
   - [7.1. Property `Chainsight Relayer specification > conversion_parameter > extracted_field`](#conversion_parameter_extracted_field)
   - [7.2. Property `Chainsight Relayer specification > conversion_parameter > destination_type_to_convert`](#conversion_parameter_destination_type_to_convert)
@@ -62,7 +64,7 @@
 | + [datasource](#datasource )                     | No      | object         | No         | -          | -                                     |
 | - [lens_targets](#lens_targets )                 | No      | object or null | No         | -          | lens targets                          |
 | + [destination](#destination )                   | No      | object         | No         | -          | destination                           |
-| + [interval](#interval )                         | No      | number         | No         | -          | interval                              |
+| + [timer_settings](#timer_settings )             | No      | object         | No         | -          | timer_settings                        |
 | - [conversion_parameter](#conversion_parameter ) | No      | object or null | No         | -          | convertion parameter                  |
 | - [cycles](#cycles )                             | No      | object or null | No         | -          | cycles                                |
 
@@ -604,9 +606,26 @@
 "IERC20.json"
 ```
 
-## <a name="interval"></a>6. Property `Chainsight Relayer specification > interval`
+## <a name="timer_settings"></a>6. Property `Chainsight Relayer specification > timer_settings`
 
-**Title:** interval
+**Title:** timer_settings
+
+|                           |                                                         |
+| ------------------------- | ------------------------------------------------------- |
+| **Type**                  | `object`                                                |
+| **Required**              | Yes                                                     |
+| **Additional properties** | [[Not allowed]](# "Additional Properties not allowed.") |
+
+**Description:** timer execution settings
+
+| Property                                        | Pattern | Type           | Deprecated | Definition | Title/Description |
+| ----------------------------------------------- | ------- | -------------- | ---------- | ---------- | ----------------- |
+| + [interval_sec](#timer_settings_interval_sec ) | No      | number         | No         | -          | interval_sec      |
+| - [delay_sec](#timer_settings_delay_sec )       | No      | number or null | No         | -          | delay_sec         |
+
+### <a name="timer_settings_interval_sec"></a>6.1. Property `Chainsight Relayer specification > timer_settings > interval_sec`
+
+**Title:** interval_sec
 
 |              |          |
 | ------------ | -------- |
@@ -614,6 +633,23 @@
 | **Required** | Yes      |
 
 **Description:** interval of the canister invocation in seconds
+
+**Example:** 
+
+```json
+3600
+```
+
+### <a name="timer_settings_delay_sec"></a>6.2. Property `Chainsight Relayer specification > timer_settings > delay_sec`
+
+**Title:** delay_sec
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | No               |
+
+**Description:** delay of the canister invocation in seconds
 
 **Example:** 
 
@@ -967,4 +1003,4 @@
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-02-29 at 08:04:43 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-03-09 at 13:08:26 +0000

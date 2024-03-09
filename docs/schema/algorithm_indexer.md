@@ -23,7 +23,9 @@
     - [4.1.2. Property `Chainsight Event Indexer specification > output > output struct > fields`](#output_items_fields)
       - [4.1.2.1. Property `Chainsight Event Indexer specification > output > output struct > fields > rust type of the field`](#output_items_fields_additionalProperties)
     - [4.1.3. Property `Chainsight Event Indexer specification > output > output struct > output_type`](#output_items_output_type)
-- [5. Property `Chainsight Event Indexer specification > interval`](#interval)
+- [5. Property `Chainsight Event Indexer specification > timer_settings`](#timer_settings)
+  - [5.1. Property `Chainsight Event Indexer specification > timer_settings > interval_sec`](#timer_settings_interval_sec)
+  - [5.2. Property `Chainsight Event Indexer specification > timer_settings > delay_sec`](#timer_settings_delay_sec)
 - [6. Property `Chainsight Event Indexer specification > cycles`](#cycles)
   - [6.1. Property `Chainsight Event Indexer specification > cycles > refueling_interval`](#cycles_refueling_interval)
   - [6.2. Property `Chainsight Event Indexer specification > cycles > vault_intial_supply`](#cycles_vault_intial_supply)
@@ -50,14 +52,14 @@
 
 **Description:** Chainsight Algorithm Indexer specification
 
-| Property                     | Pattern | Type            | Deprecated | Definition | Title/Description                     |
-| ---------------------------- | ------- | --------------- | ---------- | ---------- | ------------------------------------- |
-| + [version](#version )       | No      | string          | No         | -          | specification version of the canister |
-| + [metadata](#metadata )     | No      | object          | No         | -          | metadata for the canister             |
-| + [datasource](#datasource ) | No      | object          | No         | -          | datasource                            |
-| + [output](#output )         | No      | array of object | No         | -          | output                                |
-| + [interval](#interval )     | No      | number          | No         | -          | interval                              |
-| - [cycles](#cycles )         | No      | object or null  | No         | -          | cycles                                |
+| Property                             | Pattern | Type            | Deprecated | Definition | Title/Description                     |
+| ------------------------------------ | ------- | --------------- | ---------- | ---------- | ------------------------------------- |
+| + [version](#version )               | No      | string          | No         | -          | specification version of the canister |
+| + [metadata](#metadata )             | No      | object          | No         | -          | metadata for the canister             |
+| + [datasource](#datasource )         | No      | object          | No         | -          | datasource                            |
+| + [output](#output )                 | No      | array of object | No         | -          | output                                |
+| + [timer_settings](#timer_settings ) | No      | object          | No         | -          | timer_settings                        |
+| - [cycles](#cycles )                 | No      | object or null  | No         | -          | cycles                                |
 
 ## <a name="version"></a>1. Property `Chainsight Event Indexer specification > version`
 
@@ -541,9 +543,26 @@
 | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | **Must match regular expression** | ```^(key_values\|key_value)$``` [Test](https://regex101.com/?regex=%5E%28key_values%7Ckey_value%29%24&testString=%22key_values%22) |
 
-## <a name="interval"></a>5. Property `Chainsight Event Indexer specification > interval`
+## <a name="timer_settings"></a>5. Property `Chainsight Event Indexer specification > timer_settings`
 
-**Title:** interval
+**Title:** timer_settings
+
+|                           |                                                         |
+| ------------------------- | ------------------------------------------------------- |
+| **Type**                  | `object`                                                |
+| **Required**              | Yes                                                     |
+| **Additional properties** | [[Not allowed]](# "Additional Properties not allowed.") |
+
+**Description:** timer execution settings
+
+| Property                                        | Pattern | Type           | Deprecated | Definition | Title/Description |
+| ----------------------------------------------- | ------- | -------------- | ---------- | ---------- | ----------------- |
+| + [interval_sec](#timer_settings_interval_sec ) | No      | number         | No         | -          | interval_sec      |
+| - [delay_sec](#timer_settings_delay_sec )       | No      | number or null | No         | -          | delay_sec         |
+
+### <a name="timer_settings_interval_sec"></a>5.1. Property `Chainsight Event Indexer specification > timer_settings > interval_sec`
+
+**Title:** interval_sec
 
 |              |          |
 | ------------ | -------- |
@@ -551,6 +570,23 @@
 | **Required** | Yes      |
 
 **Description:** interval of the canister invocation in seconds
+
+**Example:** 
+
+```json
+3600
+```
+
+### <a name="timer_settings_delay_sec"></a>5.2. Property `Chainsight Event Indexer specification > timer_settings > delay_sec`
+
+**Title:** delay_sec
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | No               |
+
+**Description:** delay of the canister invocation in seconds
 
 **Example:** 
 
@@ -816,4 +852,4 @@
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-02-29 at 08:04:43 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-03-09 at 13:08:26 +0000
