@@ -18,4 +18,5 @@ datasource:
     chain_id: 1
   from: 17660942
   contract_type: ERC-20
-interval: 3600
+timer_settings:
+  interval_sec: 3600

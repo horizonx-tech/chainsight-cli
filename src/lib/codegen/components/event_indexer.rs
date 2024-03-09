@@ -14,7 +14,7 @@ use super::{
     codegen::CodeGenerator,
     common::{
         custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
-        GeneratedCodes, SourceType, Sources,
+        GeneratedCodes, SourceType, Sources, TimerSettings,
     },
 };
 
@@ -26,7 +26,7 @@ pub struct EventIndexerComponentManifest {
     pub version: String,
     pub metadata: ComponentMetadata,
     pub datasource: EventIndexerDatasource,
-    pub interval: u32,
+    pub timer_settings: TimerSettings,
     pub cycles: Option<CycleManagementsManifest>,
 }
 
@@ -72,7 +72,10 @@ impl EventIndexerComponentManifest {
                 ]),
             },
             datasource,
-            interval,
+            timer_settings: TimerSettings {
+                interval_sec: interval,
+                delay_sec: None,
+            },
             cycles: None,
         }
     }
@@ -179,7 +182,8 @@ impl ComponentManifest for EventIndexerComponentManifest {
 
     fn custom_tags(&self) -> HashMap<String, String> {
         let mut res = HashMap::new();
-        let (interval_key, interval_val) = custom_tags_interval_sec(self.interval);
+        let (interval_key, interval_val) =
+            custom_tags_interval_sec(self.timer_settings.interval_sec);
         res.insert(interval_key, interval_val);
         res
     }
@@ -285,7 +289,8 @@ datasource:
         rpc_url: https://mainnet.infura.io/v3/${INFURA_MAINNET_RPC_URL_KEY}
         chain_id: 1
     from: 17660942
-interval: 3600
+timer_settings:
+    interval_sec: 3600
         "#;
 
         let result = serde_yaml::from_str::<EventIndexerComponentManifest>(yaml);
@@ -321,7 +326,10 @@ interval: 3600
                     contract_type: Some("ERC20".to_string()),
                     batch_size: None,
                 },
-                interval: 3600,
+                timer_settings: TimerSettings {
+                    interval_sec: 3600,
+                    delay_sec: None,
+                },
                 cycles: None,
             }
         );
@@ -365,7 +373,10 @@ interval: 3600
                 contract_type: Some("ERC20".to_string()),
                 batch_size: None,
             },
-            interval: 3600,
+            timer_settings: TimerSettings {
+                interval_sec: 3600,
+                delay_sec: None,
+            },
             cycles: None,
         };
 
