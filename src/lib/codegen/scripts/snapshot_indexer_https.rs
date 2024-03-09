@@ -13,7 +13,12 @@ use crate::{
 
 fn script_contents(manifest: &SnapshotIndexerHTTPSComponentManifest, network: Network) -> String {
     let id = manifest.id().unwrap();
-    let script_to_set_task = generate_command_to_set_task(&id, &network, manifest.interval, 10);
+    let script_to_set_task = generate_command_to_set_task(
+        &id,
+        &network,
+        manifest.timer_settings.interval_sec,
+        manifest.timer_settings.delay_sec.unwrap_or(0),
+    );
     let init_in_env_task = init_in_env_task(&network, &id, &manifest.cycle_managements());
 
     format!(

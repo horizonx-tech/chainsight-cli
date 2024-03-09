@@ -64,8 +64,8 @@ fn script_contents(manifest: &SnapshotIndexerICPComponentManifest, network: Netw
     let start_timer_contents = generate_command_to_set_task(
         &id,
         &network,
-        manifest.interval,
-        5, // temp: fixed value, todo: make it configurable
+        manifest.timer_settings.interval_sec,
+        manifest.timer_settings.delay_sec.unwrap_or(0),
     );
     let init_in_env_task = init_in_env_task(&network, &id, &manifest.cycle_managements());
 

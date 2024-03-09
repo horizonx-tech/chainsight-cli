@@ -215,6 +215,13 @@ impl ComponentTypeInManifest {
 }
 
 #[derive(Default, Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct TimerSettings {
+    pub interval_sec: u32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub delay_sec: Option<u32>,
+}
+
+#[derive(Default, Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct CycleManagementManifest {
     pub initial_supply: Option<u128>,
     pub refueling_amount: Option<u128>,

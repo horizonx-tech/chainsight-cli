@@ -16,7 +16,7 @@ use super::{
     codegen::CodeGenerator,
     common::{
         custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
-        DatasourceForCanister, DestinationType, GeneratedCodes, Sources,
+        DatasourceForCanister, DestinationType, GeneratedCodes, Sources, TimerSettings,
     },
     utils::{
         generate_method_identifier, generate_types_from_bindings, get_did_by_component_id,
@@ -34,7 +34,7 @@ pub struct SnapshotIndexerICPComponentManifest {
     pub datasource: DatasourceForCanister,
     pub is_target_component: Option<bool>,
     pub lens_targets: Option<LensTargets>,
-    pub interval: u32,
+    pub timer_settings: TimerSettings,
     pub cycles: Option<CycleManagementsManifest>,
 }
 
@@ -61,7 +61,10 @@ impl SnapshotIndexerICPComponentManifest {
                 ]),
             },
             datasource,
-            interval,
+            timer_settings: TimerSettings {
+                interval_sec: interval,
+                delay_sec: None,
+            },
             is_target_component: None,
             lens_targets: None,
             cycles: None,
@@ -214,7 +217,8 @@ impl ComponentManifest for SnapshotIndexerICPComponentManifest {
     }
     fn custom_tags(&self) -> HashMap<String, String> {
         let mut res = HashMap::new();
-        let (interval_key, interval_val) = custom_tags_interval_sec(self.interval);
+        let (interval_key, interval_val) =
+            custom_tags_interval_sec(self.timer_settings.interval_sec);
         res.insert(interval_key, interval_val);
         res
     }
@@ -271,7 +275,8 @@ datasource:
     method:
         identifier: 'get_last_snapshot : () -> (record { value : text; timestamp : nat64 })'
         args: []
-interval: 3600
+timer_settings
+    interval_sec: 3600
         "#;
 
         let result = serde_yaml::from_str::<SnapshotIndexerICPComponentManifest>(yaml);
@@ -302,7 +307,10 @@ interval: 3600
                 },
                 is_target_component: None,
                 lens_targets: None,
-                interval: 3600,
+                timer_settings: TimerSettings {
+                    interval_sec: 3600,
+                    delay_sec: None,
+                },
                 cycles: None,
             }
         );
@@ -341,7 +349,10 @@ interval: 3600
             },
             is_target_component: None,
             lens_targets: None,
-            interval: 3600,
+            timer_settings: TimerSettings {
+                interval_sec: 3600,
+                delay_sec: None,
+            },
             cycles: None,
         };
 
