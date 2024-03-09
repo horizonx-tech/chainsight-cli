@@ -272,7 +272,8 @@ datasource:
         value:
             ids: dai
             vs_currencies: usd
-interval: 3600
+timer_settings:
+    interval_sec: 3600
     "#;
 
     const MANIFEST_YAML_DYNAMIC_QUERIES: &str = r#"
@@ -287,7 +288,8 @@ datasource:
         content-type: application/json
     queries:
         type: dynamic
-interval: 3600
+timer_settings:
+    interval_sec: 3600
     "#;
 
     #[test]

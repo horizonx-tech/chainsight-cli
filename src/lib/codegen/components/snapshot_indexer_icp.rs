@@ -275,7 +275,7 @@ datasource:
     method:
         identifier: 'get_last_snapshot : () -> (record { value : text; timestamp : nat64 })'
         args: []
-timer_settings
+timer_settings:
     interval_sec: 3600
         "#;
 

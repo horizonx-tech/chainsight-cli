@@ -435,7 +435,7 @@ destination:
     oracle_address: 0x0539a0EF8e5E60891fFf0958A059E049e43020d9
     rpc_url: https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL_KEY}
 timer_settings:
-    interval_sec: 3600,
+    interval_sec: 3600
         "#;
 
         let result = serde_yaml::from_str::<RelayerComponentManifest>(yaml);
