@@ -18,4 +18,5 @@ datasource:
     identifier: totalSupply():(uint256)
     interface: ERC20.json
     args: []
-interval: 3600
+timer_settings:
+  interval_sec: 3600

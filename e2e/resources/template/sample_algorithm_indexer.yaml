@@ -23,4 +23,5 @@ output:
   fields:
     address: String
   output_type: key_value
-interval: 3600
+timer_settings:
+  interval_sec: 3600
