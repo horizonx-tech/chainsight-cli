@@ -784,11 +784,12 @@ When Relayer propagates data to other blockchains, Chainsight provides Oracle Co
 
 It has only a state that stores the specified type in key/value format, where the key is an address constructed from the sender's Canister secret information, allowing the sender to be identified.
 
-The following is a tentative specification, but there is a specific code below.
+There is a specific code below.
 
-[horizonx-tech/chainsight-evm-oracles](https://github.com/horizonx-tech/chainsight-evm-oracles)
+[horizonx-tech/chainsight-management-oracle: Oracles supported by Chainsight](https://github.com/horizonx-tech/chainsight-management-oracle)
 
-Currently, only EVM compatible chains are supported, so only Solidity files are placed.
+Check the README in the above repository for the addresses of available oracle contracts that have been deployed.
+If you have a network you would like to add, please use that repository or send us an add request.
 
 ### Algorithm Lens
 
