@@ -502,7 +502,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "chainsight-cdk"
 version = "0.1.0"
-source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=b5e3378b531b08106130bf393d0e6fb61352d619#b5e3378b531b08106130bf393d0e6fb61352d619"
+source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=5bf71cc00eeac08ed04b3070e94a6ee4c07a10b2#5bf71cc00eeac08ed04b3070e94a6ee4c07a10b2"
 dependencies = [
  "Inflector",
  "anyhow",
@@ -529,7 +529,7 @@ dependencies = [
 [[package]]
 name = "chainsight-cdk-macros"
 version = "0.1.0"
-source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=b5e3378b531b08106130bf393d0e6fb61352d619#b5e3378b531b08106130bf393d0e6fb61352d619"
+source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=5bf71cc00eeac08ed04b3070e94a6ee4c07a10b2#5bf71cc00eeac08ed04b3070e94a6ee4c07a10b2"
 dependencies = [
  "Inflector",
  "anyhow",
