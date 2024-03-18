@@ -19,3 +19,4 @@ datasource:
       vs_currencies: usd
 timer_settings:
   interval_sec: 3600
+  is_round_start_timing: true

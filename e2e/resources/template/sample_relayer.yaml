@@ -22,3 +22,4 @@ destination:
   rpc_url: https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL_KEY}
 timer_settings:
   interval_sec: 3600
+  is_round_start_timing: true

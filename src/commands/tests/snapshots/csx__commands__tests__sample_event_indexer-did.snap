@@ -63,7 +63,7 @@ service : {
   proxy_events_from_to : (vec nat8) -> (vec nat8);
   proxy_events_latest_n : (vec nat8) -> (vec nat8);
   proxy_get_last_indexed : (vec nat8) -> (vec nat8);
-  set_task : (nat32, nat32) -> ();
+  set_task : (nat32, nat32, bool) -> ();
   setup : (text, Web3CtxParam, IndexingConfig) -> (Result_1);
   transform : (TransformArgs) -> (HttpResponse) query;
   transform_eip1559_support : (TransformArgs) -> (HttpResponse) query;
