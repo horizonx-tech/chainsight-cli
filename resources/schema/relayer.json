@@ -233,6 +233,13 @@
           "description": "delay of the canister invocation in seconds",
           "type": ["number", "null"],
           "examples": [60]
+        },
+        "is_round_start_timing": {
+          "$id": "#/properties/timer_settings/properties/delay_sec",
+          "title": "delay_sec",
+          "description": "whether to round execution timing by interval or not",
+          "type": ["boolean", "null"],
+          "examples": [true]
         }
       }
     },
