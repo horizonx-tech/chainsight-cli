@@ -98,6 +98,7 @@ impl AlgorithmIndexerComponentManifest {
             timer_settings: TimerSettings {
                 interval_sec: interval,
                 delay_sec: None,
+                is_round_start_timing: None,
             },
             cycles: None,
         }
@@ -342,6 +343,7 @@ timer_settings:
                 timer_settings: TimerSettings {
                     interval_sec: 3600,
                     delay_sec: None,
+                    is_round_start_timing: None,
                 },
                 cycles: None,
             }
@@ -394,6 +396,7 @@ timer_settings:
             timer_settings: TimerSettings {
                 interval_sec: 3600,
                 delay_sec: None,
+                is_round_start_timing: None,
             },
             cycles: None,
         };

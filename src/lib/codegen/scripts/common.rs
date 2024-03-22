@@ -12,12 +12,14 @@ pub fn network_param(network: &Network) -> &str {
 
 pub fn generate_command_to_set_task(id: &str, network: &Network, timer: &TimerSettings) -> String {
     let delay = timer.delay_sec.unwrap_or(0);
+    let is_round_start_timing = timer.is_round_start_timing.unwrap_or(false);
     format!(
-        r#"dfx canister {} call {} set_task '({}, {})'"#,
+        r#"dfx canister {} call {} set_task '({}, {}, {})'"#,
         network_param(network),
         id,
         timer.interval_sec,
-        delay
+        delay,
+        is_round_start_timing
     )
 }
 

@@ -18,3 +18,4 @@ datasource:
 lens_targets: null
 timer_settings:
   interval_sec: 3600
+  is_round_start_timing: true

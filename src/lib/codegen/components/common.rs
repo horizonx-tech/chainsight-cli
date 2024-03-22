@@ -214,11 +214,18 @@ impl ComponentTypeInManifest {
     }
 }
 
+/// Settings for Periodic tasks
 #[derive(Default, Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct TimerSettings {
+    /// Interval in seconds
     pub interval_sec: u32,
+    /// Delay in seconds, if not set, default to 0
     #[serde(skip_serializing_if = "Option::is_none")]
     pub delay_sec: Option<u32>,
+    /// Whether to round execution timing by interval or not
+    /// If interval is 60min and this is true, the task will be executed at 00:00, 01:00, 02:00, ...
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub is_round_start_timing: Option<bool>,
 }
 
 #[derive(Default, Clone, Debug, PartialEq, Serialize, Deserialize)]
