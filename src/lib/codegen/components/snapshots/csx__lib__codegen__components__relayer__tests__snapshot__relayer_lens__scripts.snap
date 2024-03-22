@@ -36,5 +36,5 @@ dfx canister  call sample_relayer setup "(
     vec { \"$(dfx canister  id lens_target_canister_1)\"; \"$(dfx canister  id lens_target_canister_2)\" },
 )"
 # set_task
-dfx canister  call sample_relayer set_task_with_rounded '(3600, 0, false)'
+dfx canister  call sample_relayer set_task '(3600, 0, false)'
 

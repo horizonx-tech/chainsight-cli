@@ -24,5 +24,5 @@ dfx canister  call sample_snapshot_indexer_https init_in '(variant { "LocalDevel
                 };
         })' --with-cycles 2800000000000 --wallet $(dfx identity get-wallet )
 # set_task
-dfx canister  call sample_snapshot_indexer_https set_task_with_rounded '(3600, 0, false)'
+dfx canister  call sample_snapshot_indexer_https set_task '(3600, 0, false)'
 

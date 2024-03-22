@@ -37,5 +37,5 @@ dfx canister  call sample_event_indexer setup "(
     }
     )"
 # set_task
-dfx canister  call sample_event_indexer set_task_with_rounded '(3600, 0, false)'
+dfx canister  call sample_event_indexer set_task '(3600, 0, false)'
 
