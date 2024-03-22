@@ -19,7 +19,7 @@ use super::{
     codegen::CodeGenerator,
     common::{
         custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
-        DestinationType, GeneratedCodes, Sources,
+        DestinationType, GeneratedCodes, Sources, TimerSettings,
     },
 };
 
@@ -72,7 +72,7 @@ pub struct SnapshotIndexerHTTPSComponentManifest {
     pub version: String,
     pub metadata: ComponentMetadata,
     pub datasource: SnapshotIndexerHTTPSDataSource,
-    pub interval: u32,
+    pub timer_settings: TimerSettings,
     pub cycles: Option<CycleManagementsManifest>,
 }
 
@@ -101,7 +101,10 @@ impl SnapshotIndexerHTTPSComponentManifest {
                 ]),
             },
             datasource,
-            interval,
+            timer_settings: TimerSettings {
+                interval_sec: interval,
+                delay_sec: None,
+            },
             cycles: None,
         }
     }
@@ -206,7 +209,8 @@ impl ComponentManifest for SnapshotIndexerHTTPSComponentManifest {
     }
     fn custom_tags(&self) -> HashMap<String, String> {
         let mut res = HashMap::new();
-        let (interval_key, interval_val) = custom_tags_interval_sec(self.interval);
+        let (interval_key, interval_val) =
+            custom_tags_interval_sec(self.timer_settings.interval_sec);
         res.insert(interval_key, interval_val);
         res
     }
@@ -268,7 +272,8 @@ datasource:
         value:
             ids: dai
             vs_currencies: usd
-interval: 3600
+timer_settings:
+    interval_sec: 3600
     "#;
 
     const MANIFEST_YAML_DYNAMIC_QUERIES: &str = r#"
@@ -283,7 +288,8 @@ datasource:
         content-type: application/json
     queries:
         type: dynamic
-interval: 3600
+timer_settings:
+    interval_sec: 3600
     "#;
 
     #[test]
@@ -317,7 +323,10 @@ interval: 3600
                         ("vs_currencies".to_string(), "usd".to_string()),
                     ])),
                 },
-                interval: 3600,
+                timer_settings: TimerSettings {
+                    interval_sec: 3600,
+                    delay_sec: None,
+                },
                 cycles: None,
             }
         );
@@ -402,7 +411,10 @@ interval: 3600
                         .collect(),
                     queries: SnapshotIndexerHTTPSDataSourceQueries::Dynamic,
                 },
-                interval: 3600,
+                timer_settings: TimerSettings {
+                    interval_sec: 3600,
+                    delay_sec: None,
+                },
                 cycles: None,
             }
         );

@@ -14,7 +14,9 @@
   - [3.3. Property `Chainsight HTTPS Snapshot Indexer specification > datasource > queries`](#datasource_queries)
     - [3.3.1. Property `Chainsight HTTPS Snapshot Indexer specification > datasource > queries > type`](#datasource_queries_type)
     - [3.3.2. Property `Chainsight HTTPS Snapshot Indexer specification > datasource > queries > value`](#datasource_queries_value)
-- [4. Property `Chainsight HTTPS Snapshot Indexer specification > interval`](#interval)
+- [4. Property `Chainsight HTTPS Snapshot Indexer specification > timer_settings`](#timer_settings)
+  - [4.1. Property `Chainsight HTTPS Snapshot Indexer specification > timer_settings > interval_sec`](#timer_settings_interval_sec)
+  - [4.2. Property `Chainsight HTTPS Snapshot Indexer specification > timer_settings > delay_sec`](#timer_settings_delay_sec)
 - [5. Property `Chainsight HTTPS Snapshot Indexer specification > cycles`](#cycles)
   - [5.1. Property `Chainsight HTTPS Snapshot Indexer specification > cycles > refueling_interval`](#cycles_refueling_interval)
   - [5.2. Property `Chainsight HTTPS Snapshot Indexer specification > cycles > vault_intial_supply`](#cycles_vault_intial_supply)
@@ -41,13 +43,13 @@
 
 **Description:** Chainsight HTTPS Snapshot Indexer specification
 
-| Property                     | Pattern | Type           | Deprecated | Definition | Title/Description                     |
-| ---------------------------- | ------- | -------------- | ---------- | ---------- | ------------------------------------- |
-| + [version](#version )       | No      | string         | No         | -          | specification version of the canister |
-| + [metadata](#metadata )     | No      | object         | No         | -          | metadata                              |
-| + [datasource](#datasource ) | No      | object         | No         | -          | -                                     |
-| + [interval](#interval )     | No      | number         | No         | -          | interval                              |
-| - [cycles](#cycles )         | No      | object or null | No         | -          | cycles                                |
+| Property                             | Pattern | Type           | Deprecated | Definition | Title/Description                     |
+| ------------------------------------ | ------- | -------------- | ---------- | ---------- | ------------------------------------- |
+| + [version](#version )               | No      | string         | No         | -          | specification version of the canister |
+| + [metadata](#metadata )             | No      | object         | No         | -          | metadata                              |
+| + [datasource](#datasource )         | No      | object         | No         | -          | -                                     |
+| + [timer_settings](#timer_settings ) | No      | object         | No         | -          | timer_settings                        |
+| - [cycles](#cycles )                 | No      | object or null | No         | -          | cycles                                |
 
 ## <a name="version"></a>1. Property `Chainsight HTTPS Snapshot Indexer specification > version`
 
@@ -339,9 +341,26 @@ must respect the following conditions
 }
 ```
 
-## <a name="interval"></a>4. Property `Chainsight HTTPS Snapshot Indexer specification > interval`
+## <a name="timer_settings"></a>4. Property `Chainsight HTTPS Snapshot Indexer specification > timer_settings`
 
-**Title:** interval
+**Title:** timer_settings
+
+|                           |                                                         |
+| ------------------------- | ------------------------------------------------------- |
+| **Type**                  | `object`                                                |
+| **Required**              | Yes                                                     |
+| **Additional properties** | [[Not allowed]](# "Additional Properties not allowed.") |
+
+**Description:** timer execution settings
+
+| Property                                        | Pattern | Type           | Deprecated | Definition | Title/Description |
+| ----------------------------------------------- | ------- | -------------- | ---------- | ---------- | ----------------- |
+| + [interval_sec](#timer_settings_interval_sec ) | No      | number         | No         | -          | interval_sec      |
+| - [delay_sec](#timer_settings_delay_sec )       | No      | number or null | No         | -          | delay_sec         |
+
+### <a name="timer_settings_interval_sec"></a>4.1. Property `Chainsight HTTPS Snapshot Indexer specification > timer_settings > interval_sec`
+
+**Title:** interval_sec
 
 |              |          |
 | ------------ | -------- |
@@ -349,6 +368,23 @@ must respect the following conditions
 | **Required** | Yes      |
 
 **Description:** interval of the canister invocation in seconds
+
+**Example:** 
+
+```json
+3600
+```
+
+### <a name="timer_settings_delay_sec"></a>4.2. Property `Chainsight HTTPS Snapshot Indexer specification > timer_settings > delay_sec`
+
+**Title:** delay_sec
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | No               |
+
+**Description:** delay of the canister invocation in seconds
 
 **Example:** 
 
@@ -614,4 +650,4 @@ must respect the following conditions
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-02-27 at 04:38:12 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-03-09 at 13:08:26 +0000

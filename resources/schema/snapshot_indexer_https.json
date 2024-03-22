@@ -5,7 +5,7 @@
   "$comment": "Chainsight HTTPS Snapshot Indexer specification",
   "description": "Chainsight HTTPS Snapshot Indexer specification",
   "type": "object",
-  "required": ["version", "metadata", "datasource", "interval"],
+  "required": ["version", "metadata", "datasource", "timer_settings"],
   "additionalProperties": false,
   "properties": {
     "version": {
@@ -129,12 +129,29 @@
         }
       }
     },
-    "interval": {
-      "$id": "#/properties/interval",
-      "title": "interval",
-      "description": "interval of the canister invocation in seconds",
-      "type": "number",
-      "examples": [60]
+    "timer_settings": {
+      "$id": "#/properties/timer_settings",
+      "title": "timer_settings",
+      "description": "timer execution settings",
+      "type": "object",
+      "required": ["interval_sec"],
+      "additionalProperties": false,
+      "properties": {
+        "interval_sec": {
+          "$id": "#/properties/timer_settings/properties/interval_sec",
+          "title": "interval_sec",
+          "description": "interval of the canister invocation in seconds",
+          "type": "number",
+          "examples": [3600]
+        },
+        "delay_sec": {
+          "$id": "#/properties/timer_settings/properties/delay_sec",
+          "title": "delay_sec",
+          "description": "delay of the canister invocation in seconds",
+          "type": ["number", "null"],
+          "examples": [60]
+        }
+      }
     },
     "cycles": {
       "$id": "#/properties/cycles",

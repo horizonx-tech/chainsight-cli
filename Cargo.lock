@@ -502,7 +502,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "chainsight-cdk"
 version = "0.1.0"
-source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=c4f357163c8b0382b95d574a44679450fac62c58#c4f357163c8b0382b95d574a44679450fac62c58"
+source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=b5e3378b531b08106130bf393d0e6fb61352d619#b5e3378b531b08106130bf393d0e6fb61352d619"
 dependencies = [
  "Inflector",
  "anyhow",
@@ -529,7 +529,7 @@ dependencies = [
 [[package]]
 name = "chainsight-cdk-macros"
 version = "0.1.0"
-source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=c4f357163c8b0382b95d574a44679450fac62c58#c4f357163c8b0382b95d574a44679450fac62c58"
+source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=b5e3378b531b08106130bf393d0e6fb61352d619#b5e3378b531b08106130bf393d0e6fb61352d619"
 dependencies = [
  "Inflector",
  "anyhow",
@@ -841,7 +841,7 @@ dependencies = [
 
 [[package]]
 name = "csx"
-version = "0.1.4"
+version = "0.1.11"
 dependencies = [
  "Inflector",
  "anstyle",
@@ -2076,9 +2076,9 @@ dependencies = [
 
 [[package]]
 name = "ic-solidity-bindgen"
-version = "0.1.11"
+version = "0.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1220e7a27963c0dc956f337f0f8227bcd785ef6096d459599365fdb9d03577d0"
+checksum = "a9315dc4e080798efd969e3d4a01fe4eb87019a648d176b517751f1185b6b3d8"
 dependencies = [
  "async-trait",
  "derive_builder",
@@ -2091,9 +2091,9 @@ dependencies = [
 
 [[package]]
 name = "ic-solidity-bindgen-macros"
-version = "0.1.10"
+version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3fb1688b2bf2f51078028dad137dc0bddcf8383bd82b878449e345c6d3e92e6d"
+checksum = "eb1fe3e0832d44d5758e15e6e2062e5eed8a119fdd8a684acb96cbad3701321a"
 dependencies = [
  "Inflector",
  "ic-web3-rs",
@@ -4161,6 +4161,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "24188a676b6ae68c3b2cb3a01be17fbf7240ce009799bb56d5b1409051e78fde"
 
 [[package]]
+name = "signal-hook-registry"
+version = "1.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d8229b473baa5980ac72ef434c4415e70c4b5e71b423043adb4ba059f89c99a1"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "signature"
 version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4641,8 +4650,11 @@ dependencies = [
  "libc",
  "mio 0.8.10",
  "num_cpus",
+ "parking_lot 0.12.1",
  "pin-project-lite",
+ "signal-hook-registry",
  "socket2",
+ "tokio-macros",
  "windows-sys 0.48.0",
 ]
 
@@ -4686,6 +4698,17 @@ dependencies = [
  "bytes 0.4.12",
  "futures 0.1.31",
  "log",
+]
+
+[[package]]
+name = "tokio-macros"
+version = "2.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5b8a1e28f2deaa14e508979454cb3a223b10b938b45af148bc0986de36f1923b"
+dependencies = [
+ "proc-macro2 1.0.76",
+ "quote 1.0.35",
+ "syn 2.0.48",
 ]
 
 [[package]]

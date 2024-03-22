@@ -1,6 +1,6 @@
 ---
 source: src/lib/codegen/components/snapshot_indexer_icp.rs
-expression: "&manifest.generate_scripts(Network::Local).unwrap()"
+expression: "&SnapshotIndexerICPCodeGenerator::new(manifest).generate_scripts(Network::Local).unwrap()"
 ---
 #!/bin/bash
 # init
@@ -29,5 +29,5 @@ dfx canister  call sample_snapshot_indexer_icp setup "(
     
 )"
 # set_task
-dfx canister  call sample_snapshot_indexer_icp set_task '(3600, 5)'
+dfx canister  call sample_snapshot_indexer_icp set_task '(3600, 0)'
 

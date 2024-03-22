@@ -18,7 +18,9 @@
     - [3.4.2. Property `Chainsight Event Indexer specification > datasource > network > rpc_url`](#datasource_network_rpc_url)
   - [3.5. Property `Chainsight Event Indexer specification > datasource > contract_type`](#datasource_contract_type)
   - [3.6. Property `Chainsight Event Indexer specification > datasource > batch_size`](#datasource_batch_size)
-- [4. Property `Chainsight Event Indexer specification > interval`](#interval)
+- [4. Property `Chainsight Event Indexer specification > timer_settings`](#timer_settings)
+  - [4.1. Property `Chainsight Event Indexer specification > timer_settings > interval_sec`](#timer_settings_interval_sec)
+  - [4.2. Property `Chainsight Event Indexer specification > timer_settings > delay_sec`](#timer_settings_delay_sec)
 - [5. Property `Chainsight Event Indexer specification > cycles`](#cycles)
   - [5.1. Property `Chainsight Event Indexer specification > cycles > refueling_interval`](#cycles_refueling_interval)
   - [5.2. Property `Chainsight Event Indexer specification > cycles > vault_intial_supply`](#cycles_vault_intial_supply)
@@ -45,13 +47,13 @@
 
 **Description:** Chainsight Event Indexer specification
 
-| Property                     | Pattern | Type           | Deprecated | Definition | Title/Description                     |
-| ---------------------------- | ------- | -------------- | ---------- | ---------- | ------------------------------------- |
-| + [version](#version )       | No      | string         | No         | -          | specification version of the canister |
-| + [metadata](#metadata )     | No      | object         | No         | -          | metadata                              |
-| + [datasource](#datasource ) | No      | object         | No         | -          | datasource                            |
-| + [interval](#interval )     | No      | number         | No         | -          | interval                              |
-| - [cycles](#cycles )         | No      | object or null | No         | -          | cycles                                |
+| Property                             | Pattern | Type           | Deprecated | Definition | Title/Description                     |
+| ------------------------------------ | ------- | -------------- | ---------- | ---------- | ------------------------------------- |
+| + [version](#version )               | No      | string         | No         | -          | specification version of the canister |
+| + [metadata](#metadata )             | No      | object         | No         | -          | metadata                              |
+| + [datasource](#datasource )         | No      | object         | No         | -          | datasource                            |
+| + [timer_settings](#timer_settings ) | No      | object         | No         | -          | timer_settings                        |
+| - [cycles](#cycles )                 | No      | object or null | No         | -          | cycles                                |
 
 ## <a name="version"></a>1. Property `Chainsight Event Indexer specification > version`
 
@@ -425,9 +427,26 @@
 100
 ```
 
-## <a name="interval"></a>4. Property `Chainsight Event Indexer specification > interval`
+## <a name="timer_settings"></a>4. Property `Chainsight Event Indexer specification > timer_settings`
 
-**Title:** interval
+**Title:** timer_settings
+
+|                           |                                                         |
+| ------------------------- | ------------------------------------------------------- |
+| **Type**                  | `object`                                                |
+| **Required**              | Yes                                                     |
+| **Additional properties** | [[Not allowed]](# "Additional Properties not allowed.") |
+
+**Description:** timer execution settings
+
+| Property                                        | Pattern | Type           | Deprecated | Definition | Title/Description |
+| ----------------------------------------------- | ------- | -------------- | ---------- | ---------- | ----------------- |
+| + [interval_sec](#timer_settings_interval_sec ) | No      | number         | No         | -          | interval_sec      |
+| - [delay_sec](#timer_settings_delay_sec )       | No      | number or null | No         | -          | delay_sec         |
+
+### <a name="timer_settings_interval_sec"></a>4.1. Property `Chainsight Event Indexer specification > timer_settings > interval_sec`
+
+**Title:** interval_sec
 
 |              |          |
 | ------------ | -------- |
@@ -435,6 +454,23 @@
 | **Required** | Yes      |
 
 **Description:** interval of the canister invocation in seconds
+
+**Example:** 
+
+```json
+3600
+```
+
+### <a name="timer_settings_delay_sec"></a>4.2. Property `Chainsight Event Indexer specification > timer_settings > delay_sec`
+
+**Title:** delay_sec
+
+|              |                  |
+| ------------ | ---------------- |
+| **Type**     | `number or null` |
+| **Required** | No               |
+
+**Description:** delay of the canister invocation in seconds
 
 **Example:** 
 
@@ -700,4 +736,4 @@
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-02-27 at 04:38:12 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-03-09 at 13:08:26 +0000

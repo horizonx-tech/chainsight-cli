@@ -52,12 +52,8 @@ fn script_contents(manifest: &SnapshotIndexerEVMComponentManifest, network: Netw
         &network,
     );
 
-    let start_timer_contents = generate_command_to_set_task(
-        &id,
-        &network,
-        manifest.interval,
-        0, // temp: fixed value, todo: make it configurable
-    );
+    let start_timer_contents =
+        generate_command_to_set_task(&id, &network, &manifest.timer_settings);
     let init_in_env_task = init_in_env_task(&network, &id, &manifest.cycle_managements());
 
     format!(

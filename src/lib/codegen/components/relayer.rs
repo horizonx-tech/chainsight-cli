@@ -22,7 +22,7 @@ use super::{
     codegen::CodeGenerator,
     common::{
         ComponentManifest, ComponentMetadata, CycleManagementsManifest, DatasourceForCanister,
-        DestinationType, GeneratedCodes, SourceType, Sources,
+        DestinationType, GeneratedCodes, SourceType, Sources, TimerSettings,
     },
     utils::{
         generate_method_identifier, generate_types_from_bindings, get_did_by_component_id,
@@ -39,7 +39,7 @@ pub struct RelayerComponentManifest {
     pub metadata: ComponentMetadata,
     pub datasource: DatasourceForCanister,
     pub destination: DestinationField, // TODO: multiple destinations
-    pub interval: u32,
+    pub timer_settings: TimerSettings,
     pub conversion_parameter: Option<RelayerConversionParameter>,
     pub lens_targets: Option<LensTargets>,
     pub cycles: Option<CycleManagementsManifest>,
@@ -68,7 +68,10 @@ impl RelayerComponentManifest {
             destination,
             conversion_parameter: None,
             lens_targets: None,
-            interval,
+            timer_settings: TimerSettings {
+                interval_sec: interval,
+                delay_sec: None,
+            },
             cycles: None,
         }
     }
@@ -274,7 +277,8 @@ impl ComponentManifest for RelayerComponentManifest {
             "chainsight:oracleType".to_string(),
             oracle_type_str.to_string(),
         );
-        let (interval_key, interval_val) = custom_tags_interval_sec(self.interval);
+        let (interval_key, interval_val) =
+            custom_tags_interval_sec(self.timer_settings.interval_sec);
         res.insert(interval_key, interval_val);
         res
     }
@@ -399,7 +403,10 @@ mod tests {
             },
             lens_targets: None,
             conversion_parameter: None,
-            interval: 3600,
+            timer_settings: TimerSettings {
+                interval_sec: 3600,
+                delay_sec: None,
+            },
             cycles: None,
         }
     }
@@ -427,7 +434,8 @@ destination:
     type: uint256
     oracle_address: 0x0539a0EF8e5E60891fFf0958A059E049e43020d9
     rpc_url: https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL_KEY}
-interval: 3600
+timer_settings:
+    interval_sec: 3600
         "#;
 
         let result = serde_yaml::from_str::<RelayerComponentManifest>(yaml);
@@ -467,7 +475,10 @@ interval: 3600
                 },
                 lens_targets: None,
                 conversion_parameter: None,
-                interval: 3600,
+                timer_settings: TimerSettings {
+                    interval_sec: 3600,
+                    delay_sec: None,
+                },
                 cycles: None,
             }
         );

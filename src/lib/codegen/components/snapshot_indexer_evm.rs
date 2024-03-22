@@ -13,7 +13,7 @@ use super::{
     codegen::CodeGenerator,
     common::{
         custom_tags_interval_sec, ComponentManifest, ComponentMetadata, CycleManagementsManifest,
-        DatasourceMethod, DestinationType, GeneratedCodes, Sources,
+        DatasourceMethod, DestinationType, GeneratedCodes, Sources, TimerSettings,
     },
 };
 
@@ -100,7 +100,7 @@ pub struct SnapshotIndexerEVMComponentManifest {
     pub version: String,
     pub metadata: ComponentMetadata,
     pub datasource: SnapshotIndexerEVMDatasource,
-    pub interval: u32,
+    pub timer_settings: TimerSettings,
     pub cycles: Option<CycleManagementsManifest>,
 }
 
@@ -127,7 +127,10 @@ impl SnapshotIndexerEVMComponentManifest {
                 ]),
             },
             datasource,
-            interval,
+            timer_settings: TimerSettings {
+                interval_sec: interval,
+                delay_sec: None,
+            },
             cycles: None,
         }
     }
@@ -210,7 +213,8 @@ impl ComponentManifest for SnapshotIndexerEVMComponentManifest {
 
     fn custom_tags(&self) -> HashMap<String, String> {
         let mut res = HashMap::new();
-        let (interval_key, interval_val) = custom_tags_interval_sec(self.interval);
+        let (interval_key, interval_val) =
+            custom_tags_interval_sec(self.timer_settings.interval_sec);
         res.insert(interval_key, interval_val);
         res
     }
@@ -259,7 +263,8 @@ datasource:
         identifier: totalSupply():(uint256)
         interface: ERC20.json
         args: []
-interval: 3600
+timer_settings:
+    interval_sec: 3600
         "#;
 
         let result = serde_yaml::from_str::<SnapshotIndexerEVMComponentManifest>(yaml);
@@ -291,7 +296,10 @@ interval: 3600
                         args: vec![]
                     }
                 },
-                interval: 3600,
+                timer_settings: TimerSettings {
+                    interval_sec: 3600,
+                    delay_sec: None,
+                },
                 cycles: None,
             }
         );
@@ -332,7 +340,10 @@ interval: 3600
                     args: vec![],
                 },
             },
-            interval: 3600,
+            timer_settings: TimerSettings {
+                interval_sec: 3600,
+                delay_sec: None,
+            },
             cycles: None,
         };
 

@@ -1,7 +1,7 @@
 use candid::Principal;
 use chainsight_cdk::initializer::CycleManagements;
 
-use crate::types::Network;
+use crate::{lib::codegen::components::common::TimerSettings, types::Network};
 
 pub fn network_param(network: &Network) -> &str {
     match network {
@@ -10,17 +10,13 @@ pub fn network_param(network: &Network) -> &str {
     }
 }
 
-pub fn generate_command_to_set_task(
-    id: &str,
-    network: &Network,
-    interval: u32,
-    delay: u32,
-) -> String {
+pub fn generate_command_to_set_task(id: &str, network: &Network, timer: &TimerSettings) -> String {
+    let delay = timer.delay_sec.unwrap_or(0);
     format!(
         r#"dfx canister {} call {} set_task '({}, {})'"#,
         network_param(network),
         id,
-        interval,
+        timer.interval_sec,
         delay
     )
 }

@@ -36,5 +36,5 @@ dfx canister  call sample_relayer setup "(
     
 )"
 # set_task
-dfx canister  call sample_relayer set_task '(3600, 10)'
+dfx canister  call sample_relayer set_task '(3600, 0)'
 
