@@ -20,6 +20,7 @@
 - [4. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > timer_settings`](#timer_settings)
   - [4.1. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > timer_settings > interval_sec`](#timer_settings_interval_sec)
   - [4.2. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > timer_settings > delay_sec`](#timer_settings_delay_sec)
+  - [4.3. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > timer_settings > is_round_start_timing`](#timer_settings_is_round_start_timing)
 - [5. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > cycles`](#cycles)
   - [5.1. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > cycles > refueling_interval`](#cycles_refueling_interval)
   - [5.2. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > cycles > vault_intial_supply`](#cycles_vault_intial_supply)
@@ -440,10 +441,11 @@
 
 **Description:** timer execution settings
 
-| Property                                        | Pattern | Type           | Deprecated | Definition | Title/Description |
-| ----------------------------------------------- | ------- | -------------- | ---------- | ---------- | ----------------- |
-| + [interval_sec](#timer_settings_interval_sec ) | No      | number         | No         | -          | interval_sec      |
-| - [delay_sec](#timer_settings_delay_sec )       | No      | number or null | No         | -          | delay_sec         |
+| Property                                                          | Pattern | Type            | Deprecated | Definition | Title/Description |
+| ----------------------------------------------------------------- | ------- | --------------- | ---------- | ---------- | ----------------- |
+| + [interval_sec](#timer_settings_interval_sec )                   | No      | number          | No         | -          | interval_sec      |
+| - [delay_sec](#timer_settings_delay_sec )                         | No      | number or null  | No         | -          | delay_sec         |
+| - [is_round_start_timing](#timer_settings_is_round_start_timing ) | No      | boolean or null | No         | -          | delay_sec         |
 
 ### <a name="timer_settings_interval_sec"></a>4.1. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > timer_settings > interval_sec`
 
@@ -477,6 +479,23 @@
 
 ```json
 60
+```
+
+### <a name="timer_settings_is_round_start_timing"></a>4.3. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > timer_settings > is_round_start_timing`
+
+**Title:** delay_sec
+
+|              |                   |
+| ------------ | ----------------- |
+| **Type**     | `boolean or null` |
+| **Required** | No                |
+
+**Description:** whether to round execution timing by interval or not
+
+**Example:** 
+
+```json
+true
 ```
 
 ## <a name="cycles"></a>5. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > cycles`
@@ -737,4 +756,4 @@
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-03-09 at 13:08:26 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-03-22 at 09:58:19 +0000
