@@ -32,6 +32,12 @@ struct Cli {
 }
 
 fn main() {
+    let exit_code = run();
+    std::process::exit(exit_code);
+}
+
+// ref: https://docs.rs/slog-async/latest/slog_async/#beware-of-stdprocessexit
+fn run() -> i32 {
     let args = Cli::parse();
     let _ = cache_envfile(None); // NOTE: Proceed regardless of the absence of an env file or environment variables.
     let verbose_level = args.verbose as i64 - args.quiet as i64;
@@ -40,7 +46,7 @@ fn main() {
     let res = exec(&env, args.command);
     if let Err(msg) = res {
         error!(&logger, r#"{:#}"#, msg);
-        std::process::exit(1);
+        return 1;
     }
-    std::process::exit(0);
+    0
 }
