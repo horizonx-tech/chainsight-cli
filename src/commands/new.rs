@@ -1,9 +1,15 @@
-use std::{fs, path::Path};
+use std::{
+    fs::{self, create_dir_all, remove_dir_all, remove_file, rename, File},
+    io::Write,
+    path::Path,
+};
 
-use anyhow::bail;
+use anyhow::{bail, ensure, Ok};
 use clap::Parser;
+use flate2::read::GzDecoder;
 use inflector::cases::titlecase::to_title_case;
 use slog::info;
+use tar::Archive;
 
 use crate::lib::{
     codegen::{
@@ -34,13 +40,21 @@ use crate::lib::{
     },
 };
 
+const EXAMPLES_REPOSITORY: &str = "chainsight-showcase";
+const EXAMPLES_REPO_BRANCH: &str = "main";
+const IGNORED_RELATIVE_EXAMPLE_PATHS: [&str; 2] = [".vscode", "artifacts"];
+
 #[derive(Debug, Parser)]
 #[command(name = "new")]
 /// Generates Chainsight project with built-in templates.
 pub struct NewOpts {
     /// Specifies the name of the project to create.
-    #[arg(required = true)]
-    pub project_name: String,
+    #[arg(required_unless_present = "example")]
+    pub project_name: Option<String>,
+
+    /// Specifies the path of the project example in chainsight-showcase to use.
+    #[arg(long)]
+    pub example: Option<String>,
 
     /// Skip generation of sample component manifests.
     #[arg(long, visible_short_alias = 'n')]
@@ -49,19 +63,31 @@ pub struct NewOpts {
 
 pub fn exec(env: &EnvironmentImpl, opts: NewOpts) -> anyhow::Result<()> {
     let log = env.get_logger();
-    let project_path = Path::new(&opts.project_name);
+
+    let project_path_str = opts
+        .project_name
+        .clone()
+        .unwrap_or_else(|| opts.example.clone().unwrap());
+    let project_path = Path::new(&project_path_str);
     let project_name = project_path.file_stem().unwrap().to_str().unwrap();
-    if project_path.exists() {
+    if Path::new(&project_path).exists() {
         bail!(format!(r#"Project '{}' already exists"#, project_name));
     }
-    info!(log, r#"Start creating new project '{}'..."#, project_name);
-    let res = create_project(
-        &project_path.to_string_lossy(),
-        project_name,
-        opts.no_samples,
-    );
+
+    let res = if let Some(example) = opts.example {
+        let trimmed_example = example.trim_matches('/');
+        info!(
+            log,
+            r#"Start creating new project by example '{}'..."#, trimmed_example
+        );
+        create_project_by_example(trimmed_example, opts.project_name)
+    } else {
+        info!(log, r#"Start creating new project '{}'..."#, project_name);
+        create_project(&project_path_str, project_name, opts.no_samples)
+    };
+
     match res {
-        Ok(_) => {
+        core::result::Result::Ok(_) => {
             info!(log, r#"Project '{}' created successfully"#, project_name);
 
             if opts.no_samples {
@@ -261,6 +287,93 @@ INFURA_MUMBAI_RPC_URL_KEY=
     .to_string()
 }
 
+fn create_project_by_example(
+    example_relative_path: &str,
+    project_name: Option<String>,
+) -> anyhow::Result<()> {
+    let tar_gz_file = format!("{}.tar.gz", EXAMPLES_REPO_BRANCH);
+    let tar_gz_filepath = Path::new(&tar_gz_file);
+    let repo_url = format!(
+        "https://github.com/horizonx-tech/{}/archive/refs/heads/{}",
+        EXAMPLES_REPOSITORY, tar_gz_file
+    );
+    let parent_path = format!("{}-{}", EXAMPLES_REPOSITORY, EXAMPLES_REPO_BRANCH);
+
+    download_and_extract(
+        &repo_url,
+        tar_gz_filepath,
+        &parent_path,
+        example_relative_path,
+        project_name,
+    )?;
+
+    Ok(())
+}
+
+fn download_and_extract(
+    repo_url: &str,
+    tar_gz_path: &Path,
+    parent_path: &str,
+    project_path: &str,
+    rename_to: Option<String>,
+) -> anyhow::Result<()> {
+    // Pre-processing
+    if tar_gz_path.exists() {
+        remove_file(tar_gz_path)?;
+    }
+
+    // Download the .tar.gz archive
+    let response = ureq::get(repo_url).call()?;
+
+    let mut file = File::create(tar_gz_path)?;
+    let mut reader = response.into_reader();
+    let mut content = Vec::new();
+    reader.read_to_end(&mut content)?;
+    file.write_all(&content)?;
+
+    // Decompress and extract the specified folder
+    let tar_gz = File::open(tar_gz_path)?;
+    let tar = GzDecoder::new(tar_gz);
+    let mut archive = Archive::new(tar);
+
+    // Extract only the specified folder
+    let extract_path = format!("{}/{}", parent_path, project_path);
+    archive
+        .entries()?
+        .filter_map(|e| e.ok())
+        .for_each(|mut entry| {
+            let path = entry.path().ok().unwrap();
+            if path.to_string_lossy().contains(&extract_path) {
+                entry.unpack_in(".").expect("Failed to unpack");
+            }
+        });
+
+    // Clean up
+    remove_file(tar_gz_path)?;
+    ensure!(
+        Path::new(&parent_path).exists(),
+        "Project not found in the example: {}",
+        &project_path
+    );
+    let chainsight_filepath = format!("{}/{}/{}", parent_path, project_path, CHAINSIGHT_FILENAME);
+    if !Path::new(&chainsight_filepath).exists() {
+        remove_dir_all(parent_path)?;
+        bail!("Not project: {}", &project_path);
+    }
+
+    let rename_to = rename_to.unwrap_or_else(|| project_path.to_string());
+    if let Some(parent) = Path::new(&rename_to).parent() {
+        create_dir_all(parent)?;
+    }
+    rename(&extract_path, project_path)?;
+    remove_dir_all(parent_path)?;
+    IGNORED_RELATIVE_EXAMPLE_PATHS.iter().for_each(|path| {
+        remove_dir_all(format!("./{}/{}", project_path, path)).unwrap_or_default();
+    });
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use insta::assert_display_snapshot;
@@ -343,7 +456,8 @@ mod tests {
             || {
                 let env = &test_env();
                 let opts = NewOpts {
-                    project_name: project_name.to_string(),
+                    project_name: Some(project_name.to_string()),
+                    example: None,
                     no_samples: false,
                 };
                 let res = exec(env, opts);
