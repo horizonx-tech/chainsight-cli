@@ -46,6 +46,6 @@ service : {
   proxy_between_account : (vec nat8) -> (vec nat8);
   proxy_get_account : (vec nat8) -> (vec nat8);
   proxy_last_account : (vec nat8) -> (vec nat8);
-  set_task : (nat32, nat32) -> ();
+  set_task : (nat32, nat32, bool) -> ();
   setup : (text, IndexingConfig) -> (Result_1);
 }

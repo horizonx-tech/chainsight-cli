@@ -27,6 +27,7 @@
 - [6. Property `Chainsight Relayer specification > timer_settings`](#timer_settings)
   - [6.1. Property `Chainsight Relayer specification > timer_settings > interval_sec`](#timer_settings_interval_sec)
   - [6.2. Property `Chainsight Relayer specification > timer_settings > delay_sec`](#timer_settings_delay_sec)
+  - [6.3. Property `Chainsight Relayer specification > timer_settings > is_round_start_timing`](#timer_settings_is_round_start_timing)
 - [7. Property `Chainsight Relayer specification > conversion_parameter`](#conversion_parameter)
   - [7.1. Property `Chainsight Relayer specification > conversion_parameter > extracted_field`](#conversion_parameter_extracted_field)
   - [7.2. Property `Chainsight Relayer specification > conversion_parameter > destination_type_to_convert`](#conversion_parameter_destination_type_to_convert)
@@ -618,10 +619,11 @@
 
 **Description:** timer execution settings
 
-| Property                                        | Pattern | Type           | Deprecated | Definition | Title/Description |
-| ----------------------------------------------- | ------- | -------------- | ---------- | ---------- | ----------------- |
-| + [interval_sec](#timer_settings_interval_sec ) | No      | number         | No         | -          | interval_sec      |
-| - [delay_sec](#timer_settings_delay_sec )       | No      | number or null | No         | -          | delay_sec         |
+| Property                                                          | Pattern | Type            | Deprecated | Definition | Title/Description |
+| ----------------------------------------------------------------- | ------- | --------------- | ---------- | ---------- | ----------------- |
+| + [interval_sec](#timer_settings_interval_sec )                   | No      | number          | No         | -          | interval_sec      |
+| - [delay_sec](#timer_settings_delay_sec )                         | No      | number or null  | No         | -          | delay_sec         |
+| - [is_round_start_timing](#timer_settings_is_round_start_timing ) | No      | boolean or null | No         | -          | delay_sec         |
 
 ### <a name="timer_settings_interval_sec"></a>6.1. Property `Chainsight Relayer specification > timer_settings > interval_sec`
 
@@ -655,6 +657,23 @@
 
 ```json
 60
+```
+
+### <a name="timer_settings_is_round_start_timing"></a>6.3. Property `Chainsight Relayer specification > timer_settings > is_round_start_timing`
+
+**Title:** delay_sec
+
+|              |                   |
+| ------------ | ----------------- |
+| **Type**     | `boolean or null` |
+| **Required** | No                |
+
+**Description:** whether to round execution timing by interval or not
+
+**Example:** 
+
+```json
+true
 ```
 
 ## <a name="conversion_parameter"></a>7. Property `Chainsight Relayer specification > conversion_parameter`
@@ -1003,4 +1022,4 @@
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-03-09 at 13:08:26 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-03-22 at 09:58:19 +0000

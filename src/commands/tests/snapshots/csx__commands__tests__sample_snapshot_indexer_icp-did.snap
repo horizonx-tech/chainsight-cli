@@ -57,7 +57,7 @@ service : {
   proxy_get_top_snapshot_values : (vec nat8) -> (vec nat8);
   proxy_get_top_snapshots : (vec nat8) -> (vec nat8);
   proxy_snapshots_len : (vec nat8) -> (vec nat8);
-  set_task : (nat32, nat32) -> ();
+  set_task : (nat32, nat32, bool) -> ();
   setup : (text) -> (Result_1);
   snapshots_len : () -> (nat64) query;
 }
