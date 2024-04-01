@@ -205,6 +205,7 @@ pub fn dfx_json(project_ids: Vec<String>) -> String {
         .map(|label| {
             format!(
                 r#"    "{}": {{
+      "gzip": true,
       "type": "custom",
       "candid": "./{}.did",
       "wasm": "./{}.wasm",
