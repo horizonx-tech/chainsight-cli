@@ -251,21 +251,21 @@ impl From<CycleManagementsManifest> for CycleManagements {
         let proxy = val.proxy.unwrap_or_default();
         CycleManagements {
             refueling_interval: val.refueling_interval.unwrap_or(86400),
-            vault_intial_supply: val.vault_intial_supply.unwrap_or(1_000_000_000_000),
+            vault_intial_supply: val.vault_intial_supply.unwrap_or(500_000_000_000),
             indexer: CycleManagement {
                 initial_supply: indexer.initial_supply.unwrap_or(0),
-                refueling_amount: indexer.refueling_amount.unwrap_or(1_000_000_000_000),
-                refueling_threshold: indexer.refueling_threshold.unwrap_or(500_000_000_000),
+                refueling_amount: indexer.refueling_amount.unwrap_or(3_000_000_000_000),
+                refueling_threshold: indexer.refueling_threshold.unwrap_or(1_500_000_000_000),
             },
             db: CycleManagement {
-                initial_supply: db.initial_supply.unwrap_or(1_500_000_000_000),
+                initial_supply: db.initial_supply.unwrap_or(1_000_000_000_000),
                 refueling_amount: db.refueling_amount.unwrap_or(1_000_000_000_000),
                 refueling_threshold: db.refueling_threshold.unwrap_or(500_000_000_000),
             },
             proxy: CycleManagement {
-                initial_supply: proxy.initial_supply.unwrap_or(300_000_000_000),
+                initial_supply: proxy.initial_supply.unwrap_or(100_000_000_000),
                 refueling_amount: proxy.refueling_amount.unwrap_or(100_000_000_000),
-                refueling_threshold: proxy.refueling_threshold.unwrap_or(100_000_000_000),
+                refueling_threshold: proxy.refueling_threshold.unwrap_or(50_000_000_000),
             },
         }
     }
