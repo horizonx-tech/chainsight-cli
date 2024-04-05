@@ -6,6 +6,7 @@ expression: dfx_json(project_ids)
   "version": 1,
   "canisters": {
     "sample_snapshot": {
+      "gzip": true,
       "type": "custom",
       "candid": "./sample_snapshot.did",
       "wasm": "./sample_snapshot.wasm",
@@ -17,6 +18,7 @@ expression: dfx_json(project_ids)
       ]
     },
     "sample_lens": {
+      "gzip": true,
       "type": "custom",
       "candid": "./sample_lens.did",
       "wasm": "./sample_lens.wasm",
@@ -28,6 +30,7 @@ expression: dfx_json(project_ids)
       ]
     },
     "sample_relayer": {
+      "gzip": true,
       "type": "custom",
       "candid": "./sample_relayer.did",
       "wasm": "./sample_relayer.wasm",
