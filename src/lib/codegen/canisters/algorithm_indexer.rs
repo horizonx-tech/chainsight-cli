@@ -152,7 +152,7 @@ pub fn generate_app(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Res
         #(#output_structs_quotes)*
 
         pub fn persist(elem: #input_type) {
-            let dummy_id = "dummy";
+            let dummy_id: u64 = 0;
 
             todo!("Write your logic: Store in storage with the type you define");
             #(#template_codes_for_output_struct)*
