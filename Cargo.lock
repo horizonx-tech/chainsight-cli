@@ -502,7 +502,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "chainsight-cdk"
 version = "0.1.0"
-source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=a006f4fbfc384a407c0fccdc2c97edd0f060c051#a006f4fbfc384a407c0fccdc2c97edd0f060c051"
+source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=ce11e291a0dd844338b0a0eb4e1583c0eedb3232#ce11e291a0dd844338b0a0eb4e1583c0eedb3232"
 dependencies = [
  "Inflector",
  "anyhow",
@@ -529,7 +529,7 @@ dependencies = [
 [[package]]
 name = "chainsight-cdk-macros"
 version = "0.1.0"
-source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=a006f4fbfc384a407c0fccdc2c97edd0f060c051#a006f4fbfc384a407c0fccdc2c97edd0f060c051"
+source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=ce11e291a0dd844338b0a0eb4e1583c0eedb3232#ce11e291a0dd844338b0a0eb4e1583c0eedb3232"
 dependencies = [
  "Inflector",
  "anyhow",
@@ -2076,9 +2076,9 @@ dependencies = [
 
 [[package]]
 name = "ic-solidity-bindgen"
-version = "0.1.12"
+version = "0.1.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a9315dc4e080798efd969e3d4a01fe4eb87019a648d176b517751f1185b6b3d8"
+checksum = "3e547ef670e5937f3000750692fb0f74639eb77843be3e4be5bcdc156f733f0d"
 dependencies = [
  "async-trait",
  "derive_builder",
@@ -2091,9 +2091,9 @@ dependencies = [
 
 [[package]]
 name = "ic-solidity-bindgen-macros"
-version = "0.1.11"
+version = "0.1.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eb1fe3e0832d44d5758e15e6e2062e5eed8a119fdd8a684acb96cbad3701321a"
+checksum = "216b28d9f1f0baea146ac0597301c41f5e81369c07692321bea5c086ad5783f5"
 dependencies = [
  "Inflector",
  "ic-web3-rs",
@@ -2184,9 +2184,9 @@ dependencies = [
 
 [[package]]
 name = "ic-web3-rs"
-version = "0.1.4"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b23578071bac0242a85743d0da96d48b755eb53a101e3c9c080ca1dc3a28cb8"
+checksum = "72b3eed15e3c67729bee7913ac49e4ba99c9b04b9365e5452ea088f7f5260050"
 dependencies = [
  "arrayvec 0.7.4",
  "candid 0.9.11",
