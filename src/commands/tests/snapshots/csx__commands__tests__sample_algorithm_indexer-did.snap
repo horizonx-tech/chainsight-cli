@@ -33,16 +33,16 @@ type Sources = record {
   source_type : SourceType;
 };
 service : {
-  between_account : (record { text; text }) -> (
-      vec record { text; Account },
+  between_account : (record { nat64; nat64 }) -> (
+      vec record { nat64; Account },
     ) query;
   event_source : () -> (principal) query;
-  get_account : (text) -> (opt Account) query;
+  get_account : (nat64) -> (opt Account) query;
   get_proxy : () -> (principal);
   get_sources : () -> (vec Sources) query;
   index : () -> ();
   init_in : (Env, CycleManagements) -> (Result);
-  last_account : (nat64) -> (vec record { text; Account }) query;
+  last_account : (nat64) -> (vec record { nat64; Account }) query;
   proxy_between_account : (vec nat8) -> (vec nat8);
   proxy_get_account : (vec nat8) -> (vec nat8);
   proxy_last_account : (vec nat8) -> (vec nat8);
