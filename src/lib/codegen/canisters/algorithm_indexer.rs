@@ -125,10 +125,10 @@ pub fn generate_app(manifest: &AlgorithmIndexerComponentManifest) -> anyhow::Res
 
         template_codes_for_output_struct.push(match storage_type {
             AlgorithmOutputType::KeyValue => {
-                quote! { #output_struct::default().put(&dummy_id); }
+                quote! { #output_struct::default().put(dummy_id); }
             }
             _ => {
-                quote! { #output_struct::put(&dummy_id, vec![#output_struct::default()]) }
+                quote! { #output_struct::put(dummy_id, vec![#output_struct::default()]) }
             }
         });
         output_structs_quotes.push(quote! {
