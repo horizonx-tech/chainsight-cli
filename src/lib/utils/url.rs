@@ -1,6 +1,4 @@
-use std::net::{IpAddr, Ipv6Addr, SocketAddr, ToSocketAddrs};
-
-use anyhow::Result;
+use anyhow::{Ok, Result};
 use serde::{Deserialize, Serialize};
 
 // Reference source: https://github.com/horizonx-tech/chainsight-backend/blob/c16741812c63ddf7cbe7519d12743c5988daf689/functions/internal/src/app/deploy_relayer/deploy_relayer.rs#L195-L236
@@ -14,35 +12,22 @@ pub fn is_supporting_ipv6_url(url_str: &str) -> Result<()> {
     let host = url
         .host()
         .ok_or_else(|| anyhow::anyhow!("No host in RPC URL"))?;
+    println!("host: {:?}", host);
     match host {
         url::Host::Ipv4(_) => anyhow::bail!("ipv4 address is not acceptable for RPC URL"),
         url::Host::Ipv6(_) => Ok(()),
-        url::Host::Domain(domain) => {
-            if is_ipv6_supported(domain) {
-                Ok(())
-            } else {
-                anyhow::bail!("Ipv6 not supported")
-            }
-        }
+        url::Host::Domain(domain) => is_ipv6_supported(domain),
     }
 }
 
-fn is_ipv6_supported(domain: &str) -> bool {
-    let socket_addr = SocketAddr::new(IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 1)), 443);
-    let ips: Vec<SocketAddr> = domain
-        .to_socket_addrs()
-        .unwrap()
-        .filter(|addr| match addr {
-            SocketAddr::V6(_) => true,
-            _ => false,
-        })
-        .collect();
+fn is_ipv6_supported(domain: &str) -> Result<()> {
+    let ips: Vec<std::net::IpAddr> = dns_lookup::lookup_host(domain)?;
     for ip in ips {
-        if ip == socket_addr {
-            return true;
+        if ip.is_ipv6() {
+            return Ok(());
         }
     }
-    false
+    Ok(())
 }
 
 #[derive(Serialize, Deserialize)]

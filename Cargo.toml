@@ -37,6 +37,7 @@ ureq = { version = "2.9.6", features = ["json"] }
 tokio = { version = "1.35.1", features = ["full"] }
 walrus = "0.20.1"
 url = "2.5.0"
+dns-lookup = "2.0.4"
 
 [dev-dependencies]
 insta = { version =  "1.33.0", features = ["yaml"] }

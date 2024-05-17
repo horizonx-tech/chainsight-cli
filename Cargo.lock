@@ -851,6 +851,7 @@ dependencies = [
  "chainsight-cdk-macros",
  "clap",
  "dialoguer",
+ "dns-lookup",
  "dotenvy",
  "ethabi 18.0.0",
  "flate2",
@@ -1134,6 +1135,18 @@ dependencies = [
  "libc",
  "redox_users",
  "winapi 0.3.9",
+]
+
+[[package]]
+name = "dns-lookup"
+version = "2.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e5766087c2235fec47fafa4cfecc81e494ee679d0fd4a59887ea0919bfb0e4fc"
+dependencies = [
+ "cfg-if 1.0.0",
+ "libc",
+ "socket2",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
