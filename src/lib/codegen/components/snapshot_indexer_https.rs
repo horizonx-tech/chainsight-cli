@@ -7,10 +7,15 @@ use chainsight_cdk::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    lib::codegen::{
-        canisters::snapshot_indexer_https::{generate_app, generate_codes, JsonTypeGenStrategy},
-        components::common::SourceType,
-        scripts,
+    lib::{
+        codegen::{
+            canisters::snapshot_indexer_https::{
+                generate_app, generate_codes, JsonTypeGenStrategy,
+            },
+            components::common::SourceType,
+            scripts,
+        },
+        utils::url::is_supporting_ipv6_url,
     },
     types::{ComponentType, Network},
 };
@@ -179,6 +184,7 @@ impl ComponentManifest for SnapshotIndexerHTTPSComponentManifest {
     }
 
     fn validate_manifest(&self) -> anyhow::Result<()> {
+        is_supporting_ipv6_url(&self.datasource.url)?;
         Ok(())
     }
 
