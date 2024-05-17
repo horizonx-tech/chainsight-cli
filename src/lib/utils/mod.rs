@@ -5,6 +5,7 @@ pub mod env;
 pub mod interaction;
 pub mod paths;
 pub mod serializer;
+pub mod url;
 
 pub const CHAINSIGHT_FILENAME: &str = ".chainsight";
 pub const PROJECT_MANIFEST_FILENAME: &str = "project.yaml";
