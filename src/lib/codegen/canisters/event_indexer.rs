@@ -3,7 +3,11 @@ use chainsight_cdk::config::components::EventIndexerConfig;
 use quote::quote;
 
 use crate::{
-    lib::codegen::components::event_indexer::EventIndexerComponentManifest, types::ComponentType,
+    lib::{
+        codegen::components::event_indexer::EventIndexerComponentManifest,
+        utils::url::{is_supporting_ipv6_url, is_valid_rpc_url},
+    },
+    types::ComponentType,
 };
 
 pub fn generate_codes(manifest: &EventIndexerComponentManifest) -> anyhow::Result<String> {
@@ -30,6 +34,10 @@ pub fn validate_manifest(manifest: &EventIndexerComponentManifest) -> anyhow::Re
         manifest.datasource.event.interface.is_some(),
         "datasource.event.interface is not set"
     );
+
+    let rpc_url = &manifest.datasource.network.rpc_url;
+    is_supporting_ipv6_url(rpc_url)?;
+    is_valid_rpc_url(rpc_url)?;
 
     Ok(())
 }

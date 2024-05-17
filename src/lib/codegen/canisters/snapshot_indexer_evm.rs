@@ -3,7 +3,10 @@ use chainsight_cdk::config::components::SnapshotIndexerEVMConfig;
 use quote::quote;
 
 use crate::{
-    lib::codegen::components::snapshot_indexer_evm::SnapshotIndexerEVMComponentManifest,
+    lib::{
+        codegen::components::snapshot_indexer_evm::SnapshotIndexerEVMComponentManifest,
+        utils::url::{is_supporting_ipv6_url, is_valid_rpc_url},
+    },
     types::ComponentType,
 };
 
@@ -31,9 +34,9 @@ pub fn validate_manifest(manifest: &SnapshotIndexerEVMComponentManifest) -> anyh
         "type is not SnapshotIndexerEVM"
     );
 
-    // TODO
-    // - check datasource.method.identifier format
-    // - check datasource.method.args length
+    let rpc_url = &manifest.datasource.location.args.rpc_url;
+    is_supporting_ipv6_url(rpc_url)?;
+    is_valid_rpc_url(rpc_url)?;
 
     Ok(())
 }
