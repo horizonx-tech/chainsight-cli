@@ -12,22 +12,21 @@ pub fn is_supporting_ipv6_url(url_str: &str) -> Result<()> {
     let host = url
         .host()
         .ok_or_else(|| anyhow::anyhow!("No host in RPC URL"))?;
-    println!("host: {:?}", host);
     match host {
         url::Host::Ipv4(_) => anyhow::bail!("ipv4 address is not acceptable for RPC URL"),
         url::Host::Ipv6(_) => Ok(()),
-        url::Host::Domain(domain) => is_ipv6_supported(domain),
+        url::Host::Domain(domain) => is_ipv6_supported_domain(domain),
     }
 }
 
-fn is_ipv6_supported(domain: &str) -> Result<()> {
+fn is_ipv6_supported_domain(domain: &str) -> Result<()> {
     let ips: Vec<std::net::IpAddr> = dns_lookup::lookup_host(domain)?;
     for ip in ips {
         if ip.is_ipv6() {
             return Ok(());
         }
     }
-    Ok(())
+    anyhow::bail!("No IPv6 address found")
 }
 
 #[derive(Serialize, Deserialize)]
@@ -39,12 +38,12 @@ struct JsonRpcRequest {
 }
 
 #[allow(dead_code)]
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct JsonRpcResponse {
     id: u64,
     jsonrpc: String,
-    #[serde(rename = "result")]
-    block_number: String,
+    result: Option<String>,
+    error: Option<String>,
 }
 
 pub fn is_valid_rpc_url(url: &str) -> Result<()> {
@@ -55,9 +54,42 @@ pub fn is_valid_rpc_url(url: &str) -> Result<()> {
         jsonrpc: "2.0".to_string(),
     };
 
-    let _ = ureq::post(url)
+    let res = ureq::post(url)
         .set("Content-Type", "application/json")
         .send_json(&request)?
         .into_json::<JsonRpcResponse>()?;
+    if let Some(err) = res.error {
+        anyhow::bail!("Error in response {:?} from calling eth_blockNumber", err);
+    }
+
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // ref: test ip,domains
+    //   https://developers.google.com/speed/public-dns/docs/using
+
+    #[test]
+    fn test_is_supporting_ipv6_url() {
+        assert!(is_supporting_ipv6_url("https://ipv4.google.com").is_err());
+        assert!(is_supporting_ipv6_url("https://ipv6.google.com").is_ok());
+        assert!(is_supporting_ipv6_url("https://eth-mainnet.g.alchemy.com").is_ok());
+        assert!(is_supporting_ipv6_url("https://eth-mainnet.g.alchemy.com/v2/${KEY}").is_ok());
+    }
+
+    #[test]
+    fn test_is_ipv6_supported_domain() {
+        assert!(is_ipv6_supported_domain("api.coingecko.com").is_ok());
+        assert!(is_ipv6_supported_domain("ipv6.google.com").is_ok());
+        assert!(is_ipv6_supported_domain("ipv4.google.com").is_err());
+    }
+
+    #[test]
+    fn test_is_valid_rpc_url() {
+        assert!(is_valid_rpc_url("https://eth.llamarpc.com").is_ok());
+        assert!(is_valid_rpc_url("https://eth-mainnet.g.alchemy.com/v2/${KEY}").is_err());
+    }
 }
