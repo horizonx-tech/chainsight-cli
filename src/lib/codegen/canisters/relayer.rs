@@ -15,7 +15,10 @@ use crate::{
             relayer::RelayerComponentManifest,
             utils::{generate_method_identifier, get_did_by_component_id, is_lens_with_args},
         },
-        utils::paths::bindings_name,
+        utils::{
+            paths::bindings_name,
+            url::{is_supporting_ipv6_url, is_valid_rpc_url},
+        },
     },
     types::ComponentType,
 };
@@ -197,10 +200,9 @@ pub fn validate_manifest(manifest: &RelayerComponentManifest) -> anyhow::Result<
         "type is not Relayer"
     );
 
-    // TODO
-    // - check datasource.method.identifier format
-    // - check datasource.method.args length
-    // - check destination.type
+    let rpc_url = &manifest.destination.rpc_url;
+    is_supporting_ipv6_url(rpc_url)?;
+    is_valid_rpc_url(rpc_url)?;
 
     Ok(())
 }
