@@ -101,7 +101,7 @@ jobs:
             toolchain: nightly-${{ env.RUST_ARCHIVE_DATE }}
       - uses: actions-rs/cargo@v1
         with:
-          toolchain: nightly
+          toolchain: nightly-${{ env.RUST_ARCHIVE_DATE }}
           command: test
           args: --no-fail-fast
         env:
