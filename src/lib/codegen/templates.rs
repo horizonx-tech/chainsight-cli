@@ -25,11 +25,11 @@ version = "0.1.0"
 edition = "2021"
 
 [workspace.dependencies]
-candid = "0.9.6"
-ic-cdk = "0.11.3"
-ic-cdk-macros = "0.8.1"
-ic-cdk-timers = "0.5.0"
-ic-stable-structures = "0.5.5"
+candid = "^0.10.4"
+ic-cdk = "0.13.2"
+ic-cdk-macros = "0.13.2"
+ic-cdk-timers = "0.7.0"
+ic-stable-structures = "0.6.4"
 serde = "1.0.163"
 serde_bytes = "0.11.12"
 serde_json = "1.0.108"
@@ -37,8 +37,8 @@ hex = "0.4.3"
 
 ic-web3-rs = "0.1.6"
 ic-solidity-bindgen = "0.1.15"
-chainsight-cdk-macros = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev= "d7e0049abf99ff5c5a390294264ecbf7c3699831" }}
-chainsight-cdk = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev= "d7e0049abf99ff5c5a390294264ecbf7c3699831" }}
+chainsight-cdk-macros = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev= "a20da030eca519a9030e7c935c4561bf4b5b8af2" }}
+chainsight-cdk = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev= "a20da030eca519a9030e7c935c4561bf4b5b8af2" }}
 "#,
         members
             .iter()
