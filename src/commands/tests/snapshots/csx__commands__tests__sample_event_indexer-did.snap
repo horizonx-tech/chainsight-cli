@@ -18,7 +18,7 @@ type Env = variant { Production; Test; LocalDevelopment };
 type HttpHeader = record { value : text; name : text };
 type HttpResponse = record {
   status : nat;
-  body : vec nat8;
+  body : blob;
   headers : vec HttpHeader;
 };
 type IndexingConfig = record { start_from : nat64; chunk_size : opt nat64 };
@@ -38,7 +38,7 @@ type Sources = record {
   source_type : SourceType;
 };
 type Transfer = record { to : text; value : U256; from : text };
-type TransformArgs = record { context : vec nat8; response : HttpResponse };
+type TransformArgs = record { context : blob; response : HttpResponse };
 type U256 = record { value : text };
 type Web3CtxParam = record {
   env : Env;
@@ -59,10 +59,10 @@ service : {
   get_sources : () -> (vec Sources) query;
   index : () -> ();
   init_in : (Env, CycleManagements) -> (Result);
-  proxy_call : (vec nat8) -> (vec nat8);
-  proxy_events_from_to : (vec nat8) -> (vec nat8);
-  proxy_events_latest_n : (vec nat8) -> (vec nat8);
-  proxy_get_last_indexed : (vec nat8) -> (vec nat8);
+  proxy_call : (blob) -> (blob);
+  proxy_events_from_to : (blob) -> (blob);
+  proxy_events_latest_n : (blob) -> (blob);
+  proxy_get_last_indexed : (blob) -> (blob);
   set_task : (nat32, nat32, bool) -> ();
   setup : (text, Web3CtxParam, IndexingConfig) -> (Result_1);
   transform : (TransformArgs) -> (HttpResponse) query;

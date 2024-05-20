@@ -18,7 +18,7 @@ type Env = variant { Production; Test; LocalDevelopment };
 type HttpHeader = record { value : text; name : text };
 type HttpResponse = record {
   status : nat;
-  body : vec nat8;
+  body : blob;
   headers : vec HttpHeader;
 };
 type InitError = variant {
@@ -40,7 +40,7 @@ type Sources = record {
   attributes : RelayerWithLensSourceAttrs;
   source_type : SourceType;
 };
-type TransformArgs = record { context : vec nat8; response : HttpResponse };
+type TransformArgs = record { context : blob; response : HttpResponse };
 type Web3CtxParam = record {
   env : Env;
   url : text;
