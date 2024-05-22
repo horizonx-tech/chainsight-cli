@@ -18,7 +18,7 @@ type Env = variant { Production; Test; LocalDevelopment };
 type HttpHeader = record { value : text; name : text };
 type HttpResponse = record {
   status : nat;
-  body : vec nat8;
+  body : blob;
   headers : vec HttpHeader;
 };
 type InitError = variant {
@@ -37,7 +37,7 @@ type Sources = record {
   attributes : Web3AlgorithmIndexerSourceAttrs;
   source_type : SourceType;
 };
-type TransformArgs = record { context : vec nat8; response : HttpResponse };
+type TransformArgs = record { context : blob; response : HttpResponse };
 type Web3AlgorithmIndexerSourceAttrs = record {
   chain_id : nat64;
   function_name : text;
@@ -60,14 +60,14 @@ service : {
   get_top_snapshots : (nat64) -> (vec Snapshot) query;
   index : () -> ();
   init_in : (Env, CycleManagements) -> (Result);
-  proxy_get_last_snapshot : (vec nat8) -> (vec nat8);
-  proxy_get_last_snapshot_value : (vec nat8) -> (vec nat8);
-  proxy_get_snapshot : (vec nat8) -> (vec nat8);
-  proxy_get_snapshot_value : (vec nat8) -> (vec nat8);
-  proxy_get_snapshots : (vec nat8) -> (vec nat8);
-  proxy_get_top_snapshot_values : (vec nat8) -> (vec nat8);
-  proxy_get_top_snapshots : (vec nat8) -> (vec nat8);
-  proxy_snapshots_len : (vec nat8) -> (vec nat8);
+  proxy_get_last_snapshot : (blob) -> (blob);
+  proxy_get_last_snapshot_value : (blob) -> (blob);
+  proxy_get_snapshot : (blob) -> (blob);
+  proxy_get_snapshot_value : (blob) -> (blob);
+  proxy_get_snapshots : (blob) -> (blob);
+  proxy_get_top_snapshot_values : (blob) -> (blob);
+  proxy_get_top_snapshots : (blob) -> (blob);
+  proxy_snapshots_len : (blob) -> (blob);
   set_task : (nat32, nat32, bool) -> ();
   setup : (text, Web3CtxParam) -> (Result_1);
   snapshots_len : () -> (nat64) query;

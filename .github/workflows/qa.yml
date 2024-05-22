@@ -5,7 +5,8 @@ on:
     branches:
       - main
 env:
-  RUST_VERSION: 1.76.0
+  RUST_VERSION: 1.78.0
+  RUST_ARCHIVE_DATE: "2024-02-09"
 jobs:
   doc:
     runs-on: ubuntu-latest
@@ -97,10 +98,10 @@ jobs:
           rustup default ${{ env.RUST_VERSION }}
       - uses: actions-rs/toolchain@v1
         with:
-            toolchain: nightly
+            toolchain: nightly-${{ env.RUST_ARCHIVE_DATE }}
       - uses: actions-rs/cargo@v1
         with:
-          toolchain: nightly
+          toolchain: nightly-${{ env.RUST_ARCHIVE_DATE }}
           command: test
           args: --no-fail-fast
         env:

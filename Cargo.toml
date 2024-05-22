@@ -9,16 +9,16 @@ edition = "2021"
 Inflector = "0.11.4"
 anstyle = "1.0.1"
 anyhow = "1.0.71"
-candid = "0.9.6"
-chainsight-cdk = { git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "d7e0049abf99ff5c5a390294264ecbf7c3699831" }
-chainsight-cdk-macros = { git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "d7e0049abf99ff5c5a390294264ecbf7c3699831" }
+candid = "^0.10.4"
+chainsight-cdk = { git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "0815d8ead09bef9fa57f84ce2f4b634b4c60e675" }
+chainsight-cdk-macros = { git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev = "0815d8ead09bef9fa57f84ce2f4b634b4c60e675" }
 clap = { version = "4.3.0", features = ["derive", "env", "unstable-styles", "wrap_help"] }
 dialoguer = "0.11.0"
 dotenvy = "0.15.7"
 ethabi = "18.0.0"
 flate2 = "1.0.28"
-ic-agent = "0.30.0"
-ic-wasm = "0.6.0"
+ic-agent = "0.34.0"
+ic-wasm = "0.7.2"
 json_typegen_shared = "0.7.0"
 lazy_static = "1.4.0"
 proc-macro2 = "1.0.59"

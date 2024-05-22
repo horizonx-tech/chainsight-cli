@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+env:
+  RUST_VERSION: 1.78.0
+  RUST_ARCHIVE_DATE: "2024-02-09"
 jobs:
   e2e-test:
     runs-on: ubuntu-latest
@@ -23,12 +26,12 @@ jobs:
           rustup update ${{ env.RUST_VERSION }} --no-self-update
           rustup default ${{ env.RUST_VERSION }}
           rustup component add rustfmt
-          rustup toolchain install nightly
-          rustup target add wasm32-unknown-unknown --toolchain nightly
+          rustup toolchain install nightly-${{ env.RUST_ARCHIVE_DATE }}
+          rustup target add wasm32-unknown-unknown --toolchain nightly-${{ env.RUST_ARCHIVE_DATE }}
       - name: Run e2e test (Build & Check Module)
         # TODO: use /tests for integration-test of cargo project instead of selecting folder
         run: |
-          RUST_TEST_TIME_UNIT=300000,480000 cargo +nightly test commands::tests --features integration-test -- -Zunstable-options --ensure-time
+          RUST_TEST_TIME_UNIT=300000,480000 cargo +nightly-${{ env.RUST_ARCHIVE_DATE }} test commands::tests --features integration-test -- -Zunstable-options --ensure-time
       - name: Pre-process e2e test (Deployment) - Copy artifacts
         # TODO: Improve artifacts takeover
         run: |

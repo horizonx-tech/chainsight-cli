@@ -6,7 +6,7 @@ on:
         description: 'Parameter specifying update version, to use with `cargo release version` ex: `1.0.0`, `patch` etc'
         type: string
 env:
-  RUST_VERSION: 1.76.0
+  RUST_VERSION: 1.78.0
   DEFAULT_RELEASE_LEVEL: patch
   BASE_BRANCH_NAME: topic/bump-version
   CI_COMMIT_AUTHOR: github-actions
