@@ -484,7 +484,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "chainsight-cdk"
 version = "0.1.0"
-source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=a20da030eca519a9030e7c935c4561bf4b5b8af2#a20da030eca519a9030e7c935c4561bf4b5b8af2"
+source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=0815d8ead09bef9fa57f84ce2f4b634b4c60e675#0815d8ead09bef9fa57f84ce2f4b634b4c60e675"
 dependencies = [
  "Inflector",
  "anyhow",
@@ -511,7 +511,7 @@ dependencies = [
 [[package]]
 name = "chainsight-cdk-macros"
 version = "0.1.0"
-source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=a20da030eca519a9030e7c935c4561bf4b5b8af2#a20da030eca519a9030e7c935c4561bf4b5b8af2"
+source = "git+https://github.com/horizonx-tech/chainsight-sdk.git?rev=0815d8ead09bef9fa57f84ce2f4b634b4c60e675#0815d8ead09bef9fa57f84ce2f4b634b4c60e675"
 dependencies = [
  "Inflector",
  "anyhow",
@@ -2083,8 +2083,9 @@ dependencies = [
 
 [[package]]
 name = "ic-solidity-bindgen"
-version = "0.1.15"
-source = "git+https://github.com/horizonx-tech/ic-solidity-bindgen.git?branch=deps/ic-cdk-0.13.2#06c62f940f5558d869a29785e2e94c4a11bc54be"
+version = "0.1.16"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3bbe4f614ab38ba770da7369f87ad25f4f44f164d7cbdd3b71570abae0062f2f"
 dependencies = [
  "async-trait",
  "derive_builder",
@@ -2097,8 +2098,9 @@ dependencies = [
 
 [[package]]
 name = "ic-solidity-bindgen-macros"
-version = "0.1.13"
-source = "git+https://github.com/horizonx-tech/ic-solidity-bindgen.git?branch=deps/ic-cdk-0.13.2#06c62f940f5558d869a29785e2e94c4a11bc54be"
+version = "0.1.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "39c14a7a2cae28ec217c7a825429668adcc15c93e6b5b72bd8a4b022fe0e1215"
 dependencies = [
  "Inflector",
  "ic-web3-rs",
@@ -2168,8 +2170,9 @@ dependencies = [
 
 [[package]]
 name = "ic-web3-rs"
-version = "0.1.6"
-source = "git+https://github.com/horizonx-tech/ic-web3-rs.git?branch=deps/ic-cdk-0.13.2#b658abcd2cdd195da2ba0412845e8b06b6f2eea3"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7edc07b21ea28043ec821f6bce3718ccc44a6658a76824ababd08b0f3d342e59"
 dependencies = [
  "arrayvec 0.7.4",
  "candid",
