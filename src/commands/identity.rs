@@ -38,9 +38,9 @@ pub fn exec(env: &EnvironmentImpl, opts: IdentityOpts) -> anyhow::Result<()> {
         println!("{}", serde_json::to_string_pretty(&result)?);
     } else {
         let logger = env.get_logger();
-        let mut identity_mgr = IdentityManager::new(&logger, &None).unwrap();
+        let mut identity_mgr = IdentityManager::new(logger, &None).unwrap();
         let identity: Box<dyn Identity + Send + Sync> =
-            identity_mgr.instantiate_selected_identity(&logger).unwrap();
+            identity_mgr.instantiate_selected_identity(logger).unwrap();
         let result = serde_json::json!({
             "identity_name": identity_mgr.get_selected_identity_name(),
             "sender": identity.sender().unwrap(),
@@ -56,7 +56,7 @@ fn get_home_dir() -> Option<PathBuf> {
     env::var_os("HOME").map(PathBuf::from)
 }
 fn get_path_to_home(path: &str) -> Option<PathBuf> {
-    if path.starts_with("~") {
+    if path.starts_with('~') {
         get_home_dir().map(|home| home.join(path.trim_start_matches("~/")))
     } else {
         Some(PathBuf::from(path))
