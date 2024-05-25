@@ -18,6 +18,8 @@ mod test;
 mod upgrade;
 mod utils;
 
+mod identity;
+
 #[cfg(feature = "integration-test")]
 mod tests;
 
@@ -38,6 +40,7 @@ pub enum Command {
 
     // Experimental
     ComponentInfo(component_info::ComponentInfoOpts),
+    Identity(identity::IdentityOpts),
 }
 
 pub fn exec(env: &EnvironmentImpl, cmd: Command) -> anyhow::Result<()> {
@@ -76,5 +79,6 @@ pub fn exec(env: &EnvironmentImpl, cmd: Command) -> anyhow::Result<()> {
             runtime.block_on(component_info::exec(env, opts))?;
             Ok(())
         }
+        Command::Identity(opts) => identity::exec(env, opts),
     }
 }

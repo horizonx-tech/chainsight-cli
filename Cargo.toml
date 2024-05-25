@@ -38,6 +38,7 @@ tokio = { version = "1.35.1", features = ["full"] }
 walrus = "0.20.1"
 url = "2.5.0"
 dns-lookup = "2.0.4"
+keyring = "2.3.3"
 
 [dev-dependencies]
 insta = { version =  "1.33.0", features = ["yaml"] }
