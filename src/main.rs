@@ -11,9 +11,9 @@ use config::cli_version_str;
 use lib::{
     environment::EnvironmentImpl,
     logger::create_root_logger,
-    utils::{self, env::cache_envfile},
+    utils::{self, dfx::DfxWrapper, env::cache_envfile},
 };
-use slog::error;
+use slog::{error, info, Logger};
 
 /// The Chainsight Executor
 #[derive(Debug, Parser)]
@@ -42,6 +42,8 @@ fn run() -> i32 {
     let _ = cache_envfile(None); // NOTE: Proceed regardless of the absence of an env file or environment variables.
     let verbose_level = args.verbose as i64 - args.quiet as i64;
     let logger = create_root_logger(verbose_level);
+    info_on_bin_deps_for_csx(&logger);
+
     let env = EnvironmentImpl::new().with_logger(logger.clone());
     let res = exec(&env, args.command);
     if let Err(msg) = res {
@@ -49,4 +51,10 @@ fn run() -> i32 {
         return 1;
     }
     0
+}
+
+fn info_on_bin_deps_for_csx(logger: &Logger) {
+    let dfx = DfxWrapper::default();
+    let dfx_version = dfx.version().unwrap_or_else(|_| "Not found".to_string());
+    info!(logger, "Dfx version: {}", dfx_version);
 }
