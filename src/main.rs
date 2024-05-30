@@ -15,8 +15,6 @@ use lib::{
 };
 use slog::{error, info, Logger};
 
-use crate::lib::utils::dfx;
-
 /// The Chainsight Executor
 #[derive(Debug, Parser)]
 #[command(name = "csx", version = cli_version_str(), about = "Chainsight command-line execution envirionment", styles = utils::clap::style())]
@@ -58,11 +56,19 @@ fn run() -> i32 {
 fn info_on_bin_deps_for_csx(logger: &Logger) {
     let dfx = DfxWrapper::default();
     let dfx_version = dfx.version();
-    info!(
-        logger,
-        "Dfx version: {}",
-        dfx_version
-            .map(|v| v.to_string())
-            .unwrap_or_else(|_| "Not Found".to_string())
-    );
+    if let Ok(version) = dfx_version {
+        info!(logger, "Dfx version: {}", version);
+        info!(
+            logger,
+            "Currently active user identity context: {}",
+            dfx.identity_whoami().unwrap_or("Not Found".to_string())
+        );
+        info!(
+            logger,
+            "Wallet associated with current identity (ic): {:?}",
+            dfx.identity_get_wallet().unwrap_or("Not Found".to_string())
+        );
+    } else {
+        info!(logger, "Dfx version: Not Found");
+    }
 }
