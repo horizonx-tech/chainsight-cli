@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::{fmt, path::Path, str::FromStr};
 
 use super::remove_trailing_newline;
 
@@ -33,6 +33,51 @@ pub struct DfxWrapper {
     network: DfxWrapperNetwork,
 }
 
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Version {
+    major: u32,
+    minor: u32,
+    patch: u32,
+    pre_release: Option<String>,
+}
+impl FromStr for Version {
+    type Err = &'static str;
+
+    fn from_str(version: &str) -> Result<Self, Self::Err> {
+        let parts: Vec<&str> = version.split('-').collect();
+        let version_parts: Vec<&str> = parts[0].split('.').collect();
+
+        if version_parts.len() != 3 {
+            return Err("Invalid version string");
+        }
+
+        let major = version_parts[0]
+            .parse::<u32>()
+            .map_err(|_| "Invalid major version")?;
+        let minor = version_parts[1]
+            .parse::<u32>()
+            .map_err(|_| "Invalid minor version")?;
+        let patch = version_parts[2]
+            .parse::<u32>()
+            .map_err(|_| "Invalid patch version")?;
+
+        Ok(Version {
+            major,
+            minor,
+            patch,
+            pre_release: parts.get(1).map(ToString::to_string),
+        })
+    }
+}
+impl fmt::Display for Version {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.pre_release.as_ref() {
+            Some(pr) => write!(f, "{}.{}.{}-{}", self.major, self.minor, self.patch, pr),
+            None => write!(f, "{}.{}.{}", self.major, self.minor, self.patch),
+        }
+    }
+}
+
 impl DfxWrapper {
     fn execution_dir(&self) -> &Path {
         let dir = self.execution_dir_str.as_deref().unwrap_or(".");
@@ -46,9 +91,11 @@ impl DfxWrapper {
         }
     }
 
-    pub fn version(&self) -> Result<String, String> {
-        exec_cmd_string_output("dfx", self.execution_dir(), vec!["--version"])
-            .map(remove_trailing_newline)
+    pub fn version(&self) -> Result<Version, String> {
+        let res = exec_cmd_string_output("dfx", self.execution_dir(), vec!["--version"])
+            .map(remove_trailing_newline)?;
+        let version_str = res.replace("dfx ", "");
+        Version::from_str(&version_str).map_err(|e| e.to_string())
     }
 }
 
