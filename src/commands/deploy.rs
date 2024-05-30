@@ -1,6 +1,6 @@
 use std::{collections::BTreeMap, fmt, fs::File, io, path::Path};
 
-use anyhow::{bail, Ok};
+use anyhow::{anyhow, bail, Ok};
 use chainsight_cdk::core::Env;
 use clap::Parser;
 use slog::{debug, info, Logger};
@@ -10,7 +10,10 @@ use crate::{
     lib::{
         codegen::{components::codegen::CodeGenerator, project::ProjectManifestData},
         environment::EnvironmentImpl,
-        utils::{ARTIFACTS_DIR, PROJECT_MANIFEST_FILENAME},
+        utils::{
+            dfx::{DfxWrapper, DfxWrapperNetwork},
+            ARTIFACTS_DIR, PROJECT_MANIFEST_FILENAME,
+        },
     },
     types::Network,
 };
@@ -99,13 +102,28 @@ fn check_before_deployment(
         },
     )?;
 
-    let exec = |args: Vec<&str>| -> anyhow::Result<String> {
-        exec_command(log, "dfx", artifacts_path, args)
-    };
-    let args_builder = DfxArgsBuilder::new_only_network(network);
-    exec(args_builder.generate(vec!["identity", "whoami"]))?;
-    exec(args_builder.generate(vec!["identity", "get-principal"]))?;
-    exec(args_builder.generate(vec!["identity", "get-wallet"]))?;
+    let dfx = DfxWrapper::new(
+        match network {
+            Network::Local => DfxWrapperNetwork::Local(port),
+            Network::IC => DfxWrapperNetwork::IC,
+        }, // temp: Replace with dfx wrapper
+        Some(artifacts_path.to_str().unwrap().to_string()),
+    );
+
+    info!(log, "Running command: dfx identity whoami");
+    let whoami = dfx.identity_whoami().map_err(|e| anyhow!(e))?;
+    info!(log, "> {}", whoami);
+    info!(log, "Suceeded: dfx identity whoami");
+
+    info!(log, "Running command: dfx identity get-principal");
+    let principal = dfx.identity_get_principal().map_err(|e| anyhow!(e))?;
+    info!(log, "> {}", principal);
+    info!(log, "Suceeded: dfx identity get-principal");
+
+    info!(log, "Running command: dfx identity get-wallet");
+    let wallet = dfx.identity_get_wallet().map_err(|e| anyhow!(e))?;
+    info!(log, "> {}", wallet);
+    info!(log, "Suceeded: dfx identity get-wallet");
 
     Ok(())
 }

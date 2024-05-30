@@ -5,7 +5,7 @@ use super::remove_trailing_newline;
 #[derive(Clone, Debug)]
 pub enum DfxWrapperNetwork {
     IC,
-    Local(Option<u64>),
+    Local(Option<u16>),
     Custom(String),
 }
 impl DfxWrapperNetwork {
