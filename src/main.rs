@@ -65,7 +65,13 @@ fn info_on_bin_deps_for_csx(logger: &Logger) {
         );
         info!(
             logger,
-            "Wallet associated with current identity (ic): {:?}",
+            "Current identity principal: {}",
+            dfx.identity_get_principal()
+                .unwrap_or("Not Found".to_string())
+        );
+        info!(
+            logger,
+            "Wallet associated with current identity (ic): {}",
             dfx.identity_get_wallet().unwrap_or("Not Found".to_string())
         );
     } else {

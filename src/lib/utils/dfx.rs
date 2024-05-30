@@ -113,6 +113,15 @@ impl DfxWrapper {
             .map(remove_trailing_newline)
     }
 
+    pub fn identity_get_principal(&self) -> Result<String, String> {
+        exec_cmd_string_output(
+            "dfx",
+            self.execution_dir(),
+            self.args(vec!["identity".to_string(), "get-principal".to_string()]),
+        )
+        .map(remove_trailing_newline)
+    }
+
     pub fn identity_get_wallet(&self) -> Result<String, String> {
         exec_cmd_string_output(
             "dfx",
@@ -123,6 +132,7 @@ impl DfxWrapper {
     }
 }
 
+#[allow(dead_code)]
 fn exec_cmd_none_output<I, S>(cmd: &str, execution_dir: &Path, args: I) -> Result<(), String>
 where
     I: IntoIterator<Item = S>,
@@ -141,6 +151,7 @@ where
     })
 }
 
+#[allow(dead_code)]
 fn exec_cmd_json_output<T, I, S>(cmd: &str, execution_dir: &Path, args: I) -> Result<T, String>
 where
     T: serde::de::DeserializeOwned,
