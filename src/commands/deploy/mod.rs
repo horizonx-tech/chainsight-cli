@@ -18,6 +18,8 @@ use crate::{
     types::Network,
 };
 
+mod functions;
+
 #[derive(Debug, Parser)]
 #[command(name = "deploy")]
 /// Deploy the components of your project.
