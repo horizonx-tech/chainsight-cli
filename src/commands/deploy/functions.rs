@@ -3,7 +3,7 @@ use candid::Principal;
 use ic_agent::{Agent, Identity};
 use ic_utils::{
     interfaces::{
-        management_canister::builders::{CanisterInstall, InstallMode},
+        management_canister::builders::{CanisterInstall, CanisterSettings, InstallMode},
         ManagementCanister, WalletCanister,
     },
     Argument, Canister,
@@ -13,6 +13,8 @@ use crate::{
     lib::utils::dfx::{DfxWrapper, DfxWrapperNetwork},
     types::Network,
 };
+
+use super::types::UpdateSettingsArgs;
 
 // from: dfinity/sdk/src/dfx/src/lib/operations/canister/create_canister.rs
 const CANISTER_CREATE_FEE: u128 = 100_000_000_000_u128;
@@ -99,6 +101,58 @@ async fn install_canister_by_management_canister(
     let mgr_canister = ManagementCanister::create(agent);
     let builder = mgr_canister.install(canister_id, wasm_module);
     builder.call_and_wait().await?;
+    Ok(())
+}
+
+pub async fn canister_update_settings(
+    deploy_dest_id: Principal,
+    controllers_to_add: Vec<Principal>,
+    identity: Box<dyn Identity>,
+    network: &Network,
+    port: Option<u16>,
+) -> anyhow::Result<()> {
+    let agent = get_agent(identity, network, port).await?;
+    let wallet_principal = get_wallet_principal_from_local_context(network, port).await?;
+
+    if network == &Network::Local {
+        update_settings_by_management_canister(&agent, &deploy_dest_id, controllers_to_add).await?;
+    } else {
+        let wallet_canister = wallet_canister(wallet_principal, &agent).await?;
+        wallet_canister
+            .call(
+                Principal::management_canister(),
+                "update_settings",
+                Argument::from_candid((UpdateSettingsArgs {
+                    canister_id: deploy_dest_id,
+                    settings: CanisterSettings {
+                        controllers: Some(controllers_to_add),
+                        compute_allocation: None,
+                        memory_allocation: None,
+                        freezing_threshold: None,
+                        reserved_cycles_limit: None,
+                    },
+                },)),
+                0,
+            )
+            .call_and_wait()
+            .await?;
+    }
+
+    Ok(())
+}
+
+async fn update_settings_by_management_canister(
+    agent: &Agent,
+    canister_id: &Principal,
+    controllers: Vec<Principal>,
+) -> anyhow::Result<()> {
+    let mgr_canister = ManagementCanister::create(&agent);
+    let mut builder = mgr_canister.update_settings(canister_id);
+    for controller in controllers {
+        builder = builder.with_controller(controller);
+    }
+    builder.call_and_wait().await?;
+
     Ok(())
 }
 

@@ -59,7 +59,11 @@ pub fn exec(env: &EnvironmentImpl, cmd: Command) -> anyhow::Result<()> {
         //     println!("Not implemented yet...");
         //     Ok(())
         // }
-        Command::Deploy(opts) => deploy::exec(env, opts),
+        Command::Deploy(opts) => {
+            let runtime = Runtime::new().expect("Unable to create a runtime");
+            runtime.block_on(deploy::exec(env, opts))?;
+            Ok(())
+        }
         Command::Exec(opts) => exec::exec(env, opts),
         Command::Remove(opts) => remove::exec(env, opts, interaction),
         Command::Delete(opts) => {

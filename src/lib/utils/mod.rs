@@ -3,6 +3,7 @@ use std::{panic, path::Path};
 pub mod clap;
 pub mod dfx;
 pub mod env;
+pub mod identity;
 pub mod interaction;
 pub mod paths;
 pub mod serializer;

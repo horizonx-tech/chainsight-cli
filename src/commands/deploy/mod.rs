@@ -3,6 +3,7 @@ use std::{collections::BTreeMap, fmt, fs::File, io, path::Path};
 use anyhow::{anyhow, bail, Ok};
 use chainsight_cdk::core::Env;
 use clap::Parser;
+use ic_agent::Identity;
 use slog::{debug, info, Logger};
 
 use crate::{
@@ -12,6 +13,7 @@ use crate::{
         environment::EnvironmentImpl,
         utils::{
             dfx::{DfxWrapper, DfxWrapperNetwork},
+            identity::identity_from_keyring,
             ARTIFACTS_DIR, PROJECT_MANIFEST_FILENAME,
         },
     },
@@ -19,6 +21,7 @@ use crate::{
 };
 
 mod functions;
+mod types;
 
 #[derive(Debug, Parser)]
 #[command(name = "deploy")]
@@ -51,7 +54,7 @@ pub struct DeployOpts {
     with_cycles: Option<u64>,
 }
 
-pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
+pub async fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
     let log = env.get_logger();
     let project_path_str = opts.path.unwrap_or(".".to_string());
     let artifacts_path_str = format!("{}/{}", &project_path_str, ARTIFACTS_DIR);
@@ -77,7 +80,9 @@ pub fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
         &opts.component,
         opts.with_cycles,
         network,
-    )?;
+        opts.port,
+    )
+    .await?;
     info!(
         log,
         r#"Project '{}' deployed successfully"#, project_manifest.label
@@ -130,21 +135,15 @@ fn check_before_deployment(
     Ok(())
 }
 
-fn execute_deployment(
+async fn execute_deployment(
     log: &Logger,
     artifacts_path_str: &str,
-    generators: Vec<Box<dyn CodeGenerator>>,
+    _generators: Vec<Box<dyn CodeGenerator>>,
     component: &Option<String>,
-    with_cycles: Option<u64>,
+    _with_cycles: Option<u64>,
     network: Network,
+    port: Option<u16>,
 ) -> anyhow::Result<()> {
-    let artifacts_path = Path::new(&artifacts_path_str);
-
-    let exec = |args: Vec<&str>| -> anyhow::Result<String> {
-        exec_command(log, "dfx", artifacts_path, args)
-    };
-    let args_builder = DfxArgsBuilder::new(network.clone(), component.clone());
-
     // Check before deployments
     {
         let canister_info = get_canister_info(log, artifacts_path_str, network.clone());
@@ -173,43 +172,43 @@ fn execute_deployment(
     }
 
     // Execute
-    if let Some(cycles) = with_cycles {
-        exec(args_builder.generate(vec![
-            "canister",
-            "create",
-            "--with-cycles",
-            &cycles.to_string(),
-        ]))?;
-    } else {
-        exec(args_builder.generate(vec!["canister", "create"]))?;
-    }
-    exec(args_builder.generate(vec!["build"]))?;
-    exec(args_builder.generate(vec!["canister", "install"]))?;
+    let caller_identity = identity_from_keyring()?;
+    let caller_principal = caller_identity.sender().map_err(|e| anyhow!(e))?;
+    let deploy_dest_id =
+        functions::canister_create(Box::new(caller_identity.clone()), &network, port).await?;
+    info!(log, "Created Canister ID: {}", deploy_dest_id);
+
+    let wasm_path = format!(
+        "{}/{}.wasm",
+        artifacts_path_str,
+        component.clone().unwrap() // temp: support the case for deploying all canisters
+    );
+    functions::canister_install(
+        &wasm_path,
+        deploy_dest_id,
+        Box::new(caller_identity.clone()),
+        &network,
+        port,
+    )
+    .await?;
+    info!(log, "Installed Module: {}", &wasm_path);
 
     let env = match network {
         Network::Local => Env::LocalDevelopment,
         Network::IC => Env::Production,
     };
-    for generator in generators.iter() {
-        let id = generator.manifest().id().unwrap();
-        if let Some(target) = component {
-            if target != &id {
-                continue;
-            }
-        }
-        let builder = DfxArgsBuilder::new(network.clone(), Some(id.clone()));
-
-        exec(builder.generate(vec![
-            "canister",
-            "update-settings",
-            "--add-controller",
-            &env.initializer().to_string(),
-        ]))?;
-    }
+    functions::canister_update_settings(
+        deploy_dest_id,
+        vec![caller_principal, env.initializer()],
+        Box::new(caller_identity.clone()),
+        &network,
+        port,
+    )
+    .await?;
 
     // Check after deployments
-    let canister_info = get_canister_info(log, artifacts_path_str, network.clone())?;
-    info!(log, "Current deployed status:\n{}", canister_info);
+    // let canister_info = get_canister_info(log, artifacts_path_str, network.clone())?;
+    // info!(log, "Current deployed status:\n{}", canister_info);
 
     Ok(())
 }
