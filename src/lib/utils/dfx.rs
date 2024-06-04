@@ -2,6 +2,7 @@ use std::{ffi::OsStr, fmt, path::Path, str::FromStr};
 
 use super::remove_trailing_newline;
 
+// todo: Replace network enum with this.
 #[derive(Clone, Debug)]
 pub enum DfxWrapperNetwork {
     IC,

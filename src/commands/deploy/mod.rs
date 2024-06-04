@@ -3,6 +3,7 @@ use std::{collections::BTreeMap, fmt, fs::File, io, path::Path};
 use anyhow::{anyhow, bail, Ok};
 use chainsight_cdk::core::Env;
 use clap::Parser;
+use functions::ComponentIdsManager;
 use ic_agent::Identity;
 use slog::{debug, info, Logger};
 use types::ComponentsToDeploy;
@@ -179,17 +180,28 @@ async fn execute_deployment(
     let caller_identity = identity_from_keyring()?;
     let caller_principal = caller_identity.sender().map_err(|e| anyhow!(e))?;
 
-    let components = match components_to_deploy {
-        ComponentsToDeploy::Single(val) => vec![val],
-        ComponentsToDeploy::Multiple(val) => val,
+    //// for saving component ids
+    let dfx_bin_network = match network {
+        Network::Local => DfxWrapperNetwork::Local(port),
+        Network::IC => DfxWrapperNetwork::IC,
+    };
+    let (components, mut comp_id_mgr) = match components_to_deploy {
+        ComponentsToDeploy::Single(val) => {
+            let comp_id_mgr = ComponentIdsManager::load(&dfx_bin_network, artifacts_path_str)
+                .unwrap_or_else(|_| ComponentIdsManager::new(&dfx_bin_network));
+            (vec![val], comp_id_mgr)
+        }
+        ComponentsToDeploy::Multiple(val) => (val, ComponentIdsManager::new(&dfx_bin_network)),
     };
 
     let mut name_and_ids = vec![];
     for name in components {
         let deploy_dest_id =
             functions::canister_create(Box::new(caller_identity.clone()), &network, port).await?;
-        info!(log, "Created Canister ID: {} > {}", name, deploy_dest_id);
-        name_and_ids.push((name, deploy_dest_id));
+        info!(log, "Created Canister ID: {} > {}", &name, &deploy_dest_id);
+        name_and_ids.push((name.clone(), deploy_dest_id));
+        comp_id_mgr.add(name, deploy_dest_id.to_text());
+        comp_id_mgr.save(artifacts_path_str)?; // note: save every time to ensure that no results are lost along the way due to execution failures.
     }
 
     for (name, deploy_dest_id) in &name_and_ids {
