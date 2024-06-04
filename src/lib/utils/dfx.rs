@@ -108,6 +108,15 @@ impl DfxWrapper {
         Version::from_str(&version_str).map_err(|e| e.to_string())
     }
 
+    pub fn ping(&self) -> Result<String, String> {
+        exec_cmd_string_output(
+            "dfx",
+            self.execution_dir(),
+            vec!["ping", &self.network.value()],
+        )
+        .map(remove_trailing_newline)
+    }
+
     pub fn identity_whoami(&self) -> Result<String, String> {
         exec_cmd_string_output("dfx", self.execution_dir(), vec!["identity", "whoami"])
             .map(remove_trailing_newline)

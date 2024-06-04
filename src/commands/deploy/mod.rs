@@ -97,18 +97,6 @@ fn check_before_deployment(
     port: Option<u16>,
     network: Network,
 ) -> anyhow::Result<()> {
-    let local_subnet = format!("http://127.0.0.1:{}", port.unwrap_or(4943));
-
-    exec_command(
-        log,
-        "dfx",
-        artifacts_path,
-        match network {
-            Network::Local => vec!["ping", &local_subnet],
-            Network::IC => vec!["ping", "ic"],
-        },
-    )?;
-
     let dfx = DfxWrapper::new(
         match network {
             Network::Local => DfxWrapperNetwork::Local(port),
@@ -116,6 +104,11 @@ fn check_before_deployment(
         }, // temp: Replace with dfx wrapper
         Some(artifacts_path.to_str().unwrap().to_string()),
     );
+
+    info!(log, "Running command: dfx ping");
+    let ping_response = dfx.ping().map_err(|e| anyhow!(e))?;
+    info!(log, "> {}", ping_response);
+    info!(log, "Suceeded: dfx ping");
 
     info!(log, "Running command: dfx identity whoami");
     let whoami = dfx.identity_whoami().map_err(|e| anyhow!(e))?;
@@ -211,31 +204,6 @@ async fn execute_deployment(
     // info!(log, "Current deployed status:\n{}", canister_info);
 
     Ok(())
-}
-
-fn exec_command(
-    log: &Logger,
-    cmd: &str,
-    execution_dir: &Path,
-    args: Vec<&str>,
-) -> anyhow::Result<String> {
-    let cmd_string = format!("{} {}", cmd, args.join(" "));
-    info!(log, "Running command: '{}'", cmd_string);
-
-    let output = output_by_exec_cmd(cmd, execution_dir, args)
-        .unwrap_or_else(|_| panic!("failed to execute process: {}", cmd_string));
-    if output.status.success() {
-        let stdout = std::str::from_utf8(&output.stdout);
-        debug!(log, "{}", stdout.unwrap_or("failed to parse stdout"));
-        info!(log, "Suceeded: {}", cmd_string);
-        anyhow::Ok(stdout.unwrap_or_default().to_string())
-    } else {
-        bail!(format!(
-            "Failed: {} by: {} ",
-            cmd_string,
-            std::str::from_utf8(&output.stderr).unwrap_or("failed to parse stderr")
-        ));
-    }
 }
 
 type CanisterInfoControllers = String;
