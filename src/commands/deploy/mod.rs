@@ -5,11 +5,12 @@ use chainsight_cdk::core::Env;
 use clap::Parser;
 use ic_agent::Identity;
 use slog::{debug, info, Logger};
+use types::ComponentsToDeploy;
 
 use crate::{
     commands::utils::{output_by_exec_cmd, DfxArgsBuilder},
     lib::{
-        codegen::{components::codegen::CodeGenerator, project::ProjectManifestData},
+        codegen::project::ProjectManifestData,
         environment::EnvironmentImpl,
         utils::{
             dfx::{DfxWrapper, DfxWrapperNetwork},
@@ -73,11 +74,21 @@ pub async fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()>
         log,
         r#"Start deploying project '{}'..."#, project_manifest.label
     );
+    let components_to_deploy = if let Some(component) = opts.component {
+        ComponentsToDeploy::Single(component)
+    } else {
+        // todo: clean to collect component ids, better to use only manifest.yaml?
+        let components = project_manifest
+            .load_code_generator(&project_path_str)?
+            .iter()
+            .map(|cg| cg.manifest().id().unwrap())
+            .collect::<Vec<_>>();
+        ComponentsToDeploy::Multiple(components)
+    };
     execute_deployment(
         log,
         &artifacts_path_str,
-        project_manifest.load_code_generator(&project_path_str)?,
-        &opts.component,
+        components_to_deploy,
         opts.with_cycles,
         network,
         opts.port,
@@ -131,8 +142,7 @@ fn check_before_deployment(
 async fn execute_deployment(
     log: &Logger,
     artifacts_path_str: &str,
-    _generators: Vec<Box<dyn CodeGenerator>>,
-    component: &Option<String>,
+    components_to_deploy: ComponentsToDeploy,
     _with_cycles: Option<u64>,
     network: Network,
     port: Option<u16>,
@@ -141,11 +151,12 @@ async fn execute_deployment(
     {
         let canister_info = get_canister_info(log, artifacts_path_str, network.clone());
         if let anyhow::Result::Ok(canister_info) = canister_info {
-            let target_component_names = if let Some(component) = component {
-                vec![component.to_string()]
-            } else {
-                canister_names_in_dfx_json(artifacts_path_str)?
-            };
+            let target_component_names =
+                if let ComponentsToDeploy::Single(component) = components_to_deploy.clone() {
+                    vec![component.to_string()]
+                } else {
+                    canister_names_in_dfx_json(artifacts_path_str)?
+                };
             let mut installed = Vec::<String>::new();
             let mut msg = String::new();
             for name in target_component_names {
@@ -167,37 +178,51 @@ async fn execute_deployment(
     // Execute
     let caller_identity = identity_from_keyring()?;
     let caller_principal = caller_identity.sender().map_err(|e| anyhow!(e))?;
-    let deploy_dest_id =
-        functions::canister_create(Box::new(caller_identity.clone()), &network, port).await?;
-    info!(log, "Created Canister ID: {}", deploy_dest_id);
 
-    let wasm_path = format!(
-        "{}/{}.wasm",
-        artifacts_path_str,
-        component.clone().unwrap() // temp: support the case for deploying all canisters
-    );
-    functions::canister_install(
-        &wasm_path,
-        deploy_dest_id,
-        Box::new(caller_identity.clone()),
-        &network,
-        port,
-    )
-    .await?;
-    info!(log, "Installed Module: {}", &wasm_path);
+    let components = match components_to_deploy {
+        ComponentsToDeploy::Single(val) => vec![val],
+        ComponentsToDeploy::Multiple(val) => val,
+    };
+
+    let mut name_and_ids = vec![];
+    for name in components {
+        let deploy_dest_id =
+            functions::canister_create(Box::new(caller_identity.clone()), &network, port).await?;
+        info!(log, "Created Canister ID: {} > {}", name, deploy_dest_id);
+        name_and_ids.push((name, deploy_dest_id));
+    }
+
+    for (name, deploy_dest_id) in &name_and_ids {
+        let wasm_path = format!("{}/{}.wasm", artifacts_path_str, name);
+        functions::canister_install(
+            &wasm_path,
+            *deploy_dest_id,
+            Box::new(caller_identity.clone()),
+            &network,
+            port,
+        )
+        .await?;
+        info!(log, "Installed Module: {}", &wasm_path);
+    }
 
     let env = match network {
         Network::Local => Env::LocalDevelopment,
         Network::IC => Env::Production,
     };
-    functions::canister_update_settings(
-        deploy_dest_id,
-        vec![caller_principal, env.initializer()],
-        Box::new(caller_identity.clone()),
-        &network,
-        port,
-    )
-    .await?;
+    for (name, deploy_dest_id) in &name_and_ids {
+        functions::canister_update_settings(
+            *deploy_dest_id,
+            vec![caller_principal, env.initializer()],
+            Box::new(caller_identity.clone()),
+            &network,
+            port,
+        )
+        .await?;
+        info!(
+            log,
+            "Added management-canister to component's controllers: {}", &name
+        );
+    }
 
     // Check after deployments
     // let canister_info = get_canister_info(log, artifacts_path_str, network.clone())?;
