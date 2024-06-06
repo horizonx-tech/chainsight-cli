@@ -3,7 +3,7 @@ use std::{collections::BTreeMap, fmt, fs::File, io, path::Path};
 use anyhow::{anyhow, bail, Ok};
 use chainsight_cdk::core::Env;
 use clap::Parser;
-use functions::ComponentIdsManager;
+pub use functions::ComponentIdsManager;
 use ic_agent::Identity;
 use slog::{debug, info, Logger};
 use types::ComponentsToDeploy;
