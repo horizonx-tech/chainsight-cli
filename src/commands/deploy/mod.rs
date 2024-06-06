@@ -53,7 +53,7 @@ pub struct DeployOpts {
     /// Specify the initial number of cycles for canister.
     /// Used as a parameter for `dfx canister create`.
     #[arg(long)]
-    with_cycles: Option<u64>,
+    with_cycles: Option<u128>,
 }
 
 pub async fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()> {
@@ -144,7 +144,7 @@ async fn execute_deployment(
     log: &Logger,
     artifacts_path_str: &str,
     components_to_deploy: ComponentsToDeploy,
-    _with_cycles: Option<u64>,
+    with_cycles: Option<u128>,
     network: Network,
     port: Option<u16>,
 ) -> anyhow::Result<()> {
@@ -196,8 +196,13 @@ async fn execute_deployment(
 
     let mut name_and_ids = vec![];
     for name in components {
-        let deploy_dest_id =
-            functions::canister_create(Box::new(caller_identity.clone()), &network, port).await?;
+        let deploy_dest_id = functions::canister_create(
+            Box::new(caller_identity.clone()),
+            &network,
+            port,
+            with_cycles,
+        )
+        .await?;
         info!(log, "Created Canister ID: {} > {}", &name, &deploy_dest_id);
         name_and_ids.push((name.clone(), deploy_dest_id));
         comp_id_mgr.add(name, deploy_dest_id.to_text());

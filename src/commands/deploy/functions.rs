@@ -26,23 +26,19 @@ pub async fn canister_create(
     identity: Box<dyn Identity>,
     network: &Network,
     port: Option<u16>,
+    cycles: Option<u128>,
 ) -> anyhow::Result<Principal> {
     let agent = get_agent(identity, network, port).await?;
     let wallet_principal = get_wallet_principal_from_local_context(network, port).await?;
 
     // todo: support from wallet in local
     let canister_id = if network == &Network::Local {
-        create_canister_by_management_canister(&agent).await?
+        create_canister_by_management_canister(&agent, cycles).await?
     } else {
         let wallet_canister = wallet_canister(wallet_principal, &agent).await?;
+        let cycles = cycles.unwrap_or(CANISTER_CREATE_FEE + CANISTER_INITIAL_CYCLE_BALANCE);
         let res = wallet_canister
-            .wallet_create_canister(
-                CANISTER_CREATE_FEE + CANISTER_INITIAL_CYCLE_BALANCE,
-                None,
-                None,
-                None,
-                None,
-            )
+            .wallet_create_canister(cycles, None, None, None, None)
             .await?;
         res.canister_id
     };
@@ -51,11 +47,14 @@ pub async fn canister_create(
 }
 
 // for local
-async fn create_canister_by_management_canister(agent: &Agent) -> anyhow::Result<Principal> {
+async fn create_canister_by_management_canister(
+    agent: &Agent,
+    cycles: Option<u128>,
+) -> anyhow::Result<Principal> {
     let mgr_canister = ManagementCanister::create(agent);
     let builder = mgr_canister
         .create_canister()
-        .as_provisional_create_with_amount(None);
+        .as_provisional_create_with_amount(cycles);
     let res = builder.call_and_wait().await?;
     Ok(res.0)
 }
