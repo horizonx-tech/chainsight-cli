@@ -1,8 +1,10 @@
 use std::{collections::BTreeMap, fmt, fs::File, io, path::Path};
 
 use anyhow::{anyhow, bail, Ok};
+use candid::Principal;
 use chainsight_cdk::core::Env;
 use clap::Parser;
+use functions::get_wallet_principal_from_local_context;
 pub use functions::ComponentIdsManager;
 use ic_agent::Identity;
 use slog::{debug, info, Logger};
@@ -41,7 +43,7 @@ pub struct DeployOpts {
     component: Option<String>,
 
     /// Specify the context of identity to execute on.
-    /// If this option is not specfied, the default context is used.
+    /// If this option is specfied & no string, the default context is used.
     #[arg(long)]
     context: Option<String>,
 
@@ -54,6 +56,11 @@ pub struct DeployOpts {
     /// This option is used only if the target is localhost.
     #[arg(long)]
     port: Option<u16>,
+
+    /// Specify the wallet to use.
+    /// If this option is not specified, the default wallet is used.
+    #[arg(long, short = 'w')]
+    wallet: Option<Option<String>>,
 
     /// Specify the initial number of cycles for canister.
     /// Used as a parameter for `dfx canister create`.
@@ -91,11 +98,13 @@ pub async fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()>
             .collect::<Vec<_>>();
         ComponentsToDeploy::Multiple(components)
     };
+
     execute_deployment(
         log,
         &artifacts_path_str,
         components_to_deploy,
         opts.context,
+        opts.wallet,
         opts.with_cycles,
         network,
         opts.port,
@@ -151,6 +160,7 @@ async fn execute_deployment(
     artifacts_path_str: &str,
     components_to_deploy: ComponentsToDeploy,
     identity_context: Option<String>,
+    wallet: Option<Option<String>>,
     with_cycles: Option<u128>,
     network: Network,
     port: Option<u16>,
@@ -186,6 +196,14 @@ async fn execute_deployment(
     // Execute
     let caller_identity = identity_from_keyring(identity_context)?;
     let caller_principal = caller_identity.sender().map_err(|e| anyhow!(e))?;
+    let wallet_principal = match wallet {
+        Some(canister_id) => Some(if let Some(canister_id) = canister_id {
+            Principal::from_text(canister_id).map_err(|e| anyhow!(e))?
+        } else {
+            get_wallet_principal_from_local_context(&network, port).await?
+        }),
+        _ => None,
+    };
 
     //// for saving component ids
     let dfx_bin_network = match network {
@@ -205,6 +223,7 @@ async fn execute_deployment(
     for name in components {
         let deploy_dest_id = functions::canister_create(
             Box::new(caller_identity.clone()),
+            &wallet_principal,
             &network,
             port,
             with_cycles,
@@ -222,6 +241,7 @@ async fn execute_deployment(
             &wasm_path,
             *deploy_dest_id,
             Box::new(caller_identity.clone()),
+            &wallet_principal,
             &network,
             port,
         )
@@ -238,6 +258,7 @@ async fn execute_deployment(
             *deploy_dest_id,
             vec![caller_principal, env.initializer()],
             Box::new(caller_identity.clone()),
+            &wallet_principal,
             &network,
             port,
         )

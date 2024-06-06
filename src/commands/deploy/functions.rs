@@ -24,18 +24,17 @@ const CANISTER_INITIAL_CYCLE_BALANCE: u128 = 3_000_000_000_000_u128;
 
 pub async fn canister_create(
     identity: Box<dyn Identity>,
+    wallet_principal: &Option<Principal>,
     network: &Network,
     port: Option<u16>,
     cycles: Option<u128>,
 ) -> anyhow::Result<Principal> {
     let agent = get_agent(identity, network, port).await?;
-    let wallet_principal = get_wallet_principal_from_local_context(network, port).await?;
 
-    // todo: support from wallet in local
-    let canister_id = if network == &Network::Local {
+    let canister_id = if network == &Network::Local && wallet_principal.is_none() {
         create_canister_by_management_canister(&agent, cycles).await?
     } else {
-        let wallet_canister = wallet_canister(wallet_principal, &agent).await?;
+        let wallet_canister = wallet_canister(wallet_principal.unwrap(), &agent).await?;
         let cycles = cycles.unwrap_or(CANISTER_CREATE_FEE + CANISTER_INITIAL_CYCLE_BALANCE);
         let res = wallet_canister
             .wallet_create_canister(cycles, None, None, None, None)
@@ -63,17 +62,17 @@ pub async fn canister_install(
     wasm_path: &str,
     deploy_dest_id: Principal,
     identity: Box<dyn Identity>,
+    wallet_principal: &Option<Principal>,
     network: &Network,
     port: Option<u16>,
 ) -> anyhow::Result<()> {
     let agent = get_agent(identity, network, port).await?;
     let wasm_data = std::fs::read(wasm_path)?;
-    let wallet_principal = get_wallet_principal_from_local_context(network, port).await?;
 
-    if network == &Network::Local {
+    if network == &Network::Local && wallet_principal.is_none() {
         install_canister_by_management_canister(&agent, &deploy_dest_id, &wasm_data).await?;
     } else {
-        let wallet_canister = wallet_canister(wallet_principal, &agent).await?;
+        let wallet_canister = wallet_canister(wallet_principal.unwrap(), &agent).await?;
         let install_args = CanisterInstall {
             mode: InstallMode::Install,
             canister_id: deploy_dest_id,
@@ -109,16 +108,16 @@ pub async fn canister_update_settings(
     deploy_dest_id: Principal,
     controllers_to_add: Vec<Principal>,
     identity: Box<dyn Identity>,
+    wallet_principal: &Option<Principal>,
     network: &Network,
     port: Option<u16>,
 ) -> anyhow::Result<()> {
     let agent = get_agent(identity, network, port).await?;
-    let wallet_principal = get_wallet_principal_from_local_context(network, port).await?;
 
-    if network == &Network::Local {
+    if network == &Network::Local && wallet_principal.is_none() {
         update_settings_by_management_canister(&agent, &deploy_dest_id, controllers_to_add).await?;
     } else {
-        let wallet_canister = wallet_canister(wallet_principal, &agent).await?;
+        let wallet_canister = wallet_canister(wallet_principal.unwrap(), &agent).await?;
         wallet_canister
             .call(
                 Principal::management_canister(),
