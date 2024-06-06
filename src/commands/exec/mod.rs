@@ -139,8 +139,8 @@ async fn execute_initialize_components(
     };
 
     // generate wallet canister
-    // todo: enable to selec identity context, wallet
-    let caller_identity = identity_from_keyring()?;
+    // todo: enable to select identity context, wallet
+    let caller_identity = identity_from_keyring(None)?;
     println!(
         "caller_identity: {:?}",
         caller_identity.sender().unwrap().to_text()

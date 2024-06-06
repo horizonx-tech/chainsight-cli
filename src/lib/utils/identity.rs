@@ -42,12 +42,11 @@ pub struct WalletGlobalConfig {
     pub identities: BTreeMap<String, WalletNetworkMap>,
 }
 
-// todo: support to specify the identity context
-pub fn identity_from_keyring() -> anyhow::Result<Secp256k1Identity> {
-    let default_identity = default_identity_context()?;
+pub fn identity_from_keyring(context_name: Option<String>) -> anyhow::Result<Secp256k1Identity> {
+    let context_name = context_name.unwrap_or(default_identity_context()?);
     let entry = keyring::Entry::new(
         KEYRING_SERVICE_NAME,
-        &format!("{}{}", KEYRING_IDENTITY_PREFIX, default_identity),
+        &format!("{}{}", KEYRING_IDENTITY_PREFIX, context_name),
     )?;
     let password = entry.get_password()?;
 

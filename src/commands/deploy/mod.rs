@@ -40,6 +40,11 @@ pub struct DeployOpts {
     #[arg(long, short = 'c')]
     component: Option<String>,
 
+    /// Specify the context of identity to execute on.
+    /// If this option is not specfied, the default context is used.
+    #[arg(long)]
+    context: Option<String>,
+
     /// Specify the network to execute on.
     #[arg(long)]
     #[clap(default_value = "local")]
@@ -90,6 +95,7 @@ pub async fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()>
         log,
         &artifacts_path_str,
         components_to_deploy,
+        opts.context,
         opts.with_cycles,
         network,
         opts.port,
@@ -144,6 +150,7 @@ async fn execute_deployment(
     log: &Logger,
     artifacts_path_str: &str,
     components_to_deploy: ComponentsToDeploy,
+    identity_context: Option<String>,
     with_cycles: Option<u128>,
     network: Network,
     port: Option<u16>,
@@ -177,7 +184,7 @@ async fn execute_deployment(
     }
 
     // Execute
-    let caller_identity = identity_from_keyring()?;
+    let caller_identity = identity_from_keyring(identity_context)?;
     let caller_principal = caller_identity.sender().map_err(|e| anyhow!(e))?;
 
     //// for saving component ids
