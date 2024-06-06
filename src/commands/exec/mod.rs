@@ -1,9 +1,15 @@
 use std::path::Path;
 
-use super::deploy::ComponentIdsManager;
-use anyhow::bail;
+// temp
+use super::deploy::{
+    functions::{get_agent, get_wallet_principal_from_local_context, wallet_canister},
+    ComponentIdsManager,
+};
+use anyhow::{bail, Context};
+use candid::{types::principal, Principal};
 use clap::{arg, Parser};
-use ic_agent::Identity;
+use functions::{call_init_in, wallet_call128};
+use ic_agent::{Agent, Identity};
 use slog::{info, Logger};
 use types::ComponentsToInitialize;
 
@@ -111,10 +117,6 @@ async fn execute_initialize_components(
     network: Network,
     port: Option<u16>,
 ) -> anyhow::Result<()> {
-    // todo: enable to selec identity context, wallet
-    let caller_identity = identity_from_keyring()?;
-    let caller_principal = caller_identity.sender().map_err(|e| anyhow::anyhow!(e))?;
-
     //// for loading component ids
     let dfx_bin_network = match network {
         Network::Local => DfxWrapperNetwork::Local(port),
@@ -122,9 +124,41 @@ async fn execute_initialize_components(
     };
     let comp_id_mgr = ComponentIdsManager::load(&dfx_bin_network, artifacts_path)?;
     let components = match components {
-        ComponentsToInitialize::Single(name) => vec![name],
-        ComponentsToInitialize::Multiple(names) => names,
+        ComponentsToInitialize::Single(name) => {
+            let comp_id = comp_id_mgr
+                .get(&name)
+                .context(format!("Component not found: {}", name))?;
+            vec![(name, comp_id)]
+        }
+        ComponentsToInitialize::Multiple(names) => names
+            .iter()
+            .map(|name| {
+                let comp_id = comp_id_mgr
+                    .get(name)
+                    .context(format!("Component not found: {}", name))?;
+                Ok((name.clone(), comp_id))
+            })
+            .collect::<anyhow::Result<Vec<_>>>()?,
     };
+
+    // generate wallet canister
+    // todo: enable to selec identity context, wallet
+    let caller_identity = identity_from_keyring()?;
+    println!(
+        "caller_identity: {:?}",
+        caller_identity.sender().unwrap().to_text()
+    );
+    let agent = get_agent(Box::new(caller_identity), &network, port).await?;
+    let wallet_canister_id = get_wallet_principal_from_local_context(&network, port).await?;
+    println!("wallet_canister_id: {:?}", wallet_canister_id.to_text());
+    let wallet = wallet_canister(wallet_canister_id, &agent).await?;
+
+    // exec
+    for (name, comp_id) in components {
+        info!(log, "Calling init_in: {} ({})", &name, &comp_id);
+        call_init_in(&wallet, Principal::from_text(&comp_id)?).await?;
+        info!(log, "Called init_in: {} ({})", &name, &comp_id);
+    }
 
     Ok(())
 }

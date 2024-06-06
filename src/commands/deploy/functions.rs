@@ -159,7 +159,7 @@ async fn update_settings_by_management_canister(
 }
 
 // utils
-async fn get_agent(
+pub async fn get_agent(
     identity: Box<dyn Identity>,
     network: &Network,
     port: Option<u16>,
@@ -174,7 +174,7 @@ async fn get_agent(
     Ok(agent)
 }
 
-async fn wallet_canister(id: Principal, agent: &Agent) -> anyhow::Result<WalletCanister> {
+pub async fn wallet_canister(id: Principal, agent: &Agent) -> anyhow::Result<WalletCanister> {
     let canister = Canister::builder()
         .with_agent(agent)
         .with_canister_id(id)
@@ -183,7 +183,7 @@ async fn wallet_canister(id: Principal, agent: &Agent) -> anyhow::Result<WalletC
     Ok(wallet_canister)
 }
 
-async fn get_wallet_principal_from_local_context(
+pub async fn get_wallet_principal_from_local_context(
     network: &Network,
     port: Option<u16>,
 ) -> anyhow::Result<Principal> {
@@ -248,5 +248,9 @@ impl ComponentIdsManager {
 
     pub fn add(&mut self, name: String, id: String) {
         self.components.insert(name, id);
+    }
+
+    pub fn get(&self, name: &str) -> Option<String> {
+        self.components.get(name).cloned()
     }
 }

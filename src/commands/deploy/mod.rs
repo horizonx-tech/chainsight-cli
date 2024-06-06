@@ -22,7 +22,7 @@ use crate::{
     types::Network,
 };
 
-mod functions;
+pub mod functions;
 mod types;
 
 #[derive(Debug, Parser)]
