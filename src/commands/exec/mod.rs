@@ -6,19 +6,16 @@ use super::deploy::{
     ComponentIdsManager,
 };
 use anyhow::{bail, Context};
-use candid::{types::principal, Principal};
+use candid::Principal;
 use clap::{arg, Parser};
-use functions::{call_init_in, wallet_call128};
-use ic_agent::{Agent, Identity};
+use functions::{call_init_in, call_set_task, SetTaskArgs};
+use ic_agent::Identity;
 use slog::{info, Logger};
 use types::ComponentsToInitialize;
 
 use crate::{
     lib::{
-        codegen::{
-            components::{codegen::generator, common::ComponentTypeInManifest},
-            project::ProjectManifestData,
-        },
+        codegen::project::ProjectManifestData,
         environment::EnvironmentImpl,
         utils::{
             dfx::DfxWrapperNetwork, env::cache_envfile, identity::identity_from_keyring,
@@ -80,7 +77,7 @@ pub async fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
         "{}/{}",
         &project_path_str, PROJECT_MANIFEST_FILENAME
     ))?;
-    let artifacts_path_str = format!("{}/artifacts", &project_path_str);
+    let artifacts_path_str = format!("{}/{}", &project_path_str, ARTIFACTS_DIR);
     let components = if let Some(component) = opts.component {
         ComponentsToInitialize::Single(component)
     } else {
@@ -154,10 +151,25 @@ async fn execute_initialize_components(
     let wallet = wallet_canister(wallet_canister_id, &agent).await?;
 
     // exec
-    for (name, comp_id) in components {
-        info!(log, "Calling init_in: {} ({})", &name, &comp_id);
-        call_init_in(&wallet, Principal::from_text(&comp_id)?).await?;
-        info!(log, "Called init_in: {} ({})", &name, &comp_id);
+    for (name, comp_id) in &components {
+        info!(log, "Calling init_in: {} ({})", name, comp_id);
+        call_init_in(&wallet, Principal::from_text(comp_id)?).await?;
+        info!(log, "Called init_in: {} ({})", name, comp_id);
+    }
+    // todo: call `setup`
+    for (name, comp_id) in &components {
+        info!(log, "Calling set_task: {} ({})", name, comp_id);
+        call_set_task(
+            &wallet,
+            Principal::from_text(comp_id)?,
+            SetTaskArgs {
+                task_interval_secs: 60,
+                delay_secs: 5,
+                is_rounded_start_time: true,
+            }, // todo: set args
+        )
+        .await?;
+        info!(log, "Called set_task: {} ({})", name, comp_id);
     }
 
     Ok(())

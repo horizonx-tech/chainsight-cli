@@ -1,5 +1,4 @@
 use candid::{Encode, Principal};
-use ic_agent::Agent;
 use ic_utils::{interfaces::WalletCanister, Argument};
 
 pub async fn call_init_in(wallet: &WalletCanister<'_>, target: Principal) -> anyhow::Result<()> {
@@ -38,7 +37,26 @@ pub async fn call_init_in(wallet: &WalletCanister<'_>, target: Principal) -> any
     Ok(())
 }
 
-pub async fn wallet_call128(
+pub struct SetTaskArgs {
+    pub task_interval_secs: u32,
+    pub delay_secs: u32,
+    pub is_rounded_start_time: bool,
+}
+pub async fn call_set_task(
+    wallet: &WalletCanister<'_>,
+    target: Principal,
+    args: SetTaskArgs,
+) -> anyhow::Result<()> {
+    let raw_args = Encode!(
+        &args.task_interval_secs,
+        &args.delay_secs,
+        &args.is_rounded_start_time
+    )?;
+    wallet_call128(wallet, target, "set_task".to_string(), raw_args, None).await?;
+    Ok(())
+}
+
+async fn wallet_call128(
     wallet: &WalletCanister<'_>,
     target: Principal,
     method_name: String,
