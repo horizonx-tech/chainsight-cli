@@ -80,3 +80,10 @@ pub fn generate_scripts(
 
     Ok(script_contents(manifest, network))
 }
+
+pub fn generate_component_setup_args(
+    manifest: &SnapshotIndexerEVMComponentManifest,
+    network: &Network,
+) -> anyhow::Result<Vec<u8>> {
+    Ok(Vec::new())
+}

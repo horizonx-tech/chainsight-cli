@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use anyhow::Ok;
 use chainsight_cdk::{config::components::CommonConfig, initializer::CycleManagements};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -68,8 +69,10 @@ impl CodeGenerator for SnapshotIndexerEvmCodeGenerator {
     fn manifest(&self) -> Box<dyn ComponentManifest> {
         Box::new(self.manifest.clone())
     }
-    fn generate_component_setup_args(&self) -> anyhow::Result<Option<Vec<u8>>> {
-        unimplemented!()
+    fn generate_component_setup_args(&self, network: &Network) -> anyhow::Result<Option<Vec<u8>>> {
+        let args =
+            scripts::snapshot_indexer_evm::generate_component_setup_args(&self.manifest, network)?;
+        Ok(Some(args))
     }
 }
 

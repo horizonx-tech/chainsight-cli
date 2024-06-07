@@ -139,7 +139,7 @@ async fn execute_initialize_components(
     ))?;
 
     //// for loading component ids
-    let dfx_bin_network = match network {
+    let dfx_bin_network = match &network {
         Network::Local => DfxWrapperNetwork::Local(port),
         Network::IC => DfxWrapperNetwork::IC,
     };
@@ -197,7 +197,7 @@ async fn execute_initialize_components(
             .context(format!("Component not found: {}", &name))?;
         let generator = codegen::generator(*component_type, component_path, name)?;
 
-        if let Some(raw_args) = generator.generate_component_setup_args()? {
+        if let Some(raw_args) = generator.generate_component_setup_args(&network)? {
             info!(log, "Calling setup: {} ({})", name, comp_id);
             call_setup(&wallet, Principal::from_text(comp_id)?, raw_args).await?;
             info!(log, "Called setup: {} ({})", name, comp_id);

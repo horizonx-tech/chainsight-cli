@@ -110,7 +110,7 @@ impl CodeGenerator for AlgorithmLensCodeGenerator {
     fn manifest(&self) -> Box<dyn ComponentManifest> {
         Box::new(self.manifest.clone())
     }
-    fn generate_component_setup_args(&self) -> anyhow::Result<Option<Vec<u8>>> {
+    fn generate_component_setup_args(&self, _network: &Network) -> anyhow::Result<Option<Vec<u8>>> {
         Ok(None)
     }
 }
