@@ -24,6 +24,7 @@ pub trait CodeGenerator {
     fn generate_scripts(&self, network: Network) -> anyhow::Result<String>;
     fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes>;
     fn manifest(&self) -> Box<dyn ComponentManifest>;
+    fn generate_component_setup_args(&self) -> anyhow::Result<Option<Vec<u8>>>;
 }
 
 pub fn generator(

@@ -1,5 +1,6 @@
 use std::collections::{BTreeMap, HashMap};
 
+use anyhow::Ok;
 use candid::Principal;
 use chainsight_cdk::{config::components::CommonConfig, initializer::CycleManagements};
 use serde::{Deserialize, Serialize};
@@ -108,6 +109,9 @@ impl CodeGenerator for AlgorithmLensCodeGenerator {
     }
     fn manifest(&self) -> Box<dyn ComponentManifest> {
         Box::new(self.manifest.clone())
+    }
+    fn generate_component_setup_args(&self) -> anyhow::Result<Option<Vec<u8>>> {
+        Ok(None)
     }
 }
 

@@ -252,4 +252,11 @@ impl ComponentIdsManager {
     pub fn get(&self, name: &str) -> Option<String> {
         self.components.get(name).cloned()
     }
+
+    pub fn get_all_entries(&self) -> Vec<(String, String)> {
+        self.components
+            .iter()
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect()
+    }
 }

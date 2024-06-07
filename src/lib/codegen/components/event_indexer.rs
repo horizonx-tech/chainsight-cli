@@ -109,6 +109,9 @@ impl CodeGenerator for EventIndexerCodeGenerator {
     fn manifest(&self) -> Box<dyn ComponentManifest> {
         Box::new(self.manifest.clone())
     }
+    fn generate_component_setup_args(&self) -> anyhow::Result<Option<Vec<u8>>> {
+        unimplemented!()
+    }
 }
 impl ComponentManifest for EventIndexerComponentManifest {
     fn load_with_id(path: &str, id: &str) -> anyhow::Result<Self> {

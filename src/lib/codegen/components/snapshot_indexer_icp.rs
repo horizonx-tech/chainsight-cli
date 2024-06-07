@@ -156,6 +156,9 @@ impl CodeGenerator for SnapshotIndexerICPCodeGenerator {
     fn manifest(&self) -> Box<dyn ComponentManifest> {
         Box::new(self.manifest.clone())
     }
+    fn generate_component_setup_args(&self) -> anyhow::Result<Option<Vec<u8>>> {
+        unimplemented!()
+    }
 }
 impl ComponentManifest for SnapshotIndexerICPComponentManifest {
     fn load_with_id(path: &str, id: &str) -> anyhow::Result<Self> {

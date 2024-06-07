@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::{collections::BTreeMap, path::Path};
 
 // temp
 use super::deploy::{
@@ -11,22 +11,23 @@ use clap::{arg, Parser};
 use functions::{call_init_in, call_set_task, call_setup, SetTaskArgs};
 use ic_agent::Identity;
 use slog::{info, Logger};
-use types::ComponentsToInitialize;
 
 use crate::{
     lib::{
-        codegen::project::ProjectManifestData,
+        codegen::{
+            components::{codegen, common::ComponentTypeInManifest},
+            project::ProjectManifestData,
+        },
         environment::EnvironmentImpl,
         utils::{
             dfx::DfxWrapperNetwork, env::cache_envfile, identity::identity_from_keyring,
             is_chainsight_project, ARTIFACTS_DIR, DOTENV_FILENAME, PROJECT_MANIFEST_FILENAME,
         },
     },
-    types::Network,
+    types::{ComponentType, Network},
 };
 
 mod functions;
-mod types;
 
 #[derive(Debug, Parser)]
 #[command(name = "exec")]
@@ -82,28 +83,28 @@ pub async fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
         cache_envfile(Some(&env_file_path))?;
     }
 
-    // load component definitions from manifests
-    let project_manifest = ProjectManifestData::load(&format!(
-        "{}/{}",
-        &project_path_str, PROJECT_MANIFEST_FILENAME
-    ))?;
-    let artifacts_path_str = format!("{}/{}", &project_path_str, ARTIFACTS_DIR);
-    let components = if let Some(component) = opts.component {
-        ComponentsToInitialize::Single(component)
-    } else {
-        // todo: clean to collect component ids, better to use only manifest.yaml?
-        let components = project_manifest
-            .load_code_generator(&project_path_str)?
-            .iter()
-            .map(|cg| cg.manifest().id().unwrap())
-            .collect::<Vec<_>>();
-        ComponentsToInitialize::Multiple(components)
-    };
+    // // load component definitions from manifests
+    // let project_manifest = ProjectManifestData::load(&format!(
+    //     "{}/{}",
+    //     &project_path_str, PROJECT_MANIFEST_FILENAME
+    // ))?;
+    // let artifacts_path_str = format!("{}/{}", &project_path_str, ARTIFACTS_DIR);
+    // let components = if let Some(component) = opts.component {
+    //     ComponentsToInitialize::Single(component)
+    // } else {
+    //     // todo: clean to collect component ids, better to use only manifest.yaml?
+    //     let components = project_manifest
+    //         .load_code_generator(&project_path_str)?
+    //         .iter()
+    //         .map(|cg| cg.manifest().id().unwrap())
+    //         .collect::<Vec<_>>();
+    //     ComponentsToInitialize::Multiple(components)
+    // };
 
     execute_initialize_components(
         log,
-        &artifacts_path_str,
-        components,
+        &project_path_str,
+        opts.component,
         opts.context,
         opts.wallet,
         opts.network,
@@ -111,6 +112,10 @@ pub async fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
     )
     .await?;
 
+    let project_manifest = ProjectManifestData::load(&format!(
+        "{}/{}",
+        &project_path_str, PROJECT_MANIFEST_FILENAME
+    ))?;
     info!(
         log,
         r#"Project "{}" canisters executed successfully"#, project_manifest.label
@@ -121,35 +126,32 @@ pub async fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
 
 async fn execute_initialize_components(
     log: &Logger,
-    artifacts_path: &str,
-    components: ComponentsToInitialize,
+    project_path_str: &str,
+    component_name: Option<String>,
     identity_context: Option<String>,
     wallet: Option<String>,
     network: Network,
     port: Option<u16>,
 ) -> anyhow::Result<()> {
+    let project_manifest = ProjectManifestData::load(&format!(
+        "{}/{}",
+        &project_path_str, PROJECT_MANIFEST_FILENAME
+    ))?;
+
     //// for loading component ids
     let dfx_bin_network = match network {
         Network::Local => DfxWrapperNetwork::Local(port),
         Network::IC => DfxWrapperNetwork::IC,
     };
-    let comp_id_mgr = ComponentIdsManager::load(&dfx_bin_network, artifacts_path)?;
-    let components = match components {
-        ComponentsToInitialize::Single(name) => {
-            let comp_id = comp_id_mgr
-                .get(&name)
-                .context(format!("Component not found: {}", name))?;
-            vec![(name, comp_id)]
-        }
-        ComponentsToInitialize::Multiple(names) => names
-            .iter()
-            .map(|name| {
-                let comp_id = comp_id_mgr
-                    .get(name)
-                    .context(format!("Component not found: {}", name))?;
-                Ok((name.clone(), comp_id))
-            })
-            .collect::<anyhow::Result<Vec<_>>>()?,
+    let artifacts_path = format!("{}/{}", &project_path_str, ARTIFACTS_DIR);
+    let comp_id_mgr = ComponentIdsManager::load(&dfx_bin_network, &artifacts_path)?;
+    let components = if let Some(name) = component_name {
+        let comp_id = comp_id_mgr
+            .get(&name)
+            .context(format!("Component not found: {}", name))?;
+        vec![(name, comp_id)]
+    } else {
+        comp_id_mgr.get_all_entries()
     };
 
     // generate wallet canister
@@ -166,19 +168,52 @@ async fn execute_initialize_components(
     println!("wallet_canister_id: {:?}", wallet_canister_id.to_text());
     let wallet = wallet_canister(wallet_canister_id, &agent).await?;
 
-    // exec
+    // exec: init_in
     for (name, comp_id) in &components {
         info!(log, "Calling init_in: {} ({})", name, comp_id);
         call_init_in(&wallet, Principal::from_text(comp_id)?).await?;
         info!(log, "Called init_in: {} ({})", name, comp_id);
     }
+
+    // exec: setup
+    let project_manifest = ProjectManifestData::load(&format!(
+        "{}/{}",
+        &project_path_str, PROJECT_MANIFEST_FILENAME
+    ))?;
+    let component_path_mapping: BTreeMap<String, (ComponentType, String)> = project_manifest
+        .components
+        .iter()
+        .map(|c| {
+            let c_path = format!("{}/{}", &project_path_str, c.component_path);
+            let c_type = ComponentTypeInManifest::determine_type(&c_path)
+                .expect(&format!("Failed to determine component type: {}", &c_path));
+            let id = Path::new(&c_path).file_stem().unwrap().to_str().unwrap();
+            (id.to_owned(), (c_type, c_path))
+        })
+        .collect();
     for (name, comp_id) in &components {
-        info!(log, "Calling setup: {} ({})", name, comp_id);
-        let raw_args = Vec::new(); // todo: set args
-        call_setup(&wallet, Principal::from_text(comp_id)?, raw_args).await?;
-        info!(log, "Called setup: {} ({})", name, comp_id);
+        let (component_type, component_path) = component_path_mapping
+            .get(name.as_str())
+            .context(format!("Component not found: {}", &name))?;
+        let generator = codegen::generator(*component_type, component_path, name)?;
+
+        if let Some(raw_args) = generator.generate_component_setup_args()? {
+            info!(log, "Calling setup: {} ({})", name, comp_id);
+            call_setup(&wallet, Principal::from_text(comp_id)?, raw_args).await?;
+            info!(log, "Called setup: {} ({})", name, comp_id);
+        } else {
+            info!(log, "Skip calling setup: {} ({})", name, comp_id);
+        };
     }
+    // exec: set_task
     for (name, comp_id) in &components {
+        let (component_type, _) = component_path_mapping
+            .get(name.as_str())
+            .context(format!("Component not found: {}", &name))?;
+        if component_type == &ComponentType::AlgorithmLens {
+            info!(log, "Skip calling set_task: {} ({})", name, comp_id);
+            continue;
+        }
         info!(log, "Calling set_task: {} ({})", name, comp_id);
         call_set_task(
             &wallet,

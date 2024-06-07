@@ -68,6 +68,9 @@ impl CodeGenerator for SnapshotIndexerEvmCodeGenerator {
     fn manifest(&self) -> Box<dyn ComponentManifest> {
         Box::new(self.manifest.clone())
     }
+    fn generate_component_setup_args(&self) -> anyhow::Result<Option<Vec<u8>>> {
+        unimplemented!()
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
