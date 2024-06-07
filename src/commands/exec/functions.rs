@@ -46,6 +46,15 @@ fn default_cycle_managements() -> (chainsight_cdk::initializer::CycleManagements
     (datum, total_initial_supply)
 }
 
+pub async fn call_setup(
+    wallet: &WalletCanister<'_>,
+    target: Principal,
+    raw_args: Vec<u8>, // note: because of the different argument formats depending on the component
+) -> anyhow::Result<()> {
+    wallet_call128(wallet, target, "setup".to_string(), raw_args, None).await?;
+    Ok(())
+}
+
 pub struct SetTaskArgs {
     pub task_interval_secs: u32,
     pub delay_secs: u32,

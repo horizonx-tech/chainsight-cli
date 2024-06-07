@@ -8,7 +8,7 @@ use super::deploy::{
 use anyhow::{bail, Context};
 use candid::Principal;
 use clap::{arg, Parser};
-use functions::{call_init_in, call_set_task, SetTaskArgs};
+use functions::{call_init_in, call_set_task, call_setup, SetTaskArgs};
 use ic_agent::Identity;
 use slog::{info, Logger};
 use types::ComponentsToInitialize;
@@ -172,7 +172,12 @@ async fn execute_initialize_components(
         call_init_in(&wallet, Principal::from_text(comp_id)?).await?;
         info!(log, "Called init_in: {} ({})", name, comp_id);
     }
-    // todo: call `setup`
+    for (name, comp_id) in &components {
+        info!(log, "Calling setup: {} ({})", name, comp_id);
+        let raw_args = Vec::new(); // todo: set args
+        call_setup(&wallet, Principal::from_text(comp_id)?, raw_args).await?;
+        info!(log, "Called setup: {} ({})", name, comp_id);
+    }
     for (name, comp_id) in &components {
         info!(log, "Calling set_task: {} ({})", name, comp_id);
         call_set_task(
