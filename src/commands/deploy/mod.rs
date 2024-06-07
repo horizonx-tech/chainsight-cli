@@ -43,7 +43,7 @@ pub struct DeployOpts {
     component: Option<String>,
 
     /// Specify the context of identity to execute on.
-    /// If this option is specfied & no string, the default context is used.
+    /// If this option is specfied, the default context is used.
     #[arg(long)]
     context: Option<String>,
 
@@ -58,7 +58,7 @@ pub struct DeployOpts {
     port: Option<u16>,
 
     /// Specify the wallet to use.
-    /// If this option is not specified, the default wallet is used.
+    /// If this option is not specified & no string, the default wallet is used.
     #[arg(long, short = 'w')]
     wallet: Option<Option<String>>,
 

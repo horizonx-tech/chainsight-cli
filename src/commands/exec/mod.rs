@@ -42,6 +42,16 @@ pub struct ExecOpts {
     #[arg(long, short = 'c')]
     component: Option<String>,
 
+    /// Specify the context of identity to execute on.
+    /// If this option is specfied & no string, the default context is used.
+    #[arg(long)]
+    context: Option<String>,
+
+    /// Specify the wallet to use.
+    /// If this option is not specified, the default wallet is used.
+    #[arg(long, short = 'w')]
+    wallet: Option<String>,
+
     /// Specify the network to execute on.
     #[arg(long)]
     #[clap(default_value = "local")]
@@ -94,6 +104,8 @@ pub async fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
         log,
         &artifacts_path_str,
         components,
+        opts.context,
+        opts.wallet,
         opts.network,
         opts.port,
     )
@@ -111,6 +123,8 @@ async fn execute_initialize_components(
     log: &Logger,
     artifacts_path: &str,
     components: ComponentsToInitialize,
+    identity_context: Option<String>,
+    wallet: Option<String>,
     network: Network,
     port: Option<u16>,
 ) -> anyhow::Result<()> {
@@ -139,14 +153,16 @@ async fn execute_initialize_components(
     };
 
     // generate wallet canister
-    // todo: enable to select identity context, wallet
-    let caller_identity = identity_from_keyring(None)?;
+    let caller_identity = identity_from_keyring(identity_context)?;
     println!(
         "caller_identity: {:?}",
         caller_identity.sender().unwrap().to_text()
     );
     let agent = get_agent(Box::new(caller_identity), &network, port).await?;
-    let wallet_canister_id = get_wallet_principal_from_local_context(&network, port).await?;
+    let wallet_canister_id = match wallet {
+        Some(canister_id) => Principal::from_text(canister_id).map_err(|e| anyhow::anyhow!(e))?,
+        None => get_wallet_principal_from_local_context(&network, port).await?,
+    };
     println!("wallet_canister_id: {:?}", wallet_canister_id.to_text());
     let wallet = wallet_canister(wallet_canister_id, &agent).await?;
 
@@ -212,6 +228,8 @@ mod tests {
                     ExecOpts {
                         path: Some(project_name.to_string()),
                         component: None,
+                        context: None,
+                        wallet: None,
                         network: Network::Local,
                         port: None,
                     },
