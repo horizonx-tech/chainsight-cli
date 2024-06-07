@@ -2,29 +2,11 @@ use candid::{Encode, Principal};
 use ic_utils::{interfaces::WalletCanister, Argument};
 
 pub async fn call_init_in(wallet: &WalletCanister<'_>, target: Principal) -> anyhow::Result<()> {
+    let (cycles_managements, total_initial_supply) = default_cycle_managements();
     let raw_args = Encode!(
         &chainsight_cdk::core::Env::LocalDevelopment,
-        &chainsight_cdk::initializer::CycleManagements {
-            refueling_interval: 86400,
-            vault_intial_supply: 500_000_000_000u128,
-            indexer: chainsight_cdk::initializer::CycleManagement {
-                initial_supply: 0u128,
-                refueling_amount: 3_000_000_000_000u128,
-                refueling_threshold: 1_500_000_000_000u128,
-            },
-            db: chainsight_cdk::initializer::CycleManagement {
-                initial_supply: 1_000_000_000_000u128,
-                refueling_amount: 1_000_000_000_000u128,
-                refueling_threshold: 500_000_000_000u128,
-            },
-            proxy: chainsight_cdk::initializer::CycleManagement {
-                initial_supply: 100_000_000_000u128,
-                refueling_amount: 100_000_000_000u128,
-                refueling_threshold: 50_000_000_000u128,
-            },
-        }
+        &cycles_managements
     )?;
-    let total_initial_supply = 1_600_000_000_000u128; // todo
     wallet_call128(
         wallet,
         target,
@@ -35,6 +17,33 @@ pub async fn call_init_in(wallet: &WalletCanister<'_>, target: Principal) -> any
     .await?;
 
     Ok(())
+}
+
+fn default_cycle_managements() -> (chainsight_cdk::initializer::CycleManagements, u128) {
+    let datum = chainsight_cdk::initializer::CycleManagements {
+        refueling_interval: 86400,
+        vault_intial_supply: 500_000_000_000u128,
+        indexer: chainsight_cdk::initializer::CycleManagement {
+            initial_supply: 0u128,
+            refueling_amount: 3_000_000_000_000u128,
+            refueling_threshold: 1_500_000_000_000u128,
+        },
+        db: chainsight_cdk::initializer::CycleManagement {
+            initial_supply: 1_000_000_000_000u128,
+            refueling_amount: 1_000_000_000_000u128,
+            refueling_threshold: 500_000_000_000u128,
+        },
+        proxy: chainsight_cdk::initializer::CycleManagement {
+            initial_supply: 100_000_000_000u128,
+            refueling_amount: 100_000_000_000u128,
+            refueling_threshold: 50_000_000_000u128,
+        },
+    };
+    let total_initial_supply = datum.vault_intial_supply
+        + datum.indexer.initial_supply
+        + datum.db.initial_supply
+        + datum.proxy.initial_supply;
+    (datum, total_initial_supply)
 }
 
 pub struct SetTaskArgs {
