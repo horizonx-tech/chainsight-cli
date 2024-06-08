@@ -81,4 +81,11 @@ impl Network {
             Network::IC => "https://ic0.app/".to_string(),
         }
     }
+
+    pub fn to_sdk_env(&self) -> chainsight_cdk::core::Env {
+        match self {
+            Network::Local => chainsight_cdk::core::Env::LocalDevelopment,
+            Network::IC => chainsight_cdk::core::Env::Production,
+        }
+    }
 }

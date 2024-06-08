@@ -133,12 +133,7 @@ async fn execute_initialize_components(
     network: Network,
     port: Option<u16>,
 ) -> anyhow::Result<()> {
-    let project_manifest = ProjectManifestData::load(&format!(
-        "{}/{}",
-        &project_path_str, PROJECT_MANIFEST_FILENAME
-    ))?;
-
-    //// for loading component ids
+    // loading component ids
     let dfx_bin_network = match &network {
         Network::Local => DfxWrapperNetwork::Local(port),
         Network::IC => DfxWrapperNetwork::IC,
@@ -205,6 +200,7 @@ async fn execute_initialize_components(
             info!(log, "Skip calling setup: {} ({})", name, comp_id);
         };
     }
+
     // exec: set_task
     for (name, comp_id) in &components {
         let (component_type, _) = component_path_mapping

@@ -1,4 +1,5 @@
 use anyhow::ensure;
+use candid::Encode;
 
 use crate::{
     lib::codegen::{
@@ -88,4 +89,20 @@ pub fn generate_scripts(
     );
 
     Ok(script_contents(manifest, network))
+}
+
+pub fn generate_component_setup_args(
+    manifest: &SnapshotIndexerICPComponentManifest,
+    _network: &Network,
+) -> anyhow::Result<Vec<u8>> {
+    // todo: if id is name, then it should be converted to principal
+    let target_canister = &manifest.datasource.location.id;
+    let args = if manifest.lens_targets.is_some() {
+        // todo: implement for lens target
+        let lens_targets: Vec<String> = vec![];
+        Encode!(&target_canister, &lens_targets)
+    } else {
+        Encode!(&target_canister)
+    }?;
+    Ok(args)
 }

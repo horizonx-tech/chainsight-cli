@@ -135,8 +135,10 @@ impl CodeGenerator for AlgorithmIndexerCodeGenerator {
     fn manifest(&self) -> Box<dyn ComponentManifest> {
         Box::new(self.manifest.clone())
     }
-    fn generate_component_setup_args(&self, _network: &Network) -> anyhow::Result<Option<Vec<u8>>> {
-        unimplemented!()
+    fn generate_component_setup_args(&self, network: &Network) -> anyhow::Result<Option<Vec<u8>>> {
+        let args =
+            scripts::algorithm_indexer::generate_component_setup_args(&self.manifest, network)?;
+        Ok(Some(args))
     }
 }
 

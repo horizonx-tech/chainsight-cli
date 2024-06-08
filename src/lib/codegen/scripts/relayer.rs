@@ -1,4 +1,6 @@
 use anyhow::ensure;
+use candid::Encode;
+use chainsight_cdk::web3::Web3CtxParam;
 
 use crate::{
     lib::codegen::{
@@ -105,4 +107,44 @@ pub fn generate_scripts(
     );
 
     Ok(script_contents(manifest, network))
+}
+
+pub fn generate_component_setup_args(
+    manifest: &RelayerComponentManifest,
+    network: &Network,
+) -> anyhow::Result<Vec<u8>> {
+    // todo: if id is name, then it should be converted to principal
+    let target_canister = &manifest.datasource.location.id;
+    let web3_ctx_param = Web3CtxParam {
+        url: manifest.destination.rpc_url.clone(),
+        from: None,
+        chain_id: manifest.destination.network_id as u64,
+        env: network.to_sdk_env(),
+    };
+
+    let args = if manifest.lens_targets.is_some()
+        && !manifest
+            .lens_targets
+            .clone()
+            .unwrap()
+            .identifiers
+            .is_empty()
+    {
+        // todo: implement for lens target
+        let lens_target: Vec<String> = Vec::new();
+        Encode!(
+            &manifest.destination.oracle_address,
+            &web3_ctx_param,
+            &target_canister,
+            &lens_target
+        )
+    } else {
+        Encode!(
+            &manifest.destination.oracle_address,
+            &web3_ctx_param,
+            &target_canister
+        )
+    }?;
+
+    Ok(args)
 }

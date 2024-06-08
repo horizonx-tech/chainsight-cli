@@ -1,4 +1,6 @@
 use anyhow::ensure;
+use candid::Encode;
+use chainsight_cdk::indexer::IndexingConfig;
 
 use crate::{
     lib::codegen::{
@@ -78,4 +80,19 @@ pub fn generate_scripts(
     );
 
     Ok(script_contents(manifest, network))
+}
+
+pub fn generate_component_setup_args(
+    manifest: &AlgorithmIndexerComponentManifest,
+    _network: &Network,
+) -> anyhow::Result<Vec<u8>> {
+    let args = Encode!(
+        &manifest.datasource.principal,
+        &IndexingConfig {
+            start_from: manifest.datasource.from,
+            chunk_size: manifest.datasource.batch_size,
+        }
+    )?;
+
+    Ok(args)
 }
