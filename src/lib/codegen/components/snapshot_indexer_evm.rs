@@ -6,7 +6,10 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::{
-    lib::codegen::{canisters, components::common::SourceType, scripts},
+    lib::{
+        codegen::{canisters, components::common::SourceType, scripts},
+        utils::component_ids_manager::ComponentIdsManager,
+    },
     types::{ComponentType, Network},
 };
 
@@ -69,7 +72,11 @@ impl CodeGenerator for SnapshotIndexerEvmCodeGenerator {
     fn manifest(&self) -> Box<dyn ComponentManifest> {
         Box::new(self.manifest.clone())
     }
-    fn generate_component_setup_args(&self, network: &Network) -> anyhow::Result<Option<Vec<u8>>> {
+    fn generate_component_setup_args(
+        &self,
+        network: &Network,
+        _comp_id_mgr: &ComponentIdsManager,
+    ) -> anyhow::Result<Option<Vec<u8>>> {
         let args =
             scripts::snapshot_indexer_evm::generate_component_setup_args(&self.manifest, network)?;
         Ok(Some(args))

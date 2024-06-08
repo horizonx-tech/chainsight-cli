@@ -9,11 +9,12 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::{
-    lib::codegen::{
-        canisters::{self},
-        components::common::custom_tags_interval_sec,
-        oracle::get_oracle_address,
-        scripts,
+    lib::{
+        codegen::{
+            canisters, components::common::custom_tags_interval_sec, oracle::get_oracle_address,
+            scripts,
+        },
+        utils::component_ids_manager::ComponentIdsManager,
     },
     types::{ComponentType, Network},
 };
@@ -196,8 +197,13 @@ impl CodeGenerator for RelayerCodeGenerator {
         Box::new(self.manifest.clone())
     }
 
-    fn generate_component_setup_args(&self, network: &Network) -> anyhow::Result<Option<Vec<u8>>> {
-        let args = scripts::relayer::generate_component_setup_args(&self.manifest, network)?;
+    fn generate_component_setup_args(
+        &self,
+        network: &Network,
+        comp_id_mgr: &ComponentIdsManager,
+    ) -> anyhow::Result<Option<Vec<u8>>> {
+        let args =
+            scripts::relayer::generate_component_setup_args(&self.manifest, network, comp_id_mgr)?;
         Ok(Some(args))
     }
 }

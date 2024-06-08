@@ -6,7 +6,10 @@ use chainsight_cdk::{config::components::CommonConfig, initializer::CycleManagem
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    lib::codegen::{canisters, scripts},
+    lib::{
+        codegen::{canisters, scripts},
+        utils::component_ids_manager::ComponentIdsManager,
+    },
     types::{ComponentType, Network},
 };
 
@@ -110,7 +113,11 @@ impl CodeGenerator for AlgorithmLensCodeGenerator {
     fn manifest(&self) -> Box<dyn ComponentManifest> {
         Box::new(self.manifest.clone())
     }
-    fn generate_component_setup_args(&self, _network: &Network) -> anyhow::Result<Option<Vec<u8>>> {
+    fn generate_component_setup_args(
+        &self,
+        _network: &Network,
+        _comp_id_mgr: &ComponentIdsManager,
+    ) -> anyhow::Result<Option<Vec<u8>>> {
         Ok(None)
     }
 }

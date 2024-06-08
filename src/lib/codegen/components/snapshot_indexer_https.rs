@@ -15,7 +15,7 @@ use crate::{
             components::common::SourceType,
             scripts,
         },
-        utils::url::is_supporting_ipv6_url,
+        utils::{component_ids_manager::ComponentIdsManager, url::is_supporting_ipv6_url},
     },
     types::{ComponentType, Network},
 };
@@ -167,7 +167,11 @@ impl CodeGenerator for SnapshotIndesxerHTTPSCodeGenerator {
     fn manifest(&self) -> Box<dyn ComponentManifest> {
         Box::new(self.manifest.clone())
     }
-    fn generate_component_setup_args(&self, _network: &Network) -> anyhow::Result<Option<Vec<u8>>> {
+    fn generate_component_setup_args(
+        &self,
+        _network: &Network,
+        _comp_id_mgr: &ComponentIdsManager,
+    ) -> anyhow::Result<Option<Vec<u8>>> {
         Ok(None)
     }
 }

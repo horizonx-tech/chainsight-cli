@@ -8,7 +8,10 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::{
-    lib::codegen::{canisters, components::common::SourceType, scripts},
+    lib::{
+        codegen::{canisters, components::common::SourceType, scripts},
+        utils::component_ids_manager::ComponentIdsManager,
+    },
     types::{ComponentType, Network},
 };
 
@@ -156,9 +159,15 @@ impl CodeGenerator for SnapshotIndexerICPCodeGenerator {
     fn manifest(&self) -> Box<dyn ComponentManifest> {
         Box::new(self.manifest.clone())
     }
-    fn generate_component_setup_args(&self, network: &Network) -> anyhow::Result<Option<Vec<u8>>> {
-        let args =
-            scripts::snapshot_indexer_icp::generate_component_setup_args(&self.manifest, network)?;
+    fn generate_component_setup_args(
+        &self,
+        _network: &Network,
+        comp_id_mgr: &ComponentIdsManager,
+    ) -> anyhow::Result<Option<Vec<u8>>> {
+        let args = scripts::snapshot_indexer_icp::generate_component_setup_args(
+            &self.manifest,
+            comp_id_mgr,
+        )?;
         Ok(Some(args))
     }
 }

@@ -83,24 +83,6 @@ pub async fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
         cache_envfile(Some(&env_file_path))?;
     }
 
-    // // load component definitions from manifests
-    // let project_manifest = ProjectManifestData::load(&format!(
-    //     "{}/{}",
-    //     &project_path_str, PROJECT_MANIFEST_FILENAME
-    // ))?;
-    // let artifacts_path_str = format!("{}/{}", &project_path_str, ARTIFACTS_DIR);
-    // let components = if let Some(component) = opts.component {
-    //     ComponentsToInitialize::Single(component)
-    // } else {
-    //     // todo: clean to collect component ids, better to use only manifest.yaml?
-    //     let components = project_manifest
-    //         .load_code_generator(&project_path_str)?
-    //         .iter()
-    //         .map(|cg| cg.manifest().id().unwrap())
-    //         .collect::<Vec<_>>();
-    //     ComponentsToInitialize::Multiple(components)
-    // };
-
     execute_initialize_components(
         log,
         &project_path_str,
@@ -192,7 +174,7 @@ async fn execute_initialize_components(
             .context(format!("Component not found: {}", &name))?;
         let generator = codegen::generator(*component_type, component_path, name)?;
 
-        if let Some(raw_args) = generator.generate_component_setup_args(&network)? {
+        if let Some(raw_args) = generator.generate_component_setup_args(&network, &comp_id_mgr)? {
             info!(log, "Calling setup: {} ({})", name, comp_id);
             call_setup(&wallet, Principal::from_text(comp_id)?, raw_args).await?;
             info!(log, "Called setup: {} ({})", name, comp_id);

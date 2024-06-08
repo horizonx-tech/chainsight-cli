@@ -84,7 +84,6 @@ pub fn generate_scripts(
 
 pub fn generate_component_setup_args(
     manifest: &AlgorithmIndexerComponentManifest,
-    _network: &Network,
 ) -> anyhow::Result<Vec<u8>> {
     let args = Encode!(
         &manifest.datasource.principal,
