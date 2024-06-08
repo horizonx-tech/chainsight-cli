@@ -5,7 +5,6 @@ use candid::Principal;
 use chainsight_cdk::core::Env;
 use clap::Parser;
 use functions::get_wallet_principal_from_local_context;
-pub use functions::ComponentIdsManager;
 use ic_agent::Identity;
 use slog::{debug, info, Logger};
 use types::ComponentsToDeploy;
@@ -16,6 +15,7 @@ use crate::{
         codegen::project::ProjectManifestData,
         environment::EnvironmentImpl,
         utils::{
+            component_ids_manager::ComponentIdsManager,
             dfx::{DfxWrapper, DfxWrapperNetwork},
             identity::identity_from_keyring,
             ARTIFACTS_DIR, PROJECT_MANIFEST_FILENAME,

@@ -1,9 +1,8 @@
 use std::{collections::BTreeMap, path::Path};
 
 // temp
-use super::deploy::{
-    functions::{get_agent, get_wallet_principal_from_local_context, wallet_canister},
-    ComponentIdsManager,
+use super::deploy::functions::{
+    get_agent, get_wallet_principal_from_local_context, wallet_canister,
 };
 use anyhow::{bail, Context};
 use candid::Principal;
@@ -20,8 +19,9 @@ use crate::{
         },
         environment::EnvironmentImpl,
         utils::{
-            dfx::DfxWrapperNetwork, env::cache_envfile, identity::identity_from_keyring,
-            is_chainsight_project, ARTIFACTS_DIR, DOTENV_FILENAME, PROJECT_MANIFEST_FILENAME,
+            component_ids_manager::ComponentIdsManager, dfx::DfxWrapperNetwork, env::cache_envfile,
+            identity::identity_from_keyring, is_chainsight_project, ARTIFACTS_DIR, DOTENV_FILENAME,
+            PROJECT_MANIFEST_FILENAME,
         },
     },
     types::{ComponentType, Network},

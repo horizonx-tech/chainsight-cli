@@ -1,6 +1,7 @@
 use std::{panic, path::Path};
 
 pub mod clap;
+pub mod component_ids_manager;
 pub mod dfx;
 pub mod env;
 pub mod identity;
