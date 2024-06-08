@@ -1,8 +1,12 @@
 ---
 source: src/commands/tests/mod.rs
-expression: "format!(\"{:#?}\", & metadata)"
+expression: "format!(\"{:#?}\", &metadata)"
 ---
 [
+    (
+        "candid:service",
+        "type CalculateArgs = record { dummy : nat64 };\ntype CycleManagement = record {\n  refueling_amount : nat;\n  initial_supply : nat;\n  refueling_threshold : nat;\n};\ntype CycleManagements = record {\n  db : CycleManagement;\n  vault_intial_supply : nat;\n  refueling_interval : nat64;\n  proxy : CycleManagement;\n  indexer : CycleManagement;\n};\ntype Env = variant { Production; Test; LocalDevelopment };\ntype InitError = variant {\n  InvalidDestination : text;\n  InvalidPrincipal : principal;\n  InvalidContent : text;\n  InvalidRequest : text;\n};\ntype LensArgs = record { args : CalculateArgs; targets : vec text };\ntype LensValue = record { dummy : nat64 };\ntype Result = variant { Ok; Err : InitError };\ntype SourceType = variant { evm; https; chainsight };\ntype Sources = record {\n  source : text;\n  interval_sec : opt nat32;\n  attributes : vec record { text; text };\n  source_type : SourceType;\n};\nservice : {\n  get_proxy : () -> (principal);\n  get_result : (LensArgs) -> (LensValue);\n  get_sources : () -> (vec Sources) query;\n  init_in : (Env, CycleManagements) -> (Result);\n  proxy_get_result : (blob) -> (blob);\n}",
+    ),
     (
         "chainsight:component_type",
         "algorithm_lens",
