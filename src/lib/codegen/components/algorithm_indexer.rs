@@ -140,10 +140,11 @@ impl CodeGenerator for AlgorithmIndexerCodeGenerator {
     }
     fn generate_component_setup_args(
         &self,
-        network: &Network,
-        _comp_id_mgr: &ComponentIdsManager,
+        _network: &Network,
+        comp_id_mgr: &ComponentIdsManager,
     ) -> anyhow::Result<Option<Vec<u8>>> {
-        let args = scripts::algorithm_indexer::generate_component_setup_args(&self.manifest)?;
+        let args =
+            scripts::algorithm_indexer::generate_component_setup_args(&self.manifest, comp_id_mgr)?;
         Ok(Some(args))
     }
 }
