@@ -17,7 +17,7 @@ use super::{
     codegen::CodeGenerator,
     common::{
         ComponentManifest, ComponentMetadata, CycleManagementsManifest, GeneratedCodes, SourceType,
-        Sources,
+        Sources, TimerSettings,
     },
     utils::{generate_method_identifier, get_did_by_component_id},
 };
@@ -213,6 +213,9 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
     fn generate_dependency_accessors(&self) -> anyhow::Result<GeneratedCodes> {
         let lib = canisters::algorithm_lens::generate_dependencies_accessor(self)?;
         Ok(GeneratedCodes { lib, types: None })
+    }
+    fn timer_settings(&self) -> Option<TimerSettings> {
+        None
     }
     fn cycle_managements(&self) -> CycleManagements {
         self.cycles.clone().unwrap_or_default().into()

@@ -178,6 +178,8 @@ pub trait ComponentManifest: std::fmt::Debug {
         bail!("not implemented")
     }
 
+    fn timer_settings(&self) -> Option<TimerSettings>;
+
     /// Get the Component's cycle management settings
     fn cycle_managements(&self) -> CycleManagements;
 }

@@ -1,6 +1,6 @@
 use anyhow::{ensure, Context};
 use candid::{Encode, Principal};
-use chainsight_cdk::{lens, web3::Web3CtxParam};
+use chainsight_cdk::web3::Web3CtxParam;
 
 use crate::{
     lib::{

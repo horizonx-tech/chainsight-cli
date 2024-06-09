@@ -1,6 +1,8 @@
 use candid::{Encode, Principal};
 use ic_utils::{interfaces::WalletCanister, Argument};
 
+use crate::lib::codegen::components::common::TimerSettings;
+
 pub async fn call_init_in(wallet: &WalletCanister<'_>, target: Principal) -> anyhow::Result<()> {
     let (cycles_managements, total_initial_supply) = default_cycle_managements();
     let raw_args = Encode!(
@@ -55,21 +57,14 @@ pub async fn call_setup(
     Ok(())
 }
 
-pub struct SetTaskArgs {
-    pub task_interval_secs: u32,
-    pub delay_secs: u32,
-    pub is_rounded_start_time: bool,
-}
 pub async fn call_set_task(
     wallet: &WalletCanister<'_>,
     target: Principal,
-    args: SetTaskArgs,
+    args: &TimerSettings,
 ) -> anyhow::Result<()> {
-    let raw_args = Encode!(
-        &args.task_interval_secs,
-        &args.delay_secs,
-        &args.is_rounded_start_time
-    )?;
+    let delay = args.delay_sec.unwrap_or(0);
+    let is_round_start_timing = args.is_round_start_timing.unwrap_or(false);
+    let raw_args = Encode!(&args.interval_sec, &delay, &is_round_start_timing)?;
     wallet_call128(wallet, target, "set_task".to_string(), raw_args, None).await?;
     Ok(())
 }

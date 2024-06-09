@@ -201,6 +201,9 @@ impl ComponentManifest for AlgorithmIndexerComponentManifest {
         res.insert(interval_key, interval_val);
         res
     }
+    fn timer_settings(&self) -> Option<TimerSettings> {
+        Some(self.timer_settings.clone())
+    }
     fn cycle_managements(&self) -> CycleManagements {
         self.cycles.clone().unwrap_or_default().into()
     }

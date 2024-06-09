@@ -7,7 +7,7 @@ use super::deploy::functions::{
 use anyhow::{bail, Context};
 use candid::Principal;
 use clap::{arg, Parser};
-use functions::{call_init_in, call_set_task, call_setup, SetTaskArgs};
+use functions::{call_init_in, call_set_task, call_setup};
 use ic_agent::Identity;
 use slog::{info, Logger};
 
@@ -185,25 +185,17 @@ async fn execute_initialize_components(
 
     // exec: set_task
     for (name, comp_id) in &components {
-        let (component_type, _) = component_path_mapping
+        let (component_type, component_path) = component_path_mapping
             .get(name.as_str())
             .context(format!("Component not found: {}", &name))?;
-        if component_type == &ComponentType::AlgorithmLens {
+        let generator = codegen::generator(*component_type, component_path, name)?;
+        if let Some(args) = generator.manifest().timer_settings() {
+            info!(log, "Calling set_task: {} ({})", name, comp_id);
+            call_set_task(&wallet, Principal::from_text(comp_id)?, &args).await?;
+            info!(log, "Called set_task: {} ({})", name, comp_id);
+        } else {
             info!(log, "Skip calling set_task: {} ({})", name, comp_id);
-            continue;
         }
-        info!(log, "Calling set_task: {} ({})", name, comp_id);
-        call_set_task(
-            &wallet,
-            Principal::from_text(comp_id)?,
-            SetTaskArgs {
-                task_interval_secs: 60,
-                delay_secs: 5,
-                is_rounded_start_time: true,
-            }, // todo: set args
-        )
-        .await?;
-        info!(log, "Called set_task: {} ({})", name, comp_id);
     }
 
     Ok(())

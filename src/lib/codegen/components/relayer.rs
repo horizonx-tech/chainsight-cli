@@ -312,6 +312,9 @@ impl ComponentManifest for RelayerComponentManifest {
         let lib = identifier.compile()?;
         Ok(BTreeMap::from([("lib".to_string(), lib)]))
     }
+    fn timer_settings(&self) -> Option<TimerSettings> {
+        Some(self.timer_settings.clone())
+    }
     fn cycle_managements(&self) -> CycleManagements {
         self.cycles.clone().unwrap_or_default().into()
     }
