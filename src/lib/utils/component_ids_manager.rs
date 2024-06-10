@@ -54,6 +54,10 @@ impl ComponentIdsManager {
         self.components.get(name).cloned()
     }
 
+    pub fn contains_key(&self, name: &str) -> bool {
+        self.components.contains_key(name)
+    }
+
     pub fn get_all_entries(&self) -> Vec<(String, String)> {
         self.components
             .iter()

@@ -195,6 +195,16 @@ async fn execute_deployment(
         ComponentsToDeploy::Multiple(val) => (val, ComponentIdsManager::new(&dfx_bin_network)),
     };
 
+    // Check if the component has already been deployed
+    for name in &components {
+        if comp_id_mgr.contains_key(name) {
+            anyhow::bail!(
+                "The component '{}' has already been deployed. If you want to redeploy, delete the component id of the same name from `component_ids_(network).json`.",
+                name
+            );
+        }
+    }
+
     let mut name_and_ids = vec![];
     for name in components {
         let deploy_dest_id = functions::canister_create(
