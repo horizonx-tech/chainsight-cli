@@ -6,6 +6,10 @@ use ic_agent::{identity::Secp256k1Identity, Agent};
 use ic_utils::{interfaces::WalletCanister, Canister};
 use serde::{Deserialize, Serialize};
 
+use crate::types::Network;
+
+use super::dfx::{DfxWrapper, DfxWrapperNetwork};
+
 const DFX_CONFIG_ROOT_PATH: &str = ".config/dfx";
 
 // ref: dfinity/sdk/src/dfx-core/src/identity/mod.rs
@@ -73,6 +77,24 @@ fn get_path_to_home(path: &str) -> Option<PathBuf> {
     } else {
         Some(PathBuf::from(path))
     }
+}
+
+pub async fn get_wallet_principal_from_local_context(
+    network: &Network,
+    port: Option<u16>,
+) -> anyhow::Result<Principal> {
+    let dfx = DfxWrapper::new(
+        match network {
+            Network::Local => DfxWrapperNetwork::Local(port),
+            _ => DfxWrapperNetwork::IC,
+        },
+        None,
+    )
+    .map_err(|e| anyhow::anyhow!(e))?
+    .0;
+    // todo: support direct loading of wallets.json
+    let id = Principal::from_text(dfx.identity_get_wallet().map_err(|e| anyhow::anyhow!(e))?)?;
+    Ok(id)
 }
 
 pub async fn wallet_canister(id: Principal, agent: &Agent) -> anyhow::Result<WalletCanister> {

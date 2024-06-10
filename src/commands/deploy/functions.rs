@@ -9,14 +9,7 @@ use ic_utils::{
     Argument,
 };
 
-use crate::{
-    commands::utils::get_agent,
-    lib::utils::{
-        dfx::{DfxWrapper, DfxWrapperNetwork},
-        identity::wallet_canister,
-    },
-    types::Network,
-};
+use crate::{commands::utils::get_agent, lib::utils::identity::wallet_canister, types::Network};
 
 use super::types::UpdateSettingsArgs;
 
@@ -156,23 +149,4 @@ async fn update_settings_by_management_canister(
     builder.call_and_wait().await?;
 
     Ok(())
-}
-
-// utils
-pub async fn get_wallet_principal_from_local_context(
-    network: &Network,
-    port: Option<u16>,
-) -> anyhow::Result<Principal> {
-    let dfx = DfxWrapper::new(
-        match network {
-            Network::Local => DfxWrapperNetwork::Local(port),
-            _ => DfxWrapperNetwork::IC,
-        },
-        None,
-    )
-    .map_err(|e| anyhow::anyhow!(e))?
-    .0;
-    // todo: support direct loading of wallets.json
-    let id = Principal::from_text(dfx.identity_get_wallet().map_err(|e| anyhow::anyhow!(e))?)?;
-    Ok(id)
 }

@@ -1,7 +1,5 @@
 use std::{collections::BTreeMap, path::Path};
 
-// todo: make these dependent functions common
-use super::deploy::functions::get_wallet_principal_from_local_context;
 use anyhow::{bail, Context};
 use candid::Principal;
 use clap::{arg, Parser};
@@ -21,7 +19,9 @@ use crate::{
             component_ids_manager::ComponentIdsManager,
             dfx::DfxWrapperNetwork,
             env::cache_envfile,
-            identity::{identity_from_keyring, wallet_canister},
+            identity::{
+                get_wallet_principal_from_local_context, identity_from_keyring, wallet_canister,
+            },
             is_chainsight_project, ARTIFACTS_DIR, DOTENV_FILENAME, PROJECT_MANIFEST_FILENAME,
         },
     },
