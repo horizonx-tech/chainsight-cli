@@ -106,7 +106,7 @@ fn get_wallet_id_in_ic_from_wallets_json(identity_context: &str) -> anyhow::Resu
         .networks
         .get("ic")
         .context("No ic network found")?;
-    Ok(wallet_id.clone())
+    Ok(*wallet_id)
 }
 
 fn get_home_dir() -> Option<PathBuf> {

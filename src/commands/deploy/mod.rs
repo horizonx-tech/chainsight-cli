@@ -159,6 +159,7 @@ fn check_before_deployment(
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 async fn execute_deployment(
     log: &Logger,
     artifacts_path_str: &str,

@@ -19,7 +19,7 @@ impl ComponentIdsManager {
     pub fn load(network: &DfxWrapperNetwork, dir_path: &str) -> anyhow::Result<Self> {
         let filename = Self::filename(network);
         let path = format!("{}/{}", dir_path, filename);
-        let json = std::fs::read_to_string(&path)?;
+        let json = std::fs::read_to_string(path)?;
         let components: ComponentIds = serde_json::from_str(&json)?;
         Ok(Self {
             filename,
@@ -42,7 +42,7 @@ impl ComponentIdsManager {
     pub fn save(&self, dir_path: &str) -> anyhow::Result<()> {
         let path = format!("{}/{}", dir_path, self.filename);
         let json = serde_json::to_string_pretty(&self.components)?;
-        std::fs::write(&path, json)?;
+        std::fs::write(path, json)?;
         Ok(())
     }
 
@@ -67,7 +67,7 @@ impl ComponentIdsManager {
 }
 
 fn url_to_filename_for_dfx_local(url: &str) -> String {
-    url.replace(":", "_").replace(".", "_").replace("/", "_")
+    url.replace([':', '.', '/'], "_")
 }
 
 #[cfg(test)]

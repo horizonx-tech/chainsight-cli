@@ -146,7 +146,7 @@ async fn update_settings_by_management_canister(
     canister_id: &Principal,
     controllers: Vec<Principal>,
 ) -> anyhow::Result<()> {
-    let mgr_canister = ManagementCanister::create(&agent);
+    let mgr_canister = ManagementCanister::create(agent);
     let mut builder = mgr_canister.update_settings(canister_id);
     for controller in controllers {
         builder = builder.with_controller(controller);

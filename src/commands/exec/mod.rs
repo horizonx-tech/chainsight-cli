@@ -4,7 +4,6 @@ use anyhow::{bail, Context};
 use candid::Principal;
 use clap::{arg, Parser};
 use functions::{call_init_in, call_set_task, call_setup};
-use ic_agent::Identity;
 use slog::{info, Logger};
 
 use crate::{
@@ -159,7 +158,7 @@ async fn execute_initialize_components(
         .map(|c| {
             let c_path = format!("{}/{}", &project_path_str, c.component_path);
             let c_type = ComponentTypeInManifest::determine_type(&c_path)
-                .expect(&format!("Failed to determine component type: {}", &c_path));
+                .unwrap_or_else(|_| panic!("Failed to determine component type: {}", &c_path));
             let id = Path::new(&c_path).file_stem().unwrap().to_str().unwrap();
             (id.to_owned(), (c_type, c_path))
         })

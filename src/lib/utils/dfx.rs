@@ -3,18 +3,19 @@ use std::{ffi::OsStr, fmt, path::Path, str::FromStr};
 use super::remove_trailing_newline;
 
 // todo: Replace network enum with this.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub enum DfxWrapperNetwork {
+    #[default]
     IC,
     Local(Option<u16>),
-    Custom(String),
+    // Custom(String),
 }
 impl DfxWrapperNetwork {
     pub fn value(&self) -> String {
         match self {
             DfxWrapperNetwork::IC => "https://ic0.app/".to_string(),
             DfxWrapperNetwork::Local(port) => format!("http://localhost:{}", port.unwrap_or(4943)),
-            DfxWrapperNetwork::Custom(custom) => custom.clone(),
+            // DfxWrapperNetwork::Custom(custom) => custom.clone(),
         }
     }
 
@@ -24,11 +25,6 @@ impl DfxWrapperNetwork {
             _ => self.value(),
         };
         vec!["--network".to_string(), value]
-    }
-}
-impl Default for DfxWrapperNetwork {
-    fn default() -> Self {
-        DfxWrapperNetwork::IC
     }
 }
 

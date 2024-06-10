@@ -41,7 +41,7 @@ pub struct ComponentInfoOpts {
 
 pub async fn exec(env: &EnvironmentImpl, opts: ComponentInfoOpts) -> anyhow::Result<()> {
     // Check if the `dfx` binary is available
-    if let Err(_) = DfxWrapper::new(DfxWrapperNetwork::IC, None) {
+    if DfxWrapper::new(DfxWrapperNetwork::IC, None).is_err() {
         anyhow::bail!(
             "The `dfx` binary is required to execute this operation. Please install dfx."
         );
@@ -72,7 +72,7 @@ pub async fn exec(env: &EnvironmentImpl, opts: ComponentInfoOpts) -> anyhow::Res
         let id = comp_id_mgr
             .get(&component)
             .context(format!("Failed to get canister id for {}", component))?;
-        Principal::from_text(&id)?
+        Principal::from_text(id)?
     };
 
     let agent = get_agent(&network, port, None).await?;
