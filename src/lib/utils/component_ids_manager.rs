@@ -34,11 +34,7 @@ impl ComponentIdsManager {
             _ => format!(
                 "{}_{}.json",
                 prefix,
-                network
-                    .value()
-                    .replace(":", "_")
-                    .replace(".", "_")
-                    .replace("/", "_")
+                url_to_filename_for_dfx_local(&network.value())
             ),
         }
     }
@@ -63,5 +59,26 @@ impl ComponentIdsManager {
             .iter()
             .map(|(k, v)| (k.clone(), v.clone()))
             .collect()
+    }
+}
+
+fn url_to_filename_for_dfx_local(url: &str) -> String {
+    url.replace(":", "_").replace(".", "_").replace("/", "_")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_url_to_filename_for_dfx_local() {
+        assert_eq!(
+            url_to_filename_for_dfx_local("http://localhost:8000"),
+            "http___localhost_8000"
+        );
+        assert_eq!(
+            url_to_filename_for_dfx_local("http://127.0.0.1:4943/"),
+            "http___127_0_0_1_4943_"
+        );
     }
 }
