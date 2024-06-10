@@ -45,24 +45,6 @@ pub fn generate_agent(url: &str) -> ic_agent::Agent {
         .unwrap()
 }
 
-pub fn canister_id_from_canister_name(
-    execution_dir: &Path,
-    network: &Network,
-    canister_name: &str,
-) -> Result<Principal, String> {
-    let args_builder = DfxArgsBuilder::new_only_network(network.clone());
-    let args = args_builder.generate(vec!["canister", "id", canister_name]);
-
-    let output = output_by_exec_cmd("dfx", execution_dir, args).expect("failed to execute process");
-    if output.status.success() {
-        let msg = std::str::from_utf8(&output.stdout).unwrap_or("failed to parse stdout");
-        Ok(Principal::from_text(msg.replace('\n', "")).unwrap())
-    } else {
-        let msg = std::str::from_utf8(&output.stderr).unwrap_or("failed to parse stderr");
-        Err(msg.to_string())
-    }
-}
-
 pub fn output_by_exec_cmd(
     cmd: &str,
     execution_dir: &Path,

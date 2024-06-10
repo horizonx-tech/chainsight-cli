@@ -8,14 +8,14 @@ use slog::{debug, error, info};
 use crate::{
     commands::{
         component_info,
-        utils::{
-            canister_id_from_canister_name, generate_agent, output_by_exec_cmd, working_dir,
-            DfxArgsBuilder,
-        },
+        utils::{generate_agent, output_by_exec_cmd, working_dir, DfxArgsBuilder},
     },
     lib::{
         environment::EnvironmentImpl,
-        utils::{component_ids_manager::ComponentIdsManager, dfx::DfxWrapperNetwork},
+        utils::{
+            component_ids_manager::ComponentIdsManager,
+            dfx::{DfxWrapper, DfxWrapperNetwork},
+        },
     },
     types::Network,
 };
@@ -45,6 +45,13 @@ pub struct DeleteOpts {
 }
 
 pub async fn exec(env: &EnvironmentImpl, opts: DeleteOpts) -> anyhow::Result<()> {
+    // Check if the `dfx` binary is available
+    if let Err(_) = DfxWrapper::new(DfxWrapperNetwork::IC, None) {
+        anyhow::bail!(
+            "The `dfx` binary is required to execute this operation. Please install dfx."
+        );
+    }
+
     let log = env.get_logger();
     let DeleteOpts {
         path,

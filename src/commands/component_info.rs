@@ -7,7 +7,10 @@ use crate::{
     commands::utils::{generate_agent, working_dir},
     lib::{
         environment::EnvironmentImpl,
-        utils::{component_ids_manager::ComponentIdsManager, dfx::DfxWrapperNetwork},
+        utils::{
+            component_ids_manager::ComponentIdsManager,
+            dfx::{DfxWrapper, DfxWrapperNetwork},
+        },
     },
     types::Network,
 };
@@ -37,6 +40,13 @@ pub struct ComponentInfoOpts {
 }
 
 pub async fn exec(env: &EnvironmentImpl, opts: ComponentInfoOpts) -> anyhow::Result<()> {
+    // Check if the `dfx` binary is available
+    if let Err(_) = DfxWrapper::new(DfxWrapperNetwork::IC, None) {
+        anyhow::bail!(
+            "The `dfx` binary is required to execute this operation. Please install dfx."
+        );
+    }
+
     let log = env.get_logger();
     let ComponentInfoOpts {
         path,
@@ -44,6 +54,7 @@ pub async fn exec(env: &EnvironmentImpl, opts: ComponentInfoOpts) -> anyhow::Res
         port,
         component,
     } = opts;
+
     info!(log, r#"Start component-info component '{}'..."#, component);
 
     let working_dir_str = working_dir(path.clone())?;
