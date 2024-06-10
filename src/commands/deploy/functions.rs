@@ -189,7 +189,9 @@ pub async fn get_wallet_principal_from_local_context(
             _ => DfxWrapperNetwork::IC,
         },
         None,
-    );
+    )
+    .map_err(|e| anyhow::anyhow!(e))?
+    .0;
     // todo: support direct loading of wallets.json
     let id = Principal::from_text(dfx.identity_get_wallet().map_err(|e| anyhow::anyhow!(e))?)?;
     Ok(id)

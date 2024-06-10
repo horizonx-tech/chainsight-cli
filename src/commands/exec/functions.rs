@@ -4,6 +4,7 @@ use ic_utils::{interfaces::WalletCanister, Argument};
 use crate::lib::codegen::components::common::TimerSettings;
 
 pub async fn call_init_in(wallet: &WalletCanister<'_>, target: Principal) -> anyhow::Result<()> {
+    // todo: make customisable
     let (cycles_managements, total_initial_supply) = default_cycle_managements();
     let raw_args = Encode!(
         &chainsight_cdk::core::Env::LocalDevelopment,

@@ -1,16 +1,15 @@
-use std::{collections::BTreeMap, fmt, fs::File, io, path::Path};
+use std::path::Path;
 
-use anyhow::{anyhow, bail, Ok};
+use anyhow::{anyhow, Ok};
 use candid::Principal;
 use chainsight_cdk::core::Env;
 use clap::Parser;
 use functions::get_wallet_principal_from_local_context;
 use ic_agent::Identity;
-use slog::{debug, info, Logger};
+use slog::{info, Logger};
 use types::ComponentsToDeploy;
 
 use crate::{
-    commands::utils::{output_by_exec_cmd, DfxArgsBuilder},
     lib::{
         codegen::project::ProjectManifestData,
         environment::EnvironmentImpl,
@@ -128,29 +127,35 @@ fn check_before_deployment(
         match network {
             Network::Local => DfxWrapperNetwork::Local(port),
             Network::IC => DfxWrapperNetwork::IC,
-        }, // temp: Replace with dfx wrapper
+        },
         Some(artifacts_path.to_str().unwrap().to_string()),
     );
 
-    info!(log, "Running command: dfx ping");
-    let ping_response = dfx.ping().map_err(|e| anyhow!(e))?;
-    info!(log, "> {}", ping_response);
-    info!(log, "Suceeded: dfx ping");
+    if let core::result::Result::Ok((dfx, version)) = dfx {
+        info!(log, "Dfx version: {}", version);
 
-    info!(log, "Running command: dfx identity whoami");
-    let whoami = dfx.identity_whoami().map_err(|e| anyhow!(e))?;
-    info!(log, "> {}", whoami);
-    info!(log, "Suceeded: dfx identity whoami");
+        info!(log, "Running command: dfx ping");
+        let ping_response = dfx.ping().map_err(|e| anyhow!(e))?;
+        info!(log, "> {}", ping_response);
+        info!(log, "Suceeded: dfx ping");
 
-    info!(log, "Running command: dfx identity get-principal");
-    let principal = dfx.identity_get_principal().map_err(|e| anyhow!(e))?;
-    info!(log, "> {}", principal);
-    info!(log, "Suceeded: dfx identity get-principal");
+        info!(log, "Running command: dfx identity whoami");
+        let whoami = dfx.identity_whoami().map_err(|e| anyhow!(e))?;
+        info!(log, "> {}", whoami);
+        info!(log, "Suceeded: dfx identity whoami");
 
-    info!(log, "Running command: dfx identity get-wallet");
-    let wallet = dfx.identity_get_wallet().map_err(|e| anyhow!(e))?;
-    info!(log, "> {}", wallet);
-    info!(log, "Suceeded: dfx identity get-wallet");
+        info!(log, "Running command: dfx identity get-principal");
+        let principal = dfx.identity_get_principal().map_err(|e| anyhow!(e))?;
+        info!(log, "> {}", principal);
+        info!(log, "Suceeded: dfx identity get-principal");
+
+        info!(log, "Running command: dfx identity get-wallet");
+        let wallet = dfx.identity_get_wallet().map_err(|e| anyhow!(e))?;
+        info!(log, "> {}", wallet);
+        info!(log, "Suceeded: dfx identity get-wallet");
+    } else {
+        info!(log, "Dfx version: Not Found");
+    };
 
     Ok(())
 }
@@ -165,34 +170,6 @@ async fn execute_deployment(
     network: Network,
     port: Option<u16>,
 ) -> anyhow::Result<()> {
-    // Check before deployments
-    {
-        let canister_info = get_canister_info(log, artifacts_path_str, network.clone());
-        if let anyhow::Result::Ok(canister_info) = canister_info {
-            let target_component_names =
-                if let ComponentsToDeploy::Single(component) = components_to_deploy.clone() {
-                    vec![component.to_string()]
-                } else {
-                    canister_names_in_dfx_json(artifacts_path_str)?
-                };
-            let mut installed = Vec::<String>::new();
-            let mut msg = String::new();
-            for name in target_component_names {
-                let (is_created, is_installed) = canister_info.status(&name);
-                msg.push_str(&format!("Canister Name: {}\n", name));
-                msg.push_str(&format!("  Created: {}\n", is_created));
-                msg.push_str(&format!("  Installed: {}\n", is_installed));
-                if is_installed {
-                    installed.push(name);
-                }
-            }
-            debug!(log, "Current deployed status:\n{}", msg);
-            if !installed.is_empty() {
-                bail!("Already installed: {:?}", installed);
-            }
-        }
-    }
-
     // Execute
     let caller_identity = identity_from_keyring(identity_context)?;
     let caller_principal = caller_identity.sender().map_err(|e| anyhow!(e))?;
@@ -269,144 +246,5 @@ async fn execute_deployment(
         );
     }
 
-    // Check after deployments
-    // let canister_info = get_canister_info(log, artifacts_path_str, network.clone())?;
-    // info!(log, "Current deployed status:\n{}", canister_info);
-
     Ok(())
-}
-
-type CanisterInfoControllers = String;
-type CanisterInfoModuleHash = String;
-#[derive(Clone)]
-struct CanisterInfo(CanisterInfoControllers, CanisterInfoModuleHash);
-impl CanisterInfo {
-    fn controllers(&self) -> &CanisterInfoControllers {
-        &self.0
-    }
-    fn module_hash(&self) -> &CanisterInfoModuleHash {
-        &self.1
-    }
-}
-impl fmt::Display for CanisterInfo {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "  Controllers: {}", self.controllers())?;
-        writeln!(f, "  Module Hash: {}", self.module_hash())
-    }
-}
-#[derive(Clone, Default)]
-struct CanistersInfo(BTreeMap<CanisterName, (CanisterIdString, Option<CanisterInfo>)>);
-impl CanistersInfo {
-    fn get(&self, name: &str) -> Option<&(CanisterIdString, Option<CanisterInfo>)> {
-        self.0.get(name)
-    }
-    fn info(&self, name: &str) -> Option<CanisterInfo> {
-        self.get(name).unwrap().1.clone()
-    }
-    fn status(&self, name: &str) -> (bool, bool) {
-        let id = self.get(name);
-        if id.is_none() {
-            (false, false)
-        } else {
-            let info = self.info(name);
-            let installed = if let Some(info) = info {
-                !info.module_hash().eq("None") // HACK: Do not hardcode 'None'
-            } else {
-                false
-            };
-            (true, installed)
-        }
-    }
-}
-impl fmt::Display for CanistersInfo {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for (name, (id, info_opt)) in &self.0 {
-            writeln!(f, "Canister Name: {}", name)?;
-            writeln!(f, "  Canister Id: {}", id)?;
-            if let Some(info) = info_opt {
-                writeln!(f, "{}", info)?;
-            }
-        }
-        fmt::Result::Ok(())
-    }
-}
-fn get_canister_info(
-    log: &Logger,
-    artifacts_path_str: &str,
-    network: Network,
-) -> anyhow::Result<CanistersInfo> {
-    let artifacts_path = Path::new(&artifacts_path_str);
-    let ids = read_canister_ids_json(artifacts_path_str, network.clone())?;
-    let mut result = CanistersInfo::default();
-    for (name, ids) in ids {
-        // HACK: check to use 'network' name as key
-        if !ids.is_empty() {
-            let info = call_canister_info(log, artifacts_path, &name, network.clone());
-            result.0.insert(name, (format!("{:?}", ids), info));
-        }
-    }
-    Ok(result)
-}
-fn call_canister_info(
-    log: &Logger,
-    artifacts_path: &Path,
-    canister_id_or_name: &str,
-    network: Network,
-) -> Option<CanisterInfo> {
-    let args_builder = DfxArgsBuilder::new(network, Some(canister_id_or_name.to_string()));
-    let output = output_by_exec_cmd(
-        "dfx",
-        artifacts_path,
-        args_builder.generate(vec!["canister", "info"]),
-    );
-    if let io::Result::Ok(output) = output {
-        let msg = std::str::from_utf8(&output.stdout).expect("failed to parse stdout");
-        let lines = msg.lines().map(|s| s.to_string()).collect::<Vec<_>>();
-        // NOTE: occur immediately after resetting node in local
-        if lines.is_empty() {
-            return None;
-        }
-        let controllers = lines[0].split(':').last().unwrap().trim().to_string();
-        let module_hash = lines[1].split(':').last().unwrap().trim().to_string();
-        Some(CanisterInfo(controllers, module_hash))
-    } else {
-        debug!(log, "Failed to call canister info: {}", canister_id_or_name);
-        None
-    }
-}
-
-type CanisterName = String;
-type NetworkName = String;
-type CanisterIdString = String;
-type CanisterIds = BTreeMap<CanisterName, BTreeMap<NetworkName, CanisterIdString>>;
-
-fn read_canister_ids_json(
-    artifacts_path_str: &str,
-    network: Network,
-) -> anyhow::Result<CanisterIds> {
-    let json_path = canister_ids_json_path(artifacts_path_str, network);
-    let json = File::open(json_path)?;
-    let canister_ids: CanisterIds = serde_json::from_reader(json)?;
-    Ok(canister_ids)
-}
-fn canister_ids_json_path(artifacts_path_str: &str, network: Network) -> String {
-    let json_filename = "canister_ids.json";
-    match network {
-        Network::Local => format!("{}/.dfx/local/{}", artifacts_path_str, json_filename),
-        Network::IC => format!("{}/{}", artifacts_path_str, json_filename),
-    }
-}
-
-fn canister_names_in_dfx_json(artifacts_path_str: &str) -> anyhow::Result<Vec<CanisterName>> {
-    let dfx_json_path = format!("{}/dfx.json", artifacts_path_str);
-    let dfx_json_file = File::open(dfx_json_path)?;
-    let dfx_json: serde_json::Value = serde_json::from_reader(dfx_json_file)?;
-    let canisters = dfx_json.get("canisters");
-    if let Some(canisters) = canisters {
-        let canisters = canisters.as_object().expect("failed to parse canisters");
-        let names = canisters.keys().map(|s| s.to_string()).collect::<Vec<_>>();
-        Ok(names)
-    } else {
-        bail!("Failed to parse dfx.json")
-    }
 }

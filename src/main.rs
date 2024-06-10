@@ -11,7 +11,11 @@ use config::cli_version_str;
 use lib::{
     environment::EnvironmentImpl,
     logger::create_root_logger,
-    utils::{self, dfx::DfxWrapper, env::cache_envfile},
+    utils::{
+        self,
+        dfx::{DfxWrapper, DfxWrapperNetwork},
+        env::cache_envfile,
+    },
 };
 use slog::{error, info, Logger};
 
@@ -54,27 +58,26 @@ fn run() -> i32 {
 }
 
 fn info_on_bin_deps_for_csx(logger: &Logger) {
-    let dfx = DfxWrapper::default();
-    let dfx_version = dfx.version();
-    if let Ok(version) = dfx_version {
+    let dfx = DfxWrapper::new(DfxWrapperNetwork::IC, None);
+    if let Ok((dfx, version)) = dfx {
         info!(logger, "Dfx version: {}", version);
         info!(
             logger,
             "Currently active user identity context: {}",
-            dfx.identity_whoami().unwrap_or("Not Found".to_string())
+            dfx.identity_whoami().unwrap_or("Nothing".to_string())
         );
         info!(
             logger,
             "Current identity principal: {}",
             dfx.identity_get_principal()
-                .unwrap_or("Not Found".to_string())
+                .unwrap_or("Nothing".to_string())
         );
         info!(
             logger,
             "Wallet associated with current identity (ic): {}",
-            dfx.identity_get_wallet().unwrap_or("Not Found".to_string())
+            dfx.identity_get_wallet().unwrap_or("Nothing".to_string())
         );
     } else {
         info!(logger, "Dfx version: Not Found");
-    }
+    };
 }

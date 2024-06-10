@@ -32,7 +32,7 @@ impl Default for DfxWrapperNetwork {
     }
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
 pub struct DfxWrapper {
     execution_dir_str: Option<String>,
     network: DfxWrapperNetwork,
@@ -84,6 +84,20 @@ impl fmt::Display for Version {
 }
 
 impl DfxWrapper {
+    pub fn new(
+        network: DfxWrapperNetwork,
+        path: Option<String>,
+    ) -> anyhow::Result<(Self, Version)> {
+        let version = Self::version().map_err(|e| anyhow::anyhow!(e))?;
+        Ok((
+            DfxWrapper {
+                execution_dir_str: path,
+                network,
+            },
+            version,
+        ))
+    }
+
     fn execution_dir(&self) -> &Path {
         let dir = self.execution_dir_str.as_deref().unwrap_or(".");
         Path::new(dir)
@@ -95,15 +109,8 @@ impl DfxWrapper {
         args.concat()
     }
 
-    pub fn new(network: DfxWrapperNetwork, path: Option<String>) -> Self {
-        DfxWrapper {
-            execution_dir_str: path,
-            network,
-        }
-    }
-
-    pub fn version(&self) -> Result<Version, String> {
-        let res = exec_cmd_string_output("dfx", self.execution_dir(), vec!["--version"])
+    pub fn version() -> Result<Version, String> {
+        let res = exec_cmd_string_output("dfx", Path::new("."), vec!["--version"])
             .map(remove_trailing_newline)?;
         let version_str = res.replace("dfx ", "");
         Version::from_str(&version_str).map_err(|e| e.to_string())

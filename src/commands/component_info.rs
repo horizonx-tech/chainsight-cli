@@ -1,12 +1,14 @@
-use std::path::Path;
-
+use anyhow::Context;
 use candid::{Decode, Encode, Principal};
 use clap::Parser;
 use slog::info;
 
 use crate::{
-    commands::utils::{canister_id_from_canister_name, generate_agent, working_dir},
-    lib::environment::EnvironmentImpl,
+    commands::utils::{generate_agent, working_dir},
+    lib::{
+        environment::EnvironmentImpl,
+        utils::{component_ids_manager::ComponentIdsManager, dfx::DfxWrapperNetwork},
+    },
     types::Network,
 };
 
@@ -36,21 +38,34 @@ pub struct ComponentInfoOpts {
 
 pub async fn exec(env: &EnvironmentImpl, opts: ComponentInfoOpts) -> anyhow::Result<()> {
     let log = env.get_logger();
-    info!(
-        log,
-        r#"Start component-info component '{}'..."#, opts.component
-    );
+    let ComponentInfoOpts {
+        path,
+        network,
+        port,
+        component,
+    } = opts;
+    info!(log, r#"Start component-info component '{}'..."#, component);
 
-    let working_dir_str = working_dir(opts.path.clone())?;
-    let working_dir = Path::new(&working_dir_str);
+    let working_dir_str = working_dir(path.clone())?;
 
-    let component_id = Principal::from_text(&opts.component).unwrap_or_else(|_| {
-        canister_id_from_canister_name(working_dir, &opts.network, &opts.component)
-            .expect("failed to get canister id")
-    });
-    let url = opts.network.to_url(opts.port);
-    let agent = generate_agent(&url);
-    if opts.network == Network::Local {
+    let component_id = if let Ok(principal) = Principal::from_text(&component) {
+        principal
+    } else {
+        let comp_id_mgr = ComponentIdsManager::load(
+            &match network {
+                Network::Local => DfxWrapperNetwork::Local(port),
+                Network::IC => DfxWrapperNetwork::IC,
+            },
+            &working_dir_str,
+        )?;
+        let id = comp_id_mgr
+            .get(&component)
+            .context(format!("Failed to get canister id for {}", component))?;
+        Principal::from_text(&id)?
+    };
+
+    let agent = generate_agent(&network.to_url(port));
+    if network == Network::Local {
         agent.fetch_root_key().await.unwrap();
     }
 
