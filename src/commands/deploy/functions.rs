@@ -29,6 +29,11 @@ pub async fn canister_create(
     let canister_id = if network == &Network::Local && wallet_principal.is_none() {
         create_canister_by_management_canister(&agent, cycles).await?
     } else {
+        if wallet_principal.is_none() {
+            return Err(anyhow::anyhow!(
+                "wallet_principal is required for deployment to IC network."
+            ));
+        }
         let wallet_canister = wallet_canister(wallet_principal.unwrap(), &agent).await?;
         let cycles = cycles.unwrap_or(CANISTER_CREATE_FEE + CANISTER_INITIAL_CYCLE_BALANCE);
         let res = wallet_canister

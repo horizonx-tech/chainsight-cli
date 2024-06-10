@@ -1,15 +1,20 @@
 use candid::{Encode, Principal};
 use ic_utils::{interfaces::WalletCanister, Argument};
 
-use crate::lib::codegen::components::common::TimerSettings;
+use crate::{lib::codegen::components::common::TimerSettings, types::Network};
 
-pub async fn call_init_in(wallet: &WalletCanister<'_>, target: Principal) -> anyhow::Result<()> {
+pub async fn call_init_in(
+    wallet: &WalletCanister<'_>,
+    target: Principal,
+    network: &Network,
+) -> anyhow::Result<()> {
     // todo: make customisable
     let (cycles_managements, total_initial_supply) = default_cycle_managements();
-    let raw_args = Encode!(
-        &chainsight_cdk::core::Env::LocalDevelopment,
-        &cycles_managements
-    )?;
+    let cdk_env = match network {
+        Network::Local => chainsight_cdk::core::Env::LocalDevelopment,
+        Network::IC => chainsight_cdk::core::Env::Production,
+    };
+    let raw_args = Encode!(&cdk_env, &cycles_managements)?;
     wallet_call128(
         wallet,
         target,

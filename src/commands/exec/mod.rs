@@ -133,23 +133,18 @@ async fn execute_initialize_components(
     };
 
     // generate wallet canister
-    let caller_identity = identity_from_keyring(identity_context)?;
-    println!(
-        "caller_identity: {:?}",
-        caller_identity.sender().unwrap().to_text()
-    );
+    let caller_identity = identity_from_keyring(identity_context.clone())?;
     let agent = get_agent(&network, port, Some(Box::new(caller_identity))).await?;
     let wallet_canister_id = match wallet {
         Some(canister_id) => Principal::from_text(canister_id).map_err(|e| anyhow::anyhow!(e))?,
-        None => get_wallet_principal_from_local_context(&network, port).await?,
+        None => get_wallet_principal_from_local_context(&network, port, identity_context).await?,
     };
-    println!("wallet_canister_id: {:?}", wallet_canister_id.to_text());
     let wallet = wallet_canister(wallet_canister_id, &agent).await?;
 
     // exec: init_in
     for (name, comp_id) in &components {
         info!(log, "Calling init_in: {} ({})", name, comp_id);
-        call_init_in(&wallet, Principal::from_text(comp_id)?).await?;
+        call_init_in(&wallet, Principal::from_text(comp_id)?, &network).await?;
         info!(log, "Called init_in: {} ({})", name, comp_id);
     }
 

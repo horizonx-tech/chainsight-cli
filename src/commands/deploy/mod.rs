@@ -170,13 +170,13 @@ async fn execute_deployment(
     port: Option<u16>,
 ) -> anyhow::Result<()> {
     // Execute
-    let caller_identity = identity_from_keyring(identity_context)?;
+    let caller_identity = identity_from_keyring(identity_context.clone())?;
     let caller_principal = caller_identity.sender().map_err(|e| anyhow!(e))?;
     let wallet_principal = match wallet {
         Some(canister_id) => Some(if let Some(canister_id) = canister_id {
             Principal::from_text(canister_id).map_err(|e| anyhow!(e))?
         } else {
-            get_wallet_principal_from_local_context(&network, port).await?
+            get_wallet_principal_from_local_context(&network, port, identity_context).await?
         }),
         _ => None,
     };

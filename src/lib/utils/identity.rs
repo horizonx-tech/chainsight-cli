@@ -68,6 +68,47 @@ fn default_identity_context() -> anyhow::Result<String> {
     Ok(identity_json.default)
 }
 
+pub async fn get_wallet_principal_from_local_context(
+    network: &Network,
+    port: Option<u16>,
+    identity_context: Option<String>,
+) -> anyhow::Result<Principal> {
+    let principal = if network == &Network::IC && identity_context.is_some() {
+        get_wallet_id_in_ic_from_wallets_json(&identity_context.unwrap())?
+    } else {
+        let dfx = DfxWrapper::new(
+            match network {
+                Network::Local => DfxWrapperNetwork::Local(port),
+                _ => DfxWrapperNetwork::IC,
+            },
+            None,
+        )
+        .map_err(|e| anyhow::anyhow!(e))?
+        .0;
+        let principal_str = dfx.identity_get_wallet().map_err(|e| anyhow::anyhow!(e))?;
+        Principal::from_text(principal_str)?
+    };
+
+    Ok(principal)
+}
+
+fn get_wallet_id_in_ic_from_wallets_json(identity_context: &str) -> anyhow::Result<Principal> {
+    let path_str = format!(
+        "~/{}/identity/{}/{}",
+        DFX_CONFIG_ROOT_PATH, identity_context, WALLET_CONFIG_FILENAME
+    );
+    let path = get_path_to_home(&path_str).context(format!("Not found: {}", &path_str))?;
+    let wallet_config: WalletGlobalConfig = serde_json::from_str(&fs::read_to_string(path)?)?;
+    let wallet_id = wallet_config
+        .identities
+        .get(identity_context)
+        .context("No default identity found")?
+        .networks
+        .get("ic")
+        .context("No ic network found")?;
+    Ok(wallet_id.clone())
+}
+
 fn get_home_dir() -> Option<PathBuf> {
     env::var_os("HOME").map(PathBuf::from)
 }
@@ -77,24 +118,6 @@ fn get_path_to_home(path: &str) -> Option<PathBuf> {
     } else {
         Some(PathBuf::from(path))
     }
-}
-
-pub async fn get_wallet_principal_from_local_context(
-    network: &Network,
-    port: Option<u16>,
-) -> anyhow::Result<Principal> {
-    let dfx = DfxWrapper::new(
-        match network {
-            Network::Local => DfxWrapperNetwork::Local(port),
-            _ => DfxWrapperNetwork::IC,
-        },
-        None,
-    )
-    .map_err(|e| anyhow::anyhow!(e))?
-    .0;
-    // todo: support direct loading of wallets.json
-    let id = Principal::from_text(dfx.identity_get_wallet().map_err(|e| anyhow::anyhow!(e))?)?;
-    Ok(id)
 }
 
 pub async fn wallet_canister(id: Principal, agent: &Agent) -> anyhow::Result<WalletCanister> {
