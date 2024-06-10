@@ -4,7 +4,7 @@ use clap::Parser;
 use slog::info;
 
 use crate::{
-    commands::utils::{generate_agent, working_dir},
+    commands::utils::{get_agent, working_dir},
     lib::{
         environment::EnvironmentImpl,
         utils::{
@@ -75,10 +75,7 @@ pub async fn exec(env: &EnvironmentImpl, opts: ComponentInfoOpts) -> anyhow::Res
         Principal::from_text(&id)?
     };
 
-    let agent = generate_agent(&network.to_url(port));
-    if network == Network::Local {
-        agent.fetch_root_key().await.unwrap();
-    }
+    let agent = get_agent(&network, port, None).await?;
 
     info!(log, "  component: {}", component_id.to_text());
     let res = exec_internal(&agent, &component_id).await?;

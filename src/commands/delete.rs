@@ -8,7 +8,7 @@ use slog::{debug, error, info};
 use crate::{
     commands::{
         component_info,
-        utils::{generate_agent, output_by_exec_cmd, working_dir, DfxArgsBuilder},
+        utils::{get_agent, output_by_exec_cmd, working_dir, DfxArgsBuilder},
     },
     lib::{
         environment::EnvironmentImpl,
@@ -80,10 +80,7 @@ pub async fn exec(env: &EnvironmentImpl, opts: DeleteOpts) -> anyhow::Result<()>
         Principal::from_text(&id)?
     };
 
-    let agent = generate_agent(&network.to_url(port));
-    if network == Network::Local {
-        agent.fetch_root_key().await.unwrap();
-    }
+    let agent = get_agent(&network, port, None).await?;
 
     info!(log, "Confirm sidecars to delete");
     let res = component_info::exec_internal(&agent, &component_id).await?;

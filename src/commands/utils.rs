@@ -4,7 +4,7 @@ use std::{
 };
 
 use anyhow::bail;
-use candid::Principal;
+use ic_agent::{Agent, Identity};
 
 use crate::{
     lib::utils::{is_chainsight_project, ARTIFACTS_DIR},
@@ -37,12 +37,21 @@ pub fn working_dir(project_path: Option<String>) -> anyhow::Result<String> {
     Ok(path)
 }
 
-pub fn generate_agent(url: &str) -> ic_agent::Agent {
-    ic_agent::Agent::builder()
-        .with_url(url)
-        .with_verify_query_signatures(false)
-        .build()
-        .unwrap()
+pub async fn get_agent(
+    network: &Network,
+    port: Option<u16>,
+    identity: Option<Box<dyn Identity>>,
+) -> anyhow::Result<Agent> {
+    let mut builder = Agent::builder().with_url(network.to_url(port));
+    if let Some(identity) = identity {
+        builder = builder.with_identity(identity);
+    }
+
+    let agent = builder.build()?;
+    if network == &Network::Local {
+        agent.fetch_root_key().await?;
+    }
+    Ok(agent)
 }
 
 pub fn output_by_exec_cmd(

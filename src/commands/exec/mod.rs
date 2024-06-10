@@ -1,9 +1,7 @@
 use std::{collections::BTreeMap, path::Path};
 
-// temp
-use super::deploy::functions::{
-    get_agent, get_wallet_principal_from_local_context, wallet_canister,
-};
+// todo: make these dependent functions common
+use super::deploy::functions::get_wallet_principal_from_local_context;
 use anyhow::{bail, Context};
 use candid::Principal;
 use clap::{arg, Parser};
@@ -12,6 +10,7 @@ use ic_agent::Identity;
 use slog::{info, Logger};
 
 use crate::{
+    commands::utils::get_agent,
     lib::{
         codegen::{
             components::{codegen, common::ComponentTypeInManifest},
@@ -19,9 +18,11 @@ use crate::{
         },
         environment::EnvironmentImpl,
         utils::{
-            component_ids_manager::ComponentIdsManager, dfx::DfxWrapperNetwork, env::cache_envfile,
-            identity::identity_from_keyring, is_chainsight_project, ARTIFACTS_DIR, DOTENV_FILENAME,
-            PROJECT_MANIFEST_FILENAME,
+            component_ids_manager::ComponentIdsManager,
+            dfx::DfxWrapperNetwork,
+            env::cache_envfile,
+            identity::{identity_from_keyring, wallet_canister},
+            is_chainsight_project, ARTIFACTS_DIR, DOTENV_FILENAME, PROJECT_MANIFEST_FILENAME,
         },
     },
     types::{ComponentType, Network},
@@ -137,7 +138,7 @@ async fn execute_initialize_components(
         "caller_identity: {:?}",
         caller_identity.sender().unwrap().to_text()
     );
-    let agent = get_agent(Box::new(caller_identity), &network, port).await?;
+    let agent = get_agent(&network, port, Some(Box::new(caller_identity))).await?;
     let wallet_canister_id = match wallet {
         Some(canister_id) => Principal::from_text(canister_id).map_err(|e| anyhow::anyhow!(e))?,
         None => get_wallet_principal_from_local_context(&network, port).await?,

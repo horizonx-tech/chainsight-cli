@@ -2,7 +2,8 @@ use std::{collections::BTreeMap, env, fs, path::PathBuf};
 
 use anyhow::Context;
 use candid::Principal;
-use ic_agent::identity::Secp256k1Identity;
+use ic_agent::{identity::Secp256k1Identity, Agent};
+use ic_utils::{interfaces::WalletCanister, Canister};
 use serde::{Deserialize, Serialize};
 
 const DFX_CONFIG_ROOT_PATH: &str = ".config/dfx";
@@ -72,4 +73,13 @@ fn get_path_to_home(path: &str) -> Option<PathBuf> {
     } else {
         Some(PathBuf::from(path))
     }
+}
+
+pub async fn wallet_canister(id: Principal, agent: &Agent) -> anyhow::Result<WalletCanister> {
+    let canister = Canister::builder()
+        .with_agent(agent)
+        .with_canister_id(id)
+        .build()?;
+    let wallet_canister = WalletCanister::from_canister(canister).await?;
+    Ok(wallet_canister)
 }

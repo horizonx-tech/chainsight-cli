@@ -4,13 +4,17 @@ use ic_agent::{Agent, Identity};
 use ic_utils::{
     interfaces::{
         management_canister::builders::{CanisterInstall, CanisterSettings, InstallMode},
-        ManagementCanister, WalletCanister,
+        ManagementCanister,
     },
-    Argument, Canister,
+    Argument,
 };
 
 use crate::{
-    lib::utils::dfx::{DfxWrapper, DfxWrapperNetwork},
+    commands::utils::get_agent,
+    lib::utils::{
+        dfx::{DfxWrapper, DfxWrapperNetwork},
+        identity::wallet_canister,
+    },
     types::Network,
 };
 
@@ -27,7 +31,7 @@ pub async fn canister_create(
     port: Option<u16>,
     cycles: Option<u128>,
 ) -> anyhow::Result<Principal> {
-    let agent = get_agent(identity, network, port).await?;
+    let agent = get_agent(network, port, Some(identity)).await?;
 
     let canister_id = if network == &Network::Local && wallet_principal.is_none() {
         create_canister_by_management_canister(&agent, cycles).await?
@@ -64,7 +68,7 @@ pub async fn canister_install(
     network: &Network,
     port: Option<u16>,
 ) -> anyhow::Result<()> {
-    let agent = get_agent(identity, network, port).await?;
+    let agent = get_agent(network, port, Some(identity)).await?;
     let wasm_data = std::fs::read(wasm_path)?;
 
     if network == &Network::Local && wallet_principal.is_none() {
@@ -110,7 +114,7 @@ pub async fn canister_update_settings(
     network: &Network,
     port: Option<u16>,
 ) -> anyhow::Result<()> {
-    let agent = get_agent(identity, network, port).await?;
+    let agent = get_agent(network, port, Some(identity)).await?;
 
     if network == &Network::Local && wallet_principal.is_none() {
         update_settings_by_management_canister(&agent, &deploy_dest_id, controllers_to_add).await?;
@@ -155,30 +159,6 @@ async fn update_settings_by_management_canister(
 }
 
 // utils
-pub async fn get_agent(
-    identity: Box<dyn Identity>,
-    network: &Network,
-    port: Option<u16>,
-) -> anyhow::Result<Agent> {
-    let agent = Agent::builder()
-        .with_url(network.to_url(port))
-        .with_identity(identity)
-        .build()?;
-    if network == &Network::Local {
-        agent.fetch_root_key().await?;
-    }
-    Ok(agent)
-}
-
-pub async fn wallet_canister(id: Principal, agent: &Agent) -> anyhow::Result<WalletCanister> {
-    let canister = Canister::builder()
-        .with_agent(agent)
-        .with_canister_id(id)
-        .build()?;
-    let wallet_canister = WalletCanister::from_canister(canister).await?;
-    Ok(wallet_canister)
-}
-
 pub async fn get_wallet_principal_from_local_context(
     network: &Network,
     port: Option<u16>,
