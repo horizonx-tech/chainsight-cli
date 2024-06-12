@@ -18,13 +18,7 @@ dfx 0.15.1
 
 ## Note
 
-Before you can deploy on your local machine, you need to deploy [chainsight-management-canisters](https://github.com/horizonx-tech/chainsight-management-canisters.git) to your local dfx environment.
-  
-  ```bash
-    git clone https://github.com/horizonx-tech/chainsight-management-canisters.git
-    cd chainsight-management-canisters/artifacts
-    make all port=${YOUR_DFX_PORT}
-  ```
+Before you can deploy on your local machine, you need to deploy [chainsight-management-canisters](https://github.com/horizonx-tech/chainsight-management-canisters) to your local dfx environment.
 
 ## Install CLI
 
@@ -203,11 +197,11 @@ Arguments:
   <PROJECT_NAME>  Specifies the name of the project to create
 
 Options:
-      --no-samples  Skip generation of sample component manifests [short aliases: n]
-  -v, --verbose...  Displays detailed information about operations. -vv will generate a very large number of messages and can
-                    affect performance
-  -q, --quiet...    Suppresses informational messages. -qq limits to errors only; -qqqq disables them all
-  -h, --help        Print help
+      --example <EXAMPLE>  Specifies the path of the project example in chainsight-showcase to use
+  -v, --verbose...         Displays detailed information about operations. -vv will generate a very large number of messages and can affect performance
+      --no-samples         Skip generation of sample component manifests [short aliases: n]
+  -q, --quiet...           Suppresses informational messages. -qq limits to errors only; -qqqq disables them all
+  -h, --help               Print help
 ```
 
 ## csx add
@@ -309,6 +303,10 @@ It is built by wrapping the operations performed by the dfx deploy command, plus
 - `--component`: Only specified components can be targeted.
   - Without this option, all components declared in the project are executed as targets.
 
+> [!NOTE]
+> Instructions are built without `dfx` binary, with the intention of making `csx` libraries.
+> Therefore, it does not generate `canister_ids.json` by `dfx`. Generate `component_ids_(network).json` instead.
+
 ```txt
 % csx deploy --help
 Deploy the components of your project. If you want to operate on a local network, you need to build a local dfx network in advance
@@ -320,8 +318,10 @@ Options:
   -v, --verbose...                 Displays detailed information about operations. -vv will generate a very large number of messages and can affect performance
   -c, --component <COMPONENT>      Specify the component to deploy. If this option is not specified, the command will be given to all components managed by the project
   -q, --quiet...                   Suppresses informational messages. -qq limits to errors only; -qqqq disables them all
+      --context <CONTEXT>          Specify the context of identity to execute on. If this option is specfied, the default context is used
       --network <NETWORK>          Specify the network to execute on [default: local] [possible values: local, ic]
       --port <PORT>                Specifies the port to call. This option is used only if the target is localhost
+  -w, --wallet [<WALLET>]          Specify the wallet to use. If this option is not specified & no string, the default wallet is used
       --with-cycles <WITH_CYCLES>  Specify the initial number of cycles for canister. Used as a parameter for `dfx canister create`
   -h, --help                       Print help
 ```
@@ -335,6 +335,9 @@ It is currently implemented to perform the following commands.
 1. Setup: Set parameters for the Component to operate as intended.
 2. Start timer task: kick periodic execution of data acquisition/processing/storage.
 
+> [!NOTE]
+> Instructions are built without `dfx` binary, with the intention of making `csx` libraries.
+
 ```txt
 % csx exec --help  
 Calls for component processing. Currently supports initialization and task start instructions
@@ -346,9 +349,10 @@ Options:
   -v, --verbose...             Displays detailed information about operations. -vv will generate a very large number of messages and can affect performance
   -c, --component <COMPONENT>  Specify the name of the component you want to execute. If this option is not specified, the command will be given to all components managed by the project
   -q, --quiet...               Suppresses informational messages. -qq limits to errors only; -qqqq disables them all
+      --context <CONTEXT>      Specify the context of identity to execute on. If this option is specfied & no string, the default context is used
+  -w, --wallet <WALLET>        Specify the wallet to use. If this option is not specified, the default wallet is used
       --network <NETWORK>      Specify the network to execute on [default: local] [possible values: local, ic]
-      --only-generate-cmds     Only generate commands
-      --only-execute-cmds      Only execute commands. Perform this steps with commands already generated
+      --port <PORT>            Specifies the port to call. This option is used only if the target is localhost
   -h, --help                   Print help
 ```
 
