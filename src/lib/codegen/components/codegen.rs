@@ -2,7 +2,10 @@ use anyhow::Result;
 use ethabi::Contract;
 
 use crate::{
-    lib::codegen::canisters::snapshot_indexer_https::JsonTypeGenStrategyImpl,
+    lib::{
+        codegen::canisters::snapshot_indexer_https::JsonTypeGenStrategyImpl,
+        utils::component_ids_manager::ComponentIdsManager,
+    },
     types::{ComponentType, Network},
 };
 
@@ -24,6 +27,11 @@ pub trait CodeGenerator {
     fn generate_scripts(&self, network: Network) -> anyhow::Result<String>;
     fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes>;
     fn manifest(&self) -> Box<dyn ComponentManifest>;
+    fn generate_component_setup_args(
+        &self,
+        network: &Network,
+        comp_id_mgr: &ComponentIdsManager,
+    ) -> anyhow::Result<Option<Vec<u8>>>;
 }
 
 pub fn generator(

@@ -6,7 +6,10 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::{
-    lib::codegen::{canisters, scripts},
+    lib::{
+        codegen::{canisters, scripts},
+        utils::component_ids_manager::ComponentIdsManager,
+    },
     types::{ComponentType, Network},
 };
 
@@ -109,6 +112,14 @@ impl CodeGenerator for EventIndexerCodeGenerator {
     fn manifest(&self) -> Box<dyn ComponentManifest> {
         Box::new(self.manifest.clone())
     }
+    fn generate_component_setup_args(
+        &self,
+        network: &Network,
+        _comp_id_mgr: &ComponentIdsManager,
+    ) -> anyhow::Result<Option<Vec<u8>>> {
+        let args = scripts::event_indexer::generate_component_setup_args(&self.manifest, network)?;
+        Ok(Some(args))
+    }
 }
 impl ComponentManifest for EventIndexerComponentManifest {
     fn load_with_id(path: &str, id: &str) -> anyhow::Result<Self> {
@@ -187,6 +198,9 @@ impl ComponentManifest for EventIndexerComponentManifest {
             custom_tags_interval_sec(self.timer_settings.interval_sec);
         res.insert(interval_key, interval_val);
         res
+    }
+    fn timer_settings(&self) -> Option<TimerSettings> {
+        Some(self.timer_settings.clone())
     }
     fn cycle_managements(&self) -> CycleManagements {
         self.cycles.clone().unwrap_or_default().into()

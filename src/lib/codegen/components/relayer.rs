@@ -9,11 +9,12 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::{
-    lib::codegen::{
-        canisters::{self},
-        components::common::custom_tags_interval_sec,
-        oracle::get_oracle_address,
-        scripts,
+    lib::{
+        codegen::{
+            canisters, components::common::custom_tags_interval_sec, oracle::get_oracle_address,
+            scripts,
+        },
+        utils::component_ids_manager::ComponentIdsManager,
     },
     types::{ComponentType, Network},
 };
@@ -195,6 +196,16 @@ impl CodeGenerator for RelayerCodeGenerator {
     fn manifest(&self) -> Box<dyn ComponentManifest> {
         Box::new(self.manifest.clone())
     }
+
+    fn generate_component_setup_args(
+        &self,
+        network: &Network,
+        comp_id_mgr: &ComponentIdsManager,
+    ) -> anyhow::Result<Option<Vec<u8>>> {
+        let args =
+            scripts::relayer::generate_component_setup_args(&self.manifest, network, comp_id_mgr)?;
+        Ok(Some(args))
+    }
 }
 
 impl ComponentManifest for RelayerComponentManifest {
@@ -300,6 +311,9 @@ impl ComponentManifest for RelayerComponentManifest {
         let identifier = generate_method_identifier(&method.identifier, &interface)?;
         let lib = identifier.compile()?;
         Ok(BTreeMap::from([("lib".to_string(), lib)]))
+    }
+    fn timer_settings(&self) -> Option<TimerSettings> {
+        Some(self.timer_settings.clone())
     }
     fn cycle_managements(&self) -> CycleManagements {
         self.cycles.clone().unwrap_or_default().into()

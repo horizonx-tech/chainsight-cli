@@ -8,12 +8,15 @@ use slog::{debug, error, info};
 use crate::{
     commands::{
         component_info,
+        utils::{get_agent, output_by_exec_cmd, working_dir, DfxArgsBuilder},
+    },
+    lib::{
+        environment::EnvironmentImpl,
         utils::{
-            canister_id_from_canister_name, generate_agent, output_by_exec_cmd, working_dir,
-            DfxArgsBuilder,
+            component_ids_manager::ComponentIdsManager,
+            dfx::{DfxWrapper, DfxWrapperNetwork},
         },
     },
-    lib::environment::EnvironmentImpl,
     types::Network,
 };
 
@@ -42,21 +45,42 @@ pub struct DeleteOpts {
 }
 
 pub async fn exec(env: &EnvironmentImpl, opts: DeleteOpts) -> anyhow::Result<()> {
-    let log = env.get_logger();
-    info!(log, r#"Start deleting component '{}'..."#, opts.component);
+    // Check if the `dfx` binary is available
+    if DfxWrapper::new(DfxWrapperNetwork::IC, None).is_err() {
+        anyhow::bail!(
+            "The `dfx` binary is required to execute this operation. Please install dfx."
+        );
+    }
 
-    let working_dir_str = working_dir(opts.path.clone())?;
+    let log = env.get_logger();
+    let DeleteOpts {
+        path,
+        network,
+        port,
+        component,
+    } = opts;
+    info!(log, r#"Start deleting component '{}'..."#, component);
+
+    let working_dir_str = working_dir(path.clone())?;
     let working_dir = Path::new(&working_dir_str);
 
-    let component_id = Principal::from_text(&opts.component).unwrap_or_else(|_| {
-        canister_id_from_canister_name(working_dir, &opts.network, &opts.component)
-            .expect("failed to get canister id")
-    });
-    let url = opts.network.to_url(opts.port);
-    let agent = generate_agent(&url);
-    if opts.network == Network::Local {
-        agent.fetch_root_key().await.unwrap();
-    }
+    let component_id = if let Ok(principal) = Principal::from_text(&component) {
+        principal
+    } else {
+        let comp_id_mgr = ComponentIdsManager::load(
+            &match network {
+                Network::Local => DfxWrapperNetwork::Local(port),
+                Network::IC => DfxWrapperNetwork::IC,
+            },
+            &working_dir_str,
+        )?;
+        let id = comp_id_mgr
+            .get(&component)
+            .context(format!("Failed to get canister id for {}", component))?;
+        Principal::from_text(id)?
+    };
+
+    let agent = get_agent(&network, port, None).await?;
 
     info!(log, "Confirm sidecars to delete");
     let res = component_info::exec_internal(&agent, &component_id).await?;
@@ -65,14 +89,14 @@ pub async fn exec(env: &EnvironmentImpl, opts: DeleteOpts) -> anyhow::Result<()>
     info!(log, "  vault: {}", vault.to_text());
     info!(log, "  db: {}", db.to_text());
 
-    let wallet = get_wallet(working_dir, &opts.network)
+    let wallet = get_wallet(working_dir, &network)
         .expect("failed to get wallet")
         .to_string();
     info!(log, "Wallet to execute deletion: {}", wallet);
 
     let exec_delete = |label: &str, canister_id: String| -> bool {
         info!(log, "Deleting {} ({})", label, canister_id);
-        let res = delete_canister(working_dir, canister_id, &wallet, &opts.network);
+        let res = delete_canister(working_dir, canister_id, &wallet, &network);
         match res {
             Ok(msg) => {
                 info!(log, "Deleted {}", label);
@@ -85,7 +109,7 @@ pub async fn exec(env: &EnvironmentImpl, opts: DeleteOpts) -> anyhow::Result<()>
             }
         }
     };
-    let before_balance = get_wallet_balance(working_dir, &opts.network);
+    let before_balance = get_wallet_balance(working_dir, &network);
     match before_balance {
         Ok(balance) => info!(log, "Balance before deletion: {}", balance),
         Err(e) => error!(log, "Failed to get balance: {}", e),
@@ -94,7 +118,7 @@ pub async fn exec(env: &EnvironmentImpl, opts: DeleteOpts) -> anyhow::Result<()>
     let res_vault = exec_delete("vault", vault.to_text());
     let res_proxy = exec_delete("proxy", proxy.to_text());
     let res_component = exec_delete("component", component_id.to_text());
-    let after_balance = get_wallet_balance(working_dir, &opts.network);
+    let after_balance = get_wallet_balance(working_dir, &network);
     match after_balance {
         Ok(balance) => info!(log, "Balance after deletion: {}", balance),
         Err(e) => error!(log, "Failed to get balance: {}", e),
@@ -115,7 +139,7 @@ The results of the deleting are as follows.
   proxy {} {}
   vault {} {}
   db {} {}"#,
-        opts.component,
+        component,
         component_id.to_text(),
         msg_from_result_flag(res_component),
         proxy.to_text(),

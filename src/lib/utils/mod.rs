@@ -1,7 +1,10 @@
 use std::{panic, path::Path};
 
 pub mod clap;
+pub mod component_ids_manager;
+pub mod dfx;
 pub mod env;
+pub mod identity;
 pub mod interaction;
 pub mod paths;
 pub mod serializer;
@@ -49,5 +52,20 @@ pub fn catch_unwind_silent<F: FnOnce() -> R + panic::UnwindSafe, R>(
     panic::set_hook(Box::new(|_| {}));
     let result = panic::catch_unwind(f);
     panic::set_hook(prev_hook);
+    result
+}
+
+pub fn remove_trailing_newline<T>(s: T) -> String
+where
+    T: AsRef<str>,
+{
+    let s = s.as_ref();
+    let mut result = s.to_string();
+    if let Some('\n') = result.chars().last() {
+        result.pop();
+        if let Some('\r') = result.chars().last() {
+            result.pop();
+        }
+    }
     result
 }

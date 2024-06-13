@@ -8,7 +8,10 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::{
-    lib::codegen::{canisters, components::common::SourceType, scripts},
+    lib::{
+        codegen::{canisters, components::common::SourceType, scripts},
+        utils::component_ids_manager::ComponentIdsManager,
+    },
     types::{ComponentType, Network},
 };
 
@@ -156,6 +159,17 @@ impl CodeGenerator for SnapshotIndexerICPCodeGenerator {
     fn manifest(&self) -> Box<dyn ComponentManifest> {
         Box::new(self.manifest.clone())
     }
+    fn generate_component_setup_args(
+        &self,
+        _network: &Network,
+        comp_id_mgr: &ComponentIdsManager,
+    ) -> anyhow::Result<Option<Vec<u8>>> {
+        let args = scripts::snapshot_indexer_icp::generate_component_setup_args(
+            &self.manifest,
+            comp_id_mgr,
+        )?;
+        Ok(Some(args))
+    }
 }
 impl ComponentManifest for SnapshotIndexerICPComponentManifest {
     fn load_with_id(path: &str, id: &str) -> anyhow::Result<Self> {
@@ -241,6 +255,9 @@ impl ComponentManifest for SnapshotIndexerICPComponentManifest {
         let lib = identifier.compile()?;
 
         Ok(BTreeMap::from([("lib".to_string(), lib)]))
+    }
+    fn timer_settings(&self) -> Option<TimerSettings> {
+        Some(self.timer_settings.clone())
     }
     fn cycle_managements(&self) -> CycleManagements {
         self.cycles.clone().unwrap_or_default().into()

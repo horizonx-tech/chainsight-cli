@@ -168,7 +168,17 @@ fn execute_codebuild(
         let output_filepath = format!("{}/{}.wasm", output_path_str, id);
         let wasm_bytes = fs::read(&wasm_path)?;
         let mut wasm_module = parse_wasm(&wasm_bytes, false)?;
+
         shrink(&mut wasm_module);
+        // from dfx: wasm_post_process
+        add_meta(
+            id,
+            "candid:service",
+            &fs::read_to_string(format!("{}/{}.did", output_path_str, id))?,
+            &mut wasm_module,
+            log,
+        )?;
+
         wasm_module.emit_wasm_file(&output_filepath)?;
         debug!(
             log,

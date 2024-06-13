@@ -9,7 +9,10 @@ use chainsight_cdk::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    lib::codegen::{canisters, scripts},
+    lib::{
+        codegen::{canisters, scripts},
+        utils::component_ids_manager::ComponentIdsManager,
+    },
     types::{ComponentType, Network},
 };
 
@@ -135,6 +138,15 @@ impl CodeGenerator for AlgorithmIndexerCodeGenerator {
     fn manifest(&self) -> Box<dyn ComponentManifest> {
         Box::new(self.manifest.clone())
     }
+    fn generate_component_setup_args(
+        &self,
+        _network: &Network,
+        comp_id_mgr: &ComponentIdsManager,
+    ) -> anyhow::Result<Option<Vec<u8>>> {
+        let args =
+            scripts::algorithm_indexer::generate_component_setup_args(&self.manifest, comp_id_mgr)?;
+        Ok(Some(args))
+    }
 }
 
 impl ComponentManifest for AlgorithmIndexerComponentManifest {
@@ -188,6 +200,9 @@ impl ComponentManifest for AlgorithmIndexerComponentManifest {
             custom_tags_interval_sec(self.timer_settings.interval_sec);
         res.insert(interval_key, interval_val);
         res
+    }
+    fn timer_settings(&self) -> Option<TimerSettings> {
+        Some(self.timer_settings.clone())
     }
     fn cycle_managements(&self) -> CycleManagements {
         self.cycles.clone().unwrap_or_default().into()

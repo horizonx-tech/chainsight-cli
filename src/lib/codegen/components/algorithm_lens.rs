@@ -1,11 +1,15 @@
 use std::collections::{BTreeMap, HashMap};
 
+use anyhow::Ok;
 use candid::Principal;
 use chainsight_cdk::{config::components::CommonConfig, initializer::CycleManagements};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    lib::codegen::{canisters, scripts},
+    lib::{
+        codegen::{canisters, scripts},
+        utils::component_ids_manager::ComponentIdsManager,
+    },
     types::{ComponentType, Network},
 };
 
@@ -13,7 +17,7 @@ use super::{
     codegen::CodeGenerator,
     common::{
         ComponentManifest, ComponentMetadata, CycleManagementsManifest, GeneratedCodes, SourceType,
-        Sources,
+        Sources, TimerSettings,
     },
     utils::{generate_method_identifier, get_did_by_component_id},
 };
@@ -109,6 +113,13 @@ impl CodeGenerator for AlgorithmLensCodeGenerator {
     fn manifest(&self) -> Box<dyn ComponentManifest> {
         Box::new(self.manifest.clone())
     }
+    fn generate_component_setup_args(
+        &self,
+        _network: &Network,
+        _comp_id_mgr: &ComponentIdsManager,
+    ) -> anyhow::Result<Option<Vec<u8>>> {
+        Ok(None)
+    }
 }
 
 impl ComponentManifest for AlgorithmLensComponentManifest {
@@ -202,6 +213,9 @@ impl ComponentManifest for AlgorithmLensComponentManifest {
     fn generate_dependency_accessors(&self) -> anyhow::Result<GeneratedCodes> {
         let lib = canisters::algorithm_lens::generate_dependencies_accessor(self)?;
         Ok(GeneratedCodes { lib, types: None })
+    }
+    fn timer_settings(&self) -> Option<TimerSettings> {
+        None
     }
     fn cycle_managements(&self) -> CycleManagements {
         self.cycles.clone().unwrap_or_default().into()

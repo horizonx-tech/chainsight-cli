@@ -15,7 +15,7 @@ use crate::{
             components::common::SourceType,
             scripts,
         },
-        utils::url::is_supporting_ipv6_url,
+        utils::{component_ids_manager::ComponentIdsManager, url::is_supporting_ipv6_url},
     },
     types::{ComponentType, Network},
 };
@@ -167,6 +167,13 @@ impl CodeGenerator for SnapshotIndesxerHTTPSCodeGenerator {
     fn manifest(&self) -> Box<dyn ComponentManifest> {
         Box::new(self.manifest.clone())
     }
+    fn generate_component_setup_args(
+        &self,
+        _network: &Network,
+        _comp_id_mgr: &ComponentIdsManager,
+    ) -> anyhow::Result<Option<Vec<u8>>> {
+        Ok(None)
+    }
 }
 
 impl ComponentManifest for SnapshotIndexerHTTPSComponentManifest {
@@ -220,6 +227,9 @@ impl ComponentManifest for SnapshotIndexerHTTPSComponentManifest {
             custom_tags_interval_sec(self.timer_settings.interval_sec);
         res.insert(interval_key, interval_val);
         res
+    }
+    fn timer_settings(&self) -> Option<TimerSettings> {
+        Some(self.timer_settings.clone())
     }
     fn cycle_managements(&self) -> CycleManagements {
         self.cycles.clone().unwrap_or_default().into()
