@@ -1082,6 +1082,7 @@ dependencies = [
  "proc-macro2 1.0.76",
  "quote 1.0.35",
  "regex",
+ "reqwest 0.11.23",
  "semver 1.0.21",
  "serde",
  "serde_json",
@@ -2349,6 +2350,19 @@ dependencies = [
  "hyper 0.12.36",
  "native-tls",
  "tokio-io",
+]
+
+[[package]]
+name = "hyper-tls"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d6183ddfa99b85da61a140bea0efc93fdf56ceaa041b37d553518030827f9905"
+dependencies = [
+ "bytes 1.5.0",
+ "hyper 0.14.28",
+ "native-tls",
+ "tokio 1.35.1",
+ "tokio-native-tls",
 ]
 
 [[package]]
@@ -4139,7 +4153,7 @@ dependencies = [
  "futures 0.1.31",
  "http 0.1.21",
  "hyper 0.12.36",
- "hyper-tls",
+ "hyper-tls 0.3.2",
  "log",
  "mime",
  "mime_guess",
@@ -4174,10 +4188,12 @@ dependencies = [
  "http-body 0.4.6",
  "hyper 0.14.28",
  "hyper-rustls",
+ "hyper-tls 0.5.0",
  "ipnet",
  "js-sys",
  "log",
  "mime",
+ "native-tls",
  "once_cell",
  "percent-encoding 2.3.1",
  "pin-project-lite",
@@ -4188,6 +4204,7 @@ dependencies = [
  "serde_urlencoded 0.7.1",
  "system-configuration",
  "tokio 1.35.1",
+ "tokio-native-tls",
  "tokio-rustls",
  "tokio-util",
  "tower-service",
@@ -5193,6 +5210,16 @@ dependencies = [
  "proc-macro2 1.0.76",
  "quote 1.0.35",
  "syn 2.0.48",
+]
+
+[[package]]
+name = "tokio-native-tls"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bbae76ab933c85776efabc971569dd6119c580d8f5d448769dec1764bf796ef2"
+dependencies = [
+ "native-tls",
+ "tokio 1.35.1",
 ]
 
 [[package]]

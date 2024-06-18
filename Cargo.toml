@@ -41,6 +41,7 @@ url = "2.5.0"
 dns-lookup = "2.0.4"
 hex = "0.4.3"
 keyring = "2.3.3"
+reqwest = { version  = ">=0.11.20, < 0.11.27" }
 
 [dev-dependencies]
 insta = { version =  "1.33.0", features = ["yaml"] }
