@@ -42,9 +42,9 @@ fn default_cycle_managements() -> (chainsight_cdk::initializer::CycleManagements
             refueling_threshold: 500_000_000_000u128,
         },
         proxy: chainsight_cdk::initializer::CycleManagement {
-            initial_supply: 100_000_000_000u128,
-            refueling_amount: 100_000_000_000u128,
-            refueling_threshold: 50_000_000_000u128,
+            initial_supply: 500_000_000_000u128,
+            refueling_amount: 500_000_000_000u128,
+            refueling_threshold: 500_000_000_000u128,
         },
     };
     let total_initial_supply = datum.vault_intial_supply
