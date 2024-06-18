@@ -265,9 +265,9 @@ impl From<CycleManagementsManifest> for CycleManagements {
                 refueling_threshold: db.refueling_threshold.unwrap_or(500_000_000_000),
             },
             proxy: CycleManagement {
-                initial_supply: proxy.initial_supply.unwrap_or(100_000_000_000),
-                refueling_amount: proxy.refueling_amount.unwrap_or(100_000_000_000),
-                refueling_threshold: proxy.refueling_threshold.unwrap_or(50_000_000_000),
+                initial_supply: proxy.initial_supply.unwrap_or(500_000_000_000),
+                refueling_amount: proxy.refueling_amount.unwrap_or(500_000_000_000),
+                refueling_threshold: proxy.refueling_threshold.unwrap_or(500_000_000_000),
             },
         }
     }
