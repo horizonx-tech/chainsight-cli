@@ -14,6 +14,7 @@ const DFX_CONFIG_ROOT_PATH: &str = ".config/dfx";
 
 // ref: dfinity/sdk/src/dfx-core/src/identity/mod.rs
 const IDENTITY_JSON: &str = "identity.json";
+const IDENTITY_PEM: &str = "identity.pem";
 const WALLET_CONFIG_FILENAME: &str = "wallets.json";
 
 // keyring
@@ -30,8 +31,8 @@ struct Configuration {
 // (config root)/identity/(identity-name)/identity.json
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct IdentityConfiguration {
-    pub hsm: Option<String>,        // temp
-    pub encryption: Option<String>, // temp
+    // pub hsm: Option<String>,        // temp
+    // pub encryption: Option<String>, // temp
     pub keyring_identity_suffix: Option<String>,
 }
 
@@ -47,17 +48,29 @@ pub struct WalletGlobalConfig {
     pub identities: BTreeMap<String, WalletNetworkMap>,
 }
 
-pub fn identity_from_keyring(context_name: Option<String>) -> anyhow::Result<Secp256k1Identity> {
+pub fn identity_from_context(context_name: Option<String>) -> anyhow::Result<Secp256k1Identity> {
     let context_name = context_name.unwrap_or(default_identity_context()?);
-    let entry = keyring::Entry::new(
-        KEYRING_SERVICE_NAME,
-        &format!("{}{}", KEYRING_IDENTITY_PREFIX, context_name),
-    )?;
-    let password = entry.get_password()?;
+    let identity_config = identity_context_configuration(context_name.clone());
 
-    let pem = hex::decode(password.clone())?;
+    // only support pem (in keyring or local file)
+    let identity = if let Some(keyring_suffix) = identity_config.keyring_identity_suffix {
+        let entry = keyring::Entry::new(
+            KEYRING_SERVICE_NAME,
+            &format!("{}{}", KEYRING_IDENTITY_PREFIX, keyring_suffix),
+        )?;
+        let password = entry.get_password()?;
+        let pem = hex::decode(password.clone())?;
+        Secp256k1Identity::from_pem(pem.as_slice())
+    } else {
+        let pem_path = get_path_to_home(&format!(
+            "~/{}/identity/{}/{}",
+            DFX_CONFIG_ROOT_PATH, context_name, IDENTITY_PEM
+        ))
+        .unwrap();
+        let pem = fs::read_to_string(pem_path)?;
+        Secp256k1Identity::from_pem(pem.as_bytes())
+    }?;
 
-    let identity = Secp256k1Identity::from_pem(pem.as_slice())?;
     Ok(identity)
 }
 
@@ -66,6 +79,19 @@ fn default_identity_context() -> anyhow::Result<String> {
     let path = get_path_to_home(&path_str).context(format!("Not found: {}", &path_str))?;
     let identity_json: Configuration = serde_json::from_str(&fs::read_to_string(path)?)?;
     Ok(identity_json.default)
+}
+
+fn identity_context_configuration(context_name: String) -> IdentityConfiguration {
+    let path_str = format!(
+        "~/{}/identity/{}/{}",
+        DFX_CONFIG_ROOT_PATH, context_name, IDENTITY_JSON
+    );
+    let path = get_path_to_home(&path_str).unwrap();
+    if let Ok(json) = fs::read_to_string(path) {
+        serde_json::from_str(&json).unwrap()
+    } else {
+        IdentityConfiguration::default()
+    }
 }
 
 pub async fn get_wallet_principal_from_local_context(

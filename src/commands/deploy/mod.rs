@@ -15,7 +15,7 @@ use crate::{
         utils::{
             component_ids_manager::ComponentIdsManager,
             dfx::{DfxWrapper, DfxWrapperNetwork},
-            identity::{get_wallet_principal_from_local_context, identity_from_keyring},
+            identity::{get_wallet_principal_from_local_context, identity_from_context},
             ARTIFACTS_DIR, PROJECT_MANIFEST_FILENAME,
         },
     },
@@ -171,7 +171,7 @@ async fn execute_deployment(
     port: Option<u16>,
 ) -> anyhow::Result<()> {
     // Execute
-    let caller_identity = identity_from_keyring(identity_context.clone())?;
+    let caller_identity = identity_from_context(identity_context.clone())?;
     let caller_principal = caller_identity.sender().map_err(|e| anyhow!(e))?;
     let wallet_principal = match wallet {
         Some(canister_id) => Some(if let Some(canister_id) = canister_id {
