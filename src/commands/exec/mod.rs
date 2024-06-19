@@ -19,7 +19,7 @@ use crate::{
             dfx::DfxWrapperNetwork,
             env::cache_envfile,
             identity::{
-                get_wallet_principal_from_local_context, identity_from_keyring, wallet_canister,
+                get_wallet_principal_from_local_context, identity_from_context, wallet_canister,
             },
             is_chainsight_project, ARTIFACTS_DIR, DOTENV_FILENAME, PROJECT_MANIFEST_FILENAME,
         },
@@ -132,7 +132,7 @@ async fn execute_initialize_components(
     };
 
     // generate wallet canister
-    let caller_identity = identity_from_keyring(identity_context.clone())?;
+    let caller_identity = identity_from_context(identity_context.clone())?;
     let agent = get_agent(&network, port, Some(Box::new(caller_identity))).await?;
     let wallet_canister_id = match wallet {
         Some(canister_id) => Principal::from_text(canister_id).map_err(|e| anyhow::anyhow!(e))?,
