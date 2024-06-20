@@ -140,9 +140,7 @@ impl CodeGenerator for SnapshotIndexerICPCodeGenerator {
             types: Some(types),
         })
     }
-    fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
-        scripts::snapshot_indexer_icp::generate_scripts(&self.manifest, network)
-    }
+
     fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
         let lib = canisters::snapshot_indexer_icp::generate_app(&self.manifest)?;
 
@@ -400,13 +398,6 @@ timer_settings:
         assert_display_snapshot!(
             format!("{}__logics_types", &snap_prefix),
             generated_user_impl_template.types.unwrap()
-        );
-
-        assert_display_snapshot!(
-            format!("{}__scripts", &snap_prefix),
-            &SnapshotIndexerICPCodeGenerator::new(manifest)
-                .generate_scripts(Network::Local)
-                .unwrap()
         );
     }
 }

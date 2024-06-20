@@ -155,9 +155,7 @@ impl CodeGenerator for SnapshotIndesxerHTTPSCodeGenerator {
             types: None,
         })
     }
-    fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
-        scripts::snapshot_indexer_https::generate_scripts(&self.manifest, network)
-    }
+
     fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
         Ok(GeneratedCodes {
             lib: generate_app(&self.manifest, self.strategy.as_ref())?,
@@ -393,16 +391,6 @@ timer_settings:
             generated_user_impl_template.lib
         );
         assert!(generated_user_impl_template.types.is_none());
-
-        assert_display_snapshot!(
-            format!("{}__scripts", &snap_prefix),
-            &SnapshotIndesxerHTTPSCodeGenerator::new(
-                manifest.clone(),
-                Box::new(JsonTypeGenStrategyMock),
-            )
-            .generate_scripts(Network::Local)
-            .unwrap()
-        );
     }
 
     #[test]
@@ -483,12 +471,5 @@ timer_settings:
             generated_user_impl_template.lib
         );
         assert!(generated_user_impl_template.types.is_none());
-
-        assert_display_snapshot!(
-            format!("{}__scripts", &snap_prefix),
-            &SnapshotIndesxerHTTPSCodeGenerator::new(manifest, Box::new(JsonTypeGenStrategyMock),)
-                .generate_scripts(Network::Local)
-                .unwrap()
-        );
     }
 }
