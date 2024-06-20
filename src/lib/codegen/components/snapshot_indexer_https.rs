@@ -13,7 +13,6 @@ use crate::{
                 generate_app, generate_codes, JsonTypeGenStrategy,
             },
             components::common::SourceType,
-            scripts,
         },
         utils::{component_ids_manager::ComponentIdsManager, url::is_supporting_ipv6_url},
     },

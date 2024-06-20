@@ -6,10 +6,7 @@ use chainsight_cdk::{config::components::CommonConfig, initializer::CycleManagem
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    lib::{
-        codegen::{canisters, scripts},
-        utils::component_ids_manager::ComponentIdsManager,
-    },
+    lib::{codegen::canisters, utils::component_ids_manager::ComponentIdsManager},
     types::{ComponentType, Network},
 };
 
