@@ -24,7 +24,6 @@ use super::{
 
 pub trait CodeGenerator {
     fn generate_code(&self, interface_contract: Option<Contract>) -> Result<GeneratedCodes>;
-    fn generate_scripts(&self, network: Network) -> anyhow::Result<String>;
     fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes>;
     fn manifest(&self) -> Box<dyn ComponentManifest>;
     fn generate_component_setup_args(

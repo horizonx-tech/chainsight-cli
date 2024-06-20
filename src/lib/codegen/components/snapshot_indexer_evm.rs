@@ -60,9 +60,7 @@ impl CodeGenerator for SnapshotIndexerEvmCodeGenerator {
             types: None,
         })
     }
-    fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
-        scripts::snapshot_indexer_evm::generate_scripts(&self.manifest, network)
-    }
+
     fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
         Ok(GeneratedCodes {
             lib: canisters::snapshot_indexer_evm::generate_app(&self.manifest)?,
@@ -385,12 +383,5 @@ timer_settings:
             SrcString::from(generated_user_impl_template.lib)
         );
         assert!(generated_user_impl_template.types.is_none());
-
-        assert_display_snapshot!(
-            format!("{}__scripts", &snap_prefix),
-            &SnapshotIndexerEvmCodeGenerator::new(manifest)
-                .generate_scripts(Network::Local)
-                .unwrap()
-        );
     }
 }

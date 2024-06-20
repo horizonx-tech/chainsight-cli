@@ -103,9 +103,7 @@ impl CodeGenerator for EventIndexerCodeGenerator {
             types: None,
         })
     }
-    fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
-        scripts::event_indexer::generate_scripts(&self.manifest, network)
-    }
+
     fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
         bail!("not implemented")
     }
@@ -411,12 +409,5 @@ timer_settings:
         assert!(EventIndexerCodeGenerator::new(manifest.clone())
             .generate_user_impl_template()
             .is_err());
-
-        assert_display_snapshot!(
-            format!("{}__scripts", &snap_prefix),
-            &EventIndexerCodeGenerator::new(manifest)
-                .generate_scripts(Network::Local)
-                .unwrap()
-        );
     }
 }

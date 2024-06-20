@@ -6,10 +6,7 @@ use chainsight_cdk::{config::components::CommonConfig, initializer::CycleManagem
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    lib::{
-        codegen::{canisters, scripts},
-        utils::component_ids_manager::ComponentIdsManager,
-    },
+    lib::{codegen::canisters, utils::component_ids_manager::ComponentIdsManager},
     types::{ComponentType, Network},
 };
 
@@ -101,9 +98,6 @@ impl CodeGenerator for AlgorithmLensCodeGenerator {
         })
     }
 
-    fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
-        scripts::algorithm_lens::generate_scripts(&self.manifest, network)
-    }
     fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
         Ok(GeneratedCodes {
             lib: canisters::algorithm_lens::generate_app(&self.manifest)?,
@@ -374,13 +368,6 @@ with_args: true
         assert_display_snapshot!(
             format!("{}__accessors_lib", &snap_prefix),
             SrcString::from(manifest.generate_dependency_accessors().unwrap().lib)
-        );
-
-        assert_display_snapshot!(
-            format!("{}__scripts", &snap_prefix),
-            &AlgorithmLensCodeGenerator::new(manifest)
-                .generate_scripts(Network::Local)
-                .unwrap()
         );
     }
 }

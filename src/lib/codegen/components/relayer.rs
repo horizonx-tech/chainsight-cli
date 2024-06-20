@@ -176,9 +176,7 @@ impl CodeGenerator for RelayerCodeGenerator {
             types: Some(types),
         })
     }
-    fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
-        scripts::relayer::generate_scripts(&self.manifest, network)
-    }
+
     fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
         let lib = canisters::relayer::generate_app(&self.manifest)?;
 
@@ -528,12 +526,6 @@ timer_settings:
                     .lib
             )
         );
-        assert_display_snapshot!(
-            format!("{}__scripts", &snap_prefix),
-            &RelayerCodeGenerator::new(manifest.clone())
-                .generate_scripts(Network::Local)
-                .unwrap()
-        );
     }
 
     #[test]
@@ -569,13 +561,6 @@ timer_settings:
         assert_display_snapshot!(
             format!("{}__logics_types", &snap_prefix),
             generated_user_impl_template.types.unwrap()
-        );
-
-        assert_display_snapshot!(
-            format!("{}__scripts", &snap_prefix),
-            &RelayerCodeGenerator::new(manifest)
-                .generate_scripts(Network::Local)
-                .unwrap()
         );
     }
     #[test]

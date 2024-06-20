@@ -126,9 +126,6 @@ impl CodeGenerator for AlgorithmIndexerCodeGenerator {
             types: None,
         })
     }
-    fn generate_scripts(&self, network: Network) -> anyhow::Result<String> {
-        scripts::algorithm_indexer::generate_scripts(&self.manifest, network)
-    }
     fn generate_user_impl_template(&self) -> anyhow::Result<GeneratedCodes> {
         Ok(GeneratedCodes {
             lib: canisters::algorithm_indexer::generate_app(&self.manifest)?,
@@ -434,12 +431,5 @@ timer_settings:
             SrcString::from(generated_user_impl_template.lib)
         );
         assert!(generated_user_impl_template.types.is_none());
-
-        assert_display_snapshot!(
-            format!("{}__scripts", &snap_prefix),
-            &AlgorithmIndexerCodeGenerator::new(manifest)
-                .generate_scripts(Network::Local)
-                .unwrap()
-        );
     }
 }
