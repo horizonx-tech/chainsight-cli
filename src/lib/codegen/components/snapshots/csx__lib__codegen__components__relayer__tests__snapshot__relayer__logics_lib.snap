@@ -1,6 +1,6 @@
 ---
 source: src/lib/codegen/components/relayer.rs
-expression: "SrcString::from(manifest.generate_user_impl_template().unwrap().lib)"
+expression: "SrcString::from(RelayerCodeGenerator::new(manifest.clone()).generate_user_impl_template().unwrap().lib)"
 ---
 mod types;
 use crate::ic_web3_rs::ethabi;
