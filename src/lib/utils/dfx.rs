@@ -14,8 +14,13 @@ impl DfxWrapperNetwork {
     pub fn value(&self) -> String {
         match self {
             DfxWrapperNetwork::IC => "https://ic0.app/".to_string(),
-            DfxWrapperNetwork::Local(port) => format!("http://localhost:{}", port.unwrap_or(4943)),
-            // DfxWrapperNetwork::Custom(custom) => custom.clone(),
+            DfxWrapperNetwork::Local(port) => {
+                if let Some(port) = port {
+                    format!("http://localhost:{}", port)
+                } else {
+                    "local".to_string()
+                }
+            } // DfxWrapperNetwork::Custom(custom) => custom.clone(),
         }
     }
 
