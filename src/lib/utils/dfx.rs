@@ -18,6 +18,8 @@ impl DfxWrapperNetwork {
                 if let Some(port) = port {
                     format!("http://localhost:{}", port)
                 } else {
+                    // note: automatic wallet generation in case of `local`
+                    // https://forum.dfinity.org/t/can-i-use-dfx-or-something-to-recreate-a-local-wallet-canister/31778/5
                     "local".to_string()
                 }
             } // DfxWrapperNetwork::Custom(custom) => custom.clone(),
