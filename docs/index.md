@@ -11,7 +11,7 @@ You can confirm that it has been installed and is in the path by running the fol
 
 ```bash
 % rustc --version 
-rustc 1.76.0 (07dca489a 2024-02-04)
+rustc 1.79.0 (129f3b996 2024-06-10)
 % dfx --version
 dfx 0.15.1
 ```

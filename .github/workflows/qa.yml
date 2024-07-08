@@ -5,8 +5,8 @@ on:
     branches:
       - main
 env:
-  RUST_VERSION: 1.78.0
-  RUST_ARCHIVE_DATE: "2024-02-09"
+  RUST_VERSION: 1.79.0
+  RUST_ARCHIVE_DATE: "2024-07-07"
 jobs:
   doc:
     runs-on: ubuntu-latest
