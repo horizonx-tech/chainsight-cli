@@ -192,7 +192,7 @@
           "type": "string",
           "title": "rpc url",
           "description": "rpc url of the destination evm network. only supports https",
-          "examples": ["https://rinkeby.infura.io/v3/1a2b3c4d5e"],
+          "examples": ["https://eth.llamarpc.com"],
           "pattern": "^https://.*$"
         },
         "method_name": {

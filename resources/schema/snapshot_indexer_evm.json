@@ -110,7 +110,7 @@
                   "type": "string",
                   "title": "rpc url",
                   "description": "rpc url of the datasource. It is required if type is contract.",
-                  "examples": ["https://mainnet.infura.io/v3/YOUR_API_KEY"],
+                  "examples": ["https://eth.llamarpc.com"],
                   "pattern": "^(http|https)://"
                 }
               }
