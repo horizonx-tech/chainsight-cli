@@ -173,9 +173,8 @@ fn template_event_indexer_manifest(component_name: &str) -> EventIndexerComponen
             "0000000000000000000000000000000000000000".to_string(),
             EventIndexerEventDefinition::new("EventIdentifier".to_string(), None),
             SourceNetwork {
-                chain_id: 80001,
-                rpc_url: "https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL_KEY}"
-                    .to_string(),
+                chain_id: 1,
+                rpc_url: "https://eth.llamarpc.com".to_string(),
             },
             37730337,
             Some("ERC-20".to_string()),

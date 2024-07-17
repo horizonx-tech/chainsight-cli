@@ -32,7 +32,7 @@ impl Default for SnapshotIndexerEVMDatasource {
             location: SnapshotIndexerEVMDatasourceLocation::new(
                 "6b175474e89094c44da98b954eedeac495271d0f".to_string(), // DAI token
                 1,
-                "https://mainnet.infura.io/v3/${INFURA_MAINNET_RPC_URL_KEY}".to_string(),
+                "https://eth.llamarpc.com".to_string(),
             ),
             method: DatasourceMethod {
                 identifier: "totalSupply():(uint256)".to_string(),
@@ -273,7 +273,7 @@ datasource:
         id: 6b175474e89094c44da98b954eedeac495271d0f
         args:
             network_id: 1
-            rpc_url: https://mainnet.infura.io/v3/${INFURA_MAINNET_RPC_URL_KEY}
+            rpc_url: https://eth.llamarpc.com
     method:
         identifier: totalSupply():(uint256)
         interface: ERC20.json
@@ -301,8 +301,7 @@ timer_settings:
                         id: "6b175474e89094c44da98b954eedeac495271d0f".to_string(),
                         args: SnapshotIndexerEVMDatasourceLocationArgs {
                             network_id: 1,
-                            rpc_url: "https://mainnet.infura.io/v3/${INFURA_MAINNET_RPC_URL_KEY}"
-                                .to_string(),
+                            rpc_url: "https://eth.llamarpc.com".to_string(),
                         }
                     },
                     method: DatasourceMethod {
@@ -346,8 +345,7 @@ timer_settings:
                     id: "6b175474e89094c44da98b954eedeac495271d0f".to_string(),
                     args: SnapshotIndexerEVMDatasourceLocationArgs {
                         network_id: 1,
-                        rpc_url: "https://mainnet.infura.io/v3/${INFURA_MAINNET_RPC_URL_KEY}"
-                            .to_string(),
+                        rpc_url: "https://eth.llamarpc.com".to_string(),
                     },
                 },
                 method: DatasourceMethod {

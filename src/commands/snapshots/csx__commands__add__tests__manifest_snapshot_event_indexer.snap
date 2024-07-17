@@ -18,12 +18,11 @@ datasource:
     identifier: EventIdentifier
     interface: null
   network:
-    rpc_url: https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL_KEY}
-    chain_id: 80001
+    rpc_url: https://eth.llamarpc.com
+    chain_id: 1
   from: 37730337
   contract_type: ERC-20
   batch_size: null
 timer_settings:
   interval_sec: 3600
 cycles: null
-
