@@ -160,6 +160,10 @@ For more information, please check here.
 
 [HTTPS outcalls: technology overview | Internet Computer](https://internetcomputer.org/docs/current/developer-docs/integrations/https-outcalls/https-outcalls-how-it-works)
 
+>[!Warning]
+>Internet Computer currently only supports IPv6 with regard to HTTPS outcalls. Chainsight has therefore added a validation function to check whether a given endpoint supports IPv6. If you see a relevant error, please check the support status of that endpoint.
+> ref: https://internetcomputer.org/docs/current/references/https-outcalls-how-it-works#ipv6-only-support
+
 ## Timer Task
 
 Unlike other blockchains, the Internet Computer can automatically execute canister smart contracts after a specified delay or periodically.
