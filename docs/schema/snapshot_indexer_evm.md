@@ -329,12 +329,12 @@
 **Example:** 
 
 ```json
-"https://mainnet.infura.io/v3/YOUR_API_KEY"
+"https://eth.llamarpc.com"
 ```
 
-| Restrictions                      |                                                                                                                                                                 |
-| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Must match regular expression** | ```^(http\|https)://``` [Test](https://regex101.com/?regex=%5E%28http%7Chttps%29%3A%2F%2F&testString=%22https%3A%2F%2Fmainnet.infura.io%2Fv3%2FYOUR_API_KEY%22) |
+| Restrictions                      |                                                                                                                                            |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Must match regular expression** | ```^(http\|https)://``` [Test](https://regex101.com/?regex=%5E%28http%7Chttps%29%3A%2F%2F&testString=%22https%3A%2F%2Feth.llamarpc.com%22) |
 
 ### <a name="datasource_method"></a>3.2. Property `Chainsight EVM Compatible Chain Snapshot Indexer specification > datasource > method`
 
@@ -756,4 +756,4 @@ true
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-03-22 at 09:58:19 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-07-18 at 02:25:10 +0000

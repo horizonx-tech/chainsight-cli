@@ -382,12 +382,12 @@
 **Example:** 
 
 ```json
-"https://mainnet.infura.io/v3/"
+"https://eth.llamarpc.com"
 ```
 
-| Restrictions                      |                                                                                                                                    |
-| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| **Must match regular expression** | ```^https?://``` [Test](https://regex101.com/?regex=%5Ehttps%3F%3A%2F%2F&testString=%22https%3A%2F%2Fmainnet.infura.io%2Fv3%2F%22) |
+| Restrictions                      |                                                                                                                           |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **Must match regular expression** | ```^https?://``` [Test](https://regex101.com/?regex=%5Ehttps%3F%3A%2F%2F&testString=%22https%3A%2F%2Feth.llamarpc.com%22) |
 
 ### <a name="datasource_contract_type"></a>3.5. Property `Chainsight Event Indexer specification > datasource > contract_type`
 
@@ -755,4 +755,4 @@ true
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-03-22 at 09:58:19 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-07-18 at 02:25:10 +0000

@@ -558,12 +558,12 @@
 **Example:** 
 
 ```json
-"https://rinkeby.infura.io/v3/1a2b3c4d5e"
+"https://eth.llamarpc.com"
 ```
 
-| Restrictions                      |                                                                                                                                                    |
-| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Must match regular expression** | ```^https://.*$``` [Test](https://regex101.com/?regex=%5Ehttps%3A%2F%2F.%2A%24&testString=%22https%3A%2F%2Frinkeby.infura.io%2Fv3%2F1a2b3c4d5e%22) |
+| Restrictions                      |                                                                                                                                 |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| **Must match regular expression** | ```^https://.*$``` [Test](https://regex101.com/?regex=%5Ehttps%3A%2F%2F.%2A%24&testString=%22https%3A%2F%2Feth.llamarpc.com%22) |
 
 ### <a name="destination_method_name"></a>5.5. Property `Chainsight Relayer specification > destination > method_name`
 
@@ -1022,4 +1022,4 @@ true
 ```
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-03-22 at 09:58:19 +0000
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2024-07-18 at 02:25:10 +0000
