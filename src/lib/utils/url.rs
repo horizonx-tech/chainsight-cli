@@ -13,7 +13,7 @@ pub fn is_supporting_ipv6_url(url_str: &str) -> Result<()> {
         .host()
         .ok_or_else(|| anyhow::anyhow!("No host in RPC URL"))?;
     match host {
-        url::Host::Ipv4(_) => anyhow::bail!("ipv4 address is not acceptable for RPC URL"),
+        url::Host::Ipv4(_) => anyhow::bail!("IPv4 address is not acceptable in Internet Computer"),
         url::Host::Ipv6(_) => Ok(()),
         url::Host::Domain(domain) => is_ipv6_supported_domain(domain),
     }
@@ -26,7 +26,7 @@ fn is_ipv6_supported_domain(domain: &str) -> Result<()> {
             return Ok(());
         }
     }
-    anyhow::bail!("No IPv6 address found")
+    anyhow::bail!("No IPv6 address found, IPv4 address is not acceptable in Internet Computer")
 }
 
 #[derive(Serialize, Deserialize)]
