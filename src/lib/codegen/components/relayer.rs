@@ -364,7 +364,7 @@ impl Default for DestinationField {
             network_id,
             oracle_type,
             get_oracle_address(network_id),
-            "https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL_KEY}".to_string(),
+            "https://eth.llamarpc.com".to_string(),
         )
     }
 }
@@ -406,11 +406,10 @@ mod tests {
                 },
             },
             destination: DestinationField {
-                network_id: 80001,
+                network_id: 1,
                 type_: DestinationType::String,
                 oracle_address: "0x0539a0EF8e5E60891fFf0958A059E049e43020d9".to_string(),
-                rpc_url: "https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL_KEY}"
-                    .to_string(),
+                rpc_url: "https://eth.llamarpc.com".to_string(),
                 method_name: None,
                 interface: None,
             },
@@ -444,10 +443,10 @@ datasource:
         interface: null
         args: []
 destination:
-    network_id: 80001
+    network_id: 1
     type: uint256
     oracle_address: 0x0539a0EF8e5E60891fFf0958A059E049e43020d9
-    rpc_url: https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL_KEY}
+    rpc_url: https://eth.llamarpc.com
 timer_settings:
     interval_sec: 3600
         "#;
@@ -479,11 +478,10 @@ timer_settings:
                     }
                 },
                 destination: DestinationField {
-                    network_id: 80001,
+                    network_id: 1,
                     type_: DestinationType::Uint256,
                     oracle_address: "0x0539a0EF8e5E60891fFf0958A059E049e43020d9".to_string(),
-                    rpc_url: "https://polygon-mumbai.infura.io/v3/${INFURA_MUMBAI_RPC_URL_KEY}"
-                        .to_string(),
+                    rpc_url: "https://eth.llamarpc.com".to_string(),
                     method_name: None,
                     interface: None,
                 },

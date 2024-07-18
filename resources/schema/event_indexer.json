@@ -132,7 +132,7 @@
               "title": "rpc_url",
               "description": "rpc url",
               "type": "string",
-              "examples": ["https://mainnet.infura.io/v3/"],
+              "examples": ["https://eth.llamarpc.com"],
               "pattern": "^https?://"
             }
           }
