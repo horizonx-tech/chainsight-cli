@@ -66,6 +66,11 @@ pub struct ExecOpts {
     /// This option is used only if the target is localhost.
     #[arg(long)]
     port: Option<u16>,
+
+    /// Force execution even if the component has already been executed.
+    /// If this option is specified, the process continues without panic if it has already been executed at runtime.
+    #[arg(long)]
+    force: bool,
 }
 
 pub async fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
@@ -95,6 +100,7 @@ pub async fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
         opts.wallet,
         opts.network,
         opts.port,
+        opts.force,
     )
     .await?;
 
@@ -118,6 +124,7 @@ async fn execute_initialize_components(
     wallet: Option<String>,
     network: Network,
     port: Option<u16>,
+    force: bool,
 ) -> anyhow::Result<()> {
     // loading component ids
     let dfx_bin_network = match &network {
@@ -150,7 +157,7 @@ async fn execute_initialize_components(
 
         let res = call_init_in(&wallet, Principal::from_text(comp_id)?, &network).await;
         if let Err(e) = res {
-            if e.to_string().contains(ALREADY_INIT_IN_PANIC_MSG) {
+            if force && e.to_string().contains(ALREADY_INIT_IN_PANIC_MSG) {
                 warn!(
                     log,
                     "init_in has been executed, process continues: {} ({})", name, comp_id
@@ -190,7 +197,7 @@ async fn execute_initialize_components(
 
             let res = call_setup(&wallet, Principal::from_text(comp_id)?, raw_args).await;
             if let Err(e) = res {
-                if e.to_string().contains(ALREADY_SETUP_PANIC_MSG) {
+                if force && e.to_string().contains(ALREADY_SETUP_PANIC_MSG) {
                     warn!(
                         log,
                         "setup has been executed, process continues: {} ({})", name, comp_id
@@ -216,7 +223,7 @@ async fn execute_initialize_components(
             info!(log, "Calling set_task: {} ({})", name, comp_id);
             let res = call_set_task(&wallet, Principal::from_text(comp_id)?, &args).await;
             if let Err(e) = res {
-                if e.to_string().contains(ALREADY_SET_TASK_PANIC_MSG) {
+                if force && e.to_string().contains(ALREADY_SET_TASK_PANIC_MSG) {
                     warn!(
                         log,
                         "set_task has been executed, process continues: {} ({})", name, comp_id
@@ -275,6 +282,7 @@ mod tests {
                         wallet: None,
                         network: Network::Local,
                         port: None,
+                        force: false,
                     },
                 );
             },
