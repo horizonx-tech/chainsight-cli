@@ -4,7 +4,7 @@ use anyhow::{bail, Context};
 use candid::Principal;
 use clap::{arg, Parser};
 use functions::{call_init_in, call_set_task, call_setup};
-use slog::{info, Logger};
+use slog::{info, warn, Logger};
 
 use crate::{
     commands::utils::get_agent,
@@ -28,6 +28,10 @@ use crate::{
 };
 
 mod functions;
+
+const ALREADY_INIT_IN_PANIC_MSG: &str = "Already initialized";
+const ALREADY_SETUP_PANIC_MSG: &str = "Already setup";
+const ALREADY_SET_TASK_PANIC_MSG: &str = "Already started";
 
 #[derive(Debug, Parser)]
 #[command(name = "exec")]
@@ -143,7 +147,19 @@ async fn execute_initialize_components(
     // exec: init_in
     for (name, comp_id) in &components {
         info!(log, "Calling init_in: {} ({})", name, comp_id);
-        call_init_in(&wallet, Principal::from_text(comp_id)?, &network).await?;
+
+        let res = call_init_in(&wallet, Principal::from_text(comp_id)?, &network).await;
+        if let Err(e) = res {
+            if e.to_string().contains(ALREADY_INIT_IN_PANIC_MSG) {
+                warn!(
+                    log,
+                    "init_in has been executed, process continues: {} ({})", name, comp_id
+                );
+            } else {
+                bail!(e);
+            }
+        }
+
         info!(log, "Called init_in: {} ({})", name, comp_id);
     }
 
@@ -171,7 +187,19 @@ async fn execute_initialize_components(
 
         if let Some(raw_args) = generator.generate_component_setup_args(&network, &comp_id_mgr)? {
             info!(log, "Calling setup: {} ({})", name, comp_id);
-            call_setup(&wallet, Principal::from_text(comp_id)?, raw_args).await?;
+
+            let res = call_setup(&wallet, Principal::from_text(comp_id)?, raw_args).await;
+            if let Err(e) = res {
+                if e.to_string().contains(ALREADY_SETUP_PANIC_MSG) {
+                    warn!(
+                        log,
+                        "setup has been executed, process continues: {} ({})", name, comp_id
+                    );
+                } else {
+                    bail!(e);
+                }
+            }
+
             info!(log, "Called setup: {} ({})", name, comp_id);
         } else {
             info!(log, "Skip calling setup: {} ({})", name, comp_id);
@@ -186,7 +214,17 @@ async fn execute_initialize_components(
         let generator = codegen::generator(*component_type, component_path, name)?;
         if let Some(args) = generator.manifest().timer_settings() {
             info!(log, "Calling set_task: {} ({})", name, comp_id);
-            call_set_task(&wallet, Principal::from_text(comp_id)?, &args).await?;
+            let res = call_set_task(&wallet, Principal::from_text(comp_id)?, &args).await;
+            if let Err(e) = res {
+                if e.to_string().contains(ALREADY_SET_TASK_PANIC_MSG) {
+                    warn!(
+                        log,
+                        "set_task has been executed, process continues: {} ({})", name, comp_id
+                    );
+                } else {
+                    bail!(e);
+                }
+            }
             info!(log, "Called set_task: {} ({})", name, comp_id);
         } else {
             info!(log, "Skip calling set_task: {} ({})", name, comp_id);
