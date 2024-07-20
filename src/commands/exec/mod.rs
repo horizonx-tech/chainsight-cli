@@ -116,6 +116,7 @@ pub async fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 async fn execute_initialize_components(
     log: &Logger,
     project_path_str: &str,
