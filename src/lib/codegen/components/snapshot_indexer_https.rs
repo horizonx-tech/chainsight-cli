@@ -188,7 +188,7 @@ impl ComponentManifest for SnapshotIndexerHTTPSComponentManifest {
     }
 
     fn validate_manifest(&self) -> anyhow::Result<()> {
-        is_supporting_ipv6_url(&self.datasource.url)?;
+        // is_supporting_ipv6_url(&self.datasource.url)?;
         Ok(())
     }
 

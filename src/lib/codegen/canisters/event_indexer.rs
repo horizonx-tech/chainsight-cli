@@ -36,7 +36,7 @@ pub fn validate_manifest(manifest: &EventIndexerComponentManifest) -> anyhow::Re
     );
 
     let rpc_url = &manifest.datasource.network.rpc_url;
-    is_supporting_ipv6_url(rpc_url)?;
+    // is_supporting_ipv6_url(rpc_url)?;
     is_valid_rpc_url(rpc_url)?;
 
     Ok(())
