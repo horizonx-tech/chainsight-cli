@@ -230,6 +230,7 @@ async fn execute_deployment(
     let mut name_and_ids = vec![];
     for name in components {
         let deploy_dest_id = functions::canister_create(
+            log,
             Box::new(caller_identity.clone()),
             &wallet_principal,
             &network,

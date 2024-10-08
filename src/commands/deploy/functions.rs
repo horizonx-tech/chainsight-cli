@@ -8,12 +8,13 @@ use ic_utils::{
     },
     Argument,
 };
+use slog::{info, Logger};
 
 use crate::{
     commands::utils::get_agent,
     lib::{
         cmc::{
-            self, cmc,
+            cmc,
             types::{
                 CreateCanisterArg, CreateCanisterError, CreateCanisterResult, SubnetSelection,
             },
@@ -30,6 +31,7 @@ const CANISTER_CREATE_FEE: u128 = 100_000_000_000_u128;
 const CANISTER_INITIAL_CYCLE_BALANCE: u128 = 3_000_000_000_000_u128;
 
 pub async fn canister_create(
+    log: &Logger,
     identity: Box<dyn Identity>,
     wallet_principal: &Option<Principal>,
     network: &Network,
@@ -50,6 +52,7 @@ pub async fn canister_create(
         let wallet_canister = wallet_canister(wallet_principal.unwrap(), &agent).await?;
         let cycles = cycles.unwrap_or(CANISTER_CREATE_FEE + CANISTER_INITIAL_CYCLE_BALANCE);
         if let Some(subnet) = subnet {
+            info!(log, "Creating canister on subnet: {}", subnet);
             let result = cmc()
                 .create_canister(
                     &wallet_canister,

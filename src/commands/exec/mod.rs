@@ -4,6 +4,7 @@ use anyhow::{bail, Context};
 use candid::{types::principal, Principal};
 use clap::{arg, Parser};
 use functions::{call_init_in, call_set_task, call_setup};
+use ic_wasm::info;
 use slog::{info, warn, Logger};
 
 use crate::{
@@ -181,6 +182,7 @@ async fn execute_initialize_components(
                             .unwrap(),
                     )
                 } else {
+                    info!(log, "No subnet specified. Try to get indexer's...");
                     let canister = get_canister_with_retry(&comp_id, None).await;
                     match canister {
                         Ok(canister) => Some(
@@ -204,7 +206,10 @@ async fn execute_initialize_components(
 
         info!(
             log,
-            "Calling init_in: {} ({}) subnet={:?}", name, comp_id, subnet
+            "Calling init_in: {} ({}) subnet={:?}",
+            name,
+            comp_id,
+            subnet.map(|p| p.to_text())
         );
 
         let res = call_init_in(&wallet, Principal::from_text(comp_id)?, &network, &subnet).await;
