@@ -161,10 +161,13 @@ async fn execute_initialize_components(
 
     // exec: init_in
     for (name, comp_id) in &components {
-        info!(log, "Calling init_in: {} ({})", name, comp_id);
-
         let subnet = match network {
-            Network::Local => None,
+            Network::Local => {
+                if subnet.is_some() {
+                    warn!(log, "Subnet is ignored in local network");
+                }
+                None
+            }
             Network::IC => {
                 if let Some(subnet_str) = subnet.clone() {
                     Some(
@@ -198,11 +201,11 @@ async fn execute_initialize_components(
                 }
             }
         };
-        if let Some(subnet) = &subnet {
-            info!(log, "[{}] call init_in with subnet={}", comp_id, subnet);
-        } else {
-            info!(log, "[{}] No subnet specified", comp_id);
-        }
+
+        info!(
+            log,
+            "Calling init_in: {} ({}) subnet={:?}", name, comp_id, subnet
+        );
 
         let res = call_init_in(&wallet, Principal::from_text(comp_id)?, &network, &subnet).await;
         if let Err(e) = res {
