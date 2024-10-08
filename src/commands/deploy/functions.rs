@@ -9,7 +9,19 @@ use ic_utils::{
     Argument,
 };
 
-use crate::{commands::utils::get_agent, lib::utils::identity::wallet_canister, types::Network};
+use crate::{
+    commands::utils::get_agent,
+    lib::{
+        cmc::{
+            self, cmc,
+            types::{
+                CreateCanisterArg, CreateCanisterError, CreateCanisterResult, SubnetSelection,
+            },
+        },
+        utils::identity::wallet_canister,
+    },
+    types::Network,
+};
 
 use super::types::UpdateSettingsArgs;
 
@@ -23,6 +35,7 @@ pub async fn canister_create(
     network: &Network,
     port: Option<u16>,
     cycles: Option<u128>,
+    subnet: Option<Principal>,
 ) -> anyhow::Result<Principal> {
     let agent = get_agent(network, port, Some(identity)).await?;
 
@@ -36,10 +49,41 @@ pub async fn canister_create(
         }
         let wallet_canister = wallet_canister(wallet_principal.unwrap(), &agent).await?;
         let cycles = cycles.unwrap_or(CANISTER_CREATE_FEE + CANISTER_INITIAL_CYCLE_BALANCE);
-        let res = wallet_canister
-            .wallet_create_canister(cycles, None, None, None, None)
-            .await?;
-        res.canister_id
+        if let Some(subnet) = subnet {
+            let result = cmc()
+                .create_canister(
+                    &wallet_canister,
+                    CreateCanisterArg {
+                        subnet_selection: Some(SubnetSelection::Subnet { subnet }),
+                        settings: None,
+                        subnet_type: None,
+                    },
+                    cycles,
+                )
+                .await?
+                .0;
+
+            match result {
+                CreateCanisterResult::Ok(canister_id) => canister_id,
+                CreateCanisterResult::Err(err) => match err {
+                    CreateCanisterError::Refunded {
+                        create_error,
+                        refund_amount,
+                    } => {
+                        return Err(anyhow::anyhow!(
+                            "Create canister failed: {:?}, refunded: {}",
+                            create_error,
+                            refund_amount
+                        ));
+                    }
+                },
+            }
+        } else {
+            let res = wallet_canister
+                .wallet_create_canister(cycles, None, None, None, None)
+                .await?;
+            res.canister_id
+        }
     };
 
     Ok(canister_id)
