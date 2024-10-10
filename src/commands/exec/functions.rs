@@ -7,6 +7,7 @@ pub async fn call_init_in(
     wallet: &WalletCanister<'_>,
     target: Principal,
     network: &Network,
+    subnet: &Option<Principal>,
 ) -> anyhow::Result<()> {
     // todo: make customisable
     let (cycles_managements, total_initial_supply) = default_cycle_managements();
@@ -14,7 +15,7 @@ pub async fn call_init_in(
         Network::Local => chainsight_cdk::core::Env::LocalDevelopment,
         Network::IC => chainsight_cdk::core::Env::Production,
     };
-    let raw_args = Encode!(&cdk_env, &cycles_managements)?;
+    let raw_args = Encode!(&cdk_env, &cycles_managements, subnet)?;
     wallet_call128(
         wallet,
         target,

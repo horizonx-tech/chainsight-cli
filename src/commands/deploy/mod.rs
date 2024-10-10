@@ -5,7 +5,7 @@ use candid::Principal;
 use chainsight_cdk::core::Env;
 use clap::Parser;
 use ic_agent::Identity;
-use slog::{info, Logger};
+use slog::{info, warn, Logger};
 use types::ComponentsToDeploy;
 
 use crate::{
@@ -49,6 +49,10 @@ pub struct DeployOpts {
     #[arg(long)]
     #[clap(default_value = "local")]
     network: Network,
+
+    /// Specify the subnet to deploy the canister.
+    #[arg(long)]
+    subnet: Option<String>,
 
     /// Specifies the port to call.
     /// This option is used only if the target is localhost.
@@ -105,6 +109,7 @@ pub async fn exec(env: &EnvironmentImpl, opts: DeployOpts) -> anyhow::Result<()>
         opts.wallet,
         opts.with_cycles,
         network,
+        opts.subnet,
         opts.port,
     )
     .await?;
@@ -168,6 +173,7 @@ async fn execute_deployment(
     wallet: Option<Option<String>>,
     with_cycles: Option<u128>,
     network: Network,
+    subnet: Option<String>,
     port: Option<u16>,
 ) -> anyhow::Result<()> {
     // Execute
@@ -180,6 +186,21 @@ async fn execute_deployment(
             get_wallet_principal_from_local_context(&network, port, identity_context).await?
         }),
         _ => None,
+    };
+    let subnet_principal = if let Some(s) = subnet {
+        if network == Network::IC {
+            Some(
+                Principal::from_text(s.clone())
+                    .map_err(|e| anyhow!("Failed to parse subnet={}: {:?}", s, e))
+                    .unwrap(),
+            )
+        } else {
+            warn!(log, "Subnet is ignored in local network");
+
+            None
+        }
+    } else {
+        None
     };
 
     //// for saving component ids
@@ -209,11 +230,13 @@ async fn execute_deployment(
     let mut name_and_ids = vec![];
     for name in components {
         let deploy_dest_id = functions::canister_create(
+            log,
             Box::new(caller_identity.clone()),
             &wallet_principal,
             &network,
             port,
             with_cycles,
+            subnet_principal,
         )
         .await?;
         info!(log, "Created Canister ID: {} > {}", &name, &deploy_dest_id);

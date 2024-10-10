@@ -1,3 +1,4 @@
+use chainsight_cdk::core::Env;
 use lazy_static::lazy_static;
 use semver::Version;
 use std::process::Command;
@@ -6,7 +7,7 @@ lazy_static! {
     // This expect cannot happen, we make sure that CARGO_PKG_VERSION is correct.
     static ref VERSION: Version =
         Version::parse(env!("CARGO_PKG_VERSION")).expect("Cannot parse version.");
-    static ref VERSION_STR: String = format!("version: {}\ncommit-rev: {}", env!("CARGO_PKG_VERSION"), git_commit_hash());
+    static ref VERSION_STR: String = format!("version: {}\nrev: {}\ninitializer: {}", env!("CARGO_PKG_VERSION"), git_commit_hash(), Env::Production.initializer().to_text());
 }
 
 #[allow(dead_code)]
