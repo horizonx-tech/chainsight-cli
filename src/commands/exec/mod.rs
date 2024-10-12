@@ -1,9 +1,10 @@
 use std::{collections::BTreeMap, path::Path};
 
 use anyhow::{bail, Context};
-use candid::Principal;
+use candid::{types::principal, Principal};
 use clap::{arg, Parser};
 use functions::{call_init_in, call_set_task, call_setup};
+use ic_wasm::info;
 use slog::{info, warn, Logger};
 
 use crate::{
@@ -14,6 +15,7 @@ use crate::{
             project::ProjectManifestData,
         },
         environment::EnvironmentImpl,
+        ic_api::get_canister_with_retry,
         utils::{
             component_ids_manager::ComponentIdsManager,
             dfx::DfxWrapperNetwork,
@@ -62,6 +64,10 @@ pub struct ExecOpts {
     #[clap(default_value = "local")]
     network: Network,
 
+    /// Specify the subnet to deploy side-car canisters.
+    #[arg(long)]
+    subnet: Option<String>,
+
     /// Specifies the port to call.
     /// This option is used only if the target is localhost.
     #[arg(long)]
@@ -99,6 +105,7 @@ pub async fn exec(env: &EnvironmentImpl, opts: ExecOpts) -> anyhow::Result<()> {
         opts.context,
         opts.wallet,
         opts.network,
+        opts.subnet,
         opts.port,
         opts.force,
     )
@@ -124,6 +131,7 @@ async fn execute_initialize_components(
     identity_context: Option<String>,
     wallet: Option<String>,
     network: Network,
+    subnet: Option<String>,
     port: Option<u16>,
     force: bool,
 ) -> anyhow::Result<()> {
@@ -154,9 +162,57 @@ async fn execute_initialize_components(
 
     // exec: init_in
     for (name, comp_id) in &components {
-        info!(log, "Calling init_in: {} ({})", name, comp_id);
+        let subnet = match network {
+            Network::Local => {
+                if subnet.is_some() {
+                    warn!(log, "Subnet is ignored in local network");
+                }
+                None
+            }
+            Network::IC => {
+                if let Some(subnet_str) = subnet.clone() {
+                    Some(
+                        Principal::from_text(subnet_str.clone())
+                            .map_err(|e| {
+                                Err::<(), String>(format!(
+                                    "Failed to parse subnet={}: {:?}",
+                                    subnet_str, e
+                                ))
+                            })
+                            .unwrap(),
+                    )
+                } else {
+                    info!(log, "No subnet specified. Try to get indexer's...");
+                    let canister = get_canister_with_retry(comp_id, None).await;
+                    match canister {
+                        Ok(canister) => Some(
+                            Principal::from_text(canister.subnet_id.clone())
+                                .map_err(|e| {
+                                    Err::<(), String>(format!(
+                                        "Failed to parse subnet_id={}: {:?}",
+                                        canister.subnet_id, e
+                                    ))
+                                })
+                                .unwrap(),
+                        ),
+                        Err(e) => {
+                            println!("[{}] Failed to get canister subnet: {:?}", comp_id, e);
+                            None
+                        }
+                    }
+                }
+            }
+        };
 
-        let res = call_init_in(&wallet, Principal::from_text(comp_id)?, &network).await;
+        info!(
+            log,
+            "Calling init_in: {} ({}) subnet={:?}",
+            name,
+            comp_id,
+            subnet.map(|p| p.to_text())
+        );
+
+        let res = call_init_in(&wallet, Principal::from_text(comp_id)?, &network, &subnet).await;
         if let Err(e) = res {
             if force && e.to_string().contains(ALREADY_INIT_IN_PANIC_MSG) {
                 warn!(
@@ -282,6 +338,7 @@ mod tests {
                         context: None,
                         wallet: None,
                         network: Network::Local,
+                        subnet: None,
                         port: None,
                         force: false,
                     },
