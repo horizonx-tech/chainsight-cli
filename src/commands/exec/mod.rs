@@ -183,7 +183,7 @@ async fn execute_initialize_components(
                     )
                 } else {
                     info!(log, "No subnet specified. Try to get indexer's...");
-                    let canister = get_canister_with_retry(&comp_id, None).await;
+                    let canister = get_canister_with_retry(comp_id, None).await;
                     match canister {
                         Ok(canister) => Some(
                             Principal::from_text(canister.subnet_id.clone())
