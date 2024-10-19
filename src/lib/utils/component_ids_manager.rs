@@ -56,7 +56,7 @@ impl ComponentIdsManager {
     }
 
     pub fn add(&mut self, name: String, id: String) {
-        if self.components.get(&name).is_none() {
+        if self.components.contains_key(&name) {
             self.components.insert(name.clone(), BTreeMap::new());
         };
         self.components
@@ -68,7 +68,7 @@ impl ComponentIdsManager {
     pub fn get(&self, name: &str) -> Option<String> {
         self.components
             .get(name)
-            .map_or(None, |m| m.get(&self.network.to_path()))
+            .and_then(|m| m.get(&self.network.to_path()))
             .cloned()
     }
 
