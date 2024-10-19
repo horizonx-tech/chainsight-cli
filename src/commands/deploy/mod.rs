@@ -208,13 +208,12 @@ async fn execute_deployment(
         Network::Local => DfxWrapperNetwork::Local(port),
         Network::IC => DfxWrapperNetwork::IC,
     };
-    let (components, mut comp_id_mgr) = match components_to_deploy {
-        ComponentsToDeploy::Single(val) => {
-            let comp_id_mgr = ComponentIdsManager::load(&dfx_bin_network, artifacts_path_str)
-                .unwrap_or_else(|_| ComponentIdsManager::new(&dfx_bin_network));
-            (vec![val], comp_id_mgr)
-        }
-        ComponentsToDeploy::Multiple(val) => (val, ComponentIdsManager::new(&dfx_bin_network)),
+
+    let mut comp_id_mgr = ComponentIdsManager::load(&dfx_bin_network, artifacts_path_str)
+        .unwrap_or_else(|_| ComponentIdsManager::new(&dfx_bin_network));
+    let components = match components_to_deploy {
+        ComponentsToDeploy::Single(val) => vec![val],
+        ComponentsToDeploy::Multiple(val) => val,
     };
 
     // Check if the component has already been deployed

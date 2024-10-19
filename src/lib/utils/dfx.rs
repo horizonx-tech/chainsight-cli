@@ -33,6 +33,12 @@ impl DfxWrapperNetwork {
         };
         vec!["--network".to_string(), value]
     }
+    pub fn to_path(&self) -> String {
+        match self {
+            DfxWrapperNetwork::IC => "ic".to_string(),
+            DfxWrapperNetwork::Local(_) => self.value().replace([':', '.', '/'], "_"),
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -213,4 +219,17 @@ where
         .args(args)
         // .stdout(Stdio::piped())
         .output()
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_url_to_filename_for_dfx_local() {
+        assert_eq!(
+            DfxWrapperNetwork::Local(Some(8000)).to_path(),
+            "http___localhost_8000"
+        );
+        assert_eq!(DfxWrapperNetwork::Local(None).to_path(), "local");
+    }
 }

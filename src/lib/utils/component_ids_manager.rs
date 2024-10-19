@@ -2,56 +2,74 @@ use std::collections::BTreeMap;
 
 use super::dfx::DfxWrapperNetwork;
 
-pub type ComponentIds = BTreeMap<String, String>;
+pub type ComponentIds = BTreeMap<String, BTreeMap<String, String>>; // name -> network -> id
 pub struct ComponentIdsManager {
     filename: String,
+    filepath: Option<String>,
+    network: DfxWrapperNetwork,
     components: ComponentIds,
 }
 
 impl ComponentIdsManager {
     pub fn new(network: &DfxWrapperNetwork) -> Self {
+        let (filename, filepath) = Self::filepath(network);
         Self {
-            filename: Self::filename(network),
+            filename,
+            filepath,
+            network: network.clone(),
             components: BTreeMap::new(),
         }
     }
 
     pub fn load(network: &DfxWrapperNetwork, dir_path: &str) -> anyhow::Result<Self> {
-        let filename = Self::filename(network);
-        let path = format!("{}/{}", dir_path, filename);
-        let json = std::fs::read_to_string(path)?;
+        let (filename, filepath) = Self::filepath(network);
+        let dir_path = filepath
+            .clone()
+            .map_or(dir_path.to_string(), |p| format!("{}/{}", dir_path, p));
+        let json = std::fs::read_to_string(format!("{}/{}", dir_path, filename))?;
         let components: ComponentIds = serde_json::from_str(&json)?;
         Ok(Self {
             filename,
+            filepath,
+            network: network.clone(),
             components,
         })
     }
 
-    fn filename(network: &DfxWrapperNetwork) -> String {
-        let prefix = "component_ids";
+    fn filepath(network: &DfxWrapperNetwork) -> (String, Option<String>) {
+        let filename = "canister_ids.json".to_string();
         match network {
-            DfxWrapperNetwork::IC => format!("{}_ic.json", prefix),
-            _ => format!(
-                "{}_{}.json",
-                prefix,
-                url_to_filename_for_dfx_local(&network.value())
-            ),
+            DfxWrapperNetwork::IC => (filename, None),
+            _ => (filename, Some(format!(".dfx/{}", network.to_path()))),
         }
     }
 
     pub fn save(&self, dir_path: &str) -> anyhow::Result<()> {
-        let path = format!("{}/{}", dir_path, self.filename);
+        let dir_path = self
+            .filepath
+            .clone()
+            .map_or(dir_path.to_string(), |p| format!("{}/{}", dir_path, p));
+        std::fs::create_dir_all(dir_path.clone())?;
         let json = serde_json::to_string_pretty(&self.components)?;
-        std::fs::write(path, json)?;
+        std::fs::write(format!("{}/{}", dir_path, &self.filename), json)?;
         Ok(())
     }
 
     pub fn add(&mut self, name: String, id: String) {
-        self.components.insert(name, id);
+        if self.components.get(&name).is_none() {
+            self.components.insert(name.clone(), BTreeMap::new());
+        };
+        self.components
+            .get_mut(&name)
+            .unwrap()
+            .insert(self.network.to_path(), id);
     }
 
     pub fn get(&self, name: &str) -> Option<String> {
-        self.components.get(name).cloned()
+        self.components
+            .get(name)
+            .map_or(None, |m| m.get(&self.network.to_path()))
+            .cloned()
     }
 
     pub fn contains_key(&self, name: &str) -> bool {
@@ -61,28 +79,7 @@ impl ComponentIdsManager {
     pub fn get_all_entries(&self) -> Vec<(String, String)> {
         self.components
             .iter()
-            .map(|(k, v)| (k.clone(), v.clone()))
+            .map(|(k, v)| (k.clone(), v.get(&self.network.to_path()).unwrap().clone()))
             .collect()
-    }
-}
-
-fn url_to_filename_for_dfx_local(url: &str) -> String {
-    url.replace([':', '.', '/'], "_")
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_url_to_filename_for_dfx_local() {
-        assert_eq!(
-            url_to_filename_for_dfx_local("http://localhost:8000"),
-            "http___localhost_8000"
-        );
-        assert_eq!(
-            url_to_filename_for_dfx_local("http://127.0.0.1:4943/"),
-            "http___127_0_0_1_4943_"
-        );
     }
 }
