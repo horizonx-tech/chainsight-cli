@@ -38,9 +38,9 @@ fn default_cycle_managements() -> (chainsight_cdk::initializer::CycleManagements
             refueling_threshold: 1_500_000_000_000u128,
         },
         db: chainsight_cdk::initializer::CycleManagement {
-            initial_supply: 1_000_000_000_000u128,
-            refueling_amount: 1_000_000_000_000u128,
-            refueling_threshold: 500_000_000_000u128,
+            initial_supply: 0u128,
+            refueling_amount: 0u128,
+            refueling_threshold: 0u128,
         },
         proxy: chainsight_cdk::initializer::CycleManagement {
             initial_supply: 500_000_000_000u128,
