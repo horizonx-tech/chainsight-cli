@@ -56,7 +56,7 @@ impl ComponentIdsManager {
     }
 
     pub fn add(&mut self, name: String, id: String) {
-        if self.components.contains_key(&name) {
+        if !self.components.contains_key(&name) {
             self.components.insert(name.clone(), BTreeMap::new());
         };
         self.components
