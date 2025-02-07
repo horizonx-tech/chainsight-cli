@@ -34,11 +34,12 @@ serde = "1.0.163"
 serde_bytes = "0.11.12"
 serde_json = "1.0.108"
 hex = "0.4.3"
+async-trait = "0.1.83"
 
-ic-web3-rs = "0.1.9"
-ic-solidity-bindgen = "0.1.18"
-chainsight-cdk-macros = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev= "7a8bd029e8c21de40f0af708234c9360302b8eee" }}
-chainsight-cdk = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev= "7a8bd029e8c21de40f0af708234c9360302b8eee" }}
+ic-web3-rs = "0.1.11"
+ic-solidity-bindgen = "0.1.21"
+chainsight-cdk-macros = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev= "ad2974fd9dc4585a44eb50d8ac7124ed700f2ee6" }}
+chainsight-cdk = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev= "ad2974fd9dc4585a44eb50d8ac7124ed700f2ee6" }}
 "#,
         members
             .iter()
