@@ -36,6 +36,6 @@ service : {
   get_proxy : () -> (principal);
   get_result : (LensArgs) -> (LensValue);
   get_sources : () -> (vec Sources) query;
-  init_in : (Env, CycleManagements) -> (Result);
+  init_in : (Env, CycleManagements, opt principal) -> (Result);
   proxy_get_result : (blob) -> (blob);
 }

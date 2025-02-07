@@ -53,7 +53,7 @@ service : {
   get_top_snapshot_values : (nat64) -> (vec SnapshotValue) query;
   get_top_snapshots : (nat64) -> (vec Snapshot) query;
   index : () -> ();
-  init_in : (Env, CycleManagements) -> (Result);
+  init_in : (Env, CycleManagements, opt principal) -> (Result);
   proxy_get_last_snapshot : (blob) -> (blob);
   proxy_get_last_snapshot_value : (blob) -> (blob);
   proxy_get_snapshot : (blob) -> (blob);
