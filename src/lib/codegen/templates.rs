@@ -38,8 +38,8 @@ async-trait = "0.1.83"
 
 ic-web3-rs = "0.1.11"
 ic-solidity-bindgen = "0.1.21"
-chainsight-cdk-macros = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev= "ad2974fd9dc4585a44eb50d8ac7124ed700f2ee6" }}
-chainsight-cdk = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev= "ad2974fd9dc4585a44eb50d8ac7124ed700f2ee6" }}
+chainsight-cdk-macros = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev= "1209c49c2272f440e08059baf4d7d8545ff9d44a" }}
+chainsight-cdk = {{ git = "https://github.com/horizonx-tech/chainsight-sdk.git", rev= "1209c49c2272f440e08059baf4d7d8545ff9d44a" }}
 "#,
         members
             .iter()
